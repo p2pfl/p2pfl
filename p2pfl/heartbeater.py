@@ -1,8 +1,11 @@
 import threading
-import time
+from p2pfl.const import *
 
+############################
+# ESTO ES MAS UN HEARTBEAT #
+############################
 
-class Pinger(threading.Thread):
+class Heartbeater(threading.Thread):
     def __init__(self, nodo_padre):
         
         threading.Thread.__init__(self)
@@ -17,5 +20,5 @@ class Pinger(threading.Thread):
     #SE ENVIA PING QUE LUEGO RECIBIREMOS EN EL CONNECTION NODE
     def run(self):
         while not self.terminate_flag.is_set(): 
-            self.nodo_padre.broadcast(b"ping")
-            time.sleep(5)
+            self.nodo_padre.broadcast(BEAT)   #cambiar mensaje de ping
+            self.terminate_flag.wait(5)

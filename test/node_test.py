@@ -1,24 +1,30 @@
-from p2pfl import Node
+from p2pfl.node import Node
 import pytest
 import time
 
-def init_nodes():
-    #Init nodes
-    #poner puerto libre alto ranom
-    n1 = Node("localhost",6661)
-    n2 = Node("localhost",6668)
+@pytest.fixture
+def nodes():
+    n1 = Node("localhost")
+    n2 = Node("localhost")
     n1.start()
     n2.start()
-    return n1,n2
 
-def stop_nodes(n1,n2):
+    yield n1,n2
+
     n1.stop()
     n2.stop()
 
-def test_node_creatrion():
-    n1, n2 = init_nodes()
 
+def test_node_paring(nodes):
+    n1, n2 = nodes
+
+    # Conexión
+    n1.connect_to(n2.host,n2.port)
+    time.sleep(0.1) #Esperar por la asincronía
     assert len(n1.neightboors) == len(n2.neightboors)==1
 
-    stop_nodes(n1,n2)
+    # Desconexión
+    n2.neightboors[0].stop()
+    time.sleep(0.1) #Esperar por la asincronía
+    assert len(n1.neightboors) == len(n2.neightboors)== 0
 

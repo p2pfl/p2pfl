@@ -3,21 +3,16 @@ import threading
 import logging
 import sys
 from p2pfl.node_connection import NodeConnection
-from p2pfl.pinger import Pinger
+from p2pfl.heartbeater import Heartbeater
 
-#XQ SOCKETS? -> received at any time (async)
-
-#Si fuese pa montar una red distribuida elixir de 1
 
 # https://github.com/GianisTsol/python-p2p/blob/master/pythonp2p/node.py
 
-# socket.sendall is a high-level Python-only method
-
-
+# Observacones:
+#   - Para el traspaso de modelos, sea mejor crear un socket a parte
 
 BUFFER_SIZE = 1024
 HI_MSG = "hola"
-SUCCES_MSG = b"pecfect"
 
 """
 from p2pfl.node import Node
@@ -33,7 +28,7 @@ n2.connect_to("localhost",6777)
 """
 #que extienda de thread?
 class Node(threading.Thread):
-    def __init__(self, host, port):
+    def __init__(self, host, port=0):
 
         threading.Thread.__init__(self)
 
@@ -45,6 +40,8 @@ class Node(threading.Thread):
         self.node_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #TCP
         #self.node_socket.settimeout(0.2)
         self.node_socket.bind((host, port))
+        if port==0:
+            self.port = self.node_socket.getsockname()[1]
         
         self.node_socket.listen(5)# no mas de 5 peticones a la cola
 
@@ -54,8 +51,8 @@ class Node(threading.Thread):
         #Loggin ? por ver
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-        self.pinger = Pinger(self)
-        self.pinger.start()
+        self.heartbeater = Heartbeater(self)
+        self.heartbeater.start()
 
 
     def get_addr(self):
@@ -66,31 +63,26 @@ class Node(threading.Thread):
         logging.info('Nodo a la escucha en {} {}'.format(self.host, self.port))
         while not self.terminate_flag.is_set(): 
             try:
-                (node_socket, (h,p)) = self.node_socket.accept()
+                (node_socket, addr) = self.node_socket.accept()
                 
                 # MSG
                 msg = node_socket.recv(BUFFER_SIZE).decode("UTF-8")
                 splited = msg.split("\n")
                 head = splited[0]
                 rest = "\n".join(splited[1:])
-                print(str(self.get_addr()) + "|" + head + "|" + rest + "|")
                 
                 #
                 # EL HI SERÁ en un futuro la encriptación
                 #
                 if head == HI_MSG:
-                    logging.info('Conexión aceptada con {}:{}'.format(h,p))
+                    logging.info('Conexión aceptada con {}'.format(addr))
 
-                    #
-                    # CHECKEAR SI NODO YA ESTÁ EN LA LISTA
-                    #
-                    #node_socket.sendall(SUCCES_MSG)
-                    nc = NodeConnection(self,node_socket,rest,(h,p))
+                    nc = NodeConnection(self,node_socket,rest)
                     nc.start()
                     self.add_neighbor(nc)
 
                 else:
-                    logging.info('Conexión rechazada con {}:{}'.format(h,p))
+                    logging.debug('Conexión rechazada con {}:{}'.format(addr,msg))
                     node_socket.close()
            
             except Exception as e:
@@ -98,9 +90,8 @@ class Node(threading.Thread):
                 print(e)
 
         #Detenemos nodo
-        #self.pinger.stop()
-        print("nos vamos")
-        logging.info('Dejando de escuchar en {} {}'.format(self.host, self.port))
+        logging.info('Bajando el nodo, dejando de escuchar en {} {}'.format(self.host, self.port))
+        self.heartbeater.stop()
         for n in self.neightboors:
             n.stop()
         self.node_socket.close()
@@ -109,31 +100,30 @@ class Node(threading.Thread):
         self.terminate_flag.set()
         # Enviamos mensaje al loop para evitar la espera del recv
         try:
-            self.send(self.host,self.port,b"")
+            self.__send(self.host,self.port,b"")
         except:
             pass
 
-    def send(self, h, p, data, persist=False): 
+    ##########################
+    #     Msg management     #
+    ##########################
+
+    def __send(self, h, p, data, persist=False): 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  
-        s.settimeout(10000000)
         s.connect((h, p))
-        s.sendall(data) #SEND ALL?? QUE DIFERENCIA CON SEND??
+        s.sendall(data)
         if persist:
             return s
         else:
-            print("se cierra en el send")
             s.close()
             return None
 
-    #Seguramente tenga que cambiarlo en futuro x si los nodos tienen listas finitas
     def connect_to(self, h, p): 
         msg=(HI_MSG + "\n").encode("utf-8")
-        s = self.send(h,p,msg,persist=True)
-
-        #Checkear de alguna forma la respuesta
-        print((h,p))
-        nc = NodeConnection(self,s,"",(h,p))
+        s = self.__send(h,p,msg,persist=True)
+        
+        # Agregaos el vecino
+        nc = NodeConnection(self,s,"")
         nc.start()
         self.add_neighbor(nc)
 

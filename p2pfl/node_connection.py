@@ -1,70 +1,63 @@
 import socket
 import threading
 import logging
-import time
+from p2pfl.const import *
 
-BUFFER_SIZE = 1024
-
-
-#Pulir tema de direcciones, fijo que se pueden sacar de socket
 class NodeConnection(threading.Thread):
-    def __init__(self, nodo_padre, socket, buffer, addr):
+
+    def __init__(self, nodo_padre, socket, buffer):
 
         threading.Thread.__init__(self)
 
         self.terminate_flag = threading.Event()
         self.nodo_padre = nodo_padre
-        self.addr = addr
         self.socket = socket
         self.buffer = buffer
 
 
     def get_addr(self):
-        return self.addr
+        return self.socket.getsockname()
 
     #Connection loop
     #   -ping periódico
     #   -procesado de peticiones
     def run(self):
-        self.socket.settimeout(30) #REVISAR COMO VAN LOS TIMEOUTS X SI NECESITO CONTROLARLO EN CADA ITER DEL BUCLE
+        self.socket.settimeout(TIEMOUT)
 
         while not self.terminate_flag.is_set():
             try:
                 msg = self.socket.recv(BUFFER_SIZE)
-                msg = str(msg.decode("utf-8"))
+                self.__do_things(msg)
                 
             except socket.timeout:
-                logging.debug("{} NodeConnection Timeout".format(self.addr))
+                logging.debug("{} NodeConnection Timeout".format(self.get_addr()))
                 self.stop()
                 break
 
             except Exception as e:
-                logging.debug("{} Exception: ".format(self.addr) + str(e))
+                logging.debug("{} Exception: ".format(self.get_addr()) + str(e))
                 self.stop()
                 break
 
-
-            #Si no hace nada espera 1
-            if not self.__do_things(msg):
-                time.sleep(1)   
-                print("----1----")
-
         
         #Bajamos Nodo
-        print("bajamos nodo!")
+        logging.debug("Closed connection with {}".format(self.get_addr()))
         self.nodo_padre.rm_neighbor(self)
-        logging.debug("Closed connection with {}".format(self.addr))
         self.socket.close()
 
+
     def __do_things(self, action):
-        #logging.debug("{} {}".format(self.addr,action))
 
+        if action == BEAT:
+            logging.debug("Beat {}".format(self.get_addr()))
 
-        if action == "ping":
-            logging.debug("Ping {}".format(self.addr))
+        elif action == STOP:
+            self.send(EMPTY) #esto es para que se actualice el terminate flag -> mirar otra forma de hacer downs instantáneos
+            self.terminate_flag.set()
 
         elif action == "":
-            return False
+            pass
+            
         else:
             print("Nao Comprendo (" + action + ")")
 
@@ -74,5 +67,6 @@ class NodeConnection(threading.Thread):
 
     # No es un stop instantáneo
     def stop(self):
+        self.send(STOP)
         self.terminate_flag.set()
 
