@@ -1,9 +1,10 @@
 # federated_learning_p2p
 
+## Revisar
+
+- Desacoplar comunicaciones
+- Checkear si queda pillado cuando spoofeas un host
+
 ## TODO List
 
-- Full Conectado
-- Desacoplar comunicaciones
 - Promediado
-- Revisar Exit de Pytest
-- Revisar si se queda pillado cuando spoofeas un host
