@@ -20,5 +20,5 @@ class Heartbeater(threading.Thread):
     #SE ENVIA PING QUE LUEGO RECIBIREMOS EN EL CONNECTION NODE
     def run(self):
         while not self.terminate_flag.is_set(): 
-            self.nodo_padre.broadcast(BEAT)   #cambiar mensaje de ping
+            self.nodo_padre.broadcast(BEAT.encode("utf-8"))   #cambiar mensaje de ping
             self.terminate_flag.wait(5)

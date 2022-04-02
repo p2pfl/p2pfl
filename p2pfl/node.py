@@ -2,6 +2,7 @@ import socket
 import threading
 import logging
 import sys
+from p2pfl.const import *
 from p2pfl.node_connection import NodeConnection
 from p2pfl.heartbeater import Heartbeater
 
@@ -10,25 +11,38 @@ from p2pfl.heartbeater import Heartbeater
 
 # Observacones:
 #   - Para el traspaso de modelos, sea mejor crear un socket a parte
+#   - Crear un enmascaramiento de sockets por si en algun futuro se quiere modificar
+
+# REVISAR UN BROKEN PIPE AL CERRAR BRUSCAMENTE
+
+
+############################################################################################
+# FULL CONNECTED HAY QUE IMPLEMENTARLO DE FORMA QUE CUANDO SE INTRODUCE UN NODO EN LA RED, SE HACE UN BROADCAST
+############################################################################################
+
+
 
 BUFFER_SIZE = 1024
-HI_MSG = "hola"
 
 """
 from p2pfl.node import Node
-
-n1 = Node("localhost",6777)
+n1 = Node(port=5555)
 n1.start()
 
 from p2pfl.node import Node
-
-n2 = Node("localhost",6778)
+n2 = Node(port=6666)
 n2.start()
-n2.connect_to("localhost",6777)
+n2.connect_to("127.0.0.1",5555)
+
+
+from p2pfl.node import Node
+n3 = Node(port=6779)
+n3.start()
+n3.connect_to("127.0.0.1",6666)
 """
-#que extienda de thread?
+
 class Node(threading.Thread):
-    def __init__(self, host, port=0):
+    def __init__(self, host="127.0.0.1", port=0):
 
         threading.Thread.__init__(self)
 
@@ -64,27 +78,46 @@ class Node(threading.Thread):
         while not self.terminate_flag.is_set(): 
             try:
                 (node_socket, addr) = self.node_socket.accept()
+                close = False
                 
                 # MSG
                 msg = node_socket.recv(BUFFER_SIZE).decode("UTF-8")
-                splited = msg.split("\n")
-                head = splited[0]
-                rest = "\n".join(splited[1:])
-                
+                splited = msg.split() #revisar cuando lo pnga en clase desacoplada para que siga el mismo formato
                 #
-                # EL HI SERÁ en un futuro la encriptación
+                # HI -> ESTO ES MUY INSEGURO, PERO OREINTADO A METERLE ENCRIPTACION NO ME PREOCUPA
                 #
-                if head == HI_MSG:
-                    logging.info('Conexión aceptada con {}'.format(addr))
+                if len(splited) > 3:
+                    if splited[0] == CONN:
+                        try:
+                            # Comprobamos que ip y puerto son correctos
+                            source = (splited[1], int(splited[2]))
+                            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                            s.settimeout(2)
+                            result = s.connect_ex((source[0],source[1])) 
+                            s.close()
+                            # Agregaos el vecino
+                            if result == 0:
+                                logging.info('Conexión aceptada con {}'.format(source))
+                                nc = NodeConnection(self,node_socket,source)
+                                nc.start()
+                                self.add_neighbor(nc)
+                                #Notificamos a la red la conexion (ttl de 1 xq es full conectada)
+                                if splited[3]=="1":
+                                    self.broadcast((CONN_TO + " " + source[0] + " " + str(source[1])).encode("utf-8"),exc=[nc])
 
-                    nc = NodeConnection(self,node_socket,rest)
-                    nc.start()
-                    self.add_neighbor(nc)
-
+                        except Exception as e:
+                            logging.exception(e)
+                            self.rm_neighbor(nc)
+                            close=True
+                    else:
+                        close=True
                 else:
-                    logging.debug('Conexión rechazada con {}:{}'.format(addr,msg))
-                    node_socket.close()
+                        close=True
            
+                if close:
+                        logging.debug('Conexión rechazada con {}:{}'.format(addr,msg))
+                        node_socket.close()         
+                        
             except Exception as e:
                 #revisar excepciones de timeout y configurarlas
                 print(e)
@@ -118,25 +151,30 @@ class Node(threading.Thread):
             s.close()
             return None
 
-    def connect_to(self, h, p): 
-        msg=(HI_MSG + "\n").encode("utf-8")
-        s = self.__send(h,p,msg,persist=True)
-        
-        # Agregaos el vecino
-        nc = NodeConnection(self,s,"")
-        nc.start()
-        self.add_neighbor(nc)
 
-    def broadcast(self, msg, exc=None):
+
+               
+    # TTL x implementar
+    def broadcast(self, msg, ttl=1, exc=[]):
         for n in self.neightboors:
-            if n != exc:
+            if not (n in exc):
+                print("Broadcasting to" + str(n.get_addr()) + ": " + msg.decode("UTF-8"))
                 n.send(msg)
 
     #############################
     #  Neighborhood management  #
     #############################
 
-    def get_neighbors(self):pass
+    def get_neighbor(self, h, p):
+        for n in self.neightboors:
+            print(str(n.get_addr()) + str((h,p)))
+            if n.get_addr() == (h,p):
+                return n
+        return None
+
+    def get_neighbors(self):
+        return self.neightboors
+
     def add_neighbor(self, n):
         self.neightboors.append(n)
 
@@ -146,3 +184,17 @@ class Node(threading.Thread):
         except:
             pass
   
+    def connect_to(self, h, p, full=True):
+        if full:
+            full = "1"
+        else:
+            full = "0"
+
+        msg=(CONN + " " + str(self.host) + " " + str(self.port) + " " + full).encode("utf-8")
+        s = self.__send(h,p,msg,persist=True)
+        
+        # Agregaos el vecino
+        nc = NodeConnection(self,s,(h,p))
+        nc.start()
+        self.add_neighbor(nc)
+      

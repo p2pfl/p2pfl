@@ -7,6 +7,8 @@ TIEMOUT = 30
 ##################
 #  MSG PROTOCOL  #
 ##################
-STOP  = b"STOP\n"
-BEAT  = b"PING\n"
-EMPTY = b""
+CONN     = "CONNECT"
+CONN_TO  = "CONNECT_TO"
+STOP     = "STOP"
+BEAT     = "PING"
+EMPTY    = ""
