@@ -1,12 +1,14 @@
+from ast import mod
 import socket
 import threading
 import logging
-from urllib import response
 from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.const import *
 
 
 # METER CONTROL DE ESTADOS PARA EVITAR ATAQUES
+# ENMASCARR SOCKET EN CLASE COMUNICATIONS SYSTEM
+
 
 class NodeConnection(threading.Thread):
 
@@ -17,10 +19,15 @@ class NodeConnection(threading.Thread):
         self.socket = socket
         self.errors = 0
         self.addr = addr
+        self.param_bufffer = ""
+        self.buffer_ready = False
         self.comm_protocol = CommunicationProtocol({
             CommunicationProtocol.BEAT: self.__on_beat,
             CommunicationProtocol.STOP: self.__on_stop,
             CommunicationProtocol.CONN_TO: self.__on_conn_to,
+            CommunicationProtocol.START_LEARNING: self.__on_start_learning,
+            CommunicationProtocol.STOP_LEARNING: self.__on_stop_learning,
+            CommunicationProtocol.PARAMS: self.__on_params,
         })
 
 
@@ -37,8 +44,8 @@ class NodeConnection(threading.Thread):
                     if self.errors > 10:
                         self.terminate_flag.set()
                         logging.debug("Too mucho errors. {}".format(self.get_addr()))
+           
 
-                
             except socket.timeout:
                 logging.debug("{} (NodeConnection) Timeout".format(self.get_addr()))
                 self.terminate_flag.set()
@@ -70,6 +77,10 @@ class NodeConnection(threading.Thread):
         self.terminate_flag.set()
         self.send(CommunicationProtocol.STOP.encode("utf-8"))
 
+    def clear_buffer(self):
+        self.param_bufffer = ""
+        self.buffer_ready = False
+
     #########################
     #       Callbacks       #
     #########################
@@ -84,5 +95,22 @@ class NodeConnection(threading.Thread):
     def __on_conn_to(self,h,p):
             self.nodo_padre.connect_to(h, p, full=False)
 
+    def __on_start_learning(self, rounds):
+        self.nodo_padre.start_learning()
 
+    def __on_stop_learning(self):
+        self.nodo_padre.stop_learning()
+
+    def __on_params(self,msg,done):
+        if done:
+            self.param_bufffer = self.param_bufffer + msg
+            self.buffer_ready = True
+
+            # ESTO ESTÁ MAL XQ SE VA A EJECUTAR DESDE EL HILO DE RECEPCIÓN
+            self.nodo_padre.add_model(self.param_bufffer)
+
+            self.clear_buffer()
+
+        else:
+            self.param_bufffer = self.param_bufffer + msg
 

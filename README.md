@@ -7,4 +7,4 @@
 
 ## TODO List
 
-- Promediado
+- Promediado -> ARREGLAR EL RECIBIR los params
