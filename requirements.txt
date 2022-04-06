@@ -1,0 +1,4 @@
+pytest
+torch
+torchvision
+pytorch-lightning
