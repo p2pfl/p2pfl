@@ -7,4 +7,4 @@
 
 ## TODO List
 
-- Promediado -> ARREGLAR EL RECIBIR los params
+- Revisar los test, van como quieren

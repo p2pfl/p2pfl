@@ -107,7 +107,7 @@ class NodeConnection(threading.Thread):
             self.buffer_ready = True
 
             # ESTO ESTÁ MAL XQ SE VA A EJECUTAR DESDE EL HILO DE RECEPCIÓN
-            self.nodo_padre.add_model(self.param_bufffer)
+            self.nodo_padre.add_model(int(self.param_bufffer))
 
             self.clear_buffer()
 

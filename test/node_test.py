@@ -89,10 +89,11 @@ def test_full_connected(four_nodes):
 #No se prueban más debido al tiempo de espera de la asincronía
 @pytest.mark.parametrize('n',[5])
 def test_convergence(n):
+
     # Create n nodes
     nodes = []
     for i in range(n):
-        node = Node(host="localhost",model=n)
+        node = Node(host="localhost",model=i)
         node.start()
         nodes.append(node)
     
@@ -107,17 +108,20 @@ def test_convergence(n):
     
     # Start Learning
     nodes[0].set_start_learning()
-    time.sleep(1.5) #Esperar por la asincronía
+
+    # Check convergence
+    time.sleep(4) #Esperar por la asincronía\
     for node in nodes:
         assert node.round != None
-
+    value = sum(range(n))/n
+    for node in nodes:
+        assert node.model == value
+    
     # Stop learning
-    """
     nodes[0].set_stop_learning()
-    time.sleep(1) #Esperar por la asincronía
+    time.sleep(1.5) #Esperar por la asincronía
     for node in nodes:
         assert node.round == None
-    """
 
     # Stop the nodes
     for node in nodes:

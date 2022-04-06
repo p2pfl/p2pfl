@@ -2,6 +2,7 @@ import socket
 import threading
 import logging
 import sys
+from p2pfl.agregator import FedAvg
 from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.const import *
 from p2pfl.node_connection import NodeConnection
@@ -19,6 +20,8 @@ from p2pfl.heartbeater import Heartbeater
 # REVISAR QUE NO SE PUEDAN CONCATENAR MENSAJES EN EL BUFFER
 
 # Se debe tener en cuenta que si salta una excepción en una ejecución remota se da por error -> por lo tanto procurar loguear la excepción
+
+# AGREGAR UN THREAD DE CÓMPUTO PARA NO BLOQUEAR COMUNICACIONES
 
 
 #REVISAR TESST Y EJECUCIONES DESDE CONSOLA
@@ -77,8 +80,7 @@ class Node(threading.Thread):
         # Learning
         self.model = model
         self.round = None
-        self.models = []
-        self.models_lock = threading.Lock()
+        self.agredator = FedAvg(self)
 
 
     #Objetivo: Agregar vecinos a la lista -> CREAR POSIBLES SOCKETS 
@@ -168,6 +170,8 @@ class Node(threading.Thread):
     #         Learning         #
     ############################
 
+    #CREAR UN THREAD DE CÖMPUTO PARA TRAINING Y AGREGACIÓN DE MODELOS
+
     def start_learning(self): #aquí tendremos que pasar el modelo
         self.round = 0
         logging.info("Broadcasting model to all clients: " + str(self.model))
@@ -177,27 +181,13 @@ class Node(threading.Thread):
     def stop_learning(self):
         self.round = None
         logging.info("Stopping learning")
-        #DETENER PROC DE ENTRENAMIENTO EN FUTURO
+        # DETENET THREAD DE CÖMPUTO
 
-    #
-    # aquí tenemos problemas de sincronía
-    #
+
     def add_model(self,m):
-
         #plantearse mecanismo para validar quien introduce modelo
+        self.agredator.add_model(m)
 
-        # Agregamos modelo
-        self.models_lock.acquire()
-        self.models.append(m)
-        logging.info("Model added (" + str(len(self.models)) + "/" + str(len(self.neightboors)) + ")")
-
-        #Revisamos si están todos
-        if len(self.models)==len(self.neightboors):
-            logging.info("Comenzando la promediación")
-            self.round = self.round + 1
-
-        
-        self.models_lock.release()
 
 
     #############################
