@@ -1,4 +1,3 @@
-from ast import mod
 import socket
 import threading
 import logging
@@ -19,7 +18,7 @@ class NodeConnection(threading.Thread):
         self.socket = socket
         self.errors = 0
         self.addr = addr
-        self.param_bufffer = ""
+        self.param_bufffer = b""
         self.buffer_ready = False
         self.comm_protocol = CommunicationProtocol({
             CommunicationProtocol.BEAT: self.__on_beat,
@@ -37,7 +36,7 @@ class NodeConnection(threading.Thread):
         while not self.terminate_flag.is_set():
             try:
                 # Recive and process messages
-                msg = self.socket.recv(BUFFER_SIZE).decode("utf-8")
+                msg = self.socket.recv(BUFFER_SIZE)
                 if not self.comm_protocol.process_message(msg):
                     self.errors += 1
                     # If we have too many errors, we stop the connection
@@ -78,8 +77,7 @@ class NodeConnection(threading.Thread):
         self.send(CommunicationProtocol.STOP.encode("utf-8"))
 
     def clear_buffer(self):
-        self.param_bufffer = ""
-        self.buffer_ready = False
+        self.param_bufffer = b""
 
     #########################
     #       Callbacks       #
@@ -103,11 +101,11 @@ class NodeConnection(threading.Thread):
 
     def __on_params(self,msg,done):
         if done:
+            print("Params received")
             self.param_bufffer = self.param_bufffer + msg
-            self.buffer_ready = True
 
             # ESTO ESTÁ MAL XQ SE VA A EJECUTAR DESDE EL HILO DE RECEPCIÓN
-            self.nodo_padre.add_model(int(self.param_bufffer))
+            self.nodo_padre.add_model(self.param_bufffer)
 
             self.clear_buffer()
 

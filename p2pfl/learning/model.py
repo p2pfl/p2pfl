@@ -1,4 +1,10 @@
+from pytorch_lightning import Trainer
+from p2pfl.learning.mlp import MLP
+from torch import tensor
+from collections import OrderedDict
+import pickle
 
+# ORFENAR EL FICHERO!!!!!!!
 
 ####################
 # patron plantilla # -> añadir
@@ -20,33 +26,38 @@ class NodeLearning:
     def predict(self): pass
 
 
-
-from p2pfl.learning.mlp import MLP
-import torch
-from collections import OrderedDict
-import pytorch_lightning as pl
+# esto meterlo como modelo de ejemplo -> dentro de una carpeta con modelos o asi
 
 class MyNodeLearning(NodeLearning):
 
     def __init__(self, data):
         self.model = MLP()
         self.data = data
-        self.trainer = pl.Trainer(gpus=self.gpus)
 
 
     def encode_parameters(self):
-        return [val.cpu().numpy() for _, val in self.model.state_dict().items()]
+        array = [val.cpu().numpy() for _, val in self.model.state_dict().items()]
+        return pickle.dumps(array)
 
-    def decode_parameters(self, params):
+    #meter un test para comprobar encode y decode
+
+    #agregar la validación del modelo (que sea un stete dict con x keys y de x longitud)
+
+    def decode_parameters(self, data):
+        params = pickle.loads(data)
         params_dict = zip(self.model.state_dict().keys(), params)
-        return OrderedDict({k: torch.tensor(v) for k, v in params_dict})
+        return OrderedDict({k: tensor(v) for k, v in params_dict})
 
     def set_parameters(self, params):
-        self.model.load_state_dict(self.decode_parameters(params))
+        self.model.load_state_dict(params)
+
+    def get_parameters(self):
+        return self.model.state_dict()
 
     def fit(self, parameters):
         self.set_parameters(parameters)
-        self.trainer.fit(self.model, self.data)
+        trainer = Trainer(max_epochs=2, accelerator="auto")
+        trainer.fit(self.model, self.data)
 
         data_ammount = len(self.data.train_dataloader().dataset) #revisarlo
         return self.get_parameters(), data_ammount, {}

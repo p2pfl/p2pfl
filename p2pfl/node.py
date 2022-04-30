@@ -5,8 +5,10 @@ import sys
 from p2pfl.agregator import FedAvg
 from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.const import *
+from p2pfl.learning.model import MyNodeLearning
 from p2pfl.node_connection import NodeConnection
 from p2pfl.heartbeater import Heartbeater
+#from p2pfl.learning.model import NodeLearning
 
 
 # https://github.com/GianisTsol/python-p2p/blob/master/pythonp2p/node.py
@@ -54,7 +56,7 @@ n3.connect_to("127.0.0.1",6666)
 
 class Node(threading.Thread):
 
-    def __init__(self, host="127.0.0.1", port=0, model=0):
+    def __init__(self, host="127.0.0.1", port=0, model=None):
         threading.Thread.__init__(self)
         self.terminate_flag = threading.Event()
         self.host = host
@@ -78,9 +80,13 @@ class Node(threading.Thread):
         self.heartbeater.start()
 
         # Learning
-        self.model = model
+        if model is None:
+            self.learner = MyNodeLearning(None) #habrá k inicializar la data
+            ####
+            self.model = 0 #Vestigial
+            ####
         self.round = None
-        self.agredator = FedAvg(self)
+        self.agredator = FedAvg(self) #esto está bien aquí?
 
 
     #Objetivo: Agregar vecinos a la lista -> CREAR POSIBLES SOCKETS 
@@ -174,9 +180,10 @@ class Node(threading.Thread):
 
     def start_learning(self): #aquí tendremos que pasar el modelo
         self.round = 0
-        logging.info("Broadcasting model to all clients: " + str(self.model))
-        msg = CommunicationProtocol.build_data_msg(self.model)
-        self.broadcast(msg.encode("utf-8"))
+        logging.info("Broadcasting model to all clients...")
+        encoded_msgs = CommunicationProtocol.build_data_msgs(self.learner.encode_parameters())
+        for msg in encoded_msgs:
+            self.broadcast(msg)
     
     def stop_learning(self):
         self.round = None
@@ -185,6 +192,7 @@ class Node(threading.Thread):
 
 
     def add_model(self,m):
+  
         #plantearse mecanismo para validar quien introduce modelo
         self.agredator.add_model(m)
 
@@ -229,11 +237,12 @@ class Node(threading.Thread):
       
 
 
-    # CAMBIAR EL NOMBRE A ESTOS 2 MÉTODOS
+    # CAMBIAR EL NOMBRE A ESTOS 2 MÉTODOS -> confuso
 
     def set_start_learning(self, rounds=1): #falta x implementar rondas, de momento solo se coverge a 1 y listo
         if self.round is None:
             # Como es full conected, con 1 broadcast llega
+            logging.info("Broadcasting start learning...")
             self.broadcast((CommunicationProtocol.START_LEARNING + " " + str(rounds)).encode("utf-8"))
             self.start_learning()
         else:
