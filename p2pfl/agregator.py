@@ -26,8 +26,7 @@ class FedAvg(threading.Thread):
 
         #Revisamos si están todos
         if len(self.models)==len(self.node.neightboors):
-            print("Se debería promediar pero no lo hacemos aún.")
-            #self.start()
+            self.start()
         
         self.lock.release()
         
@@ -35,10 +34,12 @@ class FedAvg(threading.Thread):
         self.models = []
 
     def run(self):
-        self.models.append(self.node.model) # agregamos el modelo del propio nodo
-        self.node.model = FedAvg.agregate(self.models)
+        logging.info("Agregating models.")
+        self.models.append(self.node.learner.get_parameters()) # agregamos el modelo del propio nodo
+        self.node.learner.set_parameters(FedAvg.agregate(self.models))
+        
+        logging.debug("Agregating done.")
         self.node.round = self.node.round + 1
-        logging.info("Promediación realizada: ")
         self.clear_models()
 
     def agregate(models):
@@ -47,7 +48,7 @@ class FedAvg(threading.Thread):
         sum=models[-1]
         for m in models[:-1]:
             for layer in m:
-                sum[layer]+=m[layer]
+                sum[layer] = sum[layer] + m[layer]
 
         # Dividimos por el número de modelos
         for layer in sum:

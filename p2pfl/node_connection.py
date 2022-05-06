@@ -101,7 +101,6 @@ class NodeConnection(threading.Thread):
 
     def __on_params(self,msg,done):
         if done:
-            print("Params received")
             self.param_bufffer = self.param_bufffer + msg
 
             # ESTO ESTÁ MAL XQ SE VA A EJECUTAR DESDE EL HILO DE RECEPCIÓN

@@ -89,6 +89,7 @@ def test_full_connected(four_nodes):
     n4.stop()
 
 """
+COMPROBAR QUE TODOS TENGAN EL MISMO MODELO
 @pytest.mark.parametrize('n',[5])
 def test_convergence(n):
 

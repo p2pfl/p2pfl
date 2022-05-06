@@ -82,9 +82,7 @@ class Node(threading.Thread):
         # Learning
         if model is None:
             self.learner = MyNodeLearning(None) #habrá k inicializar la data
-            ####
-            self.model = 0 #Vestigial
-            ####
+    
         self.round = None
         self.agredator = FedAvg(self) #esto está bien aquí?
 
@@ -192,9 +190,9 @@ class Node(threading.Thread):
 
 
     def add_model(self,m):
-  
+        # Model on bytes
         #plantearse mecanismo para validar quien introduce modelo
-        self.agredator.add_model(m)
+        self.agredator.add_model(self.learner.decode_parameters(m))
 
 
 
