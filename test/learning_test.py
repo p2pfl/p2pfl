@@ -75,12 +75,23 @@ def test_round_result_equal(): # Parametrizar esto
     # Start Learning
     nodes[0].set_start_learning()
 
+    # Wait 4 results
+    time.sleep(0.1)
+
     # Validamos Modelos obtenidos sean iguales
     model = None
     first = True
     for node in nodes:
         if first:
             model = node.learner.get_parameters()
+            first = False
         else:
             for layer in model:
+
+                a = model[layer]
+                b = node.learner.get_parameters()[layer]
                 assert torch.eq(a, b).all()
+
+    # Cerrar
+    for node in nodes:
+        node.stop()
