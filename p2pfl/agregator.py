@@ -1,6 +1,8 @@
 
 # PATRÓn ESTRATEGIA
 
+# Patron obervador -> notificar cuando acabe agregación
+
 import threading
 import logging
 
@@ -38,8 +40,9 @@ class FedAvg(threading.Thread):
         self.models.append(self.node.learner.get_parameters()) # agregamos el modelo del propio nodo
         self.node.learner.set_parameters(FedAvg.agregate(self.models))
         
-        logging.debug("Agregating done.")
-        self.node.round = self.node.round + 1
+        # Notificamos al nodo
+        self.node.on_round_finished()
+
         self.clear_models()
 
     def agregate(models):

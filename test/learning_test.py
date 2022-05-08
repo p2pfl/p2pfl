@@ -76,7 +76,7 @@ def test_round_result_equal(): # Parametrizar esto
     nodes[0].set_start_learning()
 
     # Wait 4 results
-    time.sleep(0.1)
+    time.sleep(1)
 
     # Validamos Modelos obtenidos sean iguales
     model = None

@@ -1,3 +1,4 @@
+from asyncio.log import logger
 import socket
 import threading
 import logging
@@ -43,6 +44,7 @@ class NodeConnection(threading.Thread):
                     if self.errors > 10:
                         self.terminate_flag.set()
                         logging.debug("Too mucho errors. {}".format(self.get_addr()))
+                        logging.debug("Last error: {}".format(msg))
            
 
             except socket.timeout:
@@ -94,13 +96,14 @@ class NodeConnection(threading.Thread):
             self.nodo_padre.connect_to(h, p, full=False)
 
     def __on_start_learning(self, rounds):
-        self.nodo_padre.start_learning()
+        self.nodo_padre.start_learning(rounds)
 
     def __on_stop_learning(self):
         self.nodo_padre.stop_learning()
 
     def __on_params(self,msg,done):
         if done:
+
             self.param_bufffer = self.param_bufffer + msg
 
             # ESTO ESTÁ MAL XQ SE VA A EJECUTAR DESDE EL HILO DE RECEPCIÓN

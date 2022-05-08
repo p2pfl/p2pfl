@@ -25,6 +25,7 @@ from p2pfl.heartbeater import Heartbeater
 
 # AGREGAR UN THREAD DE CÓMPUTO PARA NO BLOQUEAR COMUNICACIONES
 
+# ERROR -> root:communication_protocol.py:151 pickle data was truncated (se trunca info revisar esto) -> revisar como se comporta con el cambio de tamaño de buffer
 
 #REVISAR TESST Y EJECUCIONES DESDE CONSOLA
 
@@ -84,7 +85,8 @@ class Node(threading.Thread):
             self.learner = MyNodeLearning(None) #habrá k inicializar la data
     
         self.round = None
-        self.agredator = FedAvg(self) #esto está bien aquí?
+        self.totalrounds = None
+        self.agredator = None #esto está bien aquí? -> no, a parte hay que instanciarlos x ronda
 
 
     #Objetivo: Agregar vecinos a la lista -> CREAR POSIBLES SOCKETS 
@@ -176,12 +178,12 @@ class Node(threading.Thread):
 
     #CREAR UN THREAD DE CÖMPUTO PARA TRAINING Y AGREGACIÓN DE MODELOS
 
-    def start_learning(self): #aquí tendremos que pasar el modelo
+    def start_learning(self,rounds): #aquí tendremos que pasar el modelo
         self.round = 0
-        logging.info("Broadcasting model to all clients...")
-        encoded_msgs = CommunicationProtocol.build_data_msgs(self.learner.encode_parameters())
-        for msg in encoded_msgs:
-            self.broadcast(msg)
+        self.totalrounds = rounds
+        self.agredator = FedAvg(self)
+        self.train_step()
+
     
     def stop_learning(self):
         self.round = None
@@ -194,7 +196,37 @@ class Node(threading.Thread):
         #plantearse mecanismo para validar quien introduce modelo
         self.agredator.add_model(self.learner.decode_parameters(m))
 
+    #
+    # #
+    #       CASCA AL HABER + DE UNA RONDA -> No me acuerdo de si mnetiera algún param por seguridad que esté dando x culo, debuguear mensajes
+    # #
+    # El agregador aumenta la ronda y todo, pero debemos desacoplarlo
+    #
+    def on_round_finished(self):
+        # no hagrá que destruir el anteroir?
+        self.agredator = FedAvg(self)
+        self.round = self.round + 1
+        logging.info("Round {} of {} finished.".format(self.round,self.totalrounds))
 
+        if self.round < self.totalrounds:
+            self.train_step()
+        else:
+            logging.info("Finish!!.")
+
+
+    def train_step(self):
+        self.train()
+        self.bc_model()
+        
+    def train(self):
+        logging.info("Training...")
+
+    def bc_model(self):
+        logging.info("Broadcasting model to all clients...")
+        encoded_msgs = CommunicationProtocol.build_data_msgs(self.learner.encode_parameters())
+        for msg in encoded_msgs:
+            self.broadcast(msg)
+            
 
     #############################
     #  Neighborhood management  #
@@ -242,7 +274,7 @@ class Node(threading.Thread):
             # Como es full conected, con 1 broadcast llega
             logging.info("Broadcasting start learning...")
             self.broadcast((CommunicationProtocol.START_LEARNING + " " + str(rounds)).encode("utf-8"))
-            self.start_learning()
+            self.start_learning(rounds)
         else:
             print("Learning is Running")
 
