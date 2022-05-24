@@ -1,6 +1,7 @@
 from p2pfl.node import Node
 import pytest
 import time
+import torch
 
 @pytest.fixture
 def two_nodes():
@@ -88,47 +89,56 @@ def test_full_connected(four_nodes):
     # Desconexión n4
     n4.stop()
 
-"""
-COMPROBAR QUE TODOS TENGAN EL MISMO MODELO
-@pytest.mark.parametrize('n',[5])
-def test_convergence(n):
 
-    # Create n nodes
+#parametrizar, metiendo num rondas y num nodos :)
+@pytest.mark.parametrize('x',[(2,1),(2,2),(4,1),(4,2)]) 
+def test_convergence(x):
+    n,r = x
+
+    # Node Creation
     nodes = []
     for i in range(n):
-        node = Node(host="localhost",model=i)
+        node = Node(host="localhost")
         node.start()
         nodes.append(node)
-    
-    # Connect them
+
+    # Node Connection
     for i in range(len(nodes)-1):
         nodes[i+1].connect_to(nodes[i].host,nodes[i].port)
-        time.sleep(.3) #Esperar por la asincronía
+        time.sleep(0.1)
 
     # Check if they are connected
     for node in nodes:
         assert len(node.neightboors) == n-1
-    
+
     # Start Learning
-    nodes[0].set_start_learning()
+    nodes[0].set_start_learning(rounds=r)
 
-    # Check convergence
-    time.sleep(4) #Esperar por la asincronía\
-    for node in nodes:
-        assert node.round != None
-    value = sum(range(n))/n
-    for node in nodes:
-        assert node.model == value
-    
-    # Stop learning
-    nodes[0].set_stop_learning()
-    time.sleep(1.5) #Esperar por la asincronía
-    for node in nodes:
-        assert node.round == None
+    # Wait 4 results
+    while True:
+        time.sleep(1)
+        finish = True
+        for f in [node.round is None for node in nodes]:
+            finish = finish and f
 
-    # Stop the nodes
+        if finish:
+            break
+
+
+    # Validamos Modelos obtenidos sean iguales
+    model = None
+    first = True
+    for node in nodes:
+        if first:
+            model = node.learner.get_parameters()
+            first = False
+        else:
+            for layer in model:
+                a = torch.round(model[layer], decimals=2)
+                b = torch.round(node.learner.get_parameters()[layer], decimals=2)
+                assert torch.eq(a, b).all()
+
+    # Cerrar
     for node in nodes:
         node.stop()
         time.sleep(.2) #Esperar por la asincronía
-"""
-

@@ -41,11 +41,10 @@ class NodeConnection(threading.Thread):
                 if not self.comm_protocol.process_message(msg):
                     self.errors += 1
                     # If we have too many errors, we stop the connection
-                    if self.errors > 10:
+                    if self.errors > 1:#10:
                         self.terminate_flag.set()
                         logging.debug("Too mucho errors. {}".format(self.get_addr()))
-                        logging.debug("Last error: {}".format(msg))
-           
+                        logging.debug("Last error: {}".format(msg))           
 
             except socket.timeout:
                 logging.debug("{} (NodeConnection) Timeout".format(self.get_addr()))
@@ -104,12 +103,13 @@ class NodeConnection(threading.Thread):
     def __on_params(self,msg,done):
         if done:
 
-            self.param_bufffer = self.param_bufffer + msg
+            params = self.param_bufffer + msg
+            print("clear buffer")
+            self.clear_buffer()
 
             # ESTO ESTÁ MAL XQ SE VA A EJECUTAR DESDE EL HILO DE RECEPCIÓN
-            self.nodo_padre.add_model(self.param_bufffer)
-
-            self.clear_buffer()
+            self.nodo_padre.add_model(params)
+            
 
         else:
             self.param_bufffer = self.param_bufffer + msg

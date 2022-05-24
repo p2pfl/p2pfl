@@ -30,6 +30,7 @@ class CommunicationProtocol:
         # Adding closing message
         if len(data_msgs[-1]) + len(end) <= BUFFER_SIZE:
             data_msgs[-1] += end
+            data_msgs[-1] += b'\0' * (BUFFER_SIZE - len(data_msgs[-1])) # agregamos padding para evitar que pueda solaparse con otro mensaje
         else:
             data_msgs.append(header + end)
 
@@ -77,11 +78,13 @@ class CommunicationProtocol:
     #
     def process_message(self, msg):
         header = CommunicationProtocol.PARAMS.encode("utf-8")
-        end = ("\\" + CommunicationProtocol.PARAMS).encode("utf-8")
         if msg[0:len(header)] == header:
+            end = ("\\" + CommunicationProtocol.PARAMS).encode("utf-8")
+
             # Check if done
-            if msg[-len(end):] == end:
-                return self.__exec(CommunicationProtocol.PARAMS, msg[len(header):-len(end)], True)
+            end_pos = msg.find(end)
+            if end_pos != -1:
+                return self.__exec(CommunicationProtocol.PARAMS, msg[len(header):end_pos], True)
 
             return self.__exec(CommunicationProtocol.PARAMS, msg[len(header):], False)
 
@@ -95,7 +98,7 @@ class CommunicationProtocol:
             except:
                 return False
 
-            logging.debug("Processing message: " + str(message))
+            #logging.debug("Processing message: " + str(message))
 
             # Check message and exec message
             if len(message) > 0:

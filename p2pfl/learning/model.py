@@ -30,8 +30,11 @@ class NodeLearning:
 
 class MyNodeLearning(NodeLearning):
 
-    def __init__(self, data):
+    def __init__(self, data, model=None):
         self.model = MLP()
+        # Loads Weights
+        if model is not None:
+            print("Not Impemented Yet")        
         self.data = data
 
 

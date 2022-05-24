@@ -1,9 +1,7 @@
-from p2pfl.node import Node
 from p2pfl.learning.model import MyNodeLearning
 from p2pfl.agregator import FedAvg    
 from collections import OrderedDict
 import torch
-import time
 
 
 def test_encoding():
@@ -52,46 +50,3 @@ def test_avg_complex():
         b = torch.round(result[layer], decimals=2)
         print(torch.eq(a, b).all())
 
-    
-def test_round_result_equal(): # Parametrizar esto
-    
-    # Node Creation
-    n=2
-    nodes = []
-    for i in range(n):
-        node = Node(host="localhost")
-        node.start()
-        nodes.append(node)
-
-    # Node Connection
-    for i in range(len(nodes)-1):
-        nodes[i+1].connect_to(nodes[i].host,nodes[i].port)
-        time.sleep(0.1)
-
-    # Check if they are connected
-    for node in nodes:
-        assert len(node.neightboors) == n-1
-
-    # Start Learning
-    nodes[0].set_start_learning()
-
-    # Wait 4 results
-    time.sleep(1)
-
-    # Validamos Modelos obtenidos sean iguales
-    model = None
-    first = True
-    for node in nodes:
-        if first:
-            model = node.learner.get_parameters()
-            first = False
-        else:
-            for layer in model:
-
-                a = model[layer]
-                b = node.learner.get_parameters()[layer]
-                assert torch.eq(a, b).all()
-
-    # Cerrar
-    for node in nodes:
-        node.stop()

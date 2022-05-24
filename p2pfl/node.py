@@ -8,35 +8,19 @@ from p2pfl.const import *
 from p2pfl.learning.model import MyNodeLearning
 from p2pfl.node_connection import NodeConnection
 from p2pfl.heartbeater import Heartbeater
+import time
 #from p2pfl.learning.model import NodeLearning
-
-
-# https://github.com/GianisTsol/python-p2p/blob/master/pythonp2p/node.py
 
 # Observacones:
 #   - Para el traspaso de modelos, sea mejor crear un socket a parte
 #   - Crear un enmascaramiento de sockets por si en algun futuro se quiere modificar
 
-# REVISAR THREADS PAR QUE NO HAYA INANICIONES
-
-# REVISAR QUE NO SE PUEDAN CONCATENAR MENSAJES EN EL BUFFER
-
-# Se debe tener en cuenta que si salta una excepción en una ejecución remota se da por error -> por lo tanto procurar loguear la excepción
-
-# AGREGAR UN THREAD DE CÓMPUTO PARA NO BLOQUEAR COMUNICACIONES
-
-# ERROR -> root:communication_protocol.py:151 pickle data was truncated (se trunca info revisar esto) -> revisar como se comporta con el cambio de tamaño de buffer
-
-#REVISAR TESST Y EJECUCIONES DESDE CONSOLA
-
-
 ############################################################################################
 # FULL CONNECTED HAY QUE IMPLEMENTARLO DE FORMA QUE CUANDO SE INTRODUCE UN NODO EN LA RED, SE HACE UN BROADCAST
 ############################################################################################
 
+# Tener cuidado con asyncronismos, tal como está en cuanto se agreguen los modelos mete el modelo tal cual está
 
-
-BUFFER_SIZE = 1024
 
 """
 from p2pfl.node import Node
@@ -81,9 +65,7 @@ class Node(threading.Thread):
         self.heartbeater.start()
 
         # Learning
-        if model is None:
-            self.learner = MyNodeLearning(None) #habrá k inicializar la data
-    
+        self.learner = MyNodeLearning(None, model=model) # De MOMENTO NO USAMOS LA DATA PERO HAY QUE PONERLO
         self.round = None
         self.totalrounds = None
         self.agredator = None #esto está bien aquí? -> no, a parte hay que instanciarlos x ronda
@@ -182,7 +164,7 @@ class Node(threading.Thread):
         self.round = 0
         self.totalrounds = rounds
         self.agredator = FedAvg(self)
-        self.train_step()
+        self.__train_step()
 
     
     def stop_learning(self):
@@ -206,27 +188,43 @@ class Node(threading.Thread):
         # no hagrá que destruir el anteroir?
         self.agredator = FedAvg(self)
         self.round = self.round + 1
-        logging.info("Round {} of {} finished.".format(self.round,self.totalrounds))
+        logging.info("Round {} of {} finished. ({})".format(self.round,self.totalrounds,self.get_addr()))
 
         if self.round < self.totalrounds:
-            self.train_step()
+            # Wait local model sharing processes (to avoid model sharing conflicts)
+            while True:
+                if self.round_models_shared:
+                    break
+                time.sleep(0.1)
+
+            # Next Step
+            self.__train_step()            
         else:
+            self.round = None
             logging.info("Finish!!.")
 
 
-    def train_step(self):
-        self.train()
-        self.bc_model()
+
+
+    ################
+    # Trainig step # 
+    ################
+
+    def __train_step(self):
+        self.round_models_shared = False
+        self.__train()
+        self.__bc_model()
         
-    def train(self):
+    def __train(self):
         logging.info("Training...")
 
-    def bc_model(self):
+    def __bc_model(self):
         logging.info("Broadcasting model to all clients...")
         encoded_msgs = CommunicationProtocol.build_data_msgs(self.learner.encode_parameters())
         for msg in encoded_msgs:
-            self.broadcast(msg)
-            
+            self.broadcast(msg) 
+
+        self.round_models_shared = True
 
     #############################
     #  Neighborhood management  #
