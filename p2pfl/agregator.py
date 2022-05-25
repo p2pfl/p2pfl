@@ -3,7 +3,6 @@
 
 # Patron obervador -> notificar cuando acabe agregación
 
-import copy
 import threading
 import logging
 
@@ -21,8 +20,6 @@ class FedAvg(threading.Thread):
         self.models = []
         self.lock = threading.Lock()
 
-        import random 
-        self.random = random.randrange(0,100)
 
     def add_model(self, m):
         self.lock.acquire()
@@ -30,11 +27,6 @@ class FedAvg(threading.Thread):
         self.models.append(m)
         logging.info("Model added (" + str(len(self.models)) + "/" + str(len(self.node.neightboors)+1) + ")")
 
-        # debiguear inclusiones modelos
-        f = open("tmp/model" + str(self.random) +".log", "a")
-        f.write(str(m) + "\n")
-        f.write("\n -------------------------------------------------- \n")
-        f.close()
 
 
         #Revisamos si están todos
