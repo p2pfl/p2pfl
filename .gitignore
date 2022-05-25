@@ -8,6 +8,7 @@ __pycache__/
 
 # Logs
 *.log
+training_logs/
 
 # Distribution / packaging
 .Python

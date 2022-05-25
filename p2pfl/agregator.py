@@ -58,7 +58,7 @@ class FedAvg(threading.Thread):
     def agregate(models):
         # (MEAN)
         # Sum
-        sum=copy.deepcopy(models[-1])
+        sum= models[-1]
         for m in models[:-1]:
 
             for layer in m:
@@ -69,13 +69,6 @@ class FedAvg(threading.Thread):
         # Dividimos por el número de modelos
         for layer in sum:
             sum[layer] = sum[layer]/(len(models))
-
-
-        # debiguear inclusiones modelos
-        f = open("tmp/model_sumas.log", "a")
-        f.write(str(sum) + "\n")
-        f.write("\n -------------------------------------------------- \n")
-        f.close()
 
         return sum
             
