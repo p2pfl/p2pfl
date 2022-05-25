@@ -9,6 +9,7 @@ notebook = "*"
 pytest = "*"
 
 [dev-packages]
+torch-tb-profiler = "*"
 
 [requires]
 python_version = "3.9"

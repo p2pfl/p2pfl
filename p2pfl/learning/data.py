@@ -6,7 +6,7 @@ from pytorch_lightning import LightningDataModule
 
 
 class FederatedDM(LightningDataModule):
-    def __init__(self, sub_id=0, number_sub=1, batch_size=32, num_workers=8, val_percent=0.1):
+    def __init__(self, sub_id=0, number_sub=1, batch_size=32, num_workers=4, val_percent=0.1):
         super().__init__()
         self.sub_id=sub_id
         self.number_sub=number_sub

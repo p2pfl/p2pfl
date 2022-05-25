@@ -27,7 +27,7 @@ class FedAvg(threading.Thread):
         logging.info("Model added (" + str(len(self.models)) + "/" + str(len(self.node.neightboors)) + ")")
 
         #Revisamos si están todos
-        if len(self.models)==len(self.node.neightboors):
+        if len(self.models)==(len(self.node.neightboors)+1):
             self.start()
         
         self.lock.release()

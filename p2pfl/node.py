@@ -5,7 +5,8 @@ import sys
 from p2pfl.agregator import FedAvg
 from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.const import *
-from p2pfl.learning.model import MyNodeLearning
+from p2pfl.learning.data import FederatedDM
+from p2pfl.learning.learner import MyNodeLearning
 from p2pfl.node_connection import NodeConnection
 from p2pfl.heartbeater import Heartbeater
 import time
@@ -65,7 +66,8 @@ class Node(threading.Thread):
         self.heartbeater.start()
 
         # Learning
-        self.learner = MyNodeLearning(None, model=model) # De MOMENTO NO USAMOS LA DATA PERO HAY QUE PONERLO
+        log_dir = str(self.host) + "_" + str(self.port)
+        self.learner = MyNodeLearning(FederatedDM(), log_dir, model=model) # De MOMENTO NO USAMOS LA DATA PERO HAY QUE PONERLO
         self.round = None
         self.totalrounds = None
         self.agredator = None #esto está bien aquí? -> no, a parte hay que instanciarlos x ronda
@@ -178,12 +180,9 @@ class Node(threading.Thread):
         #plantearse mecanismo para validar quien introduce modelo
         self.agredator.add_model(self.learner.decode_parameters(m))
 
-    #
-    # #
-    #       CASCA AL HABER + DE UNA RONDA -> No me acuerdo de si mnetiera algún param por seguridad que esté dando x culo, debuguear mensajes
-    # #
-    # El agregador aumenta la ronda y todo, pero debemos desacoplarlo
-    #
+    #-----------------------------------------------------
+    # Implementar un observador en condiciones
+    #-----------------------------------------------------
     def on_round_finished(self):
         # no hagrá que destruir el anteroir?
         self.agredator = FedAvg(self)
@@ -213,10 +212,12 @@ class Node(threading.Thread):
     def __train_step(self):
         self.round_models_shared = False
         self.__train()
+        self.agredator.add_model(self.learner.get_parameters())
         self.__bc_model()
         
     def __train(self):
         logging.info("Training...")
+        self.learner.fit()
 
     def __bc_model(self):
         logging.info("Broadcasting model to all clients...")

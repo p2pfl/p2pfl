@@ -1,4 +1,4 @@
-from p2pfl.learning.model import MyNodeLearning
+from p2pfl.learning.learner import MyNodeLearning
 from p2pfl.agregator import FedAvg    
 from collections import OrderedDict
 import torch

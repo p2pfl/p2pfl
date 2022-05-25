@@ -1,16 +1,18 @@
 import torch
-from pytorch_lightning import LightningModule
+from torch import nn
+from torch.nn import functional as F
+import pytorch_lightning as pl
 from torchmetrics import Accuracy
 
 '''
     Multilayer Perceptron.
 '''
-class MLP(LightningModule):
+class MLP(pl.LightningModule):
 
-
-    def __init__(self):
+    
+    def __init__(self, lr_rate=0.001): # lr bajo para evitar overfitting
         super().__init__()
-        self.lr_rate = 0.02
+        self.lr_rate = lr_rate
         self.accuracy = Accuracy()
 
         # 10 clases de salida
@@ -40,7 +42,7 @@ class MLP(LightningModule):
 
     def training_step(self, batch, batch_id):
         x, y = batch
-        loss = torch.nn.F.cross_entropy(self(x), y)
+        loss = F.cross_entropy(self(x), y)
         
         self.log("train_loss", loss, prog_bar=True)
 
@@ -51,7 +53,7 @@ class MLP(LightningModule):
         x, y = batch
         logits = self(x)
 
-        loss = torch.nn.F.cross_entropy(self(x), y)
+        loss = F.cross_entropy(self(x), y)
 
         out = torch.argmax(logits, dim=1)
         acc = self.accuracy(out, y) 
@@ -66,7 +68,7 @@ class MLP(LightningModule):
         x, y = batch
         logits = self(x)
 
-        loss = torch.nn.F.cross_entropy(self(x), y)
+        loss = F.cross_entropy(self(x), y)
 
         out = torch.argmax(logits, dim=1)
         acc = self.accuracy(out, y) 
@@ -76,3 +78,4 @@ class MLP(LightningModule):
         
         self.log
         return loss
+        
