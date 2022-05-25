@@ -46,6 +46,9 @@ class CommunicationProtocol:
     def __init__(self, callback_dict):
         self.callback_dict = callback_dict
 
+        #import random
+        #self.random = random.randrange(0, 100)
+
     # Check if connection is correct and execute the callback
     #
     # CONNECT <ip> <port> <broadcast>
@@ -77,6 +80,15 @@ class CommunicationProtocol:
     # PARAMS <data> \PARAMS
     #
     def process_message(self, msg):
+        #Debuguear Mensajes
+        """"
+        f = open("logs/communication" + str(self.random) + ".log", "a")
+        f.write(str(msg))
+        f.write("\n-----------------------------------------------------\n")
+        f.close()
+        """
+
+
         header = CommunicationProtocol.PARAMS.encode("utf-8")
         if msg[0:len(header)] == header:
             end = ("\\" + CommunicationProtocol.PARAMS).encode("utf-8")

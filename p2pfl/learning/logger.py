@@ -10,9 +10,9 @@ class FederatedTensorboardLogger(TensorBoardLogger):
         
 
     # esto hace que no funcione nada :)
-    #def finalize(self, status: str):
+    def finalize(self, status: str):
     #    print("me ejecuto")
-    #    pass
+        pass
     
 
     

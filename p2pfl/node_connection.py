@@ -95,7 +95,9 @@ class NodeConnection(threading.Thread):
             self.nodo_padre.connect_to(h, p, full=False)
 
     def __on_start_learning(self, rounds):
-        self.nodo_padre.start_learning(rounds)
+        # creamos proceso para no bloqeuar la recepcion de mensajes
+        learning_thread = threading.Thread(target=self.nodo_padre.start_learning,args=(rounds,))
+        learning_thread.start()
 
     def __on_stop_learning(self):
         self.nodo_padre.stop_learning()
@@ -104,7 +106,6 @@ class NodeConnection(threading.Thread):
         if done:
 
             params = self.param_bufffer + msg
-            print("clear buffer")
             self.clear_buffer()
 
             # ESTO ESTÁ MAL XQ SE VA A EJECUTAR DESDE EL HILO DE RECEPCIÓN

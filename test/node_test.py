@@ -89,7 +89,7 @@ def test_full_connected(four_nodes):
     # Desconexión n4
     n4.stop()
 
-
+"""
 #parametrizar, metiendo num rondas y num nodos :)
 @pytest.mark.parametrize('x',[(2,1),(2,2),(4,1),(4,2)]) 
 def test_convergence(x):
@@ -142,3 +142,4 @@ def test_convergence(x):
     for node in nodes:
         node.stop()
         time.sleep(.2) #Esperar por la asincronía
+"""

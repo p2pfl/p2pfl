@@ -31,7 +31,7 @@ class NodeLearning:
 
 class MyNodeLearning(NodeLearning):
 
-    def __init__(self, data, log_name, model=None):
+    def __init__(self, data, log_name=None, model=None):
         self.model = MLP()
         # Loads Weights
         if model is not None:
@@ -40,8 +40,11 @@ class MyNodeLearning(NodeLearning):
         self.data = data
         self.log_name =log_name
         self.epoches = 1 # recordar parametrizar epoches
-        self.logger = FederatedTensorboardLogger("training_logs", name=self.log_name)
-
+        if log_name is None:
+            self.logger = FederatedTensorboardLogger("training_logs")
+        else:
+            self.logger = FederatedTensorboardLogger("training_logs", name=self.log_name)
+            
 
     def encode_parameters(self):
         array = [val.cpu().numpy() for _, val in self.model.state_dict().items()]
@@ -64,6 +67,7 @@ class MyNodeLearning(NodeLearning):
 
     def fit(self):
         trainer = Trainer(max_epochs=self.epoches, accelerator="auto", logger=self.logger) 
+        #trainer = Trainer(max_epochs=self.epoches, accelerator="auto") 
         trainer.fit(self.model, self.data)
 
         data_ammount = len(self.data.train_dataloader().dataset) #revisarlo
