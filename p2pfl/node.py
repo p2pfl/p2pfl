@@ -192,6 +192,7 @@ class Node(threading.Thread):
         if self.round < self.totalrounds:
             # Wait local model sharing processes (to avoid model sharing conflicts)
             while True:
+                print("Waiting for local model sharing processes to finish")
                 if self.round_models_shared:
                     break
                 time.sleep(0.1)

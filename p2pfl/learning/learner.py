@@ -66,8 +66,7 @@ class MyNodeLearning(NodeLearning):
         return self.model.state_dict()
 
     def fit(self):
-        trainer = Trainer(max_epochs=self.epoches, accelerator="auto", logger=self.logger) 
-        #trainer = Trainer(max_epochs=self.epoches, accelerator="auto") 
+        trainer = Trainer(max_epochs=self.epoches, accelerator="auto", logger=self.logger, enable_checkpointing=False) 
         trainer.fit(self.model, self.data)
 
         data_ammount = len(self.data.train_dataloader().dataset) #revisarlo

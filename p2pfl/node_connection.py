@@ -20,7 +20,6 @@ class NodeConnection(threading.Thread):
         self.errors = 0
         self.addr = addr
         self.param_bufffer = b""
-        self.buffer_ready = False
         self.comm_protocol = CommunicationProtocol({
             CommunicationProtocol.BEAT: self.__on_beat,
             CommunicationProtocol.STOP: self.__on_stop,

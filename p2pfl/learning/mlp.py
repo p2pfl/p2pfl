@@ -61,7 +61,6 @@ class MLP(pl.LightningModule):
         self.log("val_loss", loss, prog_bar=True)
         self.log("val_acc", acc, prog_bar=True)
         
-        self.log
         return loss
 
     def test_step(self, batch, batch_idx):
@@ -76,6 +75,5 @@ class MLP(pl.LightningModule):
         self.log("test_loss", loss, prog_bar=True)
         self.log("test_acc", acc, prog_bar=True)
         
-        self.log
         return loss
         

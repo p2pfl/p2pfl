@@ -24,7 +24,7 @@ class FedAvg(threading.Thread):
         self.lock.acquire()
 
         self.models.append(m)
-        logging.info("Model added (" + str(len(self.models)) + "/" + str(len(self.node.neightboors)) + ")")
+        logging.info("Model added (" + str(len(self.models)) + "/" + str(len(self.node.neightboors)+1) + ")")
 
         #Revisamos si están todos
         if len(self.models)==(len(self.node.neightboors)+1):
