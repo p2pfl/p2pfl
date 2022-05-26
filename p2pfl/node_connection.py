@@ -1,5 +1,6 @@
 from asyncio.log import logger
 import socket
+from statistics import mode
 import threading
 import logging
 from p2pfl.communication_protocol import CommunicationProtocol
@@ -20,6 +21,7 @@ class NodeConnection(threading.Thread):
         self.errors = 0
         self.addr = addr
         self.param_bufffer = b""
+        self.sending_model = False
         self.comm_protocol = CommunicationProtocol({
             CommunicationProtocol.BEAT: self.__on_beat,
             CommunicationProtocol.STOP: self.__on_stop,
@@ -37,47 +39,66 @@ class NodeConnection(threading.Thread):
             try:
                 # Recive and process messages
                 msg = self.socket.recv(BUFFER_SIZE)
-                if not self.comm_protocol.process_message(msg):
-                    self.errors += 1
-                    # If we have too many errors, we stop the connection
-                    if self.errors > 1:#10:
-                        self.terminate_flag.set()
-                        logging.debug("Too mucho errors. {}".format(self.get_addr()))
-                        logging.debug("Last error: {}".format(msg))           
+                if msg!=b"":
+                    if not self.comm_protocol.process_message(msg):
+                        self.errors += 1
+                        # If we have too many errors, we stop the connection
+                        if self.errors > 1:#10:
+                            self.terminate_flag.set()
+                            logging.debug("Too mucho errors. {}".format(self.get_addr()))
+                            logging.debug("Last error: {}".format(msg))           
 
             except socket.timeout:
-                logging.debug("{} (NodeConnection) Timeout".format(self.get_addr()))
+                logging.debug("{} (NodeConnection Loop) Timeout".format(self.get_addr()))
                 self.terminate_flag.set()
                 break
 
             except Exception as e:
-                logging.debug("{} (NodeConnection) Exception: ".format(self.get_addr()) + str(e))
-                logging.exception(e)
+                logging.debug("{} (NodeConnection Loop) Exception: ".format(self.get_addr()) + str(e))
+                #logging.exception(e)
                 self.terminate_flag.set()
                 break
         
         #Bajamos Nodo
-        logging.debug("Closed connection with {}".format(self.get_addr()))
+        logging.debug("Closed connection: {}".format(self.get_addr()))
         self.nodo_padre.rm_neighbor(self)
         self.socket.close()
 
     def get_addr(self):
         return self.addr
 
-    def send(self, data): 
-        try:
-            self.socket.sendall(data)
-        except Exception as e:
-            logging.debug("(Node Connection) Exception: " + str(e))
-            logging.exception(e) 
-            self.terminate_flag.set() #exit
+    # Envía un mensaje
+    #   No garantiza envíos, debe ser el usuario el que se cerciore
+    def send(self, data, model=False): 
+        # Verificamos que el nodo esté operativo
+        if not self.terminate_flag.is_set():
+            try:
+                # Si se está enviando el modelo no se podrá enviar un mensaje
+                if not self.is_sending_model() or model:
+                    self.socket.sendall(data)
+                    return True
+                else:
+                    return False
+            except Exception as e:
+                logging.debug("{} (NodeConnection Send) Exception: ".format(self.get_addr()) + str(e))
+                self.terminate_flag.set() #exit
+                return False
+        else:
+            return False
+
 
     def stop(self):
-        self.terminate_flag.set()
         self.send(CommunicationProtocol.STOP.encode("utf-8"))
+        self.terminate_flag.set()
 
     def clear_buffer(self):
         self.param_bufffer = b""
+
+    def is_sending_model(self):
+        return self.sending_model
+
+    def set_sending_model(self,flag):
+        self.sending_model = flag
 
     #########################
     #       Callbacks       #
@@ -88,8 +109,7 @@ class NodeConnection(threading.Thread):
 
     def __on_stop(self):
             self.terminate_flag.set()
-            self.send(CommunicationProtocol.STOP.encode("utf-8")) #esto es para que se actualice el terminate flag -> mirar otra forma de hacer downs instantáneos
-
+           
     def __on_conn_to(self,h,p):
             self.nodo_padre.connect_to(h, p, full=False)
 

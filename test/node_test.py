@@ -1,3 +1,4 @@
+from p2pfl.const import HEARTBEAT_FREC, TIEMOUT
 from p2pfl.node import Node
 import pytest
 import time
@@ -34,9 +35,10 @@ def four_nodes():
 #
 #
 
-###########
-#  Tests  #
-###########
+###########################
+#  Tests Infraestructure  #
+###########################
+
 
 
 def test_node_paring(two_nodes):
@@ -89,6 +91,50 @@ def test_full_connected(four_nodes):
     # Desconexión n4
     n4.stop()
 
+
+def test_node_abrupt_down(four_nodes):
+    n1, n2, n3, n4 = four_nodes
+
+    # Conexión n1 n2
+    n1.connect_to(n2.host,n2.port)
+
+    # Conexión n3 n1
+    n3.connect_to(n1.host,n1.port)
+    time.sleep(0.1) #Esperar por la asincronía
+    assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == 2
+
+    # Conexión n4 n1
+    n4.connect_to(n1.host,n1.port)
+    time.sleep(0.1) #Esperar por la asincronía
+    assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == len(n4.neightboors) == 3
+
+    # Desconexión n4 abruptamente (socket closed)
+    #
+    #    (n4): será consciente de que la comunicación con n1 se ha perdido cuando haga uso del socket (heartbeat)
+    #   (otros) nuevamente el uso del socket (heartbeat) detectará que la conexión ha sido rechazada por el nodo
+    for con in n4.neightboors:
+        con.socket.close() #provocamos un bad file descriptor
+    time.sleep(HEARTBEAT_FREC+0.1) #Esperar por la asincronía
+    assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == 2
+    n4.stop()
+    
+    # Desconexión n3 abruptamente (deja de enviar heartbeat)
+    n3.heartbeater.stop()
+    time.sleep(TIEMOUT+0.1) #Esperar por la asincronía
+    assert len(n1.neightboors) == len(n2.neightboors) == 1
+    n3.stop()
+    
+
+    # Desconexión n2 y n1
+    n2.stop()
+    n1.stop()
+
+    
+
+###################
+#  Tests Learning #
+###################
+
 #parametrizar, metiendo num rondas y num nodos :)
 @pytest.mark.parametrize('x',[(2,1),(2,2)]) 
 def test_convergence(x):
@@ -140,4 +186,4 @@ def test_convergence(x):
     # Cerrar
     for node in nodes:
         node.stop()
-        time.sleep(.2) #Esperar por la asincronía
+        time.sleep(.1) #Esperar por la asincronía

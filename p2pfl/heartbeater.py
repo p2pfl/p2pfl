@@ -15,8 +15,10 @@ class Heartbeater(threading.Thread):
     def stop(self):
         self.terminate_flag.set()
 
-    #SE ENVIA PING QUE LUEGO RECIBIREMOS EN EL CONNECTION NODE
     def run(self):
-        while not self.terminate_flag.is_set(): 
-            self.nodo_padre.broadcast(CommunicationProtocol.BEAT.encode("utf-8"))
-            self.terminate_flag.wait(5)
+        while not self.terminate_flag.is_set():
+            # No nos cercioramos de que se envíen (el socket puede estar ocupado o caido) 
+            #   - Si está ocupado no hace falta enviar nada
+            #   - Si está caido ya vencerá el timeout y eliminará el nodo
+            self.nodo_padre.broadcast(CommunicationProtocol.BEAT.encode("utf-8")) 
+            self.terminate_flag.wait(HEARTBEAT_FREC)

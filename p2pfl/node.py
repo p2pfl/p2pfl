@@ -151,10 +151,10 @@ class Node(threading.Thread):
 
                
     # TTL x implementar
-    def broadcast(self, msg, ttl=1, exc=[]):
+    def broadcast(self, msg, ttl=1, exc=[], is_model=False):
         for n in self.neightboors:
             if not (n in exc):
-                n.send(msg)
+                n.send(msg, is_model)
 
     ############################
     #         Learning         #
@@ -223,8 +223,13 @@ class Node(threading.Thread):
     def __bc_model(self):
         logging.info("Broadcasting model to all clients...")
         encoded_msgs = CommunicationProtocol.build_data_msgs(self.learner.encode_parameters())
+        # Lock Neightboors Communication
+        self.set_sending_model(True)
         for msg in encoded_msgs:
-            self.broadcast(msg) 
+            self.broadcast(msg,is_model=True)
+
+        # UnLock Neightboors Communication
+        self.set_sending_model(False)
 
         self.round_models_shared = True
 
@@ -284,3 +289,7 @@ class Node(threading.Thread):
             self.stop_learning()
         else:
             print("Learning is not Running")
+
+    def set_sending_model(self, flag):
+        for node in self.neightboors:
+            node.set_sending_model(flag)
