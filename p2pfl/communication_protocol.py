@@ -2,6 +2,8 @@
 import logging
 from p2pfl.const import BUFFER_SIZE
 
+# CONSTRUIR AQUÍ MENSAJES QUE SE ENVIAN
+# (CommunicationProtocol.START_LEARNING + " " + str(rounds) + " " + str(epoches)).encode("utf-8") -> CommunicationProtocol.build_start_learning_msg(rounds,epoches)
 
 class CommunicationProtocol:
 
@@ -75,7 +77,7 @@ class CommunicationProtocol:
     # BEAT
     # STOP
     # CONNECT_TO <ip> <port>
-    # START_LEARNING <rounds>
+    # START_LEARNING <rounds> <epoches>
     # STOP_LEARNING
     # PARAMS <data> \PARAMS
     #
@@ -134,9 +136,9 @@ class CommunicationProtocol:
 
                 # Start learning
                 elif message[0] == CommunicationProtocol.START_LEARNING:
-                    if len(message) > 1:
-                        if message[1].isdigit():
-                            return self.__exec(CommunicationProtocol.START_LEARNING, int(message[1]))
+                    if len(message) > 2:
+                        if message[1].isdigit() and message[2].isdigit():
+                            return self.__exec(CommunicationProtocol.START_LEARNING, int(message[1]), int(message[2]))
                         else:
                             return False
                     else:

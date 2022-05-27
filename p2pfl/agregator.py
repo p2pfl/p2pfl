@@ -35,17 +35,15 @@ class FedAvg(threading.Thread):
         
         self.lock.release()
         
-    def clear_models(self):
-        self.models = []
+    def clear(self):
+        self.__init__(self.node)
 
     def run(self):
         logging.info("Agregating models.")
         self.node.learner.set_parameters(FedAvg.agregate(self.models))
-        
+        self.clear()
         # Notificamos al nodo
         self.node.on_round_finished()
-
-        self.clear_models()
 
     def agregate(models):
         # (MEAN)

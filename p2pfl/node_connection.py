@@ -10,6 +10,9 @@ from p2pfl.const import *
 # METER CONTROL DE ESTADOS PARA EVITAR ATAQUES
 # ENMASCARR SOCKET EN CLASE COMUNICATIONS SYSTEM
 
+# COSAS:
+#   - si casca la conexión no se trata de volver a conectar
+
 
 class NodeConnection(threading.Thread):
 
@@ -113,9 +116,9 @@ class NodeConnection(threading.Thread):
     def __on_conn_to(self,h,p):
             self.nodo_padre.connect_to(h, p, full=False)
 
-    def __on_start_learning(self, rounds):
+    def __on_start_learning(self, rounds, epochs):
         # creamos proceso para no bloqeuar la recepcion de mensajes
-        learning_thread = threading.Thread(target=self.nodo_padre.start_learning,args=(rounds,))
+        learning_thread = threading.Thread(target=self.nodo_padre.start_learning,args=(rounds,epochs))
         learning_thread.start()
 
     def __on_stop_learning(self):

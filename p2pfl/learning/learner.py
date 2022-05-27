@@ -7,6 +7,9 @@ import pickle
 
 # ORFENAR EL FICHERO!!!!!!!
 
+
+# SIN ACABAR: TIPOS DE RETORNO ETC SIN USAR
+
 ####################
 # patron plantilla # -> añadir
 ####################
@@ -16,9 +19,13 @@ class NodeLearning:
 
     def encode_parameters(self): pass
 
-    def decode_parameters(self): pass
+    def decode_parameters(self,data): pass
 
     def set_parameters(self, params): pass
+
+    def get_parameters(self): pass
+
+    def set_epochs(self, epochs): pass
 
     def fit(self): pass
 
@@ -39,7 +46,7 @@ class MyNodeLearning(NodeLearning):
                    
         self.data = data
         self.log_name =log_name
-        self.epoches = 1 # recordar parametrizar epoches
+        self.epochs = 1 # recordar parametrizar epochs
         if log_name is None:
             self.logger = FederatedTensorboardLogger("training_logs")
         else:
@@ -65,8 +72,11 @@ class MyNodeLearning(NodeLearning):
     def get_parameters(self):
         return self.model.state_dict()
 
+    def set_epochs(self, epochs):
+        self.epochs = epochs
+
     def fit(self):
-        trainer = Trainer(max_epochs=self.epoches, accelerator="auto", logger=self.logger, enable_checkpointing=False) 
+        trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=self.logger, enable_checkpointing=False) 
         trainer.fit(self.model, self.data)
 
         data_ammount = len(self.data.train_dataloader().dataset) #revisarlo

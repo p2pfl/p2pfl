@@ -157,7 +157,7 @@ def test_convergence(x):
         assert len(node.neightboors) == n-1
 
     # Start Learning
-    nodes[0].set_start_learning(rounds=r)
+    nodes[0].set_start_learning(rounds=r,epochs=0)
 
     # Wait 4 results
     while True:

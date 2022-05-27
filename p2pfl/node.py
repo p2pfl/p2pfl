@@ -10,17 +10,13 @@ from p2pfl.learning.learner import MyNodeLearning
 from p2pfl.node_connection import NodeConnection
 from p2pfl.heartbeater import Heartbeater
 import time
-#from p2pfl.learning.model import NodeLearning
 
-# Observacones:
-#   - Para el traspaso de modelos, sea mejor crear un socket a parte
-#   - Crear un enmascaramiento de sockets por si en algun futuro se quiere modificar
 
-############################################################################################
+# RECORDAR PARAMETRIZAR EL NUM DE LCOAL epochs + FRACCIONES
+
+###################################################################################################################
 # FULL CONNECTED HAY QUE IMPLEMENTARLO DE FORMA QUE CUANDO SE INTRODUCE UN NODO EN LA RED, SE HACE UN BROADCAST
-############################################################################################
-
-# Tener cuidado con asyncronismos, tal como está en cuanto se agreguen los modelos mete el modelo tal cual está
+###################################################################################################################
 
 
 """
@@ -42,16 +38,20 @@ n3.connect_to("127.0.0.1",6666)
 
 class Node(threading.Thread):
 
-    def __init__(self, host="127.0.0.1", port=0, model=None):
+    #####################
+    #     Node Init     #
+    #####################
+
+    def __init__(self, host="127.0.0.1", port=0, model=None, agregator=FedAvg):
         threading.Thread.__init__(self)
         self.terminate_flag = threading.Event()
         self.host = host
         self.port = port
 
         # Setting Up Node Socket (listening)
-        self.node_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #TCP
+        self.node_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #TCP Socket
         self.node_socket.bind((host, port))
-        self.node_socket.listen(50)# no mas de 50 peticones a la cola
+        self.node_socket.listen(50) # no more than 50 connections at queue
         if port==0:
             self.port = self.node_socket.getsockname()[1]
         
@@ -67,13 +67,36 @@ class Node(threading.Thread):
 
         # Learning
         log_dir = str(self.host) + "_" + str(self.port)
-        self.learner = MyNodeLearning(FederatedDM(), log_dir, model=model) # De MOMENTO NO USAMOS LA DATA PERO HAY QUE PONERLO
+        self.learner = MyNodeLearning(FederatedDM(), log_dir, model=model) # At moment, data isnt used
         self.round = None
         self.totalrounds = None
-        self.agredator = None #esto está bien aquí? -> no, a parte hay que instanciarlos x ronda
+        self.agredator = agregator(self)
 
 
-    #Objetivo: Agregar vecinos a la lista -> CREAR POSIBLES SOCKETS 
+    def get_addr(self):
+        return self.host,self.port
+
+
+    ########################
+    #   Main Thread Loop   #
+    ########################
+    
+    # Start the main loop in a new thread
+    def start(self):
+        super().start()
+
+    
+    def stop(self): 
+        self.terminate_flag.set()
+        # Enviamos mensaje al loop para evitar la espera del recv
+        try:
+            self.__send(self.host,self.port,b"")
+        except:
+            pass
+
+
+    # Main Thread of node.
+    #   Its listening for new nodes to be added
     def run(self):
         logging.info('Nodo a la escucha en {} {}'.format(self.host, self.port))
         while not self.terminate_flag.is_set(): 
@@ -92,7 +115,7 @@ class Node(threading.Thread):
             except Exception as e:
                 logging.exception(e)
 
-        #Detenemos nodo
+        #Stop Node
         logging.info('Bajando el nodo, dejando de escuchar en {} {}'.format(self.host, self.port))
         self.heartbeater.stop()
         for n in self.neightboors:
@@ -102,13 +125,13 @@ class Node(threading.Thread):
 
     def __process_new_connection(self, node_socket, h, p, broadcast):
         try:
-            # Comprobamos que ip y puerto son correctos
+            # Check if ip and port are correct
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # REVISAR CUANDO SE LE PASA UN SERVICIO QUE NO RESPONDE X TEMAS DE QUE LOS TIMEUTS TARDAN MUCHO
             s.settimeout(2)
             result = s.connect_ex((h,p)) 
             s.close()
     
-            # Agregaos el vecino
+            # Add neightboor
             if result == 0:
                 logging.info('Conexión aceptada con {}'.format((h,p)))
                 nc = NodeConnection(self,node_socket,(h,p))
@@ -124,17 +147,6 @@ class Node(threading.Thread):
             raise e
    
 
-    def stop(self): 
-        self.terminate_flag.set()
-        # Enviamos mensaje al loop para evitar la espera del recv
-        try:
-            self.__send(self.host,self.port,b"")
-        except:
-            pass
-
-    def get_addr(self):
-        return self.host,self.port
-
     ##########################
     #     Msg management     #
     ##########################
@@ -149,9 +161,8 @@ class Node(threading.Thread):
             s.close()
             return None
 
-               
-    # TTL x implementar
-    def broadcast(self, msg, ttl=1, exc=[], is_model=False):
+
+    def broadcast(self, msg, ttl=1, exc=[], is_model=False): # TTL x implementar
         for n in self.neightboors:
             if not (n in exc):
                 n.send(msg, is_model)
@@ -160,12 +171,11 @@ class Node(threading.Thread):
     #         Learning         #
     ############################
 
-    #CREAR UN THREAD DE CÖMPUTO PARA TRAINING Y AGREGACIÓN DE MODELOS
-
-    def start_learning(self,rounds): #aquí tendremos que pasar el modelo
+    def start_learning(self,rounds,epochs):
         self.round = 0
         self.totalrounds = rounds
-        self.agredator = FedAvg(self)
+        self.learner.set_epochs(epochs)
+        #self.agredator = FedAvg(self)
         self.__train_step()
 
     
@@ -185,7 +195,7 @@ class Node(threading.Thread):
     #-----------------------------------------------------
     def on_round_finished(self):
         # no hagrá que destruir el anteroir?
-        self.agredator = FedAvg(self)
+        #self.agredator = FedAvg(self)
         self.round = self.round + 1
         logging.info("Round {} of {} finished. ({})".format(self.round,self.totalrounds,self.get_addr()))
 
@@ -274,12 +284,12 @@ class Node(threading.Thread):
 
     # CAMBIAR EL NOMBRE A ESTOS 2 MÉTODOS -> confuso
 
-    def set_start_learning(self, rounds=1): #falta x implementar rondas, de momento solo se coverge a 1 y listo
+    def set_start_learning(self, rounds=1, epochs=1): #falta x implementar rondas, de momento solo se coverge a 1 y listo
         if self.round is None:
             # Como es full conected, con 1 broadcast llega
             logging.info("Broadcasting start learning...")
-            self.broadcast((CommunicationProtocol.START_LEARNING + " " + str(rounds)).encode("utf-8"))
-            self.start_learning(rounds)
+            self.broadcast((CommunicationProtocol.START_LEARNING + " " + str(rounds) + " " + str(epochs)).encode("utf-8"))
+            self.start_learning(rounds,epochs)
         else:
             print("Learning is Running")
 
