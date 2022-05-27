@@ -20,5 +20,5 @@ class Heartbeater(threading.Thread):
             # No nos cercioramos de que se envíen (el socket puede estar ocupado o caido) 
             #   - Si está ocupado no hace falta enviar nada
             #   - Si está caido ya vencerá el timeout y eliminará el nodo
-            self.nodo_padre.broadcast(CommunicationProtocol.BEAT.encode("utf-8")) 
+            self.nodo_padre.broadcast(CommunicationProtocol.build_beat_msg()) 
             self.terminate_flag.wait(HEARTBEAT_FREC)

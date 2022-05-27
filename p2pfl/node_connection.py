@@ -91,7 +91,7 @@ class NodeConnection(threading.Thread):
 
 
     def stop(self):
-        self.send(CommunicationProtocol.STOP.encode("utf-8"))
+        self.send(CommunicationProtocol.build_stop_msg())
         self.terminate_flag.set()
 
     def clear_buffer(self):

@@ -1,10 +1,16 @@
-
 import logging
 from p2pfl.const import BUFFER_SIZE
 
-# CONSTRUIR AQUÍ MENSAJES QUE SE ENVIAN
-# (CommunicationProtocol.START_LEARNING + " " + str(rounds) + " " + str(epoches)).encode("utf-8") -> CommunicationProtocol.build_start_learning_msg(rounds,epoches)
-
+# 
+# Valid messages: 
+#   - BEAT
+#   - STOP
+#   - CONNECT <ip> <port> <broadcast>
+#   - CONNECT_TO <ip> <port>
+#   - START_LEARNING <rounds> <epoches>
+#   - STOP_LEARNING
+#   - PARAMS <data> \PARAMS
+#
 class CommunicationProtocol:
 
     BEAT           = "BEAT"
@@ -16,46 +22,21 @@ class CommunicationProtocol:
     PARAMS         = "PARAMS" 
 
 
-    # Revisar si se puede parametrizar para no sobresegmentar el mensaje
-
-    def build_data_msgs(data):
-        # Encoding Headers and ending
-        header = CommunicationProtocol.PARAMS.encode("utf-8")
-        end = ("\\" + CommunicationProtocol.PARAMS).encode("utf-8")
-
-        # Spliting data
-        size = BUFFER_SIZE - len(header)
-        data_msgs = []
-        for i in range(0, len(data), size):
-            data_msgs.append(header + (data[i:i+size]))
-
-        # Adding closing message
-        if len(data_msgs[-1]) + len(end) <= BUFFER_SIZE:
-            data_msgs[-1] += end
-            data_msgs[-1] += b'\0' * (BUFFER_SIZE - len(data_msgs[-1])) # agregamos padding para evitar que pueda solaparse con otro mensaje
-        else:
-            data_msgs.append(header + end)
-
-        return data_msgs
-
-    # 
-    # TENER EN CUENTA QUE LOS PESOS SE VAN A ESTAR COMPARTIENDO PARALELAMENTE -> paralelizar
-    # 
-    # 
+    ########################
+    #    MSG PROCESSING    #
+    ########################
 
 
-    #initialize the communication protocol
     def __init__(self, callback_dict):
         self.callback_dict = callback_dict
 
-        #import random
-        #self.random = random.randrange(0, 100)
-
-    # Check if connection is correct and execute the callback
-    #
-    # CONNECT <ip> <port> <broadcast>
-    #
-    def process_connection(self, message, callback):
+        """ DEBUG MSGS
+        import random
+        self.random = random.randrange(0, 100)
+        """
+    
+    # Check if connection is correct and execute the callback (static)
+    def process_connection(message, callback):
         message = message.split()
         if len(message) > 3:
             if message[0] == CommunicationProtocol.CONN:
@@ -70,26 +51,15 @@ class CommunicationProtocol:
         else:
             return False
     
-        
 
     # Check if the message is correct and execute the callback
-    #
-    # BEAT
-    # STOP
-    # CONNECT_TO <ip> <port>
-    # START_LEARNING <rounds> <epoches>
-    # STOP_LEARNING
-    # PARAMS <data> \PARAMS
-    #
     def process_message(self, msg):
-        #Debuguear Mensajes
-        """"
+        """" DEBUG MSGS
         f = open("logs/communication" + str(self.random) + ".log", "a")
         f.write(str(msg))
         f.write("\n-----------------------------------------------------\n")
         f.close()
         """
-
 
         header = CommunicationProtocol.PARAMS.encode("utf-8")
         if msg[0:len(header)] == header:
@@ -111,8 +81,6 @@ class CommunicationProtocol:
                 message = message.split()
             except:
                 return False
-
-            #logging.debug("Processing message: " + str(message))
 
             # Check message and exec message
             if len(message) > 0:
@@ -147,7 +115,6 @@ class CommunicationProtocol:
                 # Stop learning
                 elif message[0] == CommunicationProtocol.STOP_LEARNING:
                     return self.__exec(CommunicationProtocol.STOP_LEARNING)
-
     
                 # Non Recognized message            
                 else:
@@ -167,3 +134,49 @@ class CommunicationProtocol:
             logging.info("Error executing callback: " + str(e))
             logging.exception(e)
             return False
+
+
+    #######################
+    #     MSG BUILDERS    # ---->  STATIC METHODS
+    #######################
+
+    def build_beat_msg():
+        return CommunicationProtocol.BEAT.encode("utf-8")
+
+    def build_stop_msg():
+        return CommunicationProtocol.STOP.encode("utf-8")
+
+    def build_connect_msg(ip, port, broadcast):
+        return (CommunicationProtocol.CONN + " " + ip + " " + str(port) + " " + str(broadcast)).encode("utf-8")
+
+    def build_connect_to_msg(ip, port):
+        return (CommunicationProtocol.CONN_TO + " " + ip + " " + str(port)).encode("utf-8")
+
+    def build_start_learning_msg(rounds, epochs):
+        return (CommunicationProtocol.START_LEARNING + " " + str(rounds) + " " + str(epochs)).encode("utf-8")
+
+    def build_stop_learning_msg():
+        return CommunicationProtocol.STOP_LEARNING.encode("utf-8")
+
+    # Revisar si se puede parametrizar para no sobresegmentar el mensaje
+    def build_params_msg(data):
+        # Encoding Headers and ending
+        header = CommunicationProtocol.PARAMS.encode("utf-8")
+        end = ("\\" + CommunicationProtocol.PARAMS).encode("utf-8")
+
+        # Spliting data
+        size = BUFFER_SIZE - len(header)
+        data_msgs = []
+        for i in range(0, len(data), size):
+            data_msgs.append(header + (data[i:i+size]))
+
+        # Adding closing message
+        if len(data_msgs[-1]) + len(end) <= BUFFER_SIZE:
+            data_msgs[-1] += end
+            data_msgs[-1] += b'\0' * (BUFFER_SIZE - len(data_msgs[-1])) # agregamos padding para evitar que pueda solaparse con otro mensaje
+        else:
+            data_msgs.append(header + end)
+
+        return data_msgs
+    
+

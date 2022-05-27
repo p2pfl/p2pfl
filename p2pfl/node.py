@@ -108,7 +108,7 @@ class Node(threading.Thread):
                 if msg:
                     msg = msg.decode("UTF-8")
                     callback = lambda h,p,b: self.__process_new_connection(node_socket, h, p, b)
-                    if not CommunicationProtocol.process_connection(self,msg,callback):
+                    if not CommunicationProtocol.process_connection(msg,callback):
                         logging.debug('Conexión rechazada con {}:{}'.format(addr,msg))
                         node_socket.close()         
                         
@@ -139,7 +139,7 @@ class Node(threading.Thread):
                 self.add_neighbor(nc)
                  
                 if broadcast:
-                    self.broadcast((CommunicationProtocol.CONN_TO + " " + h + " " + str(p)).encode("utf-8"),exc=[nc])
+                    self.broadcast(CommunicationProtocol.build_connect_to_msg(h,p),exc=[nc])
 
         except Exception as e:
             logging.exception(e)
@@ -232,7 +232,7 @@ class Node(threading.Thread):
 
     def __bc_model(self):
         logging.info("Broadcasting model to all clients...")
-        encoded_msgs = CommunicationProtocol.build_data_msgs(self.learner.encode_parameters())
+        encoded_msgs = CommunicationProtocol.build_params_msg(self.learner.encode_parameters())
         # Lock Neightboors Communication
         self.set_sending_model(True)
         for msg in encoded_msgs:
@@ -272,7 +272,7 @@ class Node(threading.Thread):
         else:
             full = "0"
 
-        msg=(CommunicationProtocol.CONN + " " + str(self.host) + " " + str(self.port) + " " + full).encode("utf-8")
+        msg=CommunicationProtocol.build_connect_msg(self.host,self.port,full)
         s = self.__send(h,p,msg,persist=True)
         
         # Agregaos el vecino
@@ -288,14 +288,14 @@ class Node(threading.Thread):
         if self.round is None:
             # Como es full conected, con 1 broadcast llega
             logging.info("Broadcasting start learning...")
-            self.broadcast((CommunicationProtocol.START_LEARNING + " " + str(rounds) + " " + str(epochs)).encode("utf-8"))
+            self.broadcast(CommunicationProtocol.build_start_learning_msg(rounds,epochs))
             self.start_learning(rounds,epochs)
         else:
             print("Learning is Running")
 
     def set_stop_learning(self):
         if self.round is not None:
-            self.broadcast((CommunicationProtocol.STOP_LEARNING).encode("utf-8"))
+            self.broadcast(CommunicationProtocol.build_stop_learning_msg())
             self.stop_learning()
         else:
             print("Learning is not Running")
