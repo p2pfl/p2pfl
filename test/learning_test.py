@@ -1,14 +1,16 @@
-from p2pfl.learning.pytorch.learners.learner import LightningLearning
-from p2pfl.agregator import FedAvg    
+from p2pfl.learning.agregators.fedavg import FedAvg
+from p2pfl.learning.pytorch.models.mlp import MLP
+from p2pfl.learning.pytorch.learners.lightninglearner import LightningLearner
 from collections import OrderedDict
 import torch
 
 
+
 def test_encoding():
-    nl1 = LightningLearning(None)
+    nl1 = LightningLearner(MLP(), None)
     params = nl1.encode_parameters()
 
-    nl2 = LightningLearning(None)
+    nl2 = LightningLearner(MLP(), None)
     nl2.set_parameters(nl2.decode_parameters(params))
 
     params == nl2.encode_parameters()
@@ -26,7 +28,7 @@ def test_avg_simple():
         assert result[layer] == b[layer]
 
 def test_avg_complex():
-    nl1 = LightningLearning(None)
+    nl1 = LightningLearner(MLP(), None)
     params = nl1.get_parameters()
     params1 = nl1.get_parameters()
     params2 = nl1.get_parameters()
@@ -41,7 +43,7 @@ def test_avg_complex():
         params1[layer] = params1[layer]+1
         params2[layer] = params2[layer]-1
     
-    result = FedAvg.agregate([params1.copy(), params2.copy()])
+    result = FedAvg.agregate([params1, params2])
 
 
     # Check Results

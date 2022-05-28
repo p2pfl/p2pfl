@@ -6,12 +6,13 @@ import torch
 
 class FederatedTensorboardLogger(LightningLoggerBase):
 
-    def __init__(self, dir, name = "unknown_node" , version = 0, **kwargs):
+    def __init__(self, dir, name = None , version = 0, **kwargs):
         super().__init__()
+        self._name = "unknown_node"
+        if name is not None:
+            self._name = name
 
-        self._name = name
-        self._version = version
-        
+        self._version = version    
         self.writer = SummaryWriter(os.path.join(dir, self._name))
 
         # FL information
@@ -55,9 +56,6 @@ class FederatedTensorboardLogger(LightningLoggerBase):
                 except Exception as ex:
                     m = f"\n you tried to log {v} which is currently not supported. Try a dict or a scalar/tensor."
                     raise ValueError(m) from ex
-
-
-
 
     @rank_zero_only
     def save(self):

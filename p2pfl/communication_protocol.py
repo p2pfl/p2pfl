@@ -31,10 +31,10 @@ class CommunicationProtocol:
     def __init__(self, callback_dict):
         self.callback_dict = callback_dict
 
-        #""" DEBUG MSGS
+        """ DEBUG MSGS
         import random
         self.random = random.randrange(0, 100)
-        #"""
+        """
     
     # Check if connection is correct and execute the callback (static)
     def process_connection(message, callback):
@@ -55,12 +55,12 @@ class CommunicationProtocol:
 
     # Check if the message is correct and execute the callback
     def process_message(self, msg):
-        #"""" DEBUG MSGS
+        """" DEBUG MSGS
         f = open("logs/communication" + str(self.random) + ".log", "a")
         f.write(str(msg))
         f.write("\n-----------------------------------------------------\n")
         f.close()
-        #"""
+        """
 
         header = CommunicationProtocol.PARAMS.encode("utf-8")
         if msg[0:len(header)] == header:

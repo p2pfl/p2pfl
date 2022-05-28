@@ -3,7 +3,7 @@
 #    NodeLearning Interface    #  -->  Template Pattern
 ################################
 
-class NodeLearning:
+class NodeLearner:
 
     def encode_parameters(self): pass
 

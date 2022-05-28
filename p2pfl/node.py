@@ -2,11 +2,12 @@ import socket
 import threading
 import logging
 import sys
-from p2pfl.agregator import FedAvg
 from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.const import *
+from p2pfl.learning.agregators.fedavg import FedAvg
 from p2pfl.learning.pytorch.datamodules.mnist import MnistFederatedDM
-from p2pfl.learning.pytorch.learners.learner import LightningLearning
+from p2pfl.learning.pytorch.learners.lightninglearner import LightningLearner
+from p2pfl.learning.pytorch.models.mlp import MLP
 from p2pfl.node_connection import NodeConnection
 from p2pfl.heartbeater import Heartbeater
 import time
@@ -69,7 +70,7 @@ class Node(threading.Thread):
 
         # Learning
         log_dir = str(self.host) + "_" + str(self.port)
-        self.learner = LightningLearning(MnistFederatedDM(), log_dir, model=model) # At moment, data isnt used
+        self.learner = LightningLearner(MLP(),MnistFederatedDM(), log_name=log_dir) # HARD CODED MODEL + DATASET
         self.round = None
         self.totalrounds = None
         self.agredator = agregator(self)

@@ -167,10 +167,12 @@ def test_interrupt_train2(two_nodes):
 
 # Esto tengo que mirar bien como validarlo
 def test_bad_binary_model():
+    # cascará pickle con la desserialización del modelo
     assert False
 
 # Modelo incompatible
 def test_wrong_model():
+    # cascar pytorch
     assert False
 
 #parametrizar, metiendo num rondas y num nodos :)
