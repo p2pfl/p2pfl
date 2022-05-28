@@ -2,9 +2,9 @@ import threading
 from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.const import *
 
-############################
-# ESTO ES MAS UN HEARTBEAT #
-############################
+#####################
+#    Heartbeater    #
+#####################
 
 class Heartbeater(threading.Thread):
     def __init__(self, nodo_padre):
@@ -17,8 +17,8 @@ class Heartbeater(threading.Thread):
 
     def run(self):
         while not self.terminate_flag.is_set():
-            # No nos cercioramos de que se envíen (el socket puede estar ocupado o caido) 
-            #   - Si está ocupado no hace falta enviar nada
-            #   - Si está caido ya vencerá el timeout y eliminará el nodo
+            # We do not check if the message was sent
+            #   - If the model is sending, a beat is not necessary
+            #   - If the connection its down timeouts will destroy connections
             self.nodo_padre.broadcast(CommunicationProtocol.build_beat_msg()) 
             self.terminate_flag.wait(HEARTBEAT_FREC)

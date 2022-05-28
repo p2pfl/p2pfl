@@ -165,7 +165,12 @@ def test_interrupt_train2(two_nodes):
 #  Tests Learning #
 ###################
 
+# Esto tengo que mirar bien como validarlo
 def test_bad_binary_model():
+    assert False
+
+# Modelo incompatible
+def test_wrong_model():
     assert False
 
 #parametrizar, metiendo num rondas y num nodos :)

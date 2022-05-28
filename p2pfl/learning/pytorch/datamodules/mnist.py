@@ -4,8 +4,11 @@ from torchvision.datasets import MNIST
 from math import floor
 from pytorch_lightning import LightningDataModule
 
+#######################################
+#    FederatedDataModule for MNIST    #
+#######################################
 
-class FederatedDM(LightningDataModule):
+class MnistFederatedDM(LightningDataModule):
     def __init__(self, sub_id=0, number_sub=1, batch_size=32, num_workers=4, val_percent=0.1):
         super().__init__()
         self.sub_id=sub_id

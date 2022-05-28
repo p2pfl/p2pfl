@@ -6,13 +6,12 @@ import logging
 from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.const import *
 
-
-# METER CONTROL DE ESTADOS PARA EVITAR ATAQUES
-# ENMASCARR SOCKET EN CLASE COMUNICATIONS SYSTEM
+########################
+#    NodeConnection    #
+########################
 
 # COSAS:
 #   - si casca la conexión no se trata de volver a conectar
-
 
 class NodeConnection(threading.Thread):
 
@@ -34,6 +33,25 @@ class NodeConnection(threading.Thread):
             CommunicationProtocol.PARAMS: self.__on_params,
         })
 
+    def get_addr(self):
+        return self.addr
+
+    def stop(self):
+        self.send(CommunicationProtocol.build_stop_msg())
+        self.terminate_flag.set()
+
+    def clear_buffer(self):
+        self.param_bufffer = b""
+
+    def is_sending_model(self):
+        return self.sending_model
+
+    def set_sending_model(self,flag):
+        self.sending_model = flag
+
+    ################### 
+    #    Main Loop    #  --> Recive and process messages
+    ###################
 
     def run(self):
         self.socket.settimeout(TIEMOUT)
@@ -62,21 +80,21 @@ class NodeConnection(threading.Thread):
                 self.terminate_flag.set()
                 break
         
-        #Bajamos Nodo
+        #Down Connection
         logging.debug("Closed connection: {}".format(self.get_addr()))
         self.nodo_padre.rm_neighbor(self)
         self.socket.close()
 
-    def get_addr(self):
-        return self.addr
+    ##################
+    #    Messages    # 
+    ##################
 
-    # Envía un mensaje
-    #   No garantiza envíos, debe ser el usuario el que se cerciore
+    # Send a message to the other node. Message sending isnt guaranteed
     def send(self, data, model=False): 
-        # Verificamos que el nodo esté operativo
+        # Check if the connection is still alive
         if not self.terminate_flag.is_set():
             try:
-                # Si se está enviando el modelo no se podrá enviar un mensaje
+                # If model is sending, we cant send a message
                 if not self.is_sending_model() or model:
                     self.socket.sendall(data)
                     return True
@@ -88,20 +106,6 @@ class NodeConnection(threading.Thread):
                 return False
         else:
             return False
-
-
-    def stop(self):
-        self.send(CommunicationProtocol.build_stop_msg())
-        self.terminate_flag.set()
-
-    def clear_buffer(self):
-        self.param_bufffer = b""
-
-    def is_sending_model(self):
-        return self.sending_model
-
-    def set_sending_model(self,flag):
-        self.sending_model = flag
 
     #########################
     #       Callbacks       #
@@ -117,7 +121,7 @@ class NodeConnection(threading.Thread):
             self.nodo_padre.connect_to(h, p, full=False)
 
     def __on_start_learning(self, rounds, epochs):
-        # creamos proceso para no bloqeuar la recepcion de mensajes
+        # Thread process to avoid blocking the message receiving
         learning_thread = threading.Thread(target=self.nodo_padre.start_learning,args=(rounds,epochs))
         learning_thread.start()
 
@@ -126,14 +130,9 @@ class NodeConnection(threading.Thread):
 
     def __on_params(self,msg,done):
         if done:
-
             params = self.param_bufffer + msg
             self.clear_buffer()
-
-            # ESTO ESTÁ MAL XQ SE VA A EJECUTAR DESDE EL HILO DE RECEPCIÓN
             self.nodo_padre.add_model(params)
-            
-
         else:
             self.param_bufffer = self.param_bufffer + msg
 

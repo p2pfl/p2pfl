@@ -5,14 +5,16 @@ import sys
 from p2pfl.agregator import FedAvg
 from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.const import *
-from p2pfl.learning.data import FederatedDM
-from p2pfl.learning.learner import MyNodeLearning
+from p2pfl.learning.pytorch.datamodules.mnist import MnistFederatedDM
+from p2pfl.learning.pytorch.learners.learner import LightningLearning
 from p2pfl.node_connection import NodeConnection
 from p2pfl.heartbeater import Heartbeater
 import time
 
 
-# RECORDAR PARAMETRIZAR EL NUM DE LCOAL epochs + FRACCIONES
+# RECORDAR PARAMETRIZAR DATASETS + MODELO
+# 
+# FRACCIONES
 
 ###################################################################################################################
 # FULL CONNECTED HAY QUE IMPLEMENTARLO DE FORMA QUE CUANDO SE INTRODUCE UN NODO EN LA RED, SE HACE UN BROADCAST
@@ -67,7 +69,7 @@ class Node(threading.Thread):
 
         # Learning
         log_dir = str(self.host) + "_" + str(self.port)
-        self.learner = MyNodeLearning(FederatedDM(), log_dir, model=model) # At moment, data isnt used
+        self.learner = LightningLearning(MnistFederatedDM(), log_dir, model=model) # At moment, data isnt used
         self.round = None
         self.totalrounds = None
         self.agredator = agregator(self)
@@ -272,7 +274,7 @@ class Node(threading.Thread):
                 # Wait local model sharing processes (to avoid model sharing conflicts)
                 while True:
                     print("Waiting for local model sharing processes to finish")
-                    if self.__is_sending_model():
+                    if not self.__is_sending_model():
                         break
                     time.sleep(0.1)
 

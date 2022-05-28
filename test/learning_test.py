@@ -1,14 +1,14 @@
-from p2pfl.learning.learner import MyNodeLearning
+from p2pfl.learning.pytorch.learners.learner import LightningLearning
 from p2pfl.agregator import FedAvg    
 from collections import OrderedDict
 import torch
 
 
 def test_encoding():
-    nl1 = MyNodeLearning(None)
+    nl1 = LightningLearning(None)
     params = nl1.encode_parameters()
 
-    nl2 = MyNodeLearning(None)
+    nl2 = LightningLearning(None)
     nl2.set_parameters(nl2.decode_parameters(params))
 
     params == nl2.encode_parameters()
@@ -26,7 +26,7 @@ def test_avg_simple():
         assert result[layer] == b[layer]
 
 def test_avg_complex():
-    nl1 = MyNodeLearning(None)
+    nl1 = LightningLearning(None)
     params = nl1.get_parameters()
     params1 = nl1.get_parameters()
     params2 = nl1.get_parameters()
