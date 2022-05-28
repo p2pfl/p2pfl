@@ -129,11 +129,44 @@ def test_node_abrupt_down(four_nodes):
     n2.stop()
     n1.stop()
 
+
+#------------------------------------------
+#   REVISAR INTERRUPCIONES MÁS A FONDO -> (cuando el learner aun no está corriendo pero el proceso está siendo llamado)
+#------------------------------------------
+def test_interrupt_train():
+    n1 = Node("localhost")
+    n1.start()
+    n1.set_start_learning(99999,99999)
+
+    time.sleep(1) #Esperar por la asincronía
+
+    n1.set_stop_learning()
+    n1.stop()
     
+
+def test_interrupt_train2(two_nodes):
+    n1, n2 = two_nodes
+    n1.connect_to(n2.host,n2.port)
+
+    time.sleep(1) #Esperar por la asincronía
+
+    n1.set_start_learning(99999,99999)
+
+    time.sleep(1) #Esperar por la asincronía
+
+    n2.set_stop_learning()
+    
+    time.sleep(1) #Esperar por la asincronía
+    
+    assert n1.round is None
+    assert n2.round is None
 
 ###################
 #  Tests Learning #
 ###################
+
+def test_bad_binary_model():
+    assert False
 
 #parametrizar, metiendo num rondas y num nodos :)
 @pytest.mark.parametrize('x',[(2,1),(2,2)]) 

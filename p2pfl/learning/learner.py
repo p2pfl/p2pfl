@@ -29,6 +29,8 @@ class NodeLearning:
 
     def fit(self): pass
 
+    def interrupt_fit(self): pass
+
     def evaluate(self): pass
 
     def predict(self): pass
@@ -46,6 +48,7 @@ class MyNodeLearning(NodeLearning):
                    
         self.data = data
         self.log_name =log_name
+        self.trainer = None
         self.epochs = 1 # recordar parametrizar epochs
         if log_name is None:
             self.logger = FederatedTensorboardLogger("training_logs")
@@ -76,11 +79,18 @@ class MyNodeLearning(NodeLearning):
         self.epochs = epochs
 
     def fit(self):
-        trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=self.logger, enable_checkpointing=False) 
-        trainer.fit(self.model, self.data)
+        self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=self.logger, enable_checkpointing=False) 
+        self.trainer.fit(self.model, self.data)
+        self.trainer = None
+        #data_ammount = len(self.data.train_dataloader().dataset) #revisarlo
+        #return self.get_parameters(), data_ammount, {}
 
-        data_ammount = len(self.data.train_dataloader().dataset) #revisarlo
-        return self.get_parameters(), data_ammount, {}
+    def interrupt_fit(self):
+        if self.trainer is not None:
+            self.trainer.should_stop = True
+            self.trainer = None
+        else:
+            print("No trainer running")
 
     def evaluate(self, params):
         self.set_parameters(params)

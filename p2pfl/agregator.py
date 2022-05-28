@@ -1,17 +1,24 @@
-
-# PATRÓn ESTRATEGIA
-
-# Patron obervador -> notificar cuando acabe agregación
-
 import threading
 import logging
+   
+#-----------------------------------------------------
+# Implementar un observador en condiciones -> notificar cuando acabe agregación
+# /
+# desacoplar
+# /
+# Meter PATRÓn ESTRATEGIA
+#-----------------------------------------------------
 
+#-----------------------------------------------------
+# 
+# FALTA LA EVALUACIÓN DEL MODELO
+#
+#-----------------------------------------------------
 
-#dejarlo mas pro referenciando el paper y así
-
-# acordarse de ponderar los pesos
-
-#en algún lado se tendrá que validar el modelo recibido, cuando llegue aquí debe estar BIEN VALIDADO si o si
+"""
+Federated Averaging (FedAvg) [McMahan et al., 2016]
+Paper: https://arxiv.org/abs/1602.05629
+"""
 
 class FedAvg(threading.Thread):
     def __init__(self, n):
@@ -26,8 +33,6 @@ class FedAvg(threading.Thread):
 
         self.models.append(m)
         logging.info("Model added (" + str(len(self.models)) + "/" + str(len(self.node.neightboors)+1) + ")")
-
-
 
         #Revisamos si están todos
         if len(self.models)==(len(self.node.neightboors)+1):
@@ -45,18 +50,14 @@ class FedAvg(threading.Thread):
         # Notificamos al nodo
         self.node.on_round_finished()
 
-    def agregate(models):
-        # (MEAN)
+    def agregate(models): # (MEAN)
         # Sum
         sum= models[-1]
         for m in models[:-1]:
-
             for layer in m:
-                sum[layer] = sum[layer] + m[layer]
-
+                sum[layer] = sum[layer] + m[layer]  
         
-        
-        # Dividimos por el número de modelos
+        # Divide by the number of models
         for layer in sum:
             sum[layer] = sum[layer]/(len(models))
 
