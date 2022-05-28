@@ -22,6 +22,7 @@ class NodeConnection(threading.Thread):
         self.socket = socket
         self.errors = 0
         self.addr = addr
+        self.num_samples = None
         self.param_bufffer = b""
         self.sending_model = False
         self.comm_protocol = CommunicationProtocol({
@@ -31,6 +32,7 @@ class NodeConnection(threading.Thread):
             CommunicationProtocol.START_LEARNING: self.__on_start_learning,
             CommunicationProtocol.STOP_LEARNING: self.__on_stop_learning,
             CommunicationProtocol.PARAMS: self.__on_params,
+            CommunicationProtocol.NUM_SAMPLES: self.__on_num_samples
         })
 
     def get_addr(self):
@@ -128,11 +130,14 @@ class NodeConnection(threading.Thread):
     def __on_stop_learning(self):
         self.nodo_padre.stop_learning()
 
+    def __on_num_samples(self,num):
+        self.num_samples = num
+
     def __on_params(self,msg,done):
         if done:
             params = self.param_bufffer + msg
             self.clear_buffer()
-            self.nodo_padre.add_model(params)
+            self.nodo_padre.add_model(params,self.num_samples)
         else:
             self.param_bufffer = self.param_bufffer + msg
 

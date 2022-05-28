@@ -207,11 +207,12 @@ class Node(threading.Thread):
             return None
 
     # FULL_CONNECTED -> 3th iteration |> TTL 
-    def broadcast(self, msg, ttl=1, exc=[], is_model=False): 
+    def broadcast(self, msg, ttl=1, exc=[], is_model=False):
+        sended=True 
         for n in self.neightboors:
             if not (n in exc):
-                n.send(msg, is_model)
-
+                sended = sended and n.send(msg, is_model)
+        return sended
 
     ############################
     #         Learning         #
@@ -243,6 +244,11 @@ class Node(threading.Thread):
     def start_learning(self,rounds,epochs): #local
         self.round = 0
         self.totalrounds = rounds
+        # Indicates samples that be used in the learning process
+        if not self.broadcast(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())):
+            logging.error("No se han podido enviar los números de muestras a todos los nodos")
+            self.set_stop_learning()
+        # Train
         self.learner.set_epochs(epochs)
         self.__train_step()
 
@@ -260,10 +266,10 @@ class Node(threading.Thread):
     #-------------------------------------------------------
     # FUTURO -> validar quien introduce moedelos (llevar cuenta) |> (2 aprox)
     #-------------------------------------------------------
-    def add_model(self,m): 
+    def add_model(self,m,w): 
         # Check if Learning is running
         if self.round is not None:
-            self.agredator.add_model(self.learner.decode_parameters(m)) 
+            self.agredator.add_model(self.learner.decode_parameters(m),w) 
 
     def on_round_finished(self):
         if self.round is not None:
@@ -274,7 +280,7 @@ class Node(threading.Thread):
             if self.round < self.totalrounds:
                 # Wait local model sharing processes (to avoid model sharing conflicts)
                 while True:
-                    print("Waiting for local model sharing processes to finish")
+                    #print("Waiting for local model sharing processes to finish")
                     if not self.__is_sending_model():
                         break
                     time.sleep(0.1)
@@ -298,7 +304,7 @@ class Node(threading.Thread):
             self.__train()
         
         if self.round is not None:
-            self.agredator.add_model(self.learner.get_parameters())
+            self.agredator.add_model(self.learner.get_parameters(), self.learner.get_num_samples())
             self.__bc_model()
        
         

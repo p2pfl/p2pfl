@@ -1,6 +1,8 @@
 import threading
 import logging
 
+import torch
+
 from p2pfl.learning.agregators.agregator import Agregator
    
 #-----------------------------------------------------
@@ -34,19 +36,28 @@ class FedAvg(Agregator):
         self.node.on_round_finished()
 
     def agregate(models): # (MEAN)
-        # Sum
-        sum= models[-1].copy()
-        for m in models[:-1]:
+        # Total Samples
+        total_samples = sum([y for _,y in models])
+
+        # Create a Zero Model
+        accum = (models[-1][0]).copy()
+        for layer in accum:
+            accum[layer] = torch.zeros_like(accum[layer])
+
+        # Add weighteds models
+        for m,w in models:
             for layer in m:
-                sum[layer] = sum[layer] + m[layer]  
-        # Divide by the number of models
-        for layer in sum:
-            sum[layer] = sum[layer]/(len(models))
-        return sum
+                accum[layer] = accum[layer] + m[layer]*w
+
+        # Normalize Accum
+        for layer in accum:
+            accum[layer] = accum[layer]/total_samples
+
+        return accum
             
-    def add_model(self, m):
+    def add_model(self, m, w):
         self.lock.acquire()
-        self.models.append(m)
+        self.models.append((m, w))
         logging.info("Model added (" + str(len(self.models)) + "/" + str(len(self.node.neightboors)+1) + ")")
         # Check if all models have been added
         if len(self.models)==(len(self.node.neightboors)+1):

@@ -16,11 +16,8 @@ class MnistFederatedDM(LightningDataModule):
         self.batch_size=batch_size
         self.num_workers=num_workers
         self.val_percent=val_percent
-
-    #MNIST
-    def setup(self, stage = None): 
         
-        # recordarse de añadir que no se pueda dividir m'as de len test
+        # recordar añadir que no se pueda dividir m'as de len test
 
         if self.sub_id+1 > self.number_sub:
             raise("Se exceden la cantidad de subconjuntos")

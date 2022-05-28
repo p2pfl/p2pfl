@@ -66,3 +66,6 @@ class LightningLearner(NodeLearner):
             self.trainer = None
         else:
             print("No trainer running")
+
+    def get_num_samples(self):
+        return len(self.data.train_dataloader().dataset)

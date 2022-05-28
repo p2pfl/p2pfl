@@ -23,3 +23,5 @@ class NodeLearner:
 
     def predict(self): pass
 
+    def get_num_samples(self): pass
+
