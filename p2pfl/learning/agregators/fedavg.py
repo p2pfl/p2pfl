@@ -23,20 +23,11 @@ Paper: https://arxiv.org/abs/1602.05629
 
 class FedAvg(Agregator):
     def __init__(self, n):
-        threading.Thread.__init__(self)
-        self.node = n
-        self.models = []
-        self.lock = threading.Lock()
+        super().__init__(n)
 
-    def run(self):
-        logging.info("Agregating models.")
-        self.node.learner.set_parameters(FedAvg.agregate(self.models))
-        self.clear()
-        # Notificamos al nodo
-        self.node.on_round_finished()
-
-    def agregate(models): # (MEAN)
+    def agregate(self,models): # (PONDERATED MEAN)
         # Total Samples
+        print([y for _,y in models])
         total_samples = sum([y for _,y in models])
 
         # Create a Zero Model
@@ -54,15 +45,3 @@ class FedAvg(Agregator):
             accum[layer] = accum[layer]/total_samples
 
         return accum
-            
-    def add_model(self, m, w):
-        self.lock.acquire()
-        self.models.append((m, w))
-        logging.info("Model added (" + str(len(self.models)) + "/" + str(len(self.node.neightboors)+1) + ")")
-        # Check if all models have been added
-        if len(self.models)==(len(self.node.neightboors)+1):
-            self.start()
-        self.lock.release()
-        
-    def clear(self):
-        super().clear()

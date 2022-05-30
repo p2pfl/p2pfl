@@ -3,6 +3,7 @@ import socket
 from statistics import mode
 import threading
 import logging
+from p2pfl.command import *
 from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.const import *
 
@@ -10,15 +11,19 @@ from p2pfl.const import *
 #    NodeConnection    #
 ########################
 
+#
+# Desacoplar: observer + command
+#
+
 # COSAS:
 #   - si casca la conexión no se trata de volver a conectar
 
 class NodeConnection(threading.Thread):
 
-    def __init__(self, nodo_padre, socket, addr):
+    def __init__(self, parent_node, socket, addr):
         threading.Thread.__init__(self)
         self.terminate_flag = threading.Event()
-        self.nodo_padre = nodo_padre
+        self.nodo_padre = parent_node
         self.socket = socket
         self.errors = 0
         self.addr = addr
@@ -26,20 +31,21 @@ class NodeConnection(threading.Thread):
         self.param_bufffer = b""
         self.sending_model = False
         self.comm_protocol = CommunicationProtocol({
-            CommunicationProtocol.BEAT: self.__on_beat,
-            CommunicationProtocol.STOP: self.__on_stop,
-            CommunicationProtocol.CONN_TO: self.__on_conn_to,
-            CommunicationProtocol.START_LEARNING: self.__on_start_learning,
-            CommunicationProtocol.STOP_LEARNING: self.__on_stop_learning,
-            CommunicationProtocol.PARAMS: self.__on_params,
-            CommunicationProtocol.NUM_SAMPLES: self.__on_num_samples
+            CommunicationProtocol.BEAT: Beat_cmd(None,None),
+            CommunicationProtocol.STOP: Stop_cmd(None,self),
+            CommunicationProtocol.CONN_TO: Conn_to_cmd(parent_node,None),
+            CommunicationProtocol.START_LEARNING: Start_learning_cmd(parent_node,None),
+            CommunicationProtocol.STOP_LEARNING: Stop_learning_cmd(parent_node,None),
+            CommunicationProtocol.PARAMS: Params_cmd(parent_node,self),
+            CommunicationProtocol.NUM_SAMPLES: Num_samples_cmd(None,self)
         })
 
     def get_addr(self):
         return self.addr
 
-    def stop(self):
-        self.send(CommunicationProtocol.build_stop_msg())
+    def stop(self,local=False):
+        if not local:
+            self.send(CommunicationProtocol.build_stop_msg())
         self.terminate_flag.set()
 
     def clear_buffer(self):
@@ -50,6 +56,15 @@ class NodeConnection(threading.Thread):
 
     def set_sending_model(self,flag):
         self.sending_model = flag
+
+    def set_num_samples(self,num):
+        self.num_samples = num
+
+    def add_param_segment(self,data):
+        self.param_bufffer = self.param_bufffer + data
+
+    def get_params(self):
+        return self.param_bufffer
 
     ################### 
     #    Main Loop    #  --> Recive and process messages
@@ -63,8 +78,12 @@ class NodeConnection(threading.Thread):
                 # Recive and process messages
                 msg = self.socket.recv(BUFFER_SIZE)
                 if msg!=b"":
-                    if not self.comm_protocol.process_message(msg):
-                        self.errors += 1
+                    # Process message and count errors
+                    results = self.comm_protocol.process_message(msg)
+                    errors = len(results) - sum(results)
+                    # Add errors to the counter
+                    if errors>0:
+                        self.errors += errors
                         # If we have too many errors, we stop the connection
                         if self.errors > 1:#10:
                             self.terminate_flag.set()
@@ -109,35 +128,4 @@ class NodeConnection(threading.Thread):
         else:
             return False
 
-    #########################
-    #       Callbacks       #
-    #########################
-
-    def __on_beat(self):
-        pass #logging.debug("Beat {}".format(self.get_addr()))
-
-    def __on_stop(self):
-            self.terminate_flag.set()
-           
-    def __on_conn_to(self,h,p):
-            self.nodo_padre.connect_to(h, p, full=False)
-
-    def __on_start_learning(self, rounds, epochs):
-        # Thread process to avoid blocking the message receiving
-        learning_thread = threading.Thread(target=self.nodo_padre.start_learning,args=(rounds,epochs))
-        learning_thread.start()
-
-    def __on_stop_learning(self):
-        self.nodo_padre.stop_learning()
-
-    def __on_num_samples(self,num):
-        self.num_samples = num
-
-    def __on_params(self,msg,done):
-        if done:
-            params = self.param_bufffer + msg
-            self.clear_buffer()
-            self.nodo_padre.add_model(params,self.num_samples)
-        else:
-            self.param_bufffer = self.param_bufffer + msg
 

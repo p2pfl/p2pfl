@@ -15,7 +15,9 @@ import time
 
 # RECORDAR PARAMETRIZAR DATASETS + MODELO
 # 
-# FRACCIONES
+# FRACCIONES -> radom o por mecanismos de votación
+
+# Está muy acoplado el apendizaje con el funcionamiento del nodo?
 
 ###################################################################################################################
 # FULL CONNECTED HAY QUE IMPLEMENTARLO DE FORMA QUE CUANDO SE INTRODUCE UN NODO EN LA RED, SE HACE UN BROADCAST

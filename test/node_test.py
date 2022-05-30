@@ -168,6 +168,7 @@ def test_interrupt_train2(two_nodes):
 # Esto tengo que mirar bien como validarlo
 def test_bad_binary_model():
     # cascará pickle con la desserialización del modelo
+    # -> crear entrenamiento y usar a fuego el socket poneiendo que se están mandando modelo
     assert False
 
 # Modelo incompatible

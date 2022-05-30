@@ -2,7 +2,7 @@ import logging
 from p2pfl.const import BUFFER_SIZE
 
 ###############################
-#    CommunicationProtocol    #
+#    CommunicationProtocol    # --> Patrón commando -> hacer una cola de comandos y ejecutarlo al acabar
 ###############################
 #
 # Valid messages: 
@@ -24,14 +24,15 @@ class CommunicationProtocol:
     START_LEARNING = "START_LEARNING"
     STOP_LEARNING  = "STOP_LEARNING"
     NUM_SAMPLES    = "NUM_SAMPLES"
-    PARAMS         = "PARAMS" 
+    PARAMS         = "PARAMS" #special case
 
     ########################
     #    MSG PROCESSING    #
     ########################
 
-    def __init__(self, callback_dict):
-        self.callback_dict = callback_dict
+    def __init__(self, command_dict):
+        self.command_dict = command_dict
+        self.__cmds_success = []
 
         """ DEBUG MSGS
         import random
@@ -71,9 +72,9 @@ class CommunicationProtocol:
             # Check if done
             end_pos = msg.find(end)
             if end_pos != -1:
-                return self.__exec(CommunicationProtocol.PARAMS, msg[len(header):end_pos], True)
+                return [self.__exec(CommunicationProtocol.PARAMS, msg[len(header):end_pos], True)]
 
-            return self.__exec(CommunicationProtocol.PARAMS, msg[len(header):], False)
+            return [self.__exec(CommunicationProtocol.PARAMS, msg[len(header):], False)]
 
         else:      
 
@@ -83,65 +84,80 @@ class CommunicationProtocol:
                 message = msg.decode("utf-8")
                 message = message.split()
             except:
-                return False
+                self.__cmds_success.append(False)
 
-            # Check message and exec message
-            if len(message) > 0:
-                # Beat
-                if message[0] == CommunicationProtocol.BEAT:
-                    return True
+            # Process messages
+            while len(message) > 0:
+                # Check message and exec message
+                if len(message) > 0:
+                    # Beat
+                    if message[0] == CommunicationProtocol.BEAT:
+                        self.__cmds_success.append(self.__exec(CommunicationProtocol.BEAT))
+                        message = message[1:]
 
-                # Stop
-                elif message[0] == CommunicationProtocol.STOP:
-                    return self.__exec(message[0])
+                    # Stop
+                    elif message[0] == CommunicationProtocol.STOP:
+                        self.__cmds_success.append(self.__exec(CommunicationProtocol.STOP))
+                        message = message[1:] 
 
-                # Connect to
-                elif message[0] == CommunicationProtocol.CONN_TO:
-                    if len(message) > 2:
-                        if message[2].isdigit():
-                            return self.__exec(CommunicationProtocol.CONN_TO, message[1], int(message[2]))
+                    # Connect to
+                    elif message[0] == CommunicationProtocol.CONN_TO:
+                        if len(message) > 2:
+                            if message[2].isdigit():
+                                self.__cmds_success.append(self.__exec(CommunicationProtocol.CONN_TO, message[1], int(message[2])))
+                                message = message[3:] 
+                            else:
+                                self.__cmds_success.append(False)
+                                break
                         else:
-                            return False
-                    else:
-                        return False
+                            self.__cmds_success.append(False)
+                            break
 
-                # Start learning
-                elif message[0] == CommunicationProtocol.START_LEARNING:
-                    if len(message) > 2:
-                        if message[1].isdigit() and message[2].isdigit():
-                            return self.__exec(CommunicationProtocol.START_LEARNING, int(message[1]), int(message[2]))
+                    # Start learning
+                    elif message[0] == CommunicationProtocol.START_LEARNING:
+                        if len(message) > 2:
+                            if message[1].isdigit() and message[2].isdigit():
+                                self.__cmds_success.append(self.__exec(CommunicationProtocol.START_LEARNING, int(message[1]), int(message[2])))
+                                message = message[3:]
+                            else:
+                                self.__cmds_success.append(False)
+                                break
                         else:
-                            return False
-                    else:
-                        return False
+                            self.__cmds_success.append(False)
+                            break
 
-                # Stop learning
-                elif message[0] == CommunicationProtocol.STOP_LEARNING:
-                    return self.__exec(CommunicationProtocol.STOP_LEARNING)
-    
-                # Number of samples
-                elif message[0] == CommunicationProtocol.NUM_SAMPLES:
-                    if len(message) > 1:
-                        if message[1].isdigit():
-                            return self.__exec(CommunicationProtocol.NUM_SAMPLES, int(message[1]))
+                    # Stop learning
+                    elif message[0] == CommunicationProtocol.STOP_LEARNING:
+                        self.__cmds_success.append(self.__exec(CommunicationProtocol.STOP_LEARNING))
+                        message = message[1:]
+        
+                    # Number of samples
+                    elif message[0] == CommunicationProtocol.NUM_SAMPLES:
+                        if len(message) > 1:
+                            if message[1].isdigit():
+                                self.__cmds_success.append(self.__exec(CommunicationProtocol.NUM_SAMPLES, int(message[1])))
+                                message = message[2:]
+                            else:
+                                self.__cmds_success.append(False)
+                                break
                         else:
-                            return False
+                            self.__cmds_success.append(False)
+                            break
+                            
+                    # Non Recognized message            
                     else:
-                        return False
-                        
-                # Non Recognized message            
-                else:
-                    return False
+                        self.__cmds_success.append(False)
+                        break
                 
-            # Empty message
-            else:
-                return False
-
+            # Return
+            x = self.__cmds_success
+            self.__cmds_success = []
+            return x
 
     # Exec callbacks
     def __exec(self,action, *args):
         try:
-            self.callback_dict[action](*args)
+            self.command_dict[action].execute(*args)
             return True
         except Exception as e:
             logging.info("Error executing callback: " + str(e))
@@ -153,25 +169,25 @@ class CommunicationProtocol:
     #######################
 
     def build_beat_msg():
-        return CommunicationProtocol.BEAT.encode("utf-8")
+        return (CommunicationProtocol.BEAT + "\n").encode("utf-8")
 
     def build_stop_msg():
-        return CommunicationProtocol.STOP.encode("utf-8")
+        return (CommunicationProtocol.STOP + "\n").encode("utf-8")
 
     def build_connect_msg(ip, port, broadcast):
-        return (CommunicationProtocol.CONN + " " + ip + " " + str(port) + " " + str(broadcast)).encode("utf-8")
+        return (CommunicationProtocol.CONN + " " + ip + " " + str(port) + " " + str(broadcast) + "\n").encode("utf-8")
 
     def build_connect_to_msg(ip, port):
-        return (CommunicationProtocol.CONN_TO + " " + ip + " " + str(port)).encode("utf-8")
+        return (CommunicationProtocol.CONN_TO + " " + ip + " " + str(port) + "\n").encode("utf-8")
 
     def build_start_learning_msg(rounds, epochs):
-        return (CommunicationProtocol.START_LEARNING + " " + str(rounds) + " " + str(epochs)).encode("utf-8")
+        return (CommunicationProtocol.START_LEARNING + " " + str(rounds) + " " + str(epochs) + "\n").encode("utf-8")
 
     def build_stop_learning_msg():
-        return CommunicationProtocol.STOP_LEARNING.encode("utf-8")
+        return (CommunicationProtocol.STOP_LEARNING + "\n").encode("utf-8")
 
     def build_num_samples_msg(num):
-        return (CommunicationProtocol.NUM_SAMPLES + " " + str(num)).encode("utf-8")
+        return (CommunicationProtocol.NUM_SAMPLES + " " + str(num) + "\n").encode("utf-8")
 
     # Revisar si se puede parametrizar para no sobresegmentar el mensaje
     def build_params_msg(data):
