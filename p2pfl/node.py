@@ -14,34 +14,11 @@ import time
 
 from p2pfl.utils.observer import Observer
 
-
-# RECORDAR PARAMETRIZAR DATASETS + MODELO
-# 
 # FRACCIONES -> radom o por mecanismos de votación
-
-# Está muy acoplado el apendizaje con el funcionamiento del nodo?
 
 ###################################################################################################################
 # FULL CONNECTED HAY QUE IMPLEMENTARLO DE FORMA QUE CUANDO SE INTRODUCE UN NODO EN LA RED, SE HACE UN BROADCAST
 ###################################################################################################################
-
-
-"""
-from p2pfl.node import Node
-n1 = Node(port=5555)
-n1.start()
-
-from p2pfl.node import Node
-n2 = Node(port=6666)
-n2.start()
-n2.connect_to("127.0.0.1",5555)
-
-
-from p2pfl.node import Node
-n3 = Node(port=6779)
-n3.start()
-n3.connect_to("127.0.0.1",6666)
-"""
 
 class Node(threading.Thread, Observer):
 
@@ -49,7 +26,7 @@ class Node(threading.Thread, Observer):
     #     Node Init     #
     #####################
 
-    def __init__(self, host="127.0.0.1", port=0, model=None, agregator=FedAvg):
+    def __init__(self, model, data, host="127.0.0.1", port=0, agregator=FedAvg):
         threading.Thread.__init__(self)
         self.terminate_flag = threading.Event()
         self.host = host
@@ -74,7 +51,7 @@ class Node(threading.Thread, Observer):
 
         # Learning
         log_dir = str(self.host) + "_" + str(self.port)
-        self.learner = LightningLearner(MLP(),MnistFederatedDM(), log_name=log_dir) # HARD CODED MODEL + DATASET
+        self.learner = LightningLearner(model, data, log_name=log_dir) 
         self.round = None
         self.totalrounds = None
         self.agredator = agregator(self)

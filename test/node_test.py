@@ -1,5 +1,7 @@
 from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.const import HEARTBEAT_FREC, TIEMOUT
+from p2pfl.learning.pytorch.datamodules.mnist import MnistFederatedDM
+from p2pfl.learning.pytorch.models.mlp import MLP
 from p2pfl.node import Node
 import pytest
 import time
@@ -7,8 +9,8 @@ import torch
 
 @pytest.fixture
 def two_nodes():
-    n1 = Node("localhost")
-    n2 = Node("localhost")
+    n1 = Node(MLP(),MnistFederatedDM())
+    n2 = Node(MLP(),MnistFederatedDM())
     n1.start()
     n2.start()
 
@@ -19,10 +21,10 @@ def two_nodes():
 
 @pytest.fixture
 def four_nodes():
-    n1 = Node("localhost")
-    n2 = Node("localhost")
-    n3 = Node("localhost")
-    n4 = Node("localhost")
+    n1 = Node(MLP(),MnistFederatedDM())
+    n2 = Node(MLP(),MnistFederatedDM())
+    n3 = Node(MLP(),MnistFederatedDM())
+    n4 = Node(MLP(),MnistFederatedDM())
     n1.start()
     n2.start()
     n3.start()
@@ -161,7 +163,7 @@ def test_node_abrupt_down(four_nodes):
 #   REVISAR INTERRUPCIONES MÁS A FONDO -> (cuando el learner aun no está corriendo pero el proceso está siendo llamado)
 #------------------------------------------
 def test_interrupt_train():
-    n1 = Node("localhost")
+    n1 = Node(MLP(),MnistFederatedDM())
     n1.start()
     n1.set_start_learning(99999,99999)
 
@@ -211,7 +213,7 @@ def test_convergence(x):
     # Node Creation
     nodes = []
     for i in range(n):
-        node = Node(host="localhost")
+        node = Node(MLP(),MnistFederatedDM())
         node.start()
         nodes.append(node)
 
