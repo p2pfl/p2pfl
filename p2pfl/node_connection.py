@@ -6,24 +6,21 @@ import logging
 from p2pfl.command import *
 from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.const import *
+from p2pfl.utils.observer import Observable
 
 ########################
 #    NodeConnection    #
 ########################
 
-#
-# Desacoplar: observer + command
-#
-
 # COSAS:
 #   - si casca la conexión no se trata de volver a conectar
 
-class NodeConnection(threading.Thread):
+class NodeConnection(threading.Thread, Observable):
 
     def __init__(self, parent_node, socket, addr):
         threading.Thread.__init__(self)
+        Observable.__init__(self)
         self.terminate_flag = threading.Event()
-        self.nodo_padre = parent_node
         self.socket = socket
         self.errors = 0
         self.addr = addr
@@ -85,7 +82,7 @@ class NodeConnection(threading.Thread):
                     if errors>0:
                         self.errors += errors
                         # If we have too many errors, we stop the connection
-                        if self.errors > 1:#10:
+                        if self.errors >= MAX_ERRORS:
                             self.terminate_flag.set()
                             logging.debug("Too mucho errors. {}".format(self.get_addr()))
                             logging.debug("Last error: {}".format(msg))           
@@ -103,7 +100,7 @@ class NodeConnection(threading.Thread):
         
         #Down Connection
         logging.debug("Closed connection: {}".format(self.get_addr()))
-        self.nodo_padre.rm_neighbor(self)
+        self.notify(self) # Notify the parent node
         self.socket.close()
 
     ##################

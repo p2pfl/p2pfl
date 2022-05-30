@@ -1,3 +1,4 @@
+from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.const import HEARTBEAT_FREC, TIEMOUT
 from p2pfl.node import Node
 import pytest
@@ -91,6 +92,32 @@ def test_full_connected(four_nodes):
     # Desconexión n4
     n4.stop()
 
+def test_multimsg(two_nodes):
+    n1, n2 = two_nodes
+
+    # Conexión
+    n1.connect_to(n2.host,n2.port)
+    time.sleep(0.1) 
+
+    n1.broadcast(CommunicationProtocol.build_beat_msg() + CommunicationProtocol.build_beat_msg())
+    time.sleep(0.1) 
+    assert n2.neightboors[0].errors == 0
+
+    n1.broadcast(CommunicationProtocol.build_beat_msg() + CommunicationProtocol.build_stop_msg())
+    time.sleep(0.1) 
+    assert len(n2.neightboors) == 0
+
+def test_multimsg2(two_nodes):
+    n1, n2 = two_nodes
+
+    # Conexión
+    n1.connect_to(n2.host,n2.port)
+    time.sleep(0.1) 
+
+    # Parametrizar num errores x nodo -> actualmente esta en 1 -> casque
+    n1.broadcast(b"saludos Enrique y Dani")
+    time.sleep(0.1) 
+    assert len(n2.neightboors) == 0
 
 def test_node_abrupt_down(four_nodes):
     n1, n2, n3, n4 = four_nodes

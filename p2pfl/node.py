@@ -12,6 +12,8 @@ from p2pfl.node_connection import NodeConnection
 from p2pfl.heartbeater import Heartbeater
 import time
 
+from p2pfl.utils.observer import Observer
+
 
 # RECORDAR PARAMETRIZAR DATASETS + MODELO
 # 
@@ -41,7 +43,7 @@ n3.start()
 n3.connect_to("127.0.0.1",6666)
 """
 
-class Node(threading.Thread):
+class Node(threading.Thread, Observer):
 
     #####################
     #     Node Init     #
@@ -142,6 +144,7 @@ class Node(threading.Thread):
             if result == 0:
                 logging.info('Conexión aceptada con {}'.format((h,p)))
                 nc = NodeConnection(self,node_socket,(h,p))
+                nc.add_observer(self)
                 nc.start()
                 self.add_neighbor(nc)
                  
@@ -176,6 +179,10 @@ class Node(threading.Thread):
             self.neightboors.remove(n)
         except:
             pass
+
+    # Observer Pattern used to notify end of connections
+    def update(self,nc):
+        self.rm_neighbor(nc)
   
     # Connecto to a node
     #   - If full -> the node will be connected to the entire network
@@ -191,6 +198,7 @@ class Node(threading.Thread):
         
         # Add socket to neightboors
         nc = NodeConnection(self,s,(h,p))
+        nc.add_observer(self)
         nc.start()
         self.add_neighbor(nc)
       
