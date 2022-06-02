@@ -178,6 +178,9 @@ class Node(threading.Thread, Observer):
         nc.add_observer(self)
         nc.start()
         self.add_neighbor(nc)
+
+    def disconnect_from(self, h, p):
+        self.get_neighbor(h,p).stop()
       
     ##########################
     #     Msg management     #
@@ -204,6 +207,12 @@ class Node(threading.Thread, Observer):
     ############################
     #         Learning         #
     ############################
+
+    def set_model(self, model):
+        self.learner.set_model(model)
+
+    def set_data(self, data):
+        self.learner.set_data(data)
 
     # Start the network learning
     def set_start_learning(self, rounds=1, epochs=1): 

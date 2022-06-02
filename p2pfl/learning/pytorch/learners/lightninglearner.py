@@ -19,6 +19,12 @@ class LightningLearner(NodeLearner):
         self.trainer = None
         self.epochs = 1
 
+    def set_model(self, model):
+        self.model = model
+
+    def set_data(self, data):
+        self.data = data
+        
     # Encoded to numpy serialized
     def encode_parameters(self):
         array = [val.cpu().numpy() for _, val in self.model.state_dict().items()]

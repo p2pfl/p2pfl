@@ -27,7 +27,6 @@ class FedAvg(Agregator):
 
     def agregate(self,models): # (PONDERATED MEAN)
         # Total Samples
-        print([y for _,y in models])
         total_samples = sum([y for _,y in models])
 
         # Create a Zero Model

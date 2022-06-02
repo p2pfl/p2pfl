@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Mnist
+MNIST/
+
 # Logs
 *.log
 training_logs/

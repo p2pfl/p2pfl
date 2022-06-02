@@ -22,7 +22,7 @@ class Agregator(threading.Thread):
         # Notificamos al nodo
         self.node.on_round_finished()
 
-    def agregate(self,models): print("Not implemented")
+    def agregate(self,models): ("Not implemented")
             
     def add_model(self, m, w):
         self.lock.acquire()

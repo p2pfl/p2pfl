@@ -5,6 +5,10 @@
 
 class NodeLearner:
 
+    def set_model(self, model): pass
+
+    def set_data(self, data): pass
+
     def encode_parameters(self): pass
 
     def decode_parameters(self,data): pass
