@@ -13,6 +13,8 @@ class NodeLearner:
 
     def decode_parameters(self,data): pass
 
+    def check_parameters(self, params): pass
+    
     def set_parameters(self, params): pass
 
     def get_parameters(self): pass

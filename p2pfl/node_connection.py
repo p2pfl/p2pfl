@@ -1,6 +1,4 @@
-from asyncio.log import logger
 import socket
-from statistics import mode
 import threading
 import logging
 from p2pfl.command import *

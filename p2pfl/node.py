@@ -2,19 +2,21 @@ import socket
 import threading
 import logging
 import sys
+import time
 from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.const import *
 from p2pfl.learning.agregators.fedavg import FedAvg
-from p2pfl.learning.pytorch.datamodules.mnist import MnistFederatedDM
+from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
 from p2pfl.learning.pytorch.learners.lightninglearner import LightningLearner
-from p2pfl.learning.pytorch.models.mlp import MLP
 from p2pfl.node_connection import NodeConnection
 from p2pfl.heartbeater import Heartbeater
-import time
-
 from p2pfl.utils.observer import Observer
 
+
+
 # FRACCIONES -> radom o por mecanismos de votación
+
+# CERCIORARSE DE QUE NO SE PUEDAN CONECTAR 2 NODOS 60 VECES
 
 ###################################################################################################################
 # FULL CONNECTED HAY QUE IMPLEMENTARLO DE FORMA QUE CUANDO SE INTRODUCE UN NODO EN LA RED, SE HACE UN BROADCAST
@@ -262,10 +264,32 @@ class Node(threading.Thread, Observer):
     #-------------------------------------------------------
     # FUTURO -> validar quien introduce moedelos (llevar cuenta) |> (2 aprox)
     #-------------------------------------------------------
+    #
+    # POR ACABAR, CONTROLADO ERROR PERO NO SE HACE NADA
+    #
+    # NO ES LO MISMO UNA EXCEPCION DE PICKE QUE UNA DE PYTORCH
+    #
+    # Traza nodo que generó modelo
+    #
+    #-------------------------------------------------------
     def add_model(self,m,w): 
         # Check if Learning is running
         if self.round is not None:
-            self.agredator.add_model(self.learner.decode_parameters(m),w) 
+            try:
+                self.agredator.add_model(self.learner.decode_parameters(m),w) 
+            except DecodingParamsError as e:
+                # Tratamos de obtener modelo de otros nodos, si estos no lo tienen, sacamos el nodo que da error de la red
+                
+                logging.error("Error decoding parameters")
+
+            except ModelNotMatchingError as e:
+                # Borramos el nodo
+                logging.error("Model not matching")
+                
+            except Exception as e:
+                # Borramos el nodo
+                raise(e)
+
 
     def on_round_finished(self):
         if self.round is not None:

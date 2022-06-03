@@ -1,5 +1,5 @@
 from p2pfl.learning.agregators.fedavg import FedAvg
-from p2pfl.learning.pytorch.models.mlp import MLP
+from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.learning.pytorch.learners.lightninglearner import LightningLearner
 from collections import OrderedDict
 import torch

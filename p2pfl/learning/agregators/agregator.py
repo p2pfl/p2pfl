@@ -1,5 +1,7 @@
 import threading
 import logging
+
+from p2pfl.learning.exceptions import ModelNotMatchingError
    
 #-----------------------------------------------------------------------
 # 
@@ -25,13 +27,20 @@ class Agregator(threading.Thread):
     def agregate(self,models): ("Not implemented")
             
     def add_model(self, m, w):
-        self.lock.acquire()
-        self.models.append((m, w))
-        logging.info("Model added (" + str(len(self.models)) + "/" + str(len(self.node.neightboors)+1) + ")")
-        # Check if all models have been added
-        if len(self.models)==(len(self.node.neightboors)+1):
-            self.start()
-        self.lock.release()
+        # Validar que el modelo sea del mismo tipo
+
+        if self.node.learner.check_parameters(m):
+
+            # Agregar modelo
+            self.lock.acquire()
+            self.models.append((m, w))
+            logging.info("Model added (" + str(len(self.models)) + "/" + str(len(self.node.neightboors)+1) + ")")
+            # Check if all models have been added
+            if len(self.models)==(len(self.node.neightboors)+1):
+                self.start()
+            self.lock.release()
+        else:
+            raise ModelNotMatchingError("Not matching models")
         
     def clear(self):
         self.__init__(self.node)
