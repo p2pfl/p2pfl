@@ -22,23 +22,25 @@ class Agregator(threading.Thread):
         self.node.learner.set_parameters(self.agregate(self.models))
         self.clear()
         # Notificamos al nodo
+        print("calling on_round_finished")
         self.node.on_round_finished()
 
-    def agregate(self,models): ("Not implemented")
+    def agregate(self,models): print("Not implemented")
             
     def add_model(self, m, w):
         # Validar que el modelo sea del mismo tipo
 
         if self.node.learner.check_parameters(m):
-
             # Agregar modelo
             self.lock.acquire()
             self.models.append((m, w))
             logging.info("Model added (" + str(len(self.models)) + "/" + str(len(self.node.neightboors)+1) + ")")
             # Check if all models have been added
             if len(self.models)==(len(self.node.neightboors)+1):
-                self.start()
-            self.lock.release()
+                self.start() 
+                # no necesitaría el lock aqui pues run resetea el thread
+            else: 
+                self.lock.release()
         else:
             raise ModelNotMatchingError("Not matching models")
         

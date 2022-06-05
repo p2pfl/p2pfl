@@ -18,6 +18,8 @@ from p2pfl.utils.observer import Observer
 
 # CERCIORARSE DE QUE NO SE PUEDAN CONECTAR 2 NODOS 60 VECES
 
+
+
 ###################################################################################################################
 # FULL CONNECTED HAY QUE IMPLEMENTARLO DE FORMA QUE CUANDO SE INTRODUCE UN NODO EN LA RED, SE HACE UN BROADCAST
 ###################################################################################################################
@@ -57,6 +59,7 @@ class Node(threading.Thread, Observer):
         self.round = None
         self.totalrounds = None
         self.agredator = agregator(self)
+        self.is_model_init = False
 
 
     def get_addr(self):
@@ -217,13 +220,22 @@ class Node(threading.Thread, Observer):
         self.learner.set_data(data)
 
     # Start the network learning
+    #
+    # Asegurarse de que se envien mensajes que el broadcast no se asegura
+    #
     def set_start_learning(self, rounds=1, epochs=1): 
         # 
         # Maybe needs a lock to avoid concurrency problems
         #
         if self.round is None:
+            # Start Learning
             logging.info("Broadcasting start learning...")
             self.broadcast(CommunicationProtocol.build_start_learning_msg(rounds,epochs))
+            # Initialize model
+            logging.info("-------------Initialize Model-------------")
+            self.is_model_init = True
+            self.__bc_model()
+            #time.sleep(0.5) # PARA QUE LE DE TIEMPO A PROCESAR EL MODELO
             # Learning Thread
             learning_thread = threading.Thread(target=self.start_learning,args=(rounds,epochs))
             learning_thread.start()
@@ -242,11 +254,22 @@ class Node(threading.Thread, Observer):
     def start_learning(self,rounds,epochs): #local
         self.round = 0
         self.totalrounds = rounds
+
+        #esto de aqui es una apaño de los malos
+        if not self.is_model_init:
+            logging.info("-------------Waiting Model-------------")
+            while not self.is_model_init:
+               time.sleep(0.1)
+        logging.info("-------------Start Learning-------------")
+
         # Indicates samples that be used in the learning process
         if not self.broadcast(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())):
             logging.error("No se han podido enviar los números de muestras a todos los nodos")
             self.set_stop_learning()
         # Train
+
+        #time.sleep(0.5) # PARA QUE LE DE TIEMPO A PROCESAR EL NUMSAMPLES y evitar que se acumulen mensajes en el buffer
+
         self.learner.set_epochs(epochs)
         self.__train_step()
 
@@ -272,26 +295,36 @@ class Node(threading.Thread, Observer):
     # Traza nodo que generó modelo
     #
     #-------------------------------------------------------
+    # DEJARLO AQUI O METERLO EN EL COMANDO? -> dejar código bonito luego
     def add_model(self,m,w): 
+        print("---------modelo--------------")
         # Check if Learning is running
         if self.round is not None:
-            try:
-                self.agredator.add_model(self.learner.decode_parameters(m),w) 
-            except DecodingParamsError as e:
-                # Tratamos de obtener modelo de otros nodos, si estos no lo tienen, sacamos el nodo que da error de la red
-                
-                logging.error("Error decoding parameters")
+            if self.is_model_init:
+                # Add model to agregator
+                try:
+                    self.agredator.add_model(self.learner.decode_parameters(m),w) 
+                except DecodingParamsError as e:
+                    # Tratamos de obtener modelo de otros nodos, si estos no lo tienen, sacamos el nodo que da error de la red
+                    
+                    logging.error("Error decoding parameters")
 
-            except ModelNotMatchingError as e:
-                # Borramos el nodo
-                logging.error("Model not matching")
-                
-            except Exception as e:
-                # Borramos el nodo
-                raise(e)
-
+                except ModelNotMatchingError as e:
+                    # Borramos el nodo
+                    logging.error("Model not matching")
+                    
+                except Exception as e:
+                    # Borramos el nodo
+                    raise(e)
+            else:
+                # Initialize model
+                logging.info("Model initialized")
+                self.is_model_init = True
+        else: 
+            logging.error("Tried to add a model while learning is not running")
 
     def on_round_finished(self):
+        print("executing on_round_finished")
         if self.round is not None:
             self.round = self.round + 1
             logging.info("Round {} of {} finished. ({})".format(self.round,self.totalrounds,self.get_addr()))
@@ -309,6 +342,7 @@ class Node(threading.Thread, Observer):
                 self.__train_step()            
             else:
                 self.round = None
+                self.is_model_init = False
                 logging.info("Finish!!.")
         else:
             logging.info("FL not running but models received")

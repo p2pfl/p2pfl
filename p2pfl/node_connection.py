@@ -15,11 +15,12 @@ from p2pfl.utils.observer import Observable
 
 class NodeConnection(threading.Thread, Observable):
 
-    def __init__(self, parent_node, socket, addr):
+    def __init__(self, parent_node, s, addr):
         threading.Thread.__init__(self)
         Observable.__init__(self)
         self.terminate_flag = threading.Event()
-        self.socket = socket
+        self.socket = s
+        self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.errors = 0
         self.addr = addr
         self.num_samples = None
@@ -67,12 +68,28 @@ class NodeConnection(threading.Thread, Observable):
 
     def run(self):
         self.socket.settimeout(TIEMOUT)
-
+        overflow = 0
+        buffer = b""
         while not self.terminate_flag.is_set():
             try:
                 # Recive and process messages
-                msg = self.socket.recv(BUFFER_SIZE)
+                msg = b""
+                if overflow == 0:
+                    msg = self.socket.recv(BUFFER_SIZE)
+                else:
+                    msg = buffer + self.socket.recv(overflow) #alinear el colapso
+                    buffer = b""
+                    overflow = 0
+
+
                 if msg!=b"":
+                    #Check colapse
+                    overflow = CommunicationProtocol.check_collapse(msg)
+                    if overflow>0:
+                        logging.debug("{} (NodeConnection Run) Collapse detected: {}".format(self.get_addr(), overflow))
+                        buffer = msg[overflow:]
+                        msg = msg[:overflow]
+
                     # Process message and count errors
                     results = self.comm_protocol.process_message(msg)
                     errors = len(results) - sum(results)

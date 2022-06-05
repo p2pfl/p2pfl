@@ -51,6 +51,7 @@ class LightningLearner(NodeLearner):
         return True
 
     def set_parameters(self, params):
+        print("-------params setted-------")
         try:
             self.model.load_state_dict(params)
         except:

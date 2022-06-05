@@ -54,6 +54,16 @@ class CommunicationProtocol:
                 return False
         else:
             return False
+
+    def check_collapse(msg):
+        header = CommunicationProtocol.PARAMS.encode("utf-8")
+
+        # Si hay parámetros y no van en cabeza = colapsado
+        header_pos = msg.find(header)
+        if header_pos != -1 and msg[0:len(header)] != header:
+            return header_pos
+   
+        return 0
     
 
     # Check if the message is correct and execute the callback
