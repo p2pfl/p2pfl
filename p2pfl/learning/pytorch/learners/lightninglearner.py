@@ -51,7 +51,6 @@ class LightningLearner(NodeLearner):
         return True
 
     def set_parameters(self, params):
-        print("-------params setted-------")
         try:
             self.model.load_state_dict(params)
         except:
@@ -89,8 +88,6 @@ class LightningLearner(NodeLearner):
         if self.trainer is not None:
             self.trainer.should_stop = True
             self.trainer = None
-        else:
-            print("No trainer running")
 
     def get_num_samples(self):
         return len(self.data.train_dataloader().dataset)

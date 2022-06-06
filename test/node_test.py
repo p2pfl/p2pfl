@@ -7,43 +7,11 @@ from p2pfl.node import Node
 import pytest
 import time
 import torch
-
-@pytest.fixture
-def two_nodes():
-    n1 = Node(MLP(),MnistFederatedDM())
-    n2 = Node(MLP(),MnistFederatedDM())
-    n1.start()
-    n2.start()
-
-    yield n1,n2
-
-    n1.stop()
-    n2.stop()
-
-@pytest.fixture
-def four_nodes():
-    n1 = Node(MLP(),MnistFederatedDM())
-    n2 = Node(MLP(),MnistFederatedDM())
-    n3 = Node(MLP(),MnistFederatedDM())
-    n4 = Node(MLP(),MnistFederatedDM())
-    n1.start()
-    n2.start()
-    n3.start()
-    n4.start()
-
-    return n1,n2,n3,n4
-
-#
-#
-# PROBLEMA CON LA SALIDA DEL TEST -> SE QUEDAN CONEXIONES ABIERTAS, REVISARLO
-#
-#
+from test.fixtures import two_nodes, four_nodes
 
 ###########################
 #  Tests Infraestructure  #
 ###########################
-
-
 
 def test_node_paring(two_nodes):
     n1, n2 = two_nodes
@@ -121,43 +89,6 @@ def test_multimsg2(two_nodes):
     n1.broadcast(b"saludos Enrique y Dani")
     time.sleep(0.1) 
     assert len(n2.neightboors) == 0
-
-def test_node_abrupt_down(four_nodes):
-    n1, n2, n3, n4 = four_nodes
-
-    # Conexión n1 n2
-    n1.connect_to(n2.host,n2.port)
-
-    # Conexión n3 n1
-    n3.connect_to(n1.host,n1.port)
-    time.sleep(0.1) #Esperar por la asincronía
-    assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == 2
-
-    # Conexión n4 n1
-    n4.connect_to(n1.host,n1.port)
-    time.sleep(0.1) #Esperar por la asincronía
-    assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == len(n4.neightboors) == 3
-
-    # Desconexión n4 abruptamente (socket closed)
-    #
-    #    (n4): será consciente de que la comunicación con n1 se ha perdido cuando haga uso del socket (heartbeat)
-    #   (otros) nuevamente el uso del socket (heartbeat) detectará que la conexión ha sido rechazada por el nodo
-    for con in n4.neightboors:
-        con.socket.close() #provocamos un bad file descriptor
-    time.sleep(HEARTBEAT_FREC+0.1) #Esperar por la asincronía
-    assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == 2
-    n4.stop()
-    
-    # Desconexión n3 abruptamente (deja de enviar heartbeat)
-    n3.heartbeater.stop()
-    time.sleep(TIEMOUT+0.1) #Esperar por la asincronía
-    assert len(n1.neightboors) == len(n2.neightboors) == 1
-    n3.stop()
-    
-
-    # Desconexión n2 y n1
-    n2.stop()
-    n1.stop()
 
 
 #------------------------------------------

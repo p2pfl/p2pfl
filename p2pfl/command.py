@@ -47,5 +47,5 @@ class Params_cmd(Command):
         if done:
             params = self.node_connection.get_params()
             self.node_connection.clear_buffer()
-            self.parent_node.add_model(params,self.node_connection.num_samples)
+            self.parent_node.add_model(str(self.node_connection.get_addr()),params,self.node_connection.num_samples)
         

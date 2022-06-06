@@ -16,7 +16,7 @@ from p2pfl.utils.observer import Observer
 
 # FRACCIONES -> radom o por mecanismos de votación
 
-# CERCIORARSE DE QUE NO SE PUEDAN CONECTAR 2 NODOS 60 VECES
+# Meter firmas de modelos por nodo + revisar test que falla: test_node_down_on_learning
 
 
 
@@ -116,25 +116,31 @@ class Node(threading.Thread, Observer):
 
     def __process_new_connection(self, node_socket, h, p, broadcast):
         try:
-            # Check if ip and port are correct
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-            s.settimeout(2)
-            result = s.connect_ex((h,p)) 
-            s.close()
-    
-            # Add neightboor
-            if result == 0:
-                logging.info('Conexión aceptada con {}'.format((h,p)))
-                nc = NodeConnection(self,node_socket,(h,p))
-                nc.add_observer(self)
-                nc.start()
-                self.add_neighbor(nc)
-                 
-                if broadcast:
-                    self.broadcast(CommunicationProtocol.build_connect_to_msg(h,p),exc=[nc])
+            # Check if connection with the node already exist
+            if self.get_neighbor(h,p) == None:
+
+                # Check if ip and port are correct
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+                s.settimeout(2)
+                result = s.connect_ex((h,p)) 
+                s.close()
+        
+                # Add neightboor
+                if result == 0:
+                    logging.info('Conexión aceptada con {}'.format((h,p)))
+                    nc = NodeConnection(self,node_socket,(h,p))
+                    nc.add_observer(self)
+                    nc.start()
+                    self.add_neighbor(nc)
+                    
+                    if broadcast:
+                        self.broadcast(CommunicationProtocol.build_connect_to_msg(h,p),exc=[nc])
+            else:
+                node_socket.close()
 
         except Exception as e:
             logging.exception(e)
+            node_socket.close()
             self.rm_neighbor(nc)
             raise e
    
@@ -145,7 +151,7 @@ class Node(threading.Thread, Observer):
 
     def get_neighbor(self, h, p):
         for n in self.neightboors:
-            print(str(n.get_addr()) + str((h,p)))
+            #print(str(n.get_addr()) + str((h,p)))
             if n.get_addr() == (h,p):
                 return n
         return None
@@ -165,6 +171,7 @@ class Node(threading.Thread, Observer):
     # Observer Pattern used to notify end of connections
     def update(self,nc):
         self.rm_neighbor(nc)
+        self.agredator.check_and_run_agregation(trhead_safe=True)
   
     # Connecto to a node
     #   - If full -> the node will be connected to the entire network
@@ -173,16 +180,22 @@ class Node(threading.Thread, Observer):
             full = "1"
         else:
             full = "0"
+            
+        # Check if connection with the node already exist
+        if self.get_neighbor(h,p) == None:
 
-        # Send connection request
-        msg=CommunicationProtocol.build_connect_msg(self.host,self.port,full)
-        s = self.__send(h,p,msg,persist=True)
+            # Send connection request
+            msg=CommunicationProtocol.build_connect_msg(self.host,self.port,full)
+            s = self.__send(h,p,msg,persist=True)
+            
+            # Add socket to neightboors
+            nc = NodeConnection(self,s,(h,p))
+            nc.add_observer(self)
+            nc.start()
+            self.add_neighbor(nc)
         
-        # Add socket to neightboors
-        nc = NodeConnection(self,s,(h,p))
-        nc.add_observer(self)
-        nc.start()
-        self.add_neighbor(nc)
+        else:
+            logging.info('El nodo ya se encuentra conectado con {}:{}'.format(h,p))
 
     def disconnect_from(self, h, p):
         self.get_neighbor(h,p).stop()
@@ -232,7 +245,7 @@ class Node(threading.Thread, Observer):
             logging.info("Broadcasting start learning...")
             self.broadcast(CommunicationProtocol.build_start_learning_msg(rounds,epochs))
             # Initialize model
-            logging.info("-------------Initialize Model-------------")
+            logging.info("Sending Initial Model Weights")
             self.is_model_init = True
             self.__bc_model()
             #time.sleep(0.5) # PARA QUE LE DE TIEMPO A PROCESAR EL MODELO
@@ -257,12 +270,12 @@ class Node(threading.Thread, Observer):
 
         #esto de aqui es una apaño de los malos
         if not self.is_model_init:
-            logging.info("-------------Waiting Model-------------")
+            logging.info("Initialicing Model Weights")
             while not self.is_model_init:
                time.sleep(0.1)
-        logging.info("-------------Start Learning-------------")
 
         # Indicates samples that be used in the learning process
+        logging.info("Broadcasting Number of Samples...")
         if not self.broadcast(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())):
             logging.error("No se han podido enviar los números de muestras a todos los nodos")
             self.set_stop_learning()
@@ -296,56 +309,61 @@ class Node(threading.Thread, Observer):
     #
     #-------------------------------------------------------
     # DEJARLO AQUI O METERLO EN EL COMANDO? -> dejar código bonito luego
-    def add_model(self,m,w): 
-        print("---------modelo--------------")
+    def add_model(self,node,m,w): 
         # Check if Learning is running
         if self.round is not None:
-            if self.is_model_init:
-                # Add model to agregator
-                try:
-                    self.agredator.add_model(self.learner.decode_parameters(m),w) 
-                except DecodingParamsError as e:
-                    # Tratamos de obtener modelo de otros nodos, si estos no lo tienen, sacamos el nodo que da error de la red
-                    
-                    logging.error("Error decoding parameters")
+            try:
+                if self.is_model_init:
+                    # Add model to agregator
+                    self.agredator.add_model(node,self.learner.decode_parameters(m),w) 
+                else:
+                    # Initialize model
+                    logging.info("Model initialized")
+                    self.learner.set_parameters(self.learner.decode_parameters(m))
+                    self.is_model_init = True
+            
+            except DecodingParamsError as e:
+                # Bajamos el nodo
+                logging.error("Error decoding parameters")    
+                self.stop()
 
-                except ModelNotMatchingError as e:
-                    # Borramos el nodo
-                    logging.error("Model not matching")
+            except ModelNotMatchingError as e:
+                # Bajamos el nodo
+                logging.error("Models not matching.")
+                self.stop()
                     
-                except Exception as e:
-                    # Borramos el nodo
-                    raise(e)
-            else:
-                # Initialize model
-                logging.info("Model initialized")
-                self.is_model_init = True
+            except Exception as e:
+                # Bajamos el nodo
+                self.stop()
+                raise(e)
         else: 
             logging.error("Tried to add a model while learning is not running")
 
     def on_round_finished(self):
-        print("executing on_round_finished")
-        if self.round is not None:
-            self.round = self.round + 1
-            logging.info("Round {} of {} finished. ({})".format(self.round,self.totalrounds,self.get_addr()))
+        try:
+            if self.round is not None:
+                self.round = self.round + 1
+                logging.info("Round {} of {} finished. ({})".format(self.round,self.totalrounds,self.get_addr()))
 
-            # Determine if learning is finished
-            if self.round < self.totalrounds:
-                # Wait local model sharing processes (to avoid model sharing conflicts)
-                while True:
-                    #print("Waiting for local model sharing processes to finish")
-                    if not self.__is_sending_model():
-                        break
-                    time.sleep(0.1)
+                # Determine if learning is finished
+                if self.round < self.totalrounds:
+                    # Wait local model sharing processes (to avoid model sharing conflicts)
+                    while True:
+                        #print("Waiting for local model sharing processes to finish")
+                        if not self.__is_sending_model():
+                            break
+                        time.sleep(0.1)
 
-                # Next Step
-                self.__train_step()            
+                    # Next Step
+                    self.__train_step()            
+                else:
+                    self.round = None
+                    self.is_model_init = False
+                    logging.info("Finish!!.")
             else:
-                self.round = None
-                self.is_model_init = False
-                logging.info("Finish!!.")
-        else:
-            logging.info("FL not running but models received")
+                logging.info("FL not running but models received")
+        except Exception as e:
+            logging.error("Concurrence Error")
 
 
     ################
@@ -358,7 +376,7 @@ class Node(threading.Thread, Observer):
             self.__train()
         
         if self.round is not None:
-            self.agredator.add_model(self.learner.get_parameters(), self.learner.get_num_samples())
+            self.agredator.add_model(str(self.get_addr()),self.learner.get_parameters(), self.learner.get_num_samples())
             self.__bc_model()
        
         
