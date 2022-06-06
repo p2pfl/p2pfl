@@ -3,12 +3,15 @@ from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederat
 from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.node import Node
+import pytest
 import time
+
+nodes = []
         
 def test_node_down_on_learning(n):
 
     # Node Creation
-    nodes = []
+    
     for i in range(n):
         node = Node(MLP(),MnistFederatedDM())
         node.start()
@@ -25,9 +28,15 @@ def test_node_down_on_learning(n):
     # Stopping node
     nodes[1].stop()
 
+  
     # Wait 4 results
     while True:
         time.sleep(1)
+        
+        for node in nodes:
+            print(node.agredator.models.keys())
+        
+        
         finish = True
         x = [node.round is None for node in nodes]
         print(x)
@@ -37,8 +46,12 @@ def test_node_down_on_learning(n):
         if finish:
             break
 
-    for node in nodes:
-        node.stop()
+
+    return nodes
+
 
 while True:
+    nodes = []
+
     test_node_down_on_learning(5)
+    #break

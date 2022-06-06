@@ -14,6 +14,7 @@ from p2pfl.const import BUFFER_SIZE
 #   - STOP_LEARNING
 #   - NUM_SAMPLES <num> 
 #   - PARAMS <data> \PARAMS
+#   - READY <round>
 
 class CommunicationProtocol:
 
@@ -25,6 +26,7 @@ class CommunicationProtocol:
     STOP_LEARNING  = "STOP_LEARNING"
     NUM_SAMPLES    = "NUM_SAMPLES"
     PARAMS         = "PARAMS" #special case
+    READY          = "READY"
 
     ########################
     #    MSG PROCESSING    #
@@ -153,6 +155,19 @@ class CommunicationProtocol:
                         else:
                             self.__cmds_success.append(False)
                             break
+
+                    # Ready
+                    elif message[0] == CommunicationProtocol.READY:
+                        if len(message) > 1:
+                            if message[1].isdigit():
+                                self.__cmds_success.append(self.__exec(CommunicationProtocol.READY, int(message[1])))
+                                message = message[2:]
+                            else:
+                                self.__cmds_success.append(False)
+                                break
+                        else:
+                            self.__cmds_success.append(False)
+                            break
                             
                     # Non Recognized message            
                     else:
@@ -198,6 +213,9 @@ class CommunicationProtocol:
 
     def build_num_samples_msg(num):
         return (CommunicationProtocol.NUM_SAMPLES + " " + str(num) + "\n").encode("utf-8")
+
+    def build_ready_msg(num):
+        return (CommunicationProtocol.READY + " " + str(num) + "\n").encode("utf-8")
 
     # Revisar si se puede parametrizar para no sobresegmentar el mensaje
     def build_params_msg(data):

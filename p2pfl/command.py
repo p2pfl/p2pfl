@@ -41,10 +41,15 @@ class Num_samples_cmd(Command):
     def execute(self,num):
         self.node_connection.set_num_samples(num)
 
+class Ready_cmd(Command):
+    def execute(self,round):
+        self.node_connection.set_ready_round(round)
+
 class Params_cmd(Command):
     def execute(self,msg,done):
         self.node_connection.add_param_segment(msg)
         if done:
+            self.node_connection.tmp = self.node_connection.tmp + 1
             params = self.node_connection.get_params()
             self.node_connection.clear_buffer()
             self.parent_node.add_model(str(self.node_connection.get_addr()),params,self.node_connection.num_samples)

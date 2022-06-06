@@ -19,15 +19,15 @@ def test_avg_simple():
     b = OrderedDict([('a', torch.tensor(0)), ('b', torch.tensor(0))])
     c = OrderedDict([('a', torch.tensor(1)), ('b', torch.tensor(1))])
 
-    result = agregator.agregate([(a,1),(b,1),(c,1)])
+    result = agregator.agregate({"a":(a,1),"b":(b,1),"c":(c,1)})
     for layer in b:
         assert result[layer] == b[layer]
 
-    result = agregator.agregate([(a,1),(b,7),(c,1)])
+    result = agregator.agregate({"a":(a,1),"b":(b,7),"c":(c,1)}) 
     for layer in b:
         assert result[layer] == b[layer]
 
-    result = agregator.agregate([(a,800),(b,0),(c,0)])
+    result = agregator.agregate({"a":(a,800),"b":(b,0),"c":(c,0)})
     for layer in b:
         assert result[layer] == a[layer]
 
@@ -38,8 +38,7 @@ def test_avg_complex():
     params1 = nl1.get_parameters()
     params2 = nl1.get_parameters()
 
-    result = agregator.agregate([(params,1)])
-
+    result = agregator.agregate({"a":(params,1)})
     # Check Results
     for layer in params:
         assert torch.eq(params[layer], result[layer]).all()
@@ -48,7 +47,7 @@ def test_avg_complex():
         params1[layer] = params1[layer]+1
         params2[layer] = params2[layer]-1
     
-    result = agregator.agregate([(params1,1), (params2,1)])
+    result = agregator.agregate({"a":(params1,1),  "b":(params2,1)}) 
 
     # Check Results -> Careful with rounding errors
     for layer in params:

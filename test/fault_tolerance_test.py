@@ -8,7 +8,7 @@ import time
 from test.fixtures import two_nodes, four_nodes
 
     
-def test_node_abrupt_down(four_nodes):
+def __test_node_abrupt_down(four_nodes):
     n1, n2, n3, n4 = four_nodes
 
     # Conexión n1 n2
@@ -45,6 +45,7 @@ def test_node_abrupt_down(four_nodes):
     n1.stop()
 
     
+# QUEDA COLGADO ALGÚN THREAD
 @pytest.mark.parametrize('n',[2,4]) 
 def test_node_down_on_learning(n):
 
@@ -102,7 +103,7 @@ def test_bad_binary_model(two_nodes):
 def test_wrong_model():
     n1 = Node(MLP(),MnistFederatedDM())
     n2 = Node(CNN(),MnistFederatedDM())
-    """
+    
     n1.start()
     n2.start()
     n1.connect_to(n2.host,n2.port)
@@ -116,4 +117,4 @@ def test_wrong_model():
 
     n1.stop()
     n2.stop()
-    """
+    

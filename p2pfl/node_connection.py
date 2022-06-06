@@ -26,6 +26,10 @@ class NodeConnection(threading.Thread, Observable):
         self.num_samples = None
         self.param_bufffer = b""
         self.sending_model = False
+        self.ready = None
+
+        self.tmp = 0
+
         self.comm_protocol = CommunicationProtocol({
             CommunicationProtocol.BEAT: Beat_cmd(None,None),
             CommunicationProtocol.STOP: Stop_cmd(None,self),
@@ -33,11 +37,18 @@ class NodeConnection(threading.Thread, Observable):
             CommunicationProtocol.START_LEARNING: Start_learning_cmd(parent_node,None),
             CommunicationProtocol.STOP_LEARNING: Stop_learning_cmd(parent_node,None),
             CommunicationProtocol.PARAMS: Params_cmd(parent_node,self),
-            CommunicationProtocol.NUM_SAMPLES: Num_samples_cmd(None,self)
+            CommunicationProtocol.NUM_SAMPLES: Num_samples_cmd(None,self),
+            CommunicationProtocol.READY: Ready_cmd(None,self)
         })
 
     def get_addr(self):
         return self.addr
+
+    def set_ready_round(self,round):
+        self.ready = round
+
+    def get_ready_round(self):
+        return self.ready
 
     def stop(self,local=False):
         if not local:

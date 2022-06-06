@@ -33,26 +33,31 @@ class Agregator(threading.Thread):
             # Agregar modelo
             self.lock.acquire()
             self.models[n] = ((m, w))
-            logging.info("Model added (" + str(len(self.models)) + "/" + str(len(self.node.neightboors)+1) + ")")
+            logging.info("({}) Model added ({}/{}) from {}".format(self.node.get_addr(), str(len(self.models)), str(len(self.node.neightboors)+1), n))
             # Check if all models have been added
-            if not self.check_and_run_agregation():
+            self.check_and_run_agregation()
+            # Try Unloock
+            try:
                 self.lock.release()
-
+            except:
+                pass
         else:
             raise ModelNotMatchingError("Not matching models")
         
     def check_and_run_agregation(self,trhead_safe=False):
+        # Lock
         if trhead_safe:
             self.lock.acquire()
 
-        flag = len(self.models)==(len(self.node.neightboors)+1)
-        if flag: 
+        if len(self.models)==(len(self.node.neightboors)+1): 
             self.start() 
         
-        if trhead_safe:
+        # Try Unloock
+        try:
             self.lock.release()
+        except:
+            pass
 
-        return flag
 
     def clear(self):
         self.__init__(self.node)

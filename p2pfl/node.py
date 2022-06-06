@@ -1,3 +1,4 @@
+from distutils.log import debug
 import socket
 import threading
 import logging
@@ -100,7 +101,7 @@ class Node(threading.Thread, Observer):
                     msg = msg.decode("UTF-8")
                     callback = lambda h,p,b: self.__process_new_connection(node_socket, h, p, b)
                     if not CommunicationProtocol.process_connection(msg,callback):
-                        logging.debug('Conexión rechazada con {}:{}'.format(addr,msg))
+                        logging.debug('({}) Conexión rechazada con {}:{}'.format(self.get_addr(),addr,msg))
                         node_socket.close()         
                         
             except Exception as e:
@@ -127,7 +128,7 @@ class Node(threading.Thread, Observer):
         
                 # Add neightboor
                 if result == 0:
-                    logging.info('Conexión aceptada con {}'.format((h,p)))
+                    logging.info('({}) Conexión aceptada con {}'.format(self.get_addr(),(h,p)))
                     nc = NodeConnection(self,node_socket,(h,p))
                     nc.add_observer(self)
                     nc.start()
@@ -242,18 +243,18 @@ class Node(threading.Thread, Observer):
         #
         if self.round is None:
             # Start Learning
-            logging.info("Broadcasting start learning...")
+            logging.info("({}) Broadcasting start learning...".format(self.get_addr()))
             self.broadcast(CommunicationProtocol.build_start_learning_msg(rounds,epochs))
             # Initialize model
-            logging.info("Sending Initial Model Weights")
+            logging.info("({}) Sending Initial Model Weights".format(self.get_addr()))
             self.is_model_init = True
             self.__bc_model()
-            #time.sleep(0.5) # PARA QUE LE DE TIEMPO A PROCESAR EL MODELO
             # Learning Thread
             learning_thread = threading.Thread(target=self.start_learning,args=(rounds,epochs))
             learning_thread.start()
         else:
-            print("Learning is not Running")
+            logging.debug("({}) Learning already started".format(self.get_addr()))
+
 
     # Stop the network learning
     def set_stop_learning(self):
@@ -261,7 +262,7 @@ class Node(threading.Thread, Observer):
             self.broadcast(CommunicationProtocol.build_stop_learning_msg())
             self.stop_learning()
         else:
-            print("Learning is not Running")
+            logging.debug("({}) Learning already stopped".format(self.get_addr()))
 
     # Start the local learning
     def start_learning(self,rounds,epochs): #local
@@ -270,19 +271,18 @@ class Node(threading.Thread, Observer):
 
         #esto de aqui es una apaño de los malos
         if not self.is_model_init:
-            logging.info("Initialicing Model Weights")
+            logging.info("({}) Initialicing Model Weights".format(self.get_addr()))
             while not self.is_model_init:
                time.sleep(0.1)
 
         # Indicates samples that be used in the learning process
-        logging.info("Broadcasting Number of Samples...")
+        logging.info("({}) Broadcasting Number of Samples...".format(self.get_addr()))
+        #esto ya no hará falta -> ahora multilee
         if not self.broadcast(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())):
-            logging.error("No se han podido enviar los números de muestras a todos los nodos")
+            logging.error("({}) No se han podido enviar los números de muestras a todos los nodos".format(self.get_addr()))
             self.set_stop_learning()
+        
         # Train
-
-        #time.sleep(0.5) # PARA QUE LE DE TIEMPO A PROCESAR EL NUMSAMPLES y evitar que se acumulen mensajes en el buffer
-
         self.learner.set_epochs(epochs)
         self.__train_step()
 
@@ -291,7 +291,7 @@ class Node(threading.Thread, Observer):
     #-------------------------------------------------------
     # Stop the local learning
     def stop_learning(self): #local
-        logging.info("Stopping learning")
+        logging.info("({}) Stopping learning".format(self.get_addr()))
         self.learner.interrupt_fit()
         self.round = None
         self.totalrounds = None
@@ -318,18 +318,18 @@ class Node(threading.Thread, Observer):
                     self.agredator.add_model(node,self.learner.decode_parameters(m),w) 
                 else:
                     # Initialize model
-                    logging.info("Model initialized")
+                    logging.info("({}) Model initialized".format(self.get_addr()))
                     self.learner.set_parameters(self.learner.decode_parameters(m))
                     self.is_model_init = True
             
             except DecodingParamsError as e:
                 # Bajamos el nodo
-                logging.error("Error decoding parameters")    
+                logging.error("({}) Error decoding parameters".format(self.get_addr()))
                 self.stop()
 
             except ModelNotMatchingError as e:
                 # Bajamos el nodo
-                logging.error("Models not matching.")
+                logging.error("({}) Models not matching.".format(self.get_addr()))
                 self.stop()
                     
             except Exception as e:
@@ -337,33 +337,51 @@ class Node(threading.Thread, Observer):
                 self.stop()
                 raise(e)
         else: 
-            logging.error("Tried to add a model while learning is not running")
+            logging.error("({}) Tried to add a model while learning is not running".format(self.get_addr()))
 
     def on_round_finished(self):
         try:
             if self.round is not None:
-                self.round = self.round + 1
-                logging.info("Round {} of {} finished. ({})".format(self.round,self.totalrounds,self.get_addr()))
-
                 # Determine if learning is finished
                 if self.round < self.totalrounds:
+                    """
                     # Wait local model sharing processes (to avoid model sharing conflicts)
                     while True:
                         #print("Waiting for local model sharing processes to finish")
                         if not self.__is_sending_model():
                             break
                         time.sleep(0.1)
+                    """
+                    # Send ready message --> quizá ya no haga falta bloquear el socket
+                    while not self.broadcast(CommunicationProtocol.build_ready_msg(self.round)):
+                        time.sleep(0.1)
+                    
+                    # Wait for ready messages -> cambiarlo x un mutex
+                    logging.info("({}) Waiting other nodes.".format(self.get_addr()))
+                    while True:
+                        finish = True
+                        for nc in self.neightboors:
+                            finish = finish and nc.get_ready_round()==self.round
+                        
+                        if finish:
+                            break
+                        time.sleep(0.1)
+                        
+                    # Set Next Round
+                    self.round = self.round + 1
+                    logging.info("({}) Round {} of {} finished.".format(self.round,self.totalrounds,self.get_addr()))
 
                     # Next Step
                     self.__train_step()            
                 else:
                     self.round = None
                     self.is_model_init = False
-                    logging.info("Finish!!.")
+                    logging.info("({}) Finish!!.".format(self.get_addr()))
             else:
-                logging.info("FL not running but models received")
+                logging.info("({}) FL not running but models received".format(self.get_addr()))
         except Exception as e:
-            logging.error("Concurrence Error")
+            logging.error("({}) Concurrence Error: {}".format(e,self.get_addr()))
+
 
 
     ################
@@ -381,12 +399,13 @@ class Node(threading.Thread, Observer):
        
         
     def __train(self):
-        logging.info("Training...")
+        logging.info("({}) Training...".format(self.get_addr()))
         self.learner.fit()
 
     def __bc_model(self):
-        logging.info("Broadcasting model to all clients...")
         encoded_msgs = CommunicationProtocol.build_params_msg(self.learner.encode_parameters())
+        logging.info("({}) Broadcasting model to {} clients. (size: {} bytes)".format(self.get_addr(),len(self.neightboors),len(encoded_msgs)*BUFFER_SIZE))
+
         # Lock Neightboors Communication
         self.__set_sending_model(True)
         # Send Fragments
