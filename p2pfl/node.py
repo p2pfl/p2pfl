@@ -108,10 +108,12 @@ class Node(threading.Thread, Observer):
                 logging.exception(e)
 
         #Stop Node
-        logging.info('Bajando el nodo, dejando de escuchar en {} {}'.format(self.host, self.port))
-        self.heartbeater.stop()
-        for n in self.neightboors:
+        logging.info('Bajando el nodo, dejando de escuchar en {} {} y desconectándose de {} nodos'.format(self.host, self.port, len(self.neightboors))) 
+        # Al realizar esta copia evitamor errores de concurrencia al recorrer la misma, puesto que sabemos que se van a eliminar los nodos de la misma
+        nei_copy_list = self.neightboors.copy()
+        for n in nei_copy_list:
             n.stop()
+        self.heartbeater.stop()
         self.node_socket.close()
 
 
@@ -277,7 +279,7 @@ class Node(threading.Thread, Observer):
 
         # Indicates samples that be used in the learning process
         logging.info("({}) Broadcasting Number of Samples...".format(self.get_addr()))
-        #esto ya no hará falta -> ahora multilee
+        #esto ya no hará falta -> ahora multilee -> tb nos perjudica porque si ya se está mandado el modelo, va a promediarlo x 0
         if not self.broadcast(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())):
             logging.error("({}) No se han podido enviar los números de muestras a todos los nodos".format(self.get_addr()))
             self.set_stop_learning()
@@ -310,6 +312,7 @@ class Node(threading.Thread, Observer):
     #-------------------------------------------------------
     # DEJARLO AQUI O METERLO EN EL COMANDO? -> dejar código bonito luego
     def add_model(self,node,m,w): 
+        print("({}) Adding model from {}".format(self.get_addr(),node))
         # Check if Learning is running
         if self.round is not None:
             try:
@@ -318,13 +321,18 @@ class Node(threading.Thread, Observer):
                     self.agredator.add_model(node,self.learner.decode_parameters(m),w) 
                 else:
                     # Initialize model
+                    self.is_model_init = True
                     logging.info("({}) Model initialized".format(self.get_addr()))
                     self.learner.set_parameters(self.learner.decode_parameters(m))
-                    self.is_model_init = True
             
             except DecodingParamsError as e:
                 # Bajamos el nodo
                 logging.error("({}) Error decoding parameters".format(self.get_addr()))
+                # temporal
+                # append m in a file
+                with open('paramserror.log','a') as f:
+                    f.write(str(m))
+                    f.write("\n\n\n")
                 self.stop()
 
             except ModelNotMatchingError as e:
@@ -339,7 +347,7 @@ class Node(threading.Thread, Observer):
         else: 
             logging.error("({}) Tried to add a model while learning is not running".format(self.get_addr()))
 
-    def on_round_finished(self):
+    def on_round_finished(self,models_added):
         try:
             if self.round is not None:
                 # Determine if learning is finished
@@ -353,7 +361,7 @@ class Node(threading.Thread, Observer):
                         time.sleep(0.1)
                     """
                     # Send ready message --> quizá ya no haga falta bloquear el socket
-                    while not self.broadcast(CommunicationProtocol.build_ready_msg(self.round)):
+                    while not self.broadcast(CommunicationProtocol.build_ready_msg(self.round,models_added)):
                         time.sleep(0.1)
                     
                     # Wait for ready messages -> cambiarlo x un mutex
@@ -361,7 +369,7 @@ class Node(threading.Thread, Observer):
                     while True:
                         finish = True
                         for nc in self.neightboors:
-                            finish = finish and nc.get_ready_round()==self.round
+                            finish = finish and nc.get_ready_status()[0]==self.round
                         
                         if finish:
                             break
@@ -369,7 +377,7 @@ class Node(threading.Thread, Observer):
                         
                     # Set Next Round
                     self.round = self.round + 1
-                    logging.info("({}) Round {} of {} finished.".format(self.round,self.totalrounds,self.get_addr()))
+                    logging.info("({}) Round {} of {} finished.".format(self.get_addr(),self.round,self.totalrounds))
 
                     # Next Step
                     self.__train_step()            

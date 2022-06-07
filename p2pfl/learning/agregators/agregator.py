@@ -20,9 +20,10 @@ class Agregator(threading.Thread):
     def run(self):
         logging.info("Agregating models.")
         self.node.learner.set_parameters(self.agregate(self.models))
+        models_added = len(self.models)
         self.clear()
         # Notificamos al nodo
-        self.node.on_round_finished()
+        self.node.on_round_finished(models_added)
 
     def agregate(self,models): print("Not implemented")
             

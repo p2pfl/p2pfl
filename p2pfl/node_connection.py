@@ -23,10 +23,12 @@ class NodeConnection(threading.Thread, Observable):
         self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.errors = 0
         self.addr = addr
-        self.num_samples = None
+        self.num_samples = 0
         self.param_bufffer = b""
         self.sending_model = False
+        
         self.ready = None
+        self.models_added = None
 
         self.tmp = 0
 
@@ -44,11 +46,12 @@ class NodeConnection(threading.Thread, Observable):
     def get_addr(self):
         return self.addr
 
-    def set_ready_round(self,round):
+    def set_ready_status(self,round, models_added):
         self.ready = round
+        self.models_added = models_added
 
-    def get_ready_round(self):
-        return self.ready
+    def get_ready_status(self):
+        return self.ready,self.models_added
 
     def stop(self,local=False):
         if not local:
@@ -92,14 +95,13 @@ class NodeConnection(threading.Thread, Observable):
                     buffer = b""
                     overflow = 0
 
-
                 if msg!=b"":
                     #Check colapse
                     overflow = CommunicationProtocol.check_collapse(msg)
                     if overflow>0:
-                        logging.debug("{} (NodeConnection Run) Collapse detected: {}".format(self.get_addr(), overflow))
                         buffer = msg[overflow:]
                         msg = msg[:overflow]
+                        logging.debug("{} (NodeConnection Run) Collapse detected: {}".format(self.get_addr(), msg))
 
                     # Process message and count errors
                     results = self.comm_protocol.process_message(msg)

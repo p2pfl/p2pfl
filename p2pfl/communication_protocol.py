@@ -14,7 +14,7 @@ from p2pfl.const import BUFFER_SIZE
 #   - STOP_LEARNING
 #   - NUM_SAMPLES <num> 
 #   - PARAMS <data> \PARAMS
-#   - READY <round>
+#   - READY <round> <models_added>
 
 class CommunicationProtocol:
 
@@ -158,10 +158,10 @@ class CommunicationProtocol:
 
                     # Ready
                     elif message[0] == CommunicationProtocol.READY:
-                        if len(message) > 1:
-                            if message[1].isdigit():
-                                self.__cmds_success.append(self.__exec(CommunicationProtocol.READY, int(message[1])))
-                                message = message[2:]
+                        if len(message) > 2:
+                            if message[1].isdigit() and message[2].isdigit():
+                                self.__cmds_success.append(self.__exec(CommunicationProtocol.READY, int(message[1]), int(message[2])))
+                                message = message[3:]
                             else:
                                 self.__cmds_success.append(False)
                                 break
@@ -214,8 +214,8 @@ class CommunicationProtocol:
     def build_num_samples_msg(num):
         return (CommunicationProtocol.NUM_SAMPLES + " " + str(num) + "\n").encode("utf-8")
 
-    def build_ready_msg(num):
-        return (CommunicationProtocol.READY + " " + str(num) + "\n").encode("utf-8")
+    def build_ready_msg(round, models_added):
+        return (CommunicationProtocol.READY + " " + str(round) + " " + str(models_added) + "\n").encode("utf-8")
 
     # Revisar si se puede parametrizar para no sobresegmentar el mensaje
     def build_params_msg(data):

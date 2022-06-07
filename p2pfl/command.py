@@ -42,8 +42,8 @@ class Num_samples_cmd(Command):
         self.node_connection.set_num_samples(num)
 
 class Ready_cmd(Command):
-    def execute(self,round):
-        self.node_connection.set_ready_round(round)
+    def execute(self,round,models):
+        self.node_connection.set_ready_status(round,models)
 
 class Params_cmd(Command):
     def execute(self,msg,done):
