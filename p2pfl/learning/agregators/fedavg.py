@@ -1,8 +1,4 @@
-import threading
-import logging
-
 import torch
-
 from p2pfl.learning.agregators.agregator import Agregator
    
 #-----------------------------------------------------

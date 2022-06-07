@@ -1,4 +1,4 @@
-from p2pfl.const import HEARTBEAT_FREC, TIEMOUT
+from p2pfl.const import HEARTBEAT_FREC, SOCKET_TIEMOUT
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
 from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
@@ -35,7 +35,7 @@ def __test_node_abrupt_down(four_nodes):
     
     # Desconexión n3 abruptamente (deja de enviar heartbeat)
     n3.heartbeater.stop()
-    time.sleep(TIEMOUT+0.1) #Esperar por la asincronía
+    time.sleep(SOCKET_TIEMOUT+0.1) #Esperar por la asincronía
     assert len(n1.neightboors) == len(n2.neightboors) == 1
     n3.stop()
     

@@ -5,13 +5,24 @@ from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
 from collections import OrderedDict
 import torch
 import time
+import threading
 
 while True:
+    for thread in threading.enumerate(): 
+        print(thread.name)
+    print("\n")
+
     node = Node(CNN(),MnistFederatedDM())
-    node.start()
+    #node.start()
+
+
+    for thread in threading.enumerate(): 
+        print(thread.name)
+    print("\n")
 
     node.connect_to("localhost",6666)
     time.sleep(0.1)
+
     node.set_start_learning(rounds=2,epochs=0)
 
     # Wait 4 results

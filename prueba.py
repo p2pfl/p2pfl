@@ -1,4 +1,3 @@
-from p2pfl.const import HEARTBEAT_FREC, TIEMOUT
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
 from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP

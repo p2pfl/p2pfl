@@ -13,6 +13,7 @@ class Agregator(threading.Thread):
 
     def __init__(self, n):
         threading.Thread.__init__(self)
+        self.name = "agregator-" + n.get_addr()[0] + ":" + str(n.get_addr()[1])
         self.node = n
         self.models = {}
         self.lock = threading.Lock()

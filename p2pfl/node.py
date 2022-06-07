@@ -43,6 +43,7 @@ class Node(threading.Thread, Observer):
         self.node_socket.listen(50) # no more than 50 connections at queue
         if port==0:
             self.port = self.node_socket.getsockname()[1]
+        self.name = "node-" + self.get_addr()[0] + ":" + str(self.get_addr()[1])
         
         # Neightboors
         self.neightboors = []
@@ -61,8 +62,7 @@ class Node(threading.Thread, Observer):
         self.totalrounds = None
         self.agredator = agregator(self)
         self.is_model_init = False
-
-
+        
     def get_addr(self):
         return self.host,self.port
 
@@ -253,6 +253,7 @@ class Node(threading.Thread, Observer):
             self.__bc_model()
             # Learning Thread
             learning_thread = threading.Thread(target=self.start_learning,args=(rounds,epochs))
+            learning_thread.name = "Learning Thread" + self.get_addr()[0] + ":" + str(self.get_addr()[1])
             learning_thread.start()
         else:
             logging.debug("({}) Learning already started".format(self.get_addr()))

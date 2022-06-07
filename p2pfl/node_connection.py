@@ -17,6 +17,7 @@ class NodeConnection(threading.Thread, Observable):
 
     def __init__(self, parent_node, s, addr):
         threading.Thread.__init__(self)
+        self.name = "node_connection-" + str(parent_node.get_addr()[0]) + ":" + str(parent_node.get_addr()[1]) + "-" + str(addr[0]) + ":" + str(addr[1])
         Observable.__init__(self)
         self.terminate_flag = threading.Event()
         self.socket = s
@@ -81,7 +82,7 @@ class NodeConnection(threading.Thread, Observable):
     ###################
 
     def run(self):
-        self.socket.settimeout(TIEMOUT)
+        self.socket.settimeout(SOCKET_TIEMOUT)
         overflow = 0
         buffer = b""
         while not self.terminate_flag.is_set():

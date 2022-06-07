@@ -11,6 +11,7 @@ class Heartbeater(threading.Thread):
         threading.Thread.__init__(self)
         self.nodo_padre = nodo_padre
         self.terminate_flag = threading.Event()
+        self.name = "heartbeater-" + str(self.nodo_padre.get_addr()[0]) + ":" + str(self.nodo_padre.get_addr()[1])
 
     def stop(self):
         self.terminate_flag.set()
