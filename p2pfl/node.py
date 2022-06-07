@@ -253,7 +253,7 @@ class Node(threading.Thread, Observer):
             self.__bc_model()
             # Learning Thread
             learning_thread = threading.Thread(target=self.start_learning,args=(rounds,epochs))
-            learning_thread.name = "Learning Thread" + self.get_addr()[0] + ":" + str(self.get_addr()[1])
+            learning_thread.name = "learning_thread-" + self.get_addr()[0] + ":" + str(self.get_addr()[1])
             learning_thread.start()
         else:
             logging.debug("({}) Learning already started".format(self.get_addr()))

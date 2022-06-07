@@ -93,33 +93,23 @@ def test_multimsg2(two_nodes):
 #------------------------------------------
 #   REVISAR INTERRUPCIONES MÁS A FONDO -> (cuando el learner aun no está corriendo pero el proceso está siendo llamado)
 #------------------------------------------
-def test_interrupt_train():
-    n1 = Node(MLP(),MnistFederatedDM())
-    n1.start()
-    n1.set_start_learning(99999,99999)
+def test_interrupt_train(two_nodes):
+    if __name__ == '__main__': # To avoid creating new process when current has not finished its bootstrapping phase
+        n1, n2 = two_nodes
+        n1.connect_to(n2.host,n2.port)
 
-    time.sleep(1) #Esperar por la asincronía
+        time.sleep(1) #Esperar por la asincronía
 
-    n1.set_stop_learning()
-    n1.stop()
-    
+        n1.set_start_learning(100,100)
 
-def test_interrupt_train2(two_nodes):
-    n1, n2 = two_nodes
-    n1.connect_to(n2.host,n2.port)
+        time.sleep(1) #Esperar por la asincronía
 
-    time.sleep(0.1) #Esperar por la asincronía
+        n1.set_stop_learning()
 
-    n1.set_start_learning(99999,99999)
+        while n1.round is not None and n2.round is not None:
+            print(n1.round,n2.round)
+            time.sleep(0.1)
 
-    time.sleep(1) #Esperar por la asincronía
-
-    n2.set_stop_learning()
-    
-    time.sleep(1) #Esperar por la asincronía
-    
-    assert n1.round is None
-    assert n2.round is None
 
 ###################
 #  Tests Learning #

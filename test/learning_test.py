@@ -1,3 +1,4 @@
+from p2pfl.node import Node
 from p2pfl.learning.agregators.fedavg import FedAvg
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.learning.pytorch.learners.lightninglearner import LightningLearner
@@ -14,7 +15,7 @@ def test_encoding():
     params == nl2.encode_parameters()
 
 def test_avg_simple():
-    agregator = FedAvg(None)
+    agregator = FedAvg(Node(None,None))
     a = OrderedDict([('a', torch.tensor(-1)), ('b', torch.tensor(-1))])
     b = OrderedDict([('a', torch.tensor(0)), ('b', torch.tensor(0))])
     c = OrderedDict([('a', torch.tensor(1)), ('b', torch.tensor(1))])
@@ -32,7 +33,7 @@ def test_avg_simple():
         assert result[layer] == a[layer]
 
 def test_avg_complex():
-    agregator = FedAvg(None)
+    agregator = FedAvg(Node(None,None))
     nl1 = LightningLearner(MLP(), None)
     params = nl1.get_parameters()
     params1 = nl1.get_parameters()

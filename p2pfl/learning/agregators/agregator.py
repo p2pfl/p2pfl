@@ -1,5 +1,6 @@
 import threading
 import logging
+from p2pfl.const import AGREGATION_TIEMOUT
 
 from p2pfl.learning.exceptions import ModelNotMatchingError
    
@@ -13,13 +14,21 @@ class Agregator(threading.Thread):
 
     def __init__(self, n):
         threading.Thread.__init__(self)
-        self.name = "agregator-" + n.get_addr()[0] + ":" + str(n.get_addr()[1])
         self.node = n
+        self.name = "agregator-" + n.get_addr()[0] + ":" + str(n.get_addr()[1])
         self.models = {}
         self.lock = threading.Lock()
+        self.agregation_lock = threading.Lock()
+        self.agregation_lock.acquire()
 
     def run(self):
-        logging.info("Agregating models.")
+        # Wait for all models to be added or TIMEOUT
+        self.agregation_lock.acquire(timeout=AGREGATION_TIEMOUT) 
+        # Start agregation
+        if len(self.models)!=(len(self.node.neightboors)+1):
+            logging.info("Agregating models. Timeout reached")
+        else:
+            logging.info("Agregating models.")
         self.node.learner.set_parameters(self.agregate(self.models))
         models_added = len(self.models)
         self.clear()
@@ -36,6 +45,9 @@ class Agregator(threading.Thread):
             self.lock.acquire()
             self.models[n] = ((m, w))
             logging.info("({}) Model added ({}/{}) from {}".format(self.node.get_addr(), str(len(self.models)), str(len(self.node.neightboors)+1), n))
+            # Start Timeout
+            if not self.is_alive():
+                self.start()
             # Check if all models have been added
             self.check_and_run_agregation()
             # Try Unloock
@@ -52,7 +64,7 @@ class Agregator(threading.Thread):
             self.lock.acquire()
 
         if len(self.models)==(len(self.node.neightboors)+1): 
-            self.start() 
+            self.agregation_lock.release()
         
         # Try Unloock
         try:
