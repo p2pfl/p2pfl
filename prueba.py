@@ -30,7 +30,7 @@ def test_node_down_on_learning(n):
     nodes[0].set_start_learning(rounds=2,epochs=0)
 
     # Stopping node
-    nodes[1].stop()
+    #nodes[1].stop()
 
     # Wait 4 results
     while True:
@@ -59,3 +59,5 @@ while True:
     os.system("rm -r caca")
     os.mkdir('caca')
     test_node_down_on_learning(6)
+    time.sleep(5)
+    print("\n\n\n\n\n\n\n")

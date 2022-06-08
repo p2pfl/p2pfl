@@ -1,9 +1,11 @@
+from multiprocessing import Event
 import sys
 import threading
 import logging
 from p2pfl.const import AGREGATION_TIEMOUT
 
 from p2pfl.learning.exceptions import ModelNotMatchingError
+from p2pfl.utils.observer import Events, Observable
    
 #-----------------------------------------------------------------------
 # 
@@ -11,10 +13,11 @@ from p2pfl.learning.exceptions import ModelNotMatchingError
 #
 #-----------------------------------------------------------------------
 
-class Agregator(threading.Thread):
+class Agregator(threading.Thread, Observable):
 
     def __init__(self, n):
         threading.Thread.__init__(self)
+        Observable.__init__(self)
         self.node = n
         self.name = "agregator-" + n.get_addr()[0] + ":" + str(n.get_addr()[1])
         self.models = {}
@@ -27,18 +30,18 @@ class Agregator(threading.Thread):
         self.agregation_lock.acquire(timeout=AGREGATION_TIEMOUT) 
         # Start agregation
         if len(self.models)!=(len(self.node.neightboors)+1):
-            logging.info("Agregating models. Timeout reached")
+            logging.info("({}) Agregating models. Timeout reached".format(self.node.get_addr()))
             # Validamos que el nodo siga operativo (si no puediera quedar residual)
             if self.node.round is None:
-                logging.info("Shutting Down Agregator Process")
+                logging.info("({}) Shutting Down Agregator Process".format(self.node.get_addr()))
                 sys.exit() 
         else:
-            logging.info("Agregating models.")
+            logging.info("({}) Agregating models.".format(self.node.get_addr()))
         self.node.learner.set_parameters(self.agregate(self.models))
         models_added = len(self.models)
         self.clear()
         # Notificamos al nodo
-        self.node.on_round_finished(models_added)
+        self.notify(Events.AGREGATION_FINISHED,None) 
 
     def agregate(self,models): print("Not implemented")
             
@@ -73,4 +76,7 @@ class Agregator(threading.Thread):
 
 
     def clear(self):
+        observers = self.get_observers()
         self.__init__(self.node)
+        for o in observers:
+            self.add_observer(o)

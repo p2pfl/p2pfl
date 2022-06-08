@@ -11,6 +11,11 @@ from torchmetrics import Accuracy
 class CNN(pl.LightningModule):
 
     def __init__(self, in_channels=1, out_channels=10):
+
+        # Set seed for reproducibility iniciialization
+        seed = 666
+        torch.manual_seed(seed)
+
         super().__init__()
         self.accuracy = Accuracy()
         self.lr_rate = 0.02

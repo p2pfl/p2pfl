@@ -4,7 +4,6 @@ from torch.nn import functional as F
 import pytorch_lightning as pl
 from torchmetrics import Accuracy
 
-torch.manual_seed(666)
 
 ###############################
 #    Multilayer Perceptron    #
@@ -13,6 +12,11 @@ torch.manual_seed(666)
 class MLP(pl.LightningModule):
     
     def __init__(self, lr_rate=0.001): # low lr to avoid overfitting
+        
+        # Set seed for reproducibility iniciialization
+        seed = 666
+        torch.manual_seed(seed)
+
         super().__init__()
         self.lr_rate = lr_rate
         self.accuracy = Accuracy()

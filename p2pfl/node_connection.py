@@ -50,7 +50,7 @@ class NodeConnection(threading.Thread, Observable):
     def set_ready_status(self,round, models_added):
         self.ready = round
         self.models_added = models_added
-        self.notify(self, Events.NODE_READY_EVENT)
+        self.notify(Events.NODE_READY_EVENT, self)
 
     def get_ready_status(self):
         return self.ready,self.models_added
@@ -137,7 +137,7 @@ class NodeConnection(threading.Thread, Observable):
         
         #Down Connection
         logging.debug("Closed connection: {}".format(self.get_addr()))
-        self.notify(self, Events.END_CONNECTION) # Notify the parent node
+        self.notify(Events.END_CONNECTION, self) # Notify the parent node
         self.socket.close()
 
     ##################
