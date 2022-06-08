@@ -59,14 +59,17 @@ def test_node_down_on_learning(n):
     # Node Connection
     for i in range(len(nodes)-1):
         nodes[i+1].connect_to(nodes[i].host,nodes[i].port)
-        time.sleep(0.5)
+        time.sleep(1)
+
+    # Check if they are connected
+    for node in nodes:
+        assert len(node.neightboors) == n-1
 
     # Start Learning
     nodes[0].set_start_learning(rounds=2,epochs=0)
 
     # Stopping node
     nodes[1].stop()
-
     # Wait 4 results
     while True:
         time.sleep(1)

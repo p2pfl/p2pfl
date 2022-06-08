@@ -30,7 +30,7 @@ def test_node_down_on_learning(n):
     nodes[0].set_start_learning(rounds=2,epochs=0)
 
     # Stopping node
-    #nodes[1].stop()
+    nodes[1].stop()
 
     # Wait 4 results
     while True:
@@ -39,8 +39,6 @@ def test_node_down_on_learning(n):
         for node in nodes:
             print(node.agredator.models.keys())
             print([ len(nc.param_bufffer) for nc in node.neightboors])
-
-        
 
         finish = True
         x = [node.round is None for node in nodes]
@@ -58,6 +56,6 @@ while True:
     # remove a folder with content named caca
     os.system("rm -r caca")
     os.mkdir('caca')
-    test_node_down_on_learning(6)
-    time.sleep(5)
+    test_node_down_on_learning(10)
+    #time.sleep(1)
     print("\n\n\n\n\n\n\n")

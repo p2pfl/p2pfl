@@ -29,7 +29,6 @@ class NodeConnection(threading.Thread, Observable):
         self.sending_model = False
         
         self.ready = -1
-        self.models_added = -1
 
         self.tmp = 0
 
@@ -47,14 +46,13 @@ class NodeConnection(threading.Thread, Observable):
     def get_addr(self):
         return self.addr
 
-    def set_ready_status(self,round, models_added):
+    def set_ready_status(self,round):
         self.ready = round
-        self.models_added = models_added
         self.notify(Events.NODE_READY_EVENT, self)
 
     def get_ready_status(self):
-        return self.ready,self.models_added
-
+        return self.ready
+        
     def stop(self,local=False):
         if not local:
             self.send(CommunicationProtocol.build_stop_msg())

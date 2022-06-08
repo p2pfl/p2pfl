@@ -34,7 +34,7 @@ class Agregator(threading.Thread, Observable):
             # Validamos que el nodo siga operativo (si no puediera quedar residual)
             if self.node.round is None:
                 logging.info("({}) Shutting Down Agregator Process".format(self.node.get_addr()))
-                sys.exit() 
+                return
         else:
             logging.info("({}) Agregating models.".format(self.node.get_addr()))
         self.node.learner.set_parameters(self.agregate(self.models))
