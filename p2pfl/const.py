@@ -6,4 +6,4 @@ BUFFER_SIZE = 8192 # the buffer size should be coherent with the ammount of mesa
 SOCKET_TIEMOUT = 15
 HEARTBEAT_FREC = 5
 MAX_ERRORS = 1
-AGREGATION_TIEMOUT = 5 
+AGREGATION_TIEMOUT = 15

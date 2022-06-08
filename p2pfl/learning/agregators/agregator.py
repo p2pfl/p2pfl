@@ -1,3 +1,4 @@
+import sys
 import threading
 import logging
 from p2pfl.const import AGREGATION_TIEMOUT
@@ -27,6 +28,10 @@ class Agregator(threading.Thread):
         # Start agregation
         if len(self.models)!=(len(self.node.neightboors)+1):
             logging.info("Agregating models. Timeout reached")
+            # Validamos que el nodo siga operativo (si no puediera quedar residual)
+            if self.node.round is None:
+                logging.info("Shutting Down Agregator Process")
+                sys.exit() 
         else:
             logging.info("Agregating models.")
         self.node.learner.set_parameters(self.agregate(self.models))
@@ -58,17 +63,11 @@ class Agregator(threading.Thread):
         else:
             raise ModelNotMatchingError("Not matching models")
         
-    def check_and_run_agregation(self,trhead_safe=False):
-        # Lock
-        if trhead_safe:
-            self.lock.acquire()
-
-        if len(self.models)==(len(self.node.neightboors)+1): 
-            self.agregation_lock.release()
-        
+    def check_and_run_agregation(self):
         # Try Unloock
         try:
-            self.lock.release()
+            if len(self.models)==(len(self.node.neightboors)+1): 
+                self.agregation_lock.release()
         except:
             pass
 

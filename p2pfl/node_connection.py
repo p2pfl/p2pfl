@@ -4,7 +4,7 @@ import logging
 from p2pfl.command import *
 from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.const import *
-from p2pfl.utils.observer import Observable
+from p2pfl.utils.observer import Events, Observable
 
 ########################
 #    NodeConnection    #
@@ -28,8 +28,8 @@ class NodeConnection(threading.Thread, Observable):
         self.param_bufffer = b""
         self.sending_model = False
         
-        self.ready = None
-        self.models_added = None
+        self.ready = -1
+        self.models_added = -1
 
         self.tmp = 0
 
@@ -50,6 +50,7 @@ class NodeConnection(threading.Thread, Observable):
     def set_ready_status(self,round, models_added):
         self.ready = round
         self.models_added = models_added
+        self.notify(self, Events.NODE_READY_EVENT)
 
     def get_ready_status(self):
         return self.ready,self.models_added
@@ -96,6 +97,13 @@ class NodeConnection(threading.Thread, Observable):
                     buffer = b""
                     overflow = 0
 
+                """
+                #Write msgs to a file
+                with open("caca/{}.log".format(self.name), "a") as myfile:
+                    myfile.write(str(msg))
+                    myfile.write("\n")
+                """
+
                 if msg!=b"":
                     #Check colapse
                     overflow = CommunicationProtocol.check_collapse(msg)
@@ -129,7 +137,7 @@ class NodeConnection(threading.Thread, Observable):
         
         #Down Connection
         logging.debug("Closed connection: {}".format(self.get_addr()))
-        self.notify(self) # Notify the parent node
+        self.notify(self, Events.END_CONNECTION) # Notify the parent node
         self.socket.close()
 
     ##################

@@ -11,14 +11,17 @@ from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
 from p2pfl.learning.pytorch.learners.lightninglearner import LightningLearner
 from p2pfl.node_connection import NodeConnection
 from p2pfl.heartbeater import Heartbeater
-from p2pfl.utils.observer import Observer
+from p2pfl.utils.observer import Events, Observer
 
 
 
 # FRACCIONES -> radom o por mecanismos de votación
 
-# Meter firmas de modelos por nodo + revisar test que falla: test_node_down_on_learning
+# revisar test que falla: test_node_down_on_learning
 
+# REVISAR LO DE BLOQUEAR CUANDO SE MANDA EL MODELO
+
+# Cambiar algunos int nones por -1 para preservar el tipo
 
 
 ###################################################################################################################
@@ -60,8 +63,10 @@ class Node(threading.Thread, Observer):
         self.learner = LightningLearner(model, data, log_name=log_dir) 
         self.round = None
         self.totalrounds = None
+        self.models_added = None
         self.agredator = agregator(self)
         self.is_model_init = False
+        self.__finish_wait_lock = threading.Lock()
         
     def get_addr(self):
         return self.host,self.port
@@ -172,10 +177,16 @@ class Node(threading.Thread, Observer):
             pass
 
     # Observer Pattern used to notify end of connections
-    def update(self,nc):
-        self.rm_neighbor(nc)
-        self.agredator.check_and_run_agregation(trhead_safe=True)
-  
+    def update(self,nc,event):
+        if event == Events.END_CONNECTION:
+            self.rm_neighbor(nc)
+            self.agredator.check_and_run_agregation()
+        elif event == Events.NODE_READY_EVENT:
+            # Try to unlock to check if all nodes are ready (on_finish_round (agregator_thread))
+            try:
+                self.__finish_wait_lock.release()
+            except:
+                pass
     # Connecto to a node
     #   - If full -> the node will be connected to the entire network
     def connect_to(self, h, p, full=True):
@@ -348,33 +359,29 @@ class Node(threading.Thread, Observer):
         else: 
             logging.error("({}) Tried to add a model while learning is not running".format(self.get_addr()))
 
+    # on finish tb podríamos eliminarlo por puros eventos -> 
     def on_round_finished(self,models_added):
         try:
             if self.round is not None:
+                self.models_added = models_added
                 # Determine if learning is finished
-                if self.round < self.totalrounds:
-                    """
-                    # Wait local model sharing processes (to avoid model sharing conflicts)
-                    while True:
-                        #print("Waiting for local model sharing processes to finish")
-                        if not self.__is_sending_model():
-                            break
-                        time.sleep(0.1)
-                    """
+                if self.round < self.totalrounds:  # comportamientos de sincornización harán falta para todas las rondas (hasta la última)
+           
                     # Send ready message --> quizá ya no haga falta bloquear el socket
                     while not self.broadcast(CommunicationProtocol.build_ready_msg(self.round,models_added)):
                         time.sleep(0.1)
                     
-                    # Wait for ready messages -> cambiarlo x un mutex
-                    logging.info("({}) Waiting other nodes.".format(self.get_addr()))
+                    # Wait for ready messages
                     while True:
-                        finish = True
-                        for nc in self.neightboors:
-                            finish = finish and nc.get_ready_status()[0]==self.round
+                        logging.info("({}) Waiting other nodes.".format(self.get_addr()))
+                        # If the trainning has been interrupted, stop waiting
+                        if self.round is None:
+                            logging.info("({}) Shutting down round finished process.".format(self.get_addr()))
+                            sys.exit()
                         
-                        if finish:
+                        if all([ nc.get_ready_status()[0]>=self.round for nc in self.neightboors]):
                             break
-                        time.sleep(0.1)
+                        self.__finish_wait_lock.acquire(timeout=2)
                         
                     # Set Next Round
                     self.round = self.round + 1
@@ -389,7 +396,7 @@ class Node(threading.Thread, Observer):
             else:
                 logging.info("({}) FL not running but models received".format(self.get_addr()))
         except Exception as e:
-            logging.error("({}) Concurrence Error: {}".format(e,self.get_addr()))
+            logging.error("({}) Concurrence Error: {}".format(self.get_addr(),e))
 
 
 

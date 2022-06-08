@@ -15,6 +15,7 @@ from p2pfl.const import BUFFER_SIZE
 #   - NUM_SAMPLES <num> 
 #   - PARAMS <data> \PARAMS
 #   - READY <round> <models_added>
+#   - SEND_MODEL
 
 class CommunicationProtocol:
 
@@ -27,6 +28,7 @@ class CommunicationProtocol:
     NUM_SAMPLES    = "NUM_SAMPLES"
     PARAMS         = "PARAMS" #special case
     READY          = "READY"
+    SEND_MODEL     = "SEND_MODEL"
 
     ########################
     #    MSG PROCESSING    #

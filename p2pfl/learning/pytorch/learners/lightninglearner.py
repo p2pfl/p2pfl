@@ -15,7 +15,7 @@ class LightningLearner(NodeLearner):
     def __init__(self, model, data, log_name=None):
         self.model = model            
         self.data = data
-        self.logger = FederatedTensorboardLogger("training_logs", name=log_name)
+        self.logger = None #FederatedTensorboardLogger("training_logs", name=log_name)
         self.trainer = None
         self.epochs = 1
 

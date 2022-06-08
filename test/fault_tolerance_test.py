@@ -59,7 +59,7 @@ def test_node_down_on_learning(n):
     # Node Connection
     for i in range(len(nodes)-1):
         nodes[i+1].connect_to(nodes[i].host,nodes[i].port)
-        time.sleep(0.1)
+        time.sleep(0.5)
 
     # Start Learning
     nodes[0].set_start_learning(rounds=2,epochs=0)

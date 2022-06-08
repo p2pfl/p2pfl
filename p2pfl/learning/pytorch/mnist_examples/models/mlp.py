@@ -4,6 +4,8 @@ from torch.nn import functional as F
 import pytorch_lightning as pl
 from torchmetrics import Accuracy
 
+torch.manual_seed(666)
+
 ###############################
 #    Multilayer Perceptron    #
 ###############################
