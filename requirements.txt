@@ -1,7 +1,0 @@
-pytorch-lightning
-jupyter
-pytest
-torchvision
-sphinx
-myst-parser
-furo

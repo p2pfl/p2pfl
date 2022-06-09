@@ -1,0 +1,739 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="Installation" href="installation.html" />
+
+    <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
+        <title>Documentation - P2P FL</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">P2P FL</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  
+  <span class="sidebar-brand-text">P2P FL</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Documentation</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="documentation">
+<h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this heading">#</a></h1>
+<section id="module-p2pfl.base_node">
+<span id="p2pfl-base-node-module"></span><h2>p2pfl.base_node module<a class="headerlink" href="#module-p2pfl.base_node" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="p2pfl.base_node.BaseNode">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.base_node.</span></span><span class="sig-name descname"><span class="pre">BaseNode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'127.0.0.1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Thread</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.base_node.BaseNode.add_neighbor">
+<span class="sig-name descname"><span class="pre">add_neighbor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode.add_neighbor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode.add_neighbor" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.base_node.BaseNode.broadcast">
+<span class="sig-name descname"><span class="pre">broadcast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ttl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_necesary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode.broadcast"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode.broadcast" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.base_node.BaseNode.connect_to">
+<span class="sig-name descname"><span class="pre">connect_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode.connect_to"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode.connect_to" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.base_node.BaseNode.disconnect_from">
+<span class="sig-name descname"><span class="pre">disconnect_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode.disconnect_from"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode.disconnect_from" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.base_node.BaseNode.get_addr">
+<span class="sig-name descname"><span class="pre">get_addr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode.get_addr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode.get_addr" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.base_node.BaseNode.get_neighbor">
+<span class="sig-name descname"><span class="pre">get_neighbor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode.get_neighbor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode.get_neighbor" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.base_node.BaseNode.get_neighbors">
+<span class="sig-name descname"><span class="pre">get_neighbors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode.get_neighbors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode.get_neighbors" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.base_node.BaseNode.rm_neighbor">
+<span class="sig-name descname"><span class="pre">rm_neighbor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode.rm_neighbor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode.rm_neighbor" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.base_node.BaseNode.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode.run" title="Permalink to this definition">#</a></dt>
+<dd><p>Method representing the thread’s activity.</p>
+<p>You may override this method in a subclass. The standard run() method
+invokes the callable object passed to the object’s constructor as the
+target argument, if any, with sequential and keyword arguments taken
+from the args and kwargs arguments, respectively.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.base_node.BaseNode.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode.start" title="Permalink to this definition">#</a></dt>
+<dd><p>Start the thread’s activity.</p>
+<p>It must be called at most once per thread object. It arranges for the
+object’s run() method to be invoked in a separate thread of control.</p>
+<p>This method will raise a RuntimeError if called more than once on the
+same thread object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.base_node.BaseNode.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode.stop" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-p2pfl.command">
+<span id="p2pfl-command-module"></span><h2>p2pfl.command module<a class="headerlink" href="#module-p2pfl.command" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="p2pfl.command.Beat_cmd">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.command.</span></span><span class="sig-name descname"><span class="pre">Beat_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_connection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Beat_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Beat_cmd" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#p2pfl.command.Command" title="p2pfl.command.Command"><code class="xref py py-class docutils literal notranslate"><span class="pre">Command</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.command.Beat_cmd.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Beat_cmd.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Beat_cmd.execute" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="p2pfl.command.Command">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.command.</span></span><span class="sig-name descname"><span class="pre">Command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_connection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Command" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.command.Command.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Command.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Command.execute" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="p2pfl.command.Conn_to_cmd">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.command.</span></span><span class="sig-name descname"><span class="pre">Conn_to_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_connection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Conn_to_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Conn_to_cmd" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#p2pfl.command.Command" title="p2pfl.command.Command"><code class="xref py py-class docutils literal notranslate"><span class="pre">Command</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.command.Conn_to_cmd.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Conn_to_cmd.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Conn_to_cmd.execute" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="p2pfl.command.Num_samples_cmd">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.command.</span></span><span class="sig-name descname"><span class="pre">Num_samples_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_connection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Num_samples_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Num_samples_cmd" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#p2pfl.command.Command" title="p2pfl.command.Command"><code class="xref py py-class docutils literal notranslate"><span class="pre">Command</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.command.Num_samples_cmd.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Num_samples_cmd.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Num_samples_cmd.execute" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="p2pfl.command.Params_cmd">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.command.</span></span><span class="sig-name descname"><span class="pre">Params_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_connection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Params_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Params_cmd" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#p2pfl.command.Command" title="p2pfl.command.Command"><code class="xref py py-class docutils literal notranslate"><span class="pre">Command</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.command.Params_cmd.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">done</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Params_cmd.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Params_cmd.execute" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="p2pfl.command.Ready_cmd">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.command.</span></span><span class="sig-name descname"><span class="pre">Ready_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_connection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Ready_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Ready_cmd" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#p2pfl.command.Command" title="p2pfl.command.Command"><code class="xref py py-class docutils literal notranslate"><span class="pre">Command</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.command.Ready_cmd.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Ready_cmd.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Ready_cmd.execute" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="p2pfl.command.Start_learning_cmd">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.command.</span></span><span class="sig-name descname"><span class="pre">Start_learning_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_connection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Start_learning_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Start_learning_cmd" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#p2pfl.command.Command" title="p2pfl.command.Command"><code class="xref py py-class docutils literal notranslate"><span class="pre">Command</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.command.Start_learning_cmd.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Start_learning_cmd.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Start_learning_cmd.execute" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="p2pfl.command.Stop_cmd">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.command.</span></span><span class="sig-name descname"><span class="pre">Stop_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_connection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Stop_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Stop_cmd" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#p2pfl.command.Command" title="p2pfl.command.Command"><code class="xref py py-class docutils literal notranslate"><span class="pre">Command</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.command.Stop_cmd.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Stop_cmd.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Stop_cmd.execute" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="p2pfl.command.Stop_learning_cmd">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.command.</span></span><span class="sig-name descname"><span class="pre">Stop_learning_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_connection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Stop_learning_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Stop_learning_cmd" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#p2pfl.command.Command" title="p2pfl.command.Command"><code class="xref py py-class docutils literal notranslate"><span class="pre">Command</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.command.Stop_learning_cmd.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Stop_learning_cmd.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Stop_learning_cmd.execute" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-p2pfl.communication_protocol">
+<span id="p2pfl-communication-protocol-module"></span><h2>p2pfl.communication_protocol module<a class="headerlink" href="#module-p2pfl.communication_protocol" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.communication_protocol.</span></span><span class="sig-name descname"><span class="pre">CommunicationProtocol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.BEAT">
+<span class="sig-name descname"><span class="pre">BEAT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'BEAT'</span></em><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.BEAT" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.CONN">
+<span class="sig-name descname"><span class="pre">CONN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'CONNECT'</span></em><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.CONN" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.CONN_TO">
+<span class="sig-name descname"><span class="pre">CONN_TO</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'CONNECT_TO'</span></em><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.CONN_TO" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.NUM_SAMPLES">
+<span class="sig-name descname"><span class="pre">NUM_SAMPLES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'NUM_SAMPLES'</span></em><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.NUM_SAMPLES" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.PARAMS">
+<span class="sig-name descname"><span class="pre">PARAMS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'PARAMS'</span></em><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.PARAMS" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.READY">
+<span class="sig-name descname"><span class="pre">READY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'READY'</span></em><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.READY" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.SEND_MODEL">
+<span class="sig-name descname"><span class="pre">SEND_MODEL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SEND_MODEL'</span></em><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.SEND_MODEL" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.START_LEARNING">
+<span class="sig-name descname"><span class="pre">START_LEARNING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'START_LEARNING'</span></em><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.START_LEARNING" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.STOP">
+<span class="sig-name descname"><span class="pre">STOP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'STOP'</span></em><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.STOP" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.STOP_LEARNING">
+<span class="sig-name descname"><span class="pre">STOP_LEARNING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'STOP_LEARNING'</span></em><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.STOP_LEARNING" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.build_beat_msg">
+<span class="sig-name descname"><span class="pre">build_beat_msg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.build_beat_msg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.build_beat_msg" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.build_connect_msg">
+<span class="sig-name descname"><span class="pre">build_connect_msg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">broadcast</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.build_connect_msg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.build_connect_msg" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.build_connect_to_msg">
+<span class="sig-name descname"><span class="pre">build_connect_to_msg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.build_connect_to_msg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.build_connect_to_msg" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.build_num_samples_msg">
+<span class="sig-name descname"><span class="pre">build_num_samples_msg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.build_num_samples_msg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.build_num_samples_msg" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.build_params_msg">
+<span class="sig-name descname"><span class="pre">build_params_msg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.build_params_msg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.build_params_msg" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.build_ready_msg">
+<span class="sig-name descname"><span class="pre">build_ready_msg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.build_ready_msg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.build_ready_msg" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.build_start_learning_msg">
+<span class="sig-name descname"><span class="pre">build_start_learning_msg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epochs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.build_start_learning_msg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.build_start_learning_msg" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.build_stop_learning_msg">
+<span class="sig-name descname"><span class="pre">build_stop_learning_msg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.build_stop_learning_msg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.build_stop_learning_msg" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.build_stop_msg">
+<span class="sig-name descname"><span class="pre">build_stop_msg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.build_stop_msg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.build_stop_msg" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.check_collapse">
+<span class="sig-name descname"><span class="pre">check_collapse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.check_collapse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.check_collapse" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.process_connection">
+<span class="sig-name descname"><span class="pre">process_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.process_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.process_connection" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.process_message">
+<span class="sig-name descname"><span class="pre">process_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.process_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.process_message" title="Permalink to this definition">#</a></dt>
+<dd><dl class="simple">
+<dt>” DEBUG MSGS</dt><dd><p>f = open(“logs/communication” + str(self.random) + “.log”, “a”)
+f.write(str(msg))
+f.write(”</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>“)</dt><dd><p>f.close()</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-p2pfl.const">
+<span id="p2pfl-const-module"></span><h2>p2pfl.const module<a class="headerlink" href="#module-p2pfl.const" title="Permalink to this heading">#</a></h2>
+</section>
+<section id="module-p2pfl.heartbeater">
+<span id="p2pfl-heartbeater-module"></span><h2>p2pfl.heartbeater module<a class="headerlink" href="#module-p2pfl.heartbeater" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="p2pfl.heartbeater.Heartbeater">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.heartbeater.</span></span><span class="sig-name descname"><span class="pre">Heartbeater</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nodo_padre</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/heartbeater.html#Heartbeater"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.heartbeater.Heartbeater" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Thread</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.heartbeater.Heartbeater.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/heartbeater.html#Heartbeater.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.heartbeater.Heartbeater.run" title="Permalink to this definition">#</a></dt>
+<dd><p>Method representing the thread’s activity.</p>
+<p>You may override this method in a subclass. The standard run() method
+invokes the callable object passed to the object’s constructor as the
+target argument, if any, with sequential and keyword arguments taken
+from the args and kwargs arguments, respectively.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.heartbeater.Heartbeater.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/heartbeater.html#Heartbeater.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.heartbeater.Heartbeater.stop" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-p2pfl.node">
+<span id="p2pfl-node-module"></span><h2>p2pfl.node module<a class="headerlink" href="#module-p2pfl.node" title="Permalink to this heading">#</a></h2>
+<p>Class that represents a simple node.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="p2pfl.node.Node">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.node.</span></span><span class="sig-name descname"><span class="pre">Node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host='127.0.0.1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agregator=&lt;class</span> <span class="pre">'p2pfl.learning.agregators.fedavg.FedAvg'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node.html#Node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node.Node" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#p2pfl.base_node.BaseNode" title="p2pfl.base_node.BaseNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseNode</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Observer</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node.Node.add_model">
+<span class="sig-name descname"><span class="pre">add_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node.html#Node.add_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node.Node.add_model" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node.Node.set_data">
+<span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node.html#Node.set_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node.Node.set_data" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node.Node.set_model">
+<span class="sig-name descname"><span class="pre">set_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node.html#Node.set_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node.Node.set_model" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node.Node.set_start_learning">
+<span class="sig-name descname"><span class="pre">set_start_learning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node.html#Node.set_start_learning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node.Node.set_start_learning" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node.Node.set_stop_learning">
+<span class="sig-name descname"><span class="pre">set_stop_learning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node.html#Node.set_stop_learning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node.Node.set_stop_learning" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node.Node.start_learning">
+<span class="sig-name descname"><span class="pre">start_learning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node.html#Node.start_learning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node.Node.start_learning" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node.Node.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node.html#Node.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node.Node.stop" title="Permalink to this definition">#</a></dt>
+<dd><p>”
+Stop</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node.Node.stop_learning">
+<span class="sig-name descname"><span class="pre">stop_learning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node.html#Node.stop_learning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node.Node.stop_learning" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node.Node.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node.html#Node.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node.Node.update" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-p2pfl.node_connection">
+<span id="p2pfl-node-connection-module"></span><h2>p2pfl.node_connection module<a class="headerlink" href="#module-p2pfl.node_connection" title="Permalink to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.node_connection.</span></span><span class="sig-name descname"><span class="pre">NodeConnection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">addr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Thread</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Observable</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.add_param_segment">
+<span class="sig-name descname"><span class="pre">add_param_segment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.add_param_segment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.add_param_segment" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.clear_buffer">
+<span class="sig-name descname"><span class="pre">clear_buffer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.clear_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.clear_buffer" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.get_addr">
+<span class="sig-name descname"><span class="pre">get_addr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.get_addr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.get_addr" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.get_params">
+<span class="sig-name descname"><span class="pre">get_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.get_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.get_params" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.get_ready_status">
+<span class="sig-name descname"><span class="pre">get_ready_status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.get_ready_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.get_ready_status" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.is_sending_model">
+<span class="sig-name descname"><span class="pre">is_sending_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.is_sending_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.is_sending_model" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.run" title="Permalink to this definition">#</a></dt>
+<dd><p>Method representing the thread’s activity.</p>
+<p>You may override this method in a subclass. The standard run() method
+invokes the callable object passed to the object’s constructor as the
+target argument, if any, with sequential and keyword arguments taken
+from the args and kwargs arguments, respectively.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.send">
+<span class="sig-name descname"><span class="pre">send</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.send"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.send" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.set_num_samples">
+<span class="sig-name descname"><span class="pre">set_num_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.set_num_samples"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.set_num_samples" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.set_ready_status">
+<span class="sig-name descname"><span class="pre">set_ready_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.set_ready_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.set_ready_status" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.set_sending_model">
+<span class="sig-name descname"><span class="pre">set_sending_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flag</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.set_sending_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.set_sending_model" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.stop" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-p2pfl">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-p2pfl" title="Permalink to this heading">#</a></h2>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          <a class="prev-page" href="installation.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Installation</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Pedro Guijas Bravo
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Documentation</a><ul>
+<li><a class="reference internal" href="#module-p2pfl.base_node">p2pfl.base_node module</a></li>
+<li><a class="reference internal" href="#module-p2pfl.command">p2pfl.command module</a></li>
+<li><a class="reference internal" href="#module-p2pfl.communication_protocol">p2pfl.communication_protocol module</a></li>
+<li><a class="reference internal" href="#module-p2pfl.const">p2pfl.const module</a></li>
+<li><a class="reference internal" href="#module-p2pfl.heartbeater">p2pfl.heartbeater module</a></li>
+<li><a class="reference internal" href="#module-p2pfl.node">p2pfl.node module</a></li>
+<li><a class="reference internal" href="#module-p2pfl.node_connection">p2pfl.node_connection module</a></li>
+<li><a class="reference internal" href="#module-p2pfl">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/scripts/furo.js"></script>
+    </body>
+</html>
