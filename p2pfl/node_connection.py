@@ -10,10 +10,21 @@ from p2pfl.utils.observer import Events, Observable
 #    NodeConnection    #
 ########################
 
-# COSAS:
-#   - si casca la conexión no se trata de volver a conectar
-
 class NodeConnection(threading.Thread, Observable):
+    """
+    This class represents a connection to a node. It is a thread, so it's going to process all messages in a background thread using the CommunicationProtocol.
+
+    The NodeConnection can recive many messages in a single recv and exists 2 kinds of messages:
+        - Binary messages (models)
+        - Text messages (commands)
+
+    Carefully, if the connection is broken, it will be closed. If the user wants to reconnect, he/she should create a new connection.
+
+    Args:
+        parent_node: The parent node of this connection.
+        s: The socket of the connection.
+        addr: The address of the node that is connected to.
+    """
 
     def __init__(self, parent_node, s, addr):
         threading.Thread.__init__(self)
@@ -44,43 +55,84 @@ class NodeConnection(threading.Thread, Observable):
         })
 
     def get_addr(self):
+        """
+        Returns:
+            The address of the node that is connected to.   
+        """
         return self.addr
 
     def set_ready_status(self,round):
+        """
+        Set the last ready round of the other node.
+
+        Args:
+            round: The last ready round of the other node.
+        """
         self.ready = round
         self.notify(Events.NODE_READY_EVENT, self)
 
     def get_ready_status(self):
+        """
+        Returns:
+            The last ready round of the other node.
+        """
         return self.ready
-        
-    def stop(self,local=False):
-        if not local:
-            self.send(CommunicationProtocol.build_stop_msg())
-        self.terminate_flag.set()
-
-    def clear_buffer(self):
-        self.param_bufffer = b""
-
-    def is_sending_model(self):
-        return self.sending_model
 
     def set_sending_model(self,flag):
+        """
+        Set when the model is being sent in the connection. (high bandwidth)
+        
+        Args:
+            flag: True if the model is being sent, false otherwise.
+        """
         self.sending_model = flag
 
+    def is_sending_model(self):
+        """
+        Returns:    
+            True if the model is being sent, False otherwise.
+        """
+        return self.sending_model
+
     def set_num_samples(self,num):
+        """
+        Indicates the number of samples of the otrh node.
+         
+        Args:
+            num: The number of samples of the other node.
+        """
         self.num_samples = num
 
     def add_param_segment(self,data):
+        """
+        Add a segment of parameters to the buffer.
+        
+        Args:
+            data: The segment of parameters.
+        """
         self.param_bufffer = self.param_bufffer + data
 
     def get_params(self):
+        """
+        Returns:
+            The parameters buffer content.
+        """
         return self.param_bufffer
 
+    def clear_buffer(self):
+        """
+        Clear the params buffer.
+        """
+        self.param_bufffer = b""
+
     ################### 
-    #    Main Loop    #  --> Recive and process messages
+    #    Main Loop    # 
     ###################
 
     def run(self):
+        """
+        NodeConnection loop. Recive and process messages.
+        """
         self.socket.settimeout(SOCKET_TIEMOUT)
         overflow = 0
         buffer = b""
@@ -138,17 +190,39 @@ class NodeConnection(threading.Thread, Observable):
         self.notify(Events.END_CONNECTION, self) # Notify the parent node
         self.socket.close()
 
+    def stop(self,local=False):
+        """
+        Stop the connection.
+        
+        Args:
+            local: If true, the connection will be closed without notifying the other node.
+        """
+        if not local:
+            self.send(CommunicationProtocol.build_stop_msg())
+        self.terminate_flag.set()
+
     ##################
     #    Messages    # 
     ##################
 
     # Send a message to the other node. Message sending isnt guaranteed
-    def send(self, data, model=False): 
+    def send(self, data, is_necesary=True): 
+        """
+        Send a message to the other node.
+
+        Args:
+            data: The message to send.
+            is_necesary: If true, the message is guaranteed to be sent.
+
+        Returns:
+            True if the message was sent, False otherwise.
+
+        """    
         # Check if the connection is still alive
         if not self.terminate_flag.is_set():
             try:
                 # If model is sending, we cant send a message
-                if not self.is_sending_model() or model:
+                if not self.is_sending_model() or is_necesary:
                     self.socket.sendall(data)
                     return True
                 else:

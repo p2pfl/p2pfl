@@ -1,8 +1,3 @@
-"""
-    Class that represents a simple node.
-
-
-"""
 from concurrent.futures import thread
 from distutils.log import debug
 import socket
@@ -47,6 +42,16 @@ class Node(BaseNode, Observer):
     #####################
 
     def __init__(self, model, data, host="127.0.0.1", port=0, agregator=FedAvg):
+        """
+        Class that represents a node that allows ***p2p Federated Learning**. 
+            
+        Args:
+            model (torch.nn.Module): Model to be learned.
+            data (torch.utils.data.Dataset): Dataset to be used in the learning process.
+            host (str): Host where the node will be listening.
+            port (int): Port where the node will be listening.
+            agregator (Agregator): Agregator to be used in the learning process.
+        """
         BaseNode.__init__(self,host,port)
         Observer.__init__(self)
 
@@ -68,7 +73,7 @@ class Node(BaseNode, Observer):
     
     def stop(self): 
         """"
-            Stop
+        Stop
         """
         if self.round is not None:
             self.stop_learning()

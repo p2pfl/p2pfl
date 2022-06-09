@@ -4,7 +4,7 @@ from p2pfl.const import BUFFER_SIZE
 ###############################
 #    CommunicationProtocol    # --> Patrón commando -> hacer una cola de comandos y ejecutarlo al acabar
 ###############################
-#
+
 # Valid messages: 
 #   - BEAT
 #   - STOP
@@ -38,7 +38,8 @@ class CommunicationProtocol:
         self.command_dict = command_dict
         self.__cmds_success = []
 
-        """ DEBUG MSGS
+        """ 
+        DEBUG MSGS
         import random
         self.random = random.randrange(0, 100)
         """
@@ -72,13 +73,12 @@ class CommunicationProtocol:
 
     # Check if the message is correct and execute the callback
     def process_message(self, msg):
-        """" DEBUG MSGS
-        f = open("logs/communication" + str(self.random) + ".log", "a")
-        f.write(str(msg))
-        f.write("\n-----------------------------------------------------\n")
-        f.close()
-        """
-
+        #DEBUG MSGS
+        #f = open("logs/communication" + str(self.random) + ".log", "a")
+        #f.write(str(msg))
+        #f.write("\n-----------------------------------------------------\n")
+        #f.close()
+        
         header = CommunicationProtocol.PARAMS.encode("utf-8")
         if msg[0:len(header)] == header:
             end = ("\\" + CommunicationProtocol.PARAMS).encode("utf-8")

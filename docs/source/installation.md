@@ -1,7 +1,5 @@
 # Installation
 
-
 ``` {warning}
-   # XD
-``` 
-
+   XD
+```

@@ -4,6 +4,10 @@ import threading
 #    Command    #
 #################
 
+#
+# REVISAR BIEN ESTA CONEXIÓN, SEGURAMENTE PUEDA SER MEJORADA USANDO EL PATRON OBSERVER
+#
+
 class Command:
     def __init__(self, parent_node, node_connection):
         self.parent_node = parent_node

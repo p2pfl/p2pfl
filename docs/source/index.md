@@ -4,13 +4,13 @@ P2P Federated Learning is a library for Federated Learning using a **p2p** archi
 
 bla
 bla
-bla 
+bla
 
-```
+``` 
 sphinx-apidoc -o XXX YYY
 ```
 
-## Documentation 
+## Documentation
 
 ```{eval-rst}
 .. toctree::
