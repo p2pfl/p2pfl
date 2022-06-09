@@ -32,6 +32,7 @@ class Start_learning_cmd(Command):
         # Thread process to avoid blocking the message receiving
         learning_thread = threading.Thread(target=self.parent_node.start_learning,args=(rounds,epochs))
         learning_thread.name = "learning_thread-" + self.parent_node.get_addr()[0] + ":" + str(self.parent_node.get_addr()[1])
+        learning_thread.daemon = True
         learning_thread.start()
 
 class Stop_learning_cmd(Command):

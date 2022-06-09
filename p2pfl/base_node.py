@@ -188,10 +188,10 @@ class BaseNode(threading.Thread):
     ##########################
 
     # FULL_CONNECTED -> 3th iteration |> TTL 
-    def broadcast(self, msg, ttl=1, exc=[], is_model=False):
+    def broadcast(self, msg, ttl=1, exc=[], is_necesary=True):
         sended=True 
         for n in self.neightboors:
             if not (n in exc):
-                sended = sended and n.send(msg, is_model)
+                sended = sended and n.send(msg, is_necesary)
         return sended
 

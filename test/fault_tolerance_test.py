@@ -1,4 +1,4 @@
-from p2pfl.const import HEARTBEAT_FREC, SOCKET_TIEMOUT
+from p2pfl.const import AGREGATION_TIEMOUT, HEARTBEAT_FREC, SOCKET_TIEMOUT
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
 from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
@@ -6,9 +6,8 @@ from p2pfl.node import Node
 import pytest
 import time
 from test.fixtures import two_nodes, four_nodes
-
     
-def __test_node_abrupt_down(four_nodes):
+def test_node_abrupt_down(four_nodes):
     n1, n2, n3, n4 = four_nodes
 
     # Conexión n1 n2
@@ -86,7 +85,6 @@ def test_node_down_on_learning(n):
 def __test_abrupt_connection_down_on_learning(two_nodes):
     pass
 
-# por acabar
 def test_bad_binary_model(two_nodes):
     n1, n2 = two_nodes
     n1.connect_to(n2.host,n2.port)
@@ -101,6 +99,9 @@ def test_bad_binary_model(two_nodes):
     
     while not n1.round is None and not n2.round is None:
         time.sleep(0.1)
+
+    # Wait agregation thread of node 2 -> test still running if we don't wait
+    time.sleep(AGREGATION_TIEMOUT+2)
         
 # Modelo incompatible
 def test_wrong_model():
@@ -112,7 +113,8 @@ def test_wrong_model():
     n1.connect_to(n2.host,n2.port)
     time.sleep(0.1) 
     
-    #n1.set_start_learning(rounds=2,epochs=0)
+    n1.set_start_learning(rounds=2,epochs=0)
+    time.sleep(0.1)
 
     # Wait 4 results
     while not n1.round is None and not n2.round is None:
@@ -120,4 +122,3 @@ def test_wrong_model():
 
     n1.stop()
     n2.stop()
-    

@@ -1,3 +1,8 @@
+"""
+    Class that represents a simple node.
+
+
+"""
 from concurrent.futures import thread
 from distutils.log import debug
 import socket
@@ -62,8 +67,12 @@ class Node(BaseNode, Observer):
     #######################
     
     def stop(self): 
+        """"
+            Stop
+        """
         if self.round is not None:
             self.stop_learning()
+            self.agredator.check_and_run_agregation(force=True)
         super().stop()
 
     ################
@@ -120,6 +129,7 @@ class Node(BaseNode, Observer):
             # Learning Thread
             learning_thread = threading.Thread(target=self.start_learning,args=(rounds,epochs))
             learning_thread.name = "learning_thread-" + self.get_addr()[0] + ":" + str(self.get_addr()[1])
+            learning_thread.daemon = True
             learning_thread.start()
         else:
             logging.debug("({}) Learning already started".format(self.get_addr()))
@@ -152,9 +162,8 @@ class Node(BaseNode, Observer):
         # Indicates samples that be used in the learning process
         logging.info("({}) Broadcasting Number of Samples...".format(self.get_addr()))
         #esto ya no hará falta -> ahora multilee -> tb nos perjudica porque si ya se está mandado el modelo, va a promediarlo x 0
-        if not self.broadcast(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())):
-            logging.error("({}) No se han podido enviar los números de muestras a todos los nodos".format(self.get_addr()))
-            self.set_stop_learning()
+        self.broadcast(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples()))
+            
         
         # Train
         self.learner.set_epochs(epochs)
@@ -204,12 +213,13 @@ class Node(BaseNode, Observer):
             except DecodingParamsError as e:
                 # Bajamos el nodo
                 logging.error("({}) Error decoding parameters".format(self.get_addr()))
+                self.stop()
+
                 # temporal
                 # append m in a file
                 with open('paramserror.log','a') as f:
                     f.write(str(m))
                     f.write("\n\n\n")
-                self.stop()
 
             except ModelNotMatchingError as e:
                 # Bajamos el nodo
@@ -250,13 +260,17 @@ class Node(BaseNode, Observer):
         logging.info("({}) Broadcasting model to {} clients. (size: {} bytes)".format(self.get_addr(),len(self.neightboors),len(encoded_msgs)*BUFFER_SIZE))
 
         # Lock Neightboors Communication
-        #self.__set_sending_model(True)
+        self.__set_sending_model(True)
         # Send Fragments
         for msg in encoded_msgs:
-            self.broadcast(msg,is_model=True)
+            self.broadcast(msg)
         # UnLock Neightboors Communication
-        #self.__set_sending_model(False)
+        self.__set_sending_model(False)
 
+    def __set_sending_model(self, flag):
+        for node in self.neightboors:
+            node.set_sending_model(flag)
+    
     def __on_round_finished(self):
         try:
             if self.round is not None:
@@ -264,17 +278,19 @@ class Node(BaseNode, Observer):
                 # Wait to finish self agregation
                 self.__finish_agregation_lock.acquire()
                 
-                #print("-------------------------NO ESTA FUNCIONANDO, LA RONDA 2 NO LA ESPERA. o quiza computa una ronda de más, el asunto es que se agregan cosas despues del finish------------------------------")
                 # Send ready message --> quizá ya no haga falta bloquear el socket
-                while not self.broadcast(CommunicationProtocol.build_ready_msg(self.round)):
-                    time.sleep(0.1)
+                self.broadcast(CommunicationProtocol.build_ready_msg(self.round))
+                    
                 
                 # Wait for ready messages
+                #
+                # -> plantearse timeout x si nodos no responden -> meter en memoria y preguntar profesores
+                #
+                logging.info("({}) Waiting other nodes.".format(self.get_addr()))
                 while True:
-                    logging.info("({}) Waiting other nodes.".format(self.get_addr()))
                     # If the trainning has been interrupted, stop waiting
                     if self.round is None:
-                        logging.info("({}) Shutting down round finished process.".format(self.get_addr()))
+                        logging.info("({}) Stopping on_round_finished process.".format(self.get_addr()))
                         return
                         
                     if all([ nc.get_ready_status()>=self.round for nc in self.neightboors]):
@@ -297,8 +313,3 @@ class Node(BaseNode, Observer):
                 logging.info("({}) FL not running but models received".format(self.get_addr()))
         except Exception as e:
             logging.error("({}) Concurrence Error: {}".format(self.get_addr(),e))
-
-
-    def __set_sending_model(self, flag):
-        for node in self.neightboors:
-            node.set_sending_model(flag)

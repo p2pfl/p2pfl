@@ -17,6 +17,7 @@ class Agregator(threading.Thread, Observable):
 
     def __init__(self, n):
         threading.Thread.__init__(self)
+        self.daemon = True
         Observable.__init__(self)
         self.node = n
         self.name = "agregator-" + n.get_addr()[0] + ":" + str(n.get_addr()[1])
@@ -34,11 +35,11 @@ class Agregator(threading.Thread, Observable):
             # Validamos que el nodo siga operativo (si no puediera quedar residual)
             if self.node.round is None:
                 logging.info("({}) Shutting Down Agregator Process".format(self.node.get_addr()))
+                self.notify(Events.AGREGATION_FINISHED,None) # To avoid residual trainning-thread
                 return
         else:
             logging.info("({}) Agregating models.".format(self.node.get_addr()))
         self.node.learner.set_parameters(self.agregate(self.models))
-        models_added = len(self.models)
         self.clear()
         # Notificamos al nodo
         self.notify(Events.AGREGATION_FINISHED,None) 
@@ -66,10 +67,11 @@ class Agregator(threading.Thread, Observable):
         else:
             raise ModelNotMatchingError("Not matching models")
         
-    def check_and_run_agregation(self):
+    def check_and_run_agregation(self,force=False):
         # Try Unloock
         try:
-            if len(self.models)==(len(self.node.neightboors)+1): 
+            if force or len(self.models)==(len(self.node.neightboors)+1): 
+                print("({})releasing".format(self.node.get_addr()))
                 self.agregation_lock.release()
         except:
             pass

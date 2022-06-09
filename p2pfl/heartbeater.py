@@ -21,5 +21,5 @@ class Heartbeater(threading.Thread):
             # We do not check if the message was sent
             #   - If the model is sending, a beat is not necessary
             #   - If the connection its down timeouts will destroy connections
-            self.nodo_padre.broadcast(CommunicationProtocol.build_beat_msg()) 
+            self.nodo_padre.broadcast(CommunicationProtocol.build_beat_msg(), is_necesary=False)
             self.terminate_flag.wait(HEARTBEAT_FREC)
