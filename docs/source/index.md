@@ -7,13 +7,14 @@ bla
 bla
 
 ``` 
-sphinx-apidoc -o XXX YYY
+sphinx-apidoc -F -o tmp ../p2pfl
 ```
-
-## Documentation
 
 ```{eval-rst}
 .. toctree::
-   installation.md
-   documentation.rst
+   :maxdepth: 4
+
+   installation
+   documentation
+
 ```

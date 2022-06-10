@@ -9,7 +9,10 @@ from torchmetrics import Accuracy
 ###############################
 
 class CNN(pl.LightningModule):
-
+    """
+    Convolutional Neural Network (CNN) to solve MNIST with PyTorch Lightning.
+    """
+    
     def __init__(self, in_channels=1, out_channels=10):
 
         # Set seed for reproducibility iniciialization
@@ -34,6 +37,8 @@ class CNN(pl.LightningModule):
         
 
     def forward(self, x):
+        """
+        """
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -51,15 +56,21 @@ class CNN(pl.LightningModule):
         return logits
 
     def configure_optimizers(self):
+        """
+        """
         return torch.optim.Adam(self.parameters(), lr=self.lr_rate)
 
     def training_step(self, batch, batch_id):
+        """
+        """
         x, y = batch
         loss = F.cross_entropy(self(x), y)
         self.log("train_loss", loss, prog_bar=True)
         return loss 
 
     def validation_step(self, batch, batch_idx):
+        """
+        """
         x, y = batch
         logits = self(x)
         loss = F.cross_entropy(self(x), y)
@@ -70,6 +81,8 @@ class CNN(pl.LightningModule):
         return loss
 
     def test_step(self, batch, batch_idx):
+        """
+        """
         x, y = batch
         logits = self(x)
         loss = F.cross_entropy(self(x), y)

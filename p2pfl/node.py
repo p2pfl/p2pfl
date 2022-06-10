@@ -10,7 +10,7 @@ from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.const import *
 from p2pfl.learning.agregators.fedavg import FedAvg
 from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
-from p2pfl.learning.pytorch.learners.lightninglearner import LightningLearner
+from p2pfl.learning.pytorch.lightninglearner import LightningLearner
 from p2pfl.node_connection import NodeConnection
 from p2pfl.heartbeater import Heartbeater
 from p2pfl.utils.observer import Events, Observer

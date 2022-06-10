@@ -9,6 +9,16 @@ from pytorch_lightning import LightningDataModule
 #######################################
 
 class MnistFederatedDM(LightningDataModule):
+    """
+    LightningDataModule of partitioned MNIST. Its used to generate **IID** distribucions over MNIS. Toy Problem.
+
+    Args:
+        sub_id: Subset id of partition. (0 <= sub_id < number_sub)
+        number_sub: Number of subsets.
+        batch_size: The batch size of the data.
+        num_workers: The number of workers of the data.
+        val_percent: The percentage of the validation set.
+    """
     def __init__(self, sub_id=0, number_sub=1, batch_size=32, num_workers=4, val_percent=0.1):
         super().__init__()
         self.sub_id=sub_id
@@ -20,7 +30,7 @@ class MnistFederatedDM(LightningDataModule):
         # recordar añadir que no se pueda dividir m'as de len test
 
         if self.sub_id+1 > self.number_sub:
-            raise("Se exceden la cantidad de subconjuntos")
+            raise("Not exist the subset {}".format(self.sub_id))
 
         # Training / validation set
         trainset = MNIST("", train=True, download=True, transform=transforms.ToTensor())
@@ -32,6 +42,9 @@ class MnistFederatedDM(LightningDataModule):
         testset = MNIST("", train=False, download=True, transform=transforms.ToTensor())
         rows_by_sub = floor(len(testset)/self.number_sub)
         te_subset = Subset(testset,range(self.sub_id*rows_by_sub,(self.sub_id+1)*rows_by_sub))
+
+        if len(testset) < self.number_sub:
+            raise("Too much partitions")
         
         #DataLoaders
         self.train_loader = DataLoader(mnist_train, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers)
@@ -41,10 +54,16 @@ class MnistFederatedDM(LightningDataModule):
 
     
     def train_dataloader(self):
+        """
+        """
         return self.train_loader
 
     def val_dataloader(self):
+        """
+        """
         return self.val_loader
 
     def test_dataloader(self):
+        """
+        """
         return self.test_loader

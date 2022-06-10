@@ -27,7 +27,17 @@ setup(
     long_description_content_type=LONG_DESC_TYPE,
     license=LICENSE,
     install_requires=INSTALL_REQUIRES,
-    packages=find_packages(), 
+
+    package_dir={"p2pfl": "p2pfl"},
+    packages=find_packages(
+        where=".",
+        include=[
+            "*",
+        ],
+        exclude=[
+            "test",
+        ],
+    ),
     include_package_data=True
 )
 

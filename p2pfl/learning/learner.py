@@ -4,30 +4,109 @@
 ################################
 
 class NodeLearner:
+    """
+    Template to implement learning processes.
+    """
 
-    def set_model(self, model): pass
+    def set_model(self, model): 
+        """
+        Set the model of the learner. (not wheights)
 
-    def set_data(self, data): pass
+        Args:
+            model: The model of the learner.
+        """
+        pass
 
-    def encode_parameters(self): pass
+    def set_data(self, data): 
+        """
+        Set the data of the learner. It is used to fit the model.
 
-    def decode_parameters(self,data): pass
+        Args:
+            data: The data of the learner. 
+        """
+        pass
 
-    def check_parameters(self, params): pass
+    def encode_parameters(self): 
+        """
+        Encode the parameters of the model. (binary)
+
+        Returns:
+            The encoded parameters of the model.
+        """
+        pass
+
+    def decode_parameters(self,data): 
+        """
+        Decode the parameters of the model. (binary)
+        
+        Args:
+            data: The encoded parameters of the model.
+        """
+        pass
+
+    def check_parameters(self, params): 
+        """
+        Check if the parameters are compatible with the model.
+
+        Args:
+            params: The parameters to check. (non-binary)
+        """
+        pass
     
-    def set_parameters(self, params): pass
+    def set_parameters(self, params): 
+        """
+        Set the parameters of the model.
 
-    def get_parameters(self): pass
+        Args:
+            params: The parameters of the model. (non-binary)
+        """
+        pass
 
-    def set_epochs(self, epochs): pass
+    def get_parameters(self): 
+        """
+        Get the parameters of the model.
 
-    def fit(self): pass
+        Returns:
+            The parameters of the model. (non-binary)
+        """
+        pass
 
-    def interrupt_fit(self): pass
+    def set_epochs(self, epochs): 
+        """
+        Set the number of epochs of the model.
 
-    def evaluate(self): pass
+        Args:
+            epochs: The number of epochs of the model.
+        """
+        pass
 
-    def predict(self): pass
+    def fit(self): 
+        """
+        Fit the model.
+        """
+        pass
 
-    def get_num_samples(self): pass
+    def interrupt_fit(self): 
+        """
+        Interrupt the fit process.
+        """
+        pass
+
+    def evaluate(self): 
+        """
+        Evaluate the model. With a given parameters.
+
+        Args:
+            params: The parameters of the model. (non-binary)
+        """
+        pass
+
+    def get_num_samples(self): 
+        """
+        Get the number of samples of the model.
+
+        Returns:
+            The number of samples of the model.
+        """
+        pass
 

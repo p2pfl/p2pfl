@@ -5,6 +5,9 @@ from torch.utils.tensorboard import SummaryWriter
 import torch
 
 class FederatedTensorboardLogger(LightningLoggerBase):
+    """
+    Logger for PyTorch Lightning in federated learning. Training information persists in a local directory the diferent train rounds.
+    """
 
     def __init__(self, dir, name = None , version = 0, **kwargs):
         super().__init__()
@@ -23,20 +26,28 @@ class FederatedTensorboardLogger(LightningLoggerBase):
         
     @property
     def name(self):
+        """
+        """
         return self._name
 
     @property
     def version(self):
+        """
+        """
         return self._version
 
     @rank_zero_only
     def log_hyperparams(self, params):
+        """
+        """
         # params is an argparse.Namespace
         # your code to record hyperparameters goes here
         pass
 
     @rank_zero_only
     def log_metrics(self, metrics, step):
+        """
+        """
 
         # FL round information
         self.actual_step = step
@@ -59,11 +70,15 @@ class FederatedTensorboardLogger(LightningLoggerBase):
 
     @rank_zero_only
     def save(self):
+        """
+        """
         # Optional. Any code necessary to save logger data goes here
         pass
 
     @rank_zero_only
     def finalize(self, status):
+        """
+        """
         # Finish Round
         self.round = self.round + 1
         self.log_metrics({"fl_round": self.round}, self.actual_step)

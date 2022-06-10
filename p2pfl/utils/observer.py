@@ -1,7 +1,15 @@
+"""
+Module that implements the observer pattern.
+"""
+
 ##################################
 #    Generic Observable class    #
 ##################################
+
 class Events():
+    """
+    Class that represents the events that can be observed.
+    """
     END_CONNECTION = "END_CONNECTION"
     NODE_READY_EVENT = "NODE_READY_EVENT"
     AGREGATION_FINISHED = "AGREGATION_FINISHED"
@@ -11,6 +19,9 @@ class Events():
 ##################################
 
 class Observable():
+    """
+    Class that implements the **Observable** at the observer pattern.
+    """
     def __init__(self):
         self.observers = []
 
@@ -28,4 +39,7 @@ class Observable():
 ##################################
 
 class Observer():
+    """
+    Class for the **Observer** at the observer pattern.
+    """
     def update(self, event, obj): pass

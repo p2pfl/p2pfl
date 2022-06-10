@@ -10,7 +10,10 @@ from torchmetrics import Accuracy
 ###############################
 
 class MLP(pl.LightningModule):
-    
+    """
+    Multilayer Perceptron (MLP) to solve MNIST with PyTorch Lightning.
+    """
+
     def __init__(self, lr_rate=0.001): # low lr to avoid overfitting
         
         # Set seed for reproducibility iniciialization
@@ -27,6 +30,8 @@ class MLP(pl.LightningModule):
         self.l3 = torch.nn.Linear(256, 10)
 
     def forward(self, x):
+        """
+        """
         batch_size, channels, width, height = x.size()
         
         # (b, 1, 28, 28) -> (b, 1*28*28)
@@ -40,15 +45,21 @@ class MLP(pl.LightningModule):
         return x
 
     def configure_optimizers(self):
+        """
+        """
         return torch.optim.Adam(self.parameters(), lr=self.lr_rate)
 
     def training_step(self, batch, batch_id):
+        """
+        """
         x, y = batch
         loss = F.cross_entropy(self(x), y)
         self.log("train_loss", loss, prog_bar=True)
         return loss 
 
     def validation_step(self, batch, batch_idx):
+        """
+        """
         x, y = batch
         logits = self(x)
         loss = F.cross_entropy(self(x), y)
@@ -59,6 +70,8 @@ class MLP(pl.LightningModule):
         return loss
 
     def test_step(self, batch, batch_idx):
+        """
+        """
         x, y = batch
         logits = self(x)
         loss = F.cross_entropy(self(x), y)

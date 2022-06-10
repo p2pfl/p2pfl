@@ -8,7 +8,7 @@ from p2pfl.const import *
 
 class Heartbeater(threading.Thread):
     """
-    Thread based heartbeater that sends a beat message to all the neighbors of a node every HEARTBEAT_FREC seconds.
+    Thread based heartbeater that sends a beat message to all the neighbors of a node every `HEARTBEAT_FREC` seconds.
 
     Args:
         nodo_padre (Node): Node that use the heartbeater.

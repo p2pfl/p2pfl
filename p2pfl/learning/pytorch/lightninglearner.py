@@ -1,8 +1,8 @@
-from torch import tensor
+import torch
 from pytorch_lightning import Trainer
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
-from p2pfl.learning.pytorch.utils.logger import FederatedTensorboardLogger
+from p2pfl.learning.pytorch.logger import FederatedTensorboardLogger
 from collections import OrderedDict
 import pickle
 
@@ -11,6 +11,9 @@ import pickle
 ###########################
 
 class LightningLearner(NodeLearner):
+    """
+    Learner with PyTorch Lightning.
+    """
 
     def __init__(self, model, data, log_name=None):
         self.model = model            
@@ -34,7 +37,7 @@ class LightningLearner(NodeLearner):
         try:
             params = pickle.loads(data)
             params_dict = zip(self.model.state_dict().keys(), params)
-            return OrderedDict({k: tensor(v) for k, v in params_dict})
+            return OrderedDict({k: torch.tensor(v) for k, v in params_dict})
         except:
             raise DecodingParamsError("Error decoding parameters")
 
@@ -81,8 +84,6 @@ class LightningLearner(NodeLearner):
         data_ammount = len(self.data.test_dataloader().dataset)
         return loss, data_ammount, {"loss": loss, "test_acc": acc}
 
-    def predict(self):
-        pass
 
     def interrupt_fit(self):
         if self.trainer is not None:
