@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
     <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
-        <title>p2pfl.node - p2pfl 0.1 documentation</title>
+        <title>p2pfl.node - P2P FL</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -122,7 +122,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">p2pfl 0.1 documentation</div></a>
+      <a href="../../index.html"><div class="brand">P2P FL</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -145,7 +145,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
   
   
-  <span class="sidebar-brand-text">p2pfl 0.1 documentation</span>
+  <span class="sidebar-brand-text">P2P FL</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
@@ -154,8 +154,23 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../modules.html">p2pfl</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../p2pfl.utils.html">p2pfl.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -192,12 +207,7 @@
         </div>
         <article role="main">
           <h1>Source code for p2pfl.node</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Class that represents a simple node.</span>
-
-
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">thread</span>
+<span></span><span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">thread</span>
 <span class="kn">from</span> <span class="nn">distutils.log</span> <span class="kn">import</span> <span class="n">debug</span>
 <span class="kn">import</span> <span class="nn">socket</span>
 <span class="kn">import</span> <span class="nn">threading</span>
@@ -209,7 +219,7 @@
 <span class="kn">from</span> <span class="nn">p2pfl.const</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">p2pfl.learning.agregators.fedavg</span> <span class="kn">import</span> <span class="n">FedAvg</span>
 <span class="kn">from</span> <span class="nn">p2pfl.learning.exceptions</span> <span class="kn">import</span> <span class="n">DecodingParamsError</span><span class="p">,</span> <span class="n">ModelNotMatchingError</span>
-<span class="kn">from</span> <span class="nn">p2pfl.learning.pytorch.learners.lightninglearner</span> <span class="kn">import</span> <span class="n">LightningLearner</span>
+<span class="kn">from</span> <span class="nn">p2pfl.learning.pytorch.lightninglearner</span> <span class="kn">import</span> <span class="n">LightningLearner</span>
 <span class="kn">from</span> <span class="nn">p2pfl.node_connection</span> <span class="kn">import</span> <span class="n">NodeConnection</span>
 <span class="kn">from</span> <span class="nn">p2pfl.heartbeater</span> <span class="kn">import</span> <span class="n">Heartbeater</span>
 <span class="kn">from</span> <span class="nn">p2pfl.utils.observer</span> <span class="kn">import</span> <span class="n">Events</span><span class="p">,</span> <span class="n">Observer</span>
@@ -224,11 +234,7 @@
 
 <span class="c1"># Cambiar algunos int nones por -1 para preservar el tipo</span>
 
-<span class="c1"># Models Added es resquicio, no se usa -&gt; visualizar info</span>
-
-<span class="c1"># para dejar bonito el código, podría separar el nodo en una clase genéricas (nodo) y luego en nodo para fl</span>
-
-<span class="c1">#s separar en node y nodefl</span>
+<span class="c1">#Desacoplar el lerarner</span>
 
 <span class="c1">###################################################################################################################</span>
 <span class="c1"># FULL CONNECTED HAY QUE IMPLEMENTARLO DE FORMA QUE CUANDO SE INTRODUCE UN NODO EN LA RED, SE HACE UN BROADCAST</span>
@@ -241,6 +247,24 @@
     <span class="c1">#####################</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">agregator</span><span class="o">=</span><span class="n">FedAvg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class based on a base node that allows ***p2p Federated Learning**. </span>
+<span class="sd">            </span>
+<span class="sd">        Args:</span>
+<span class="sd">            model (torch.nn.Module): Model to be learned.</span>
+<span class="sd">            data (torch.utils.data.Dataset): Dataset to be used in the learning process.</span>
+<span class="sd">            host (str): Host where the node will be listening.</span>
+<span class="sd">            port (int): Port where the node will be listening.</span>
+<span class="sd">            agregator (Agregator): Agregator to be used in the learning process.</span>
+
+<span class="sd">        Attributes:</span>
+<span class="sd">            log_dir (str): Directory where the logs will be saved.</span>
+<span class="sd">            learner (Learner): Learner to be used in the learning process.</span>
+<span class="sd">            round (int): Round of the learning process.</span>
+<span class="sd">            totalrounds (int): Total number of rounds of the learning process.</span>
+<span class="sd">            agredator (Agregator): Agregator to be used in the learning process.</span>
+<span class="sd">            is_model_init (bool): Flag to indicate if the model has been initialized.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">BaseNode</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">host</span><span class="p">,</span><span class="n">port</span><span class="p">)</span>
         <span class="n">Observer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
@@ -252,6 +276,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">agredator</span> <span class="o">=</span> <span class="n">agregator</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">agredator</span><span class="o">.</span><span class="n">add_observer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_model_init</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># Locks</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__finish_wait_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__finish_agregation_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__finish_agregation_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
@@ -261,8 +287,8 @@
     <span class="c1">#######################</span>
     
 <div class="viewcode-block" id="Node.stop"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
-        <span class="sd">&quot;&quot;&quot;&quot;</span>
-<span class="sd">            Stop</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stop the node and the learning if it is running.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stop_learning</span><span class="p">()</span>
@@ -274,6 +300,13 @@
     <span class="c1">################</span>
 
 <div class="viewcode-block" id="Node.update"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">event</span><span class="p">,</span><span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Observer update method. Used to handle events that can occur in the agregator or neightboors.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            event (Events): Event that has occurred.</span>
+<span class="sd">            obj (object): Object that has been updated. ??????? REVISARLO</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">END_CONNECTION</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rm_neighbor</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">agredator</span><span class="o">.</span><span class="n">check_and_run_agregation</span><span class="p">()</span>
@@ -294,9 +327,24 @@
     <span class="c1">####################################</span>
 
 <div class="viewcode-block" id="Node.set_model"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.set_model">[docs]</a>    <span class="k">def</span> <span class="nf">set_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;&quot;</span>
+<span class="sd">        Set the model to be learned (learner). </span>
+
+<span class="sd">        Carefully, model, not weights.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model: Model to be learned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">set_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Node.set_data"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.set_data">[docs]</a>    <span class="k">def</span> <span class="nf">set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the data to be used in the learning process (learner).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: Dataset to be used in the learning process.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
 
 
@@ -304,14 +352,14 @@
     <span class="c1">#         Network Learning Management         #</span>
     <span class="c1">###############################################</span>
 
-    <span class="c1"># Start the network learning</span>
-    <span class="c1">#</span>
-    <span class="c1"># Asegurarse de que se envien mensajes que el broadcast no se asegura</span>
-    <span class="c1">#</span>
 <div class="viewcode-block" id="Node.set_start_learning"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.set_start_learning">[docs]</a>    <span class="k">def</span> <span class="nf">set_start_learning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rounds</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span> 
-        <span class="c1"># </span>
-        <span class="c1"># Maybe needs a lock to avoid concurrency problems</span>
-        <span class="c1">#</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Start the learning process in the entire network.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rounds: Number of rounds of the learning process.</span>
+<span class="sd">            epochs: Number of epochs of the learning process.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Start Learning</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Broadcasting start learning...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span>
@@ -329,8 +377,10 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Learning already started&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span></div>
 
 
-    <span class="c1"># Stop the network learning</span>
 <div class="viewcode-block" id="Node.set_stop_learning"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.set_stop_learning">[docs]</a>    <span class="k">def</span> <span class="nf">set_stop_learning</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stop the learning process in the entire network.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_stop_learning_msg</span><span class="p">())</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stop_learning</span><span class="p">()</span>
@@ -342,8 +392,14 @@
     <span class="c1">#         Local Learning         #</span>
     <span class="c1">##################################</span>
 
-    <span class="c1"># Start the local learning</span>
-<div class="viewcode-block" id="Node.start_learning"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.start_learning">[docs]</a>    <span class="k">def</span> <span class="nf">start_learning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">rounds</span><span class="p">,</span><span class="n">epochs</span><span class="p">):</span> <span class="c1">#local</span>
+<div class="viewcode-block" id="Node.start_learning"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.start_learning">[docs]</a>    <span class="k">def</span> <span class="nf">start_learning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">rounds</span><span class="p">,</span><span class="n">epochs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Start the learning process in the local node.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            rounds: Number of rounds of the learning process.</span>
+<span class="sd">            epochs: Number of epochs of the learning process.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">totalrounds</span> <span class="o">=</span> <span class="n">rounds</span>
 
@@ -363,11 +419,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">set_epochs</span><span class="p">(</span><span class="n">epochs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__train_step</span><span class="p">()</span></div>
 
-    <span class="c1">#-------------------------------------------------------</span>
-    <span class="c1"># REVISAR EN PROFUNDIDAD -&gt; cuando aun no se inició el proc de learning (trainer)</span>
-    <span class="c1">#-------------------------------------------------------</span>
-    <span class="c1"># Stop the local learning</span>
-<div class="viewcode-block" id="Node.stop_learning"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.stop_learning">[docs]</a>    <span class="k">def</span> <span class="nf">stop_learning</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="c1">#local</span>
+<div class="viewcode-block" id="Node.stop_learning"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.stop_learning">[docs]</a>    <span class="k">def</span> <span class="nf">stop_learning</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stop the learning process in the local node. Interrupts learning process if its running.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Stopping learning&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">interrupt_fit</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">=</span> <span class="kc">None</span>
@@ -381,17 +436,17 @@
     <span class="c1">#-------------------------------------------------------</span>
     <span class="c1"># FUTURO -&gt; validar quien introduce moedelos (llevar cuenta) |&gt; (2 aprox)</span>
     <span class="c1">#-------------------------------------------------------</span>
-    <span class="c1">#</span>
-    <span class="c1"># POR ACABAR, CONTROLADO ERROR PERO NO SE HACE NADA</span>
-    <span class="c1">#</span>
-    <span class="c1"># NO ES LO MISMO UNA EXCEPCION DE PICKE QUE UNA DE PYTORCH</span>
-    <span class="c1">#</span>
-    <span class="c1"># Traza nodo que generó modelo</span>
-    <span class="c1">#</span>
-    <span class="c1">#-------------------------------------------------------</span>
-    <span class="c1"># DEJARLO AQUI O METERLO EN EL COMANDO? -&gt; dejar código bonito luego</span>
+    
+    
 <div class="viewcode-block" id="Node.add_model"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.add_model">[docs]</a>    <span class="k">def</span> <span class="nf">add_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">node</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">w</span><span class="p">):</span> 
-        <span class="c1">#print(&quot;({}) Adding model from {}&quot;.format(self.get_addr(),node))</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a model. The model isn&#39;t inicializated, the recieved model is used for it. Otherwise, the model is agregated using the **agregator**.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            node (str): Node that has sent the model.</span>
+<span class="sd">            m (Weights): Model to be added.</span>
+<span class="sd">            w: Number of samples used to train the model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Check if Learning is running</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
@@ -409,7 +464,8 @@
                 <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Error decoding parameters&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
-                <span class="c1"># temporal</span>
+                <span class="c1"># ----------------------- temporal -----------------------</span>
+                <span class="c1"># ------------------ used to debug errors -------------------</span>
                 <span class="c1"># append m in a file</span>
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;paramserror.log&#39;</span><span class="p">,</span><span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
@@ -495,7 +551,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">+</span> <span class="mi">1</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Round </span><span class="si">{}</span><span class="s2"> of </span><span class="si">{}</span><span class="s2"> finished.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">round</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">totalrounds</span><span class="p">))</span>
 
-                <span class="c1"># Next Step</span>
+                <span class="c1"># Next Step or Finish</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">totalrounds</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">__train_step</span><span class="p">()</span>  
                 <span class="k">else</span><span class="p">:</span>

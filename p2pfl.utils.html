@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Installation" href="installation.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="p2pfl.learning.pytorch package" href="p2pfl.learning.pytorch.html" /><link rel="prev" title="p2pfl.learning.agregators package" href="p2pfl.learning.agregators.html" />
 
     <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
-        <title>P2P FL</title>
+        <title>p2pfl.utils package - P2P FL</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -123,7 +123,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="#"><div class="brand">P2P FL</div></a>
+      <a href="index.html"><div class="brand">P2P FL</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -134,7 +134,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -143,7 +143,7 @@
   <aside class="sidebar-drawer">
     <div class="sidebar-container">
       
-      <div class="sidebar-sticky"><a class="sidebar-brand" href="#">
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
   
   <span class="sidebar-brand-text">P2P FL</span>
@@ -154,15 +154,15 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <ul>
+  <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="documentation.html">Documentation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="p2pfl.html">p2pfl package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.utils.html">p2pfl.utils package</a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">p2pfl.utils package</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -201,57 +201,80 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main">
-          <section id="p2p-federated-learning">
-<h1>P2P Federated Learning<a class="headerlink" href="#p2p-federated-learning" title="Permalink to this heading">#</a></h1>
-<p>P2P Federated Learning is a library for Federated Learning using a <strong>p2p</strong> architecture.</p>
-<p>bla
-bla
-bla</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sphinx</span><span class="o">-</span><span class="n">apidoc</span> <span class="o">-</span><span class="n">F</span> <span class="o">-</span><span class="n">o</span> <span class="n">tmp</span> <span class="o">../</span><span class="n">p2pfl</span>
-</pre></div>
-</div>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="documentation.html">Documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.html">p2pfl package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html">p2pfl.utils package</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.base_node">p2pfl.base_node module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.command">p2pfl.command module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.communication_protocol">p2pfl.communication_protocol module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.const">p2pfl.const module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.heartbeater">p2pfl.heartbeater module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.node">p2pfl.node module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.node_connection">p2pfl.node_connection module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.pytorch.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.pytorch.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.pytorch.html#module-p2pfl.learning.pytorch.lightninglearner">p2pfl.learning.pytorch.lightninglearner module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.pytorch.html#module-p2pfl.learning.pytorch.logger">p2pfl.learning.pytorch.logger module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.pytorch.html#module-p2pfl.learning.pytorch">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</div>
+          <section id="p2pfl-utils-package">
+<h1>p2pfl.utils package<a class="headerlink" href="#p2pfl-utils-package" title="Permalink to this heading">#</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">#</a></h2>
+</section>
+<section id="module-p2pfl.utils.observer">
+<span id="p2pfl-utils-observer-module"></span><h2>p2pfl.utils.observer module<a class="headerlink" href="#module-p2pfl.utils.observer" title="Permalink to this heading">#</a></h2>
+<p>Module that implements the observer pattern.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.utils.observer.</span></span><span class="sig-name descname"><span class="pre">Events</span></span><a class="reference internal" href="_modules/p2pfl/utils/observer.html#Events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.utils.observer.Events" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class that represents the events that can be observed.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.AGREGATION_FINISHED">
+<span class="sig-name descname"><span class="pre">AGREGATION_FINISHED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'AGREGATION_FINISHED'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.AGREGATION_FINISHED" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.END_CONNECTION">
+<span class="sig-name descname"><span class="pre">END_CONNECTION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'END_CONNECTION'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.END_CONNECTION" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.NODE_READY_EVENT">
+<span class="sig-name descname"><span class="pre">NODE_READY_EVENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'NODE_READY_EVENT'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.NODE_READY_EVENT" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Observable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.utils.observer.</span></span><span class="sig-name descname"><span class="pre">Observable</span></span><a class="reference internal" href="_modules/p2pfl/utils/observer.html#Observable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.utils.observer.Observable" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class that implements the <strong>Observable</strong> at the observer pattern.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Observable.add_observer">
+<span class="sig-name descname"><span class="pre">add_observer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">observer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/utils/observer.html#Observable.add_observer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.utils.observer.Observable.add_observer" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Observable.get_observers">
+<span class="sig-name descname"><span class="pre">get_observers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/utils/observer.html#Observable.get_observers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.utils.observer.Observable.get_observers" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Observable.notify">
+<span class="sig-name descname"><span class="pre">notify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/p2pfl/utils/observer.html#Observable.notify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.utils.observer.Observable.notify" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Observer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.utils.observer.</span></span><span class="sig-name descname"><span class="pre">Observer</span></span><a class="reference internal" href="_modules/p2pfl/utils/observer.html#Observer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.utils.observer.Observer" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class for the <strong>Observer</strong> at the observer pattern.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Observer.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/utils/observer.html#Observer.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.utils.observer.Observer.update" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-p2pfl.utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-p2pfl.utils" title="Permalink to this heading">#</a></h2>
+</section>
 </section>
 
         </article>
@@ -259,16 +282,26 @@ bla</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="installation.html">
+          <a class="next-page" href="p2pfl.learning.pytorch.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Installation</div>
+                <div class="title">p2pfl.learning.pytorch package</div>
               </div>
               <svg><use href="#svg-arrow-right"></use></svg>
             </a>
-          
+          <a class="prev-page" href="p2pfl.learning.agregators.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">p2pfl.learning.agregators package</div>
+                
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -289,8 +322,29 @@ bla</p>
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">p2pfl.utils package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-p2pfl.utils.observer">p2pfl.utils.observer module</a></li>
+<li><a class="reference internal" href="#module-p2pfl.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
