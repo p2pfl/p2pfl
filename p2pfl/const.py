@@ -1,3 +1,7 @@
+"""
+Module to define constants for the p2pfl system.
+"""
+
 ##################
 # Global Settins #
 ##################

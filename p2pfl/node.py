@@ -25,11 +25,7 @@ from p2pfl.utils.observer import Events, Observer
 
 # Cambiar algunos int nones por -1 para preservar el tipo
 
-# Models Added es resquicio, no se usa -> visualizar info
-
-# para dejar bonito el código, podría separar el nodo en una clase genéricas (nodo) y luego en nodo para fl
-
-#s separar en node y nodefl
+#Desacoplar el lerarner
 
 ###################################################################################################################
 # FULL CONNECTED HAY QUE IMPLEMENTARLO DE FORMA QUE CUANDO SE INTRODUCE UN NODO EN LA RED, SE HACE UN BROADCAST
@@ -43,7 +39,7 @@ class Node(BaseNode, Observer):
 
     def __init__(self, model, data, host="127.0.0.1", port=0, agregator=FedAvg):
         """
-        Class that represents a node that allows ***p2p Federated Learning**. 
+        Class based on a base node that allows ***p2p Federated Learning**. 
             
         Args:
             model (torch.nn.Module): Model to be learned.
@@ -51,6 +47,14 @@ class Node(BaseNode, Observer):
             host (str): Host where the node will be listening.
             port (int): Port where the node will be listening.
             agregator (Agregator): Agregator to be used in the learning process.
+
+        Attributes:
+            log_dir (str): Directory where the logs will be saved.
+            learner (Learner): Learner to be used in the learning process.
+            round (int): Round of the learning process.
+            totalrounds (int): Total number of rounds of the learning process.
+            agredator (Agregator): Agregator to be used in the learning process.
+            is_model_init (bool): Flag to indicate if the model has been initialized.
         """
         BaseNode.__init__(self,host,port)
         Observer.__init__(self)
@@ -63,6 +67,8 @@ class Node(BaseNode, Observer):
         self.agredator = agregator(self)
         self.agredator.add_observer(self)
         self.is_model_init = False
+
+        # Locks
         self.__finish_wait_lock = threading.Lock()
         self.__finish_agregation_lock = threading.Lock()
         self.__finish_agregation_lock.acquire()
@@ -72,8 +78,8 @@ class Node(BaseNode, Observer):
     #######################
     
     def stop(self): 
-        """"
-        Stop
+        """
+        Stop the node and the learning if it is running.
         """
         if self.round is not None:
             self.stop_learning()
@@ -85,6 +91,13 @@ class Node(BaseNode, Observer):
     ################
 
     def update(self,event,obj):
+        """
+        Observer update method. Used to handle events that can occur in the agregator or neightboors.
+        
+        Args:
+            event (Events): Event that has occurred.
+            obj (object): Object that has been updated. ??????? REVISARLO
+        """
         if event == Events.END_CONNECTION:
             self.rm_neighbor(obj)
             self.agredator.check_and_run_agregation()
@@ -105,9 +118,24 @@ class Node(BaseNode, Observer):
     ####################################
 
     def set_model(self, model):
+        """"
+        Set the model to be learned (learner). 
+
+        Carefully, model, not weights.
+
+        Args:
+            model: Model to be learned.
+        """
         self.learner.set_model(model)
 
     def set_data(self, data):
+        """
+        Set the data to be used in the learning process (learner).
+
+        Args:
+            data: Dataset to be used in the learning process.
+        """
+
         self.learner.set_data(data)
 
 
@@ -115,14 +143,14 @@ class Node(BaseNode, Observer):
     #         Network Learning Management         #
     ###############################################
 
-    # Start the network learning
-    #
-    # Asegurarse de que se envien mensajes que el broadcast no se asegura
-    #
     def set_start_learning(self, rounds=1, epochs=1): 
-        # 
-        # Maybe needs a lock to avoid concurrency problems
-        #
+        """
+        Start the learning process in the entire network.
+
+        Args:
+            rounds: Number of rounds of the learning process.
+            epochs: Number of epochs of the learning process.
+        """
         if self.round is None:
             # Start Learning
             logging.info("({}) Broadcasting start learning...".format(self.get_addr()))
@@ -140,8 +168,10 @@ class Node(BaseNode, Observer):
             logging.debug("({}) Learning already started".format(self.get_addr()))
 
 
-    # Stop the network learning
     def set_stop_learning(self):
+        """
+        Stop the learning process in the entire network.
+        """
         if self.round is not None:
             self.broadcast(CommunicationProtocol.build_stop_learning_msg())
             self.stop_learning()
@@ -153,8 +183,14 @@ class Node(BaseNode, Observer):
     #         Local Learning         #
     ##################################
 
-    # Start the local learning
-    def start_learning(self,rounds,epochs): #local
+    def start_learning(self,rounds,epochs):
+        """
+        Start the learning process in the local node.
+        
+        Args:
+            rounds: Number of rounds of the learning process.
+            epochs: Number of epochs of the learning process.
+        """
         self.round = 0
         self.totalrounds = rounds
 
@@ -174,11 +210,10 @@ class Node(BaseNode, Observer):
         self.learner.set_epochs(epochs)
         self.__train_step()
 
-    #-------------------------------------------------------
-    # REVISAR EN PROFUNDIDAD -> cuando aun no se inició el proc de learning (trainer)
-    #-------------------------------------------------------
-    # Stop the local learning
-    def stop_learning(self): #local
+    def stop_learning(self): 
+        """
+        Stop the learning process in the local node. Interrupts learning process if its running.
+        """
         logging.info("({}) Stopping learning".format(self.get_addr()))
         self.learner.interrupt_fit()
         self.round = None
@@ -192,17 +227,17 @@ class Node(BaseNode, Observer):
     #-------------------------------------------------------
     # FUTURO -> validar quien introduce moedelos (llevar cuenta) |> (2 aprox)
     #-------------------------------------------------------
-    #
-    # POR ACABAR, CONTROLADO ERROR PERO NO SE HACE NADA
-    #
-    # NO ES LO MISMO UNA EXCEPCION DE PICKE QUE UNA DE PYTORCH
-    #
-    # Traza nodo que generó modelo
-    #
-    #-------------------------------------------------------
-    # DEJARLO AQUI O METERLO EN EL COMANDO? -> dejar código bonito luego
+    
+    
     def add_model(self,node,m,w): 
-        #print("({}) Adding model from {}".format(self.get_addr(),node))
+        """
+        Add a model. The model isn't inicializated, the recieved model is used for it. Otherwise, the model is agregated using the **agregator**.
+
+        Args:
+            node (str): Node that has sent the model.
+            m (Weights): Model to be added.
+            w: Number of samples used to train the model.
+        """
         # Check if Learning is running
         if self.round is not None:
             try:
@@ -220,7 +255,8 @@ class Node(BaseNode, Observer):
                 logging.error("({}) Error decoding parameters".format(self.get_addr()))
                 self.stop()
 
-                # temporal
+                # ----------------------- temporal -----------------------
+                # ------------------ used to debug errors -------------------
                 # append m in a file
                 with open('paramserror.log','a') as f:
                     f.write(str(m))
@@ -306,7 +342,7 @@ class Node(BaseNode, Observer):
                 self.round = self.round + 1
                 logging.info("({}) Round {} of {} finished.".format(self.get_addr(),self.round,self.totalrounds))
 
-                # Next Step
+                # Next Step or Finish
                 if self.round < self.totalrounds:
                     self.__train_step()  
                 else:

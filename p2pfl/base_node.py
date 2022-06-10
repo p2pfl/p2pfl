@@ -8,6 +8,19 @@ from p2pfl.node_connection import NodeConnection
 from p2pfl.heartbeater import Heartbeater
 
 class BaseNode(threading.Thread):
+    """
+    This class represents a base node in the network (without **FL**). It is a thread, so it's going to process all messages in a background thread using the CommunicationProtocol.
+
+    Args:
+        host (str): The host of the node.
+        port (int): The port of the node.
+
+    Attributes:
+        host (str): The host of the node.
+        port (int): The port of the node.
+        node_socket (socket): The socket of the node.
+        neightboors (list): The neightboors of the node.
+    """
 
     #####################
     #     Node Init     #
@@ -15,7 +28,7 @@ class BaseNode(threading.Thread):
 
     def __init__(self, host="127.0.0.1", port=0):
         threading.Thread.__init__(self)
-        self.terminate_flag = threading.Event()
+        self.__terminate_flag = threading.Event()
         self.host = host
         self.port = port
 
@@ -39,6 +52,10 @@ class BaseNode(threading.Thread):
 
         
     def get_addr(self):
+        """
+        Returns:
+            tuple: The address of the node.    
+        """
         return self.host,self.port
 
     #######################
@@ -47,11 +64,17 @@ class BaseNode(threading.Thread):
     
     # Start the main loop in a new thread
     def start(self):
+        """
+        Starts the node. It will listen for new connections and process them.
+        """
         super().start()
 
     
     def stop(self): 
-        self.terminate_flag.set()
+        """
+        Stops the node.
+        """
+        self.__terminate_flag.set()
         # Enviamos mensaje al loop para evitar la espera del recv
         try:
             self.__send(self.host,self.port,b"")
@@ -75,8 +98,11 @@ class BaseNode(threading.Thread):
     # Main Thread of node.
     #   Its listening for new nodes to be added
     def run(self):
+        """
+        The main loop of the node. It will listen for new connections and process them.
+        """
         logging.info('Nodo a la escucha en {} {}'.format(self.host, self.port))
-        while not self.terminate_flag.is_set(): 
+        while not self.__terminate_flag.is_set(): 
             try:
                 (node_socket, addr) = self.node_socket.accept()
                 msg = node_socket.recv(BUFFER_SIZE)
@@ -138,27 +164,58 @@ class BaseNode(threading.Thread):
     #############################
 
     def get_neighbor(self, h, p):
+        """
+        Get a NodeConnection from the neightboors list.
+
+        Args:
+            h (str): The host of the node.
+            p (int): The port of the node.
+
+        Returns:
+            NodeConnection: The NodeConnection of the node.
+        """
         for n in self.neightboors:
-            #print(str(n.get_addr()) + str((h,p)))
             if n.get_addr() == (h,p):
                 return n
         return None
 
     def get_neighbors(self):
+        """
+        Returns:
+            list: The neightboors of the node.
+        """
         return self.neightboors
 
     def add_neighbor(self, n):
+        """
+        Adds a neightboor to the neightboors list.
+            
+        Args:
+            n (NodeConnection): The neightboor to be added.
+        """
         self.neightboors.append(n)
 
     def rm_neighbor(self,n):
+        """
+        Removes a neightboor from the neightboors list.
+
+        Args:
+            n (NodeConnection): The neightboor to be removed.
+        """
         try:
             self.neightboors.remove(n)
         except:
             pass
 
-    # Connecto to a node
-    #   - If full -> the node will be connected to the entire network
     def connect_to(self, h, p, full=True):
+        """"
+        Connects to a node.
+        
+        Args:
+            h (str): The host of the node.
+            p (int): The port of the node.
+            full (bool): If True, the node will be connected to the entire network.
+        """
         if full:
             full = "1"
         else:
@@ -181,6 +238,13 @@ class BaseNode(threading.Thread):
             logging.info('El nodo ya se encuentra conectado con {}:{}'.format(h,p))
 
     def disconnect_from(self, h, p):
+        """
+        Disconnects from a node.
+        
+        Args:
+            h (str): The host of the node.
+            p (int): The port of the node.
+        """
         self.get_neighbor(h,p).stop()
       
     ##########################
@@ -189,6 +253,15 @@ class BaseNode(threading.Thread):
 
     # FULL_CONNECTED -> 3th iteration |> TTL 
     def broadcast(self, msg, ttl=1, exc=[], is_necesary=True):
+        """
+        Broadcasts a message to all the neightboors.
+
+        Args:
+            msg (str): The message to be broadcasted.
+            ttl (int): The time to live of the message.
+            exc (list): The neightboors to be excluded.
+            is_necesary (bool): If False, the message will be sent only if its posible.
+        """
         sended=True 
         for n in self.neightboors:
             if not (n in exc):

@@ -7,13 +7,13 @@ from p2pfl.const import *
 #####################
 
 class Heartbeater(threading.Thread):
-    def __init__(self, nodo_padre):
-        """
-        Thread based heartbeater that sends a beat message to all the neighbors of a node every HEARTBEAT_FREC seconds.
+    """
+    Thread based heartbeater that sends a beat message to all the neighbors of a node every HEARTBEAT_FREC seconds.
 
-        Args:
-            nodo_padre (Node): Node that use the heartbeater.
-        """
+    Args:
+        nodo_padre (Node): Node that use the heartbeater.
+    """
+    def __init__(self, nodo_padre):
         threading.Thread.__init__(self)
         self.nodo_padre = nodo_padre
         self.terminate_flag = threading.Event()
