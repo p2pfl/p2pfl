@@ -37,6 +37,7 @@ class CommunicationProtocol:
     STOP_LEARNING  = "STOP_LEARNING"
     NUM_SAMPLES    = "NUM_SAMPLES"
     PARAMS         = "PARAMS" #special case
+    PARAMS_CLOSE   = "\PARAMS" #special case
     READY          = "READY"
     SEND_MODEL     = "SEND_MODEL"
 
@@ -102,7 +103,7 @@ class CommunicationProtocol:
         """
         header = CommunicationProtocol.PARAMS.encode("utf-8")
         if msg[0:len(header)] == header:
-            end = ("\\" + CommunicationProtocol.PARAMS).encode("utf-8")
+            end = CommunicationProtocol.PARAMS_CLOSE.encode("utf-8")
 
             # Check if done
             end_pos = msg.find(end)
@@ -301,7 +302,7 @@ class CommunicationProtocol:
         """
         # Encoding Headers and ending
         header = CommunicationProtocol.PARAMS.encode("utf-8")
-        end = ("\\" + CommunicationProtocol.PARAMS).encode("utf-8")
+        end = CommunicationProtocol.PARAMS_CLOSE.encode("utf-8")
 
         # Spliting data
         size = BUFFER_SIZE - len(header)

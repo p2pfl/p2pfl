@@ -25,7 +25,7 @@ from p2pfl.utils.observer import Events, Observer
 
 # Cambiar algunos int nones por -1 para preservar el tipo
 
-#Desacoplar el lerarner
+#Desacoplar el lerarner + Meter versiones de logs
 
 ###################################################################################################################
 # FULL CONNECTED HAY QUE IMPLEMENTARLO DE FORMA QUE CUANDO SE INTRODUCE UN NODO EN LA RED, SE HACE UN BROADCAST
@@ -37,7 +37,7 @@ class Node(BaseNode, Observer):
     #     Node Init     #
     #####################
 
-    def __init__(self, model, data, host="127.0.0.1", port=0, agregator=FedAvg):
+    def __init__(self, model, data, host="127.0.0.1", port=0, learner=LightningLearner, agregator=FedAvg):
         """
         Class based on a base node that allows ***p2p Federated Learning**. 
             
@@ -61,7 +61,7 @@ class Node(BaseNode, Observer):
 
         # Learning
         log_dir = str(self.host) + "_" + str(self.port)
-        self.learner = LightningLearner(model, data, log_name=log_dir) 
+        self.learner = learner(model, data, log_name=log_dir) 
         self.round = None
         self.totalrounds = None
         self.agredator = agregator(self)
@@ -96,22 +96,37 @@ class Node(BaseNode, Observer):
         
         Args:
             event (Events): Event that has occurred.
-            obj (object): Object that has been updated. ??????? REVISARLO
+            obj: Object that has been updated. 
         """
         if event == Events.END_CONNECTION:
             self.rm_neighbor(obj)
             self.agredator.check_and_run_agregation()
+
         elif event == Events.NODE_READY_EVENT:
             # Try to unlock to check if all nodes are ready (on_finish_round (agregator_thread))
             try:
                 self.__finish_wait_lock.release()
             except:
                 pass
+
         elif event == Events.AGREGATION_FINISHED:
             try:
                 self.__finish_agregation_lock.release()
             except:
                 pass
+
+        elif event == Events.CONN_TO:
+            self.connect_to(obj[0], obj[1], full=False)
+
+        elif event == Events.START_LEARNING:
+            self.__start_learning_thread(obj[0],obj[1])
+
+        elif event == Events.STOP_LEARNING:
+            self.stop_learning()
+    
+        elif event == Events.PARAMS_RECEIVED:
+            self.add_model(obj[0],obj[1],obj[2])
+
 
     ####################################
     #         Learning Setters         #
@@ -160,13 +175,15 @@ class Node(BaseNode, Observer):
             self.is_model_init = True
             self.__bc_model()
             # Learning Thread
-            learning_thread = threading.Thread(target=self.start_learning,args=(rounds,epochs))
-            learning_thread.name = "learning_thread-" + self.get_addr()[0] + ":" + str(self.get_addr()[1])
-            learning_thread.daemon = True
-            learning_thread.start()
+            self.__start_learning_thread(rounds,epochs)
         else:
             logging.debug("({}) Learning already started".format(self.get_addr()))
 
+    def __start_learning_thread(self,rounds,epochs):
+        learning_thread = threading.Thread(target=self.start_learning,args=(rounds,epochs))
+        learning_thread.name = "learning_thread-" + self.get_addr()[0] + ":" + str(self.get_addr()[1])
+        learning_thread.daemon = True
+        learning_thread.start()
 
     def set_stop_learning(self):
         """

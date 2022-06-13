@@ -15,10 +15,10 @@ class LightningLearner(NodeLearner):
     Learner with PyTorch Lightning.
     """
 
-    def __init__(self, model, data, log_name=None):
+    def __init__(self, model, data, log_name=None, experiment_version=0):
         self.model = model            
         self.data = data
-        self.logger = None #FederatedTensorboardLogger("training_logs", name=log_name)
+        self.logger = FederatedTensorboardLogger("training_logs", name=log_name, version=experiment_version)
         self.trainer = None
         self.epochs = 1
 

@@ -13,6 +13,10 @@ class Events():
     END_CONNECTION = "END_CONNECTION"
     NODE_READY_EVENT = "NODE_READY_EVENT"
     AGREGATION_FINISHED = "AGREGATION_FINISHED"
+    CONN_TO = "CONN_TO"
+    START_LEARNING = "START_LEARNING"
+    STOP_LEARNING = "STOP_LEARNING"
+    PARAMS_RECEIVED = "PARAMS_RECEIVED"
 
 ##################################
 #    Generic Observable class    #
