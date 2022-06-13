@@ -32,9 +32,11 @@ class FederatedTensorboardLogger(LightningLoggerBase):
 
         # FL information
         self.round = 0
-        self.step = 0
-        self.actual_step = 0
-        self.actual_round = 0
+        self.local_step = 0
+        self.global_step = 0
+        
+        self.writer.add_scalar("fl_round", self.round, self.global_step)
+
         
     @property
     def name(self):
@@ -62,19 +64,21 @@ class FederatedTensorboardLogger(LightningLoggerBase):
         """
 
         # FL round information
-        self.actual_step = step
-        step = step + self.step
-        self.writer.add_scalar("fl_round", self.round, step)
+        __step = self.global_step + self.local_step
+        self.local_step = step
 
+        # Log Round
+        self.writer.add_scalar("fl_round", self.round, __step)
+       
         for k, v in metrics.items():
             if isinstance(v, torch.Tensor):
                 v = v.item()
 
             if isinstance(v, dict):
-                self.writer.add_scalars(k, v, step)
+                self.writer.add_scalars(k, v, __step)
             else:
                 try:
-                    self.writer.add_scalar(k, v, step)
+                    self.writer.add_scalar(k, v, __step)
                 # todo: specify the possible exception
                 except Exception as ex:
                     m = f"\n you tried to log {v} which is currently not supported. Try a dict or a scalar/tensor."
@@ -92,7 +96,5 @@ class FederatedTensorboardLogger(LightningLoggerBase):
         """
         """
         # Finish Round
-        self.log_metrics({"fl_round": self.round}, self.actual_step)
+        self.global_step = self.global_step + self.local_step
         self.round = self.round + 1
-        # Update Steps
-        self.step = self.actual_step
