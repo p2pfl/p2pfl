@@ -47,7 +47,6 @@ class CommunicationProtocol:
 
     def __init__(self, command_dict):
         self.command_dict = command_dict
-        self.__cmds_success = []
 
     # Check if connection is correct and execute the callback (static)
     def process_connection(message, callback):
@@ -101,6 +100,7 @@ class CommunicationProtocol:
             True if the message was processed and no errors occurred, False otherwise.
 
         """
+        cmds_success = []
         header = CommunicationProtocol.PARAMS.encode("utf-8")
         if msg[0:len(header)] == header:
             end = CommunicationProtocol.PARAMS_CLOSE.encode("utf-8")
@@ -120,7 +120,7 @@ class CommunicationProtocol:
                 message = msg.decode("utf-8")
                 message = message.split()
             except:
-                self.__cmds_success.append(False)
+                cmds_success.append(False)
 
             # Process messages
             while len(message) > 0:
@@ -128,80 +128,78 @@ class CommunicationProtocol:
                 if len(message) > 0:
                     # Beat
                     if message[0] == CommunicationProtocol.BEAT:
-                        self.__cmds_success.append(self.__exec(CommunicationProtocol.BEAT))
+                        cmds_success.append(self.__exec(CommunicationProtocol.BEAT))
                         message = message[1:]
 
                     # Stop
                     elif message[0] == CommunicationProtocol.STOP:
-                        self.__cmds_success.append(self.__exec(CommunicationProtocol.STOP))
+                        cmds_success.append(self.__exec(CommunicationProtocol.STOP))
                         message = message[1:] 
 
                     # Connect to
                     elif message[0] == CommunicationProtocol.CONN_TO:
                         if len(message) > 2:
                             if message[2].isdigit():
-                                self.__cmds_success.append(self.__exec(CommunicationProtocol.CONN_TO, message[1], int(message[2])))
+                                cmds_success.append(self.__exec(CommunicationProtocol.CONN_TO, message[1], int(message[2])))
                                 message = message[3:] 
                             else:
-                                self.__cmds_success.append(False)
+                                cmds_success.append(False)
                                 break
                         else:
-                            self.__cmds_success.append(False)
+                            cmds_success.append(False)
                             break
 
                     # Start learning
                     elif message[0] == CommunicationProtocol.START_LEARNING:
                         if len(message) > 2:
                             if message[1].isdigit() and message[2].isdigit():
-                                self.__cmds_success.append(self.__exec(CommunicationProtocol.START_LEARNING, int(message[1]), int(message[2])))
+                                cmds_success.append(self.__exec(CommunicationProtocol.START_LEARNING, int(message[1]), int(message[2])))
                                 message = message[3:]
                             else:
-                                self.__cmds_success.append(False)
+                                cmds_success.append(False)
                                 break
                         else:
-                            self.__cmds_success.append(False)
+                            cmds_success.append(False)
                             break
 
                     # Stop learning
                     elif message[0] == CommunicationProtocol.STOP_LEARNING:
-                        self.__cmds_success.append(self.__exec(CommunicationProtocol.STOP_LEARNING))
+                        cmds_success.append(self.__exec(CommunicationProtocol.STOP_LEARNING))
                         message = message[1:]
         
                     # Number of samples
                     elif message[0] == CommunicationProtocol.NUM_SAMPLES:
                         if len(message) > 1:
                             if message[1].isdigit():
-                                self.__cmds_success.append(self.__exec(CommunicationProtocol.NUM_SAMPLES, int(message[1])))
+                                cmds_success.append(self.__exec(CommunicationProtocol.NUM_SAMPLES, int(message[1])))
                                 message = message[2:]
                             else:
-                                self.__cmds_success.append(False)
+                                cmds_success.append(False)
                                 break
                         else:
-                            self.__cmds_success.append(False)
+                            cmds_success.append(False)
                             break
 
                     # Ready
                     elif message[0] == CommunicationProtocol.READY:
                         if len(message) > 1:
                             if message[1].isdigit():
-                                self.__cmds_success.append(self.__exec(CommunicationProtocol.READY, int(message[1])))
+                                cmds_success.append(self.__exec(CommunicationProtocol.READY, int(message[1])))
                                 message = message[2:]
                             else:
-                                self.__cmds_success.append(False)
+                                cmds_success.append(False)
                                 break
                         else:
-                            self.__cmds_success.append(False)
+                            cmds_success.append(False)
                             break
                             
                     # Non Recognized message            
                     else:
-                        self.__cmds_success.append(False)
+                        cmds_success.append(False)
                         break
                 
             # Return
-            x = self.__cmds_success
-            self.__cmds_success = []
-            return x
+            return cmds_success
 
     # Exec callbacks
     def __exec(self,action, *args):

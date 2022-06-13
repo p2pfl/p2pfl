@@ -49,10 +49,10 @@ class Agregator(threading.Thread, Observable):
                 return
         else:
             logging.info("({}) Agregating models.".format(self.node.get_addr()))
-        self.node.learner.set_parameters(self.agregate(self.models))
-        self.clear()
+
         # Notificamos al nodo
-        self.notify(Events.AGREGATION_FINISHED,None) 
+        self.notify(Events.AGREGATION_FINISHED,self.agregate(self.models)) 
+        self.clear()
 
     def agregate(self,models): 
         """
@@ -69,27 +69,21 @@ class Agregator(threading.Thread, Observable):
             m: Model.
             w: Number of samples used to train the model.
 
-        Raises:
-            ModelNotMatchingError: If the model is not matching the learner.
         """
-        # Validar que el modelo sea del mismo tipo
-        if self.node.learner.check_parameters(m):
-            # Agregar modelo
-            self.lock.acquire()
-            self.models[n] = ((m, w))
-            logging.info("({}) Model added ({}/{}) from {}".format(self.node.get_addr(), str(len(self.models)), str(len(self.node.neightboors)+1), n))
-            # Start Timeout
-            if not self.is_alive():
-                self.start()
-            # Check if all models have been added
-            self.check_and_run_agregation()
-            # Try Unloock
-            try:
-                self.lock.release()
-            except:
-                pass
-        else:
-            raise ModelNotMatchingError("Not matching models")
+        # Agregar modelo
+        self.lock.acquire()
+        self.models[n] = ((m, w))
+        logging.info("({}) Model added ({}/{}) from {}".format(self.node.get_addr(), str(len(self.models)), str(len(self.node.neightboors)+1), n))
+        # Start Timeout
+        if not self.is_alive():
+            self.start()
+        # Check if all models have been added
+        self.check_and_run_agregation()
+        # Try Unloock
+        try:
+            self.lock.release()
+        except:
+            pass
         
     def check_and_run_agregation(self,force=False):
         """

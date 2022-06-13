@@ -1,6 +1,7 @@
 pytorch-lightning
 jupyter
 pytest
+pytest-cov
 torchvision
 sphinx
 myst-parser

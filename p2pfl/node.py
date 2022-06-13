@@ -82,7 +82,7 @@ class Node(BaseNode, Observer):
         Stop the node and the learning if it is running.
         """
         if self.round is not None:
-            self.stop_learning()
+            self.__stop_learning()
             self.agredator.check_and_run_agregation(force=True)
         super().stop()
 
@@ -110,6 +110,7 @@ class Node(BaseNode, Observer):
                 pass
 
         elif event == Events.AGREGATION_FINISHED:
+            self.learner.set_parameters(obj)
             try:
                 self.__finish_agregation_lock.release()
             except:
@@ -122,7 +123,7 @@ class Node(BaseNode, Observer):
             self.__start_learning_thread(obj[0],obj[1])
 
         elif event == Events.STOP_LEARNING:
-            self.stop_learning()
+            self.__stop_learning()
     
         elif event == Events.PARAMS_RECEIVED:
             self.add_model(obj[0],obj[1],obj[2])
@@ -179,19 +180,13 @@ class Node(BaseNode, Observer):
         else:
             logging.debug("({}) Learning already started".format(self.get_addr()))
 
-    def __start_learning_thread(self,rounds,epochs):
-        learning_thread = threading.Thread(target=self.start_learning,args=(rounds,epochs))
-        learning_thread.name = "learning_thread-" + self.get_addr()[0] + ":" + str(self.get_addr()[1])
-        learning_thread.daemon = True
-        learning_thread.start()
-
     def set_stop_learning(self):
         """
         Stop the learning process in the entire network.
         """
         if self.round is not None:
             self.broadcast(CommunicationProtocol.build_stop_learning_msg())
-            self.stop_learning()
+            self.__stop_learning()
         else:
             logging.debug("({}) Learning already stopped".format(self.get_addr()))
 
@@ -200,7 +195,13 @@ class Node(BaseNode, Observer):
     #         Local Learning         #
     ##################################
 
-    def start_learning(self,rounds,epochs):
+    def __start_learning_thread(self,rounds,epochs):
+        learning_thread = threading.Thread(target=self.__start_learning,args=(rounds,epochs))
+        learning_thread.name = "learning_thread-" + self.get_addr()[0] + ":" + str(self.get_addr()[1])
+        learning_thread.daemon = True
+        learning_thread.start()
+
+    def __start_learning(self,rounds,epochs):
         """
         Start the learning process in the local node.
         
@@ -227,7 +228,7 @@ class Node(BaseNode, Observer):
         self.learner.set_epochs(epochs)
         self.__train_step()
 
-    def stop_learning(self): 
+    def __stop_learning(self): 
         """
         Stop the learning process in the local node. Interrupts learning process if its running.
         """
@@ -260,7 +261,10 @@ class Node(BaseNode, Observer):
             try:
                 if self.is_model_init:
                     # Add model to agregator
-                    self.agredator.add_model(node,self.learner.decode_parameters(m),w) 
+                    if self.learner.check_parameters(m):
+                        self.agredator.add_model(node,self.learner.decode_parameters(m),w)
+                    else:
+                        raise ModelNotMatchingError("Not matching models")
                 else:
                     # Initialize model
                     self.is_model_init = True
