@@ -1,10 +1,7 @@
 # federated_learning_p2p
 
-## Revisar
+## Important
 
-- Desacoplar comunicaciones
-- Checkear si queda pillado cuando spoofeas un host
+Carefully with number of open files at high scale experiments.
 
-## TODO List
-
-- Revisar los test, van como quieren
+If fails, try to change the number of open files. `ulimit -n {VALUE}`

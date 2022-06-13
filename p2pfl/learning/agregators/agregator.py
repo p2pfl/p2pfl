@@ -14,6 +14,13 @@ from p2pfl.utils.observer import Events, Observable
 #-----------------------------------------------------------------------
 
 class Agregator(threading.Thread, Observable):
+    """
+    Class to manage the agregation of models. Its a thread so, agregation will be done in background if all models was added or timeouts have gone. 
+    Also its a observable so, it will notify when the agregation was done.
+
+    Args:
+        n: Node. Used to check the neightboors and decode parameters with the learner.
+    """
 
     def __init__(self, n):
         threading.Thread.__init__(self)
@@ -27,6 +34,9 @@ class Agregator(threading.Thread, Observable):
         self.agregation_lock.acquire()
 
     def run(self):
+        """
+        Wait for the agregation to be done or timeout. Then agregate the models and notify.
+        """
         # Wait for all models to be added or TIMEOUT
         self.agregation_lock.acquire(timeout=AGREGATION_TIEMOUT) 
         # Start agregation
@@ -44,11 +54,25 @@ class Agregator(threading.Thread, Observable):
         # Notificamos al nodo
         self.notify(Events.AGREGATION_FINISHED,None) 
 
-    def agregate(self,models): print("Not implemented")
+    def agregate(self,models): 
+        """
+        Agregate the models.
+        """
+        print("Not implemented")
             
     def add_model(self, n, m, w):
-        # Validar que el modelo sea del mismo tipo
+        """
+        Add a model. The first model to be added starts the `run` method (timeout).
 
+        Args:
+            n: Node. Used to identify the model.
+            m: Model.
+            w: Number of samples used to train the model.
+
+        Raises:
+            ModelNotMatchingError: If the model is not matching the learner.
+        """
+        # Validar que el modelo sea del mismo tipo
         if self.node.learner.check_parameters(m):
             # Agregar modelo
             self.lock.acquire()
@@ -68,6 +92,12 @@ class Agregator(threading.Thread, Observable):
             raise ModelNotMatchingError("Not matching models")
         
     def check_and_run_agregation(self,force=False):
+        """
+        Check if all models have been added and start agregation if so.
+
+        Args:
+            force: If true, agregation will be started even if not all models have been added.
+        """
         # Try Unloock
         try:
             if force or len(self.models)==(len(self.node.neightboors)+1): 
@@ -78,6 +108,9 @@ class Agregator(threading.Thread, Observable):
 
 
     def clear(self):
+        """
+        Clear all for a new agregation.
+        """
         observers = self.get_observers()
         self.__init__(self.node)
         for o in observers:

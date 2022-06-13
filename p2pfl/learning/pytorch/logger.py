@@ -7,16 +7,28 @@ import torch
 class FederatedTensorboardLogger(LightningLoggerBase):
     """
     Logger for PyTorch Lightning in federated learning. Training information persists in a local directory the diferent train rounds.
+
+    
+    Args:
+        dir (str): Directory where the logs will be saved.
+        name (str): Name of the node.
+        version (int): Version of the experiment.
     """
 
-    def __init__(self, dir, name = None , version = 0, **kwargs):
+    def __init__(self, dir, name = None, version=0, **kwargs):
         super().__init__()
         self._name = "unknown_node"
+        self._version = version
         if name is not None:
             self._name = name
 
-        self._version = version    
-        self.writer = SummaryWriter(os.path.join(dir, self._name))
+        # Create log directory
+        dir = os.path.join(dir, self._name)
+        # If exist the experiment, increment the version
+        while os.path.exists(os.path.join(dir, "experiment_" + str(version))):
+            version += 1
+        # Create the writer
+        self.writer = SummaryWriter(os.path.join(dir, "experiment_" + str(version)))
 
         # FL information
         self.round = 0
@@ -80,7 +92,7 @@ class FederatedTensorboardLogger(LightningLoggerBase):
         """
         """
         # Finish Round
-        self.round = self.round + 1
         self.log_metrics({"fl_round": self.round}, self.actual_step)
+        self.round = self.round + 1
         # Update Steps
         self.step = self.actual_step

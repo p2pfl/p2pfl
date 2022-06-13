@@ -14,6 +14,9 @@ class NodeLearner:
 
         Args:
             model: The model of the learner.
+
+        Raises:
+            ModelNotMatchingError: If the model is not matching the learner.
         """
         pass
 
@@ -41,6 +44,9 @@ class NodeLearner:
         
         Args:
             data: The encoded parameters of the model.
+
+        Raises:
+            DecodingParamsError: If the decoding of the parameters fails.
         """
         pass
 

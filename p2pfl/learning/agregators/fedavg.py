@@ -12,16 +12,22 @@ from p2pfl.learning.agregators.agregator import Agregator
 # Mencionar que num de epoches locales va en el nodo mas que en el agregador
 #-----------------------------------------------------
 
-"""
-Federated Averaging (FedAvg) [McMahan et al., 2016]
-Paper: https://arxiv.org/abs/1602.05629
-"""
-
 class FedAvg(Agregator):
+    """
+    Federated Averaging (FedAvg) [McMahan et al., 2016]
+    Paper: https://arxiv.org/abs/1602.05629
+    """
     def __init__(self, n):
         super().__init__(n)
 
-    def agregate(self,models): # (PONDERATED MEAN)
+    def agregate(self,models): 
+        """
+        Ponderated average of the models.
+
+        Args:
+            models: Dictionary with the models.
+        """
+        
         models = list(models.values())
         
         # Total Samples

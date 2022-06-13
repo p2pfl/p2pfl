@@ -25,7 +25,7 @@ from p2pfl.utils.observer import Events, Observer
 
 # Cambiar algunos int nones por -1 para preservar el tipo
 
-#Desacoplar el lerarner
+#Desacoplar el lerarner + Meter versiones de logs
 
 ###################################################################################################################
 # FULL CONNECTED HAY QUE IMPLEMENTARLO DE FORMA QUE CUANDO SE INTRODUCE UN NODO EN LA RED, SE HACE UN BROADCAST
@@ -37,7 +37,7 @@ class Node(BaseNode, Observer):
     #     Node Init     #
     #####################
 
-    def __init__(self, model, data, host="127.0.0.1", port=0, agregator=FedAvg):
+    def __init__(self, model, data, host="127.0.0.1", port=0, learner=LightningLearner, agregator=FedAvg):
         """
         Class based on a base node that allows ***p2p Federated Learning**. 
             
@@ -61,7 +61,7 @@ class Node(BaseNode, Observer):
 
         # Learning
         log_dir = str(self.host) + "_" + str(self.port)
-        self.learner = LightningLearner(model, data, log_name=log_dir) 
+        self.learner = learner(model, data, log_name=log_dir) 
         self.round = None
         self.totalrounds = None
         self.agredator = agregator(self)
