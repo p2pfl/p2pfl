@@ -110,7 +110,8 @@ class Node(BaseNode, Observer):
                 pass
 
         elif event == Events.AGREGATION_FINISHED:
-            self.learner.set_parameters(obj)
+            if obj is not None:
+                self.learner.set_parameters(obj)
             try:
                 self.__finish_agregation_lock.release()
             except:
