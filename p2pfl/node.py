@@ -96,22 +96,37 @@ class Node(BaseNode, Observer):
         
         Args:
             event (Events): Event that has occurred.
-            obj (object): Object that has been updated. ??????? REVISARLO
+            obj: Object that has been updated. 
         """
         if event == Events.END_CONNECTION:
             self.rm_neighbor(obj)
             self.agredator.check_and_run_agregation()
+
         elif event == Events.NODE_READY_EVENT:
             # Try to unlock to check if all nodes are ready (on_finish_round (agregator_thread))
             try:
                 self.__finish_wait_lock.release()
             except:
                 pass
+
         elif event == Events.AGREGATION_FINISHED:
             try:
                 self.__finish_agregation_lock.release()
             except:
                 pass
+
+        elif event == Events.CONN_TO:
+            self.connect_to(obj[0], obj[1], full=False)
+
+        elif event == Events.START_LEARNING:
+            self.__start_learning_thread(obj[0],obj[1])
+
+        elif event == Events.STOP_LEARNING:
+            self.stop_learning()
+    
+        elif event == Events.PARAMS_RECEIVED:
+            self.add_model(obj[0],obj[1],obj[2])
+
 
     ####################################
     #         Learning Setters         #
@@ -160,13 +175,15 @@ class Node(BaseNode, Observer):
             self.is_model_init = True
             self.__bc_model()
             # Learning Thread
-            learning_thread = threading.Thread(target=self.start_learning,args=(rounds,epochs))
-            learning_thread.name = "learning_thread-" + self.get_addr()[0] + ":" + str(self.get_addr()[1])
-            learning_thread.daemon = True
-            learning_thread.start()
+            self.__start_learning_thread(rounds,epochs)
         else:
             logging.debug("({}) Learning already started".format(self.get_addr()))
 
+    def __start_learning_thread(self,rounds,epochs):
+        learning_thread = threading.Thread(target=self.start_learning,args=(rounds,epochs))
+        learning_thread.name = "learning_thread-" + self.get_addr()[0] + ":" + str(self.get_addr()[1])
+        learning_thread.daemon = True
+        learning_thread.start()
 
     def set_stop_learning(self):
         """

@@ -44,14 +44,14 @@ class NodeConnection(threading.Thread, Observable):
         self.tmp = 0
 
         self.comm_protocol = CommunicationProtocol({
-            CommunicationProtocol.BEAT: Beat_cmd(None,None),
-            CommunicationProtocol.STOP: Stop_cmd(None,self),
-            CommunicationProtocol.CONN_TO: Conn_to_cmd(parent_node,None),
-            CommunicationProtocol.START_LEARNING: Start_learning_cmd(parent_node,None),
-            CommunicationProtocol.STOP_LEARNING: Stop_learning_cmd(parent_node,None),
-            CommunicationProtocol.PARAMS: Params_cmd(parent_node,self),
-            CommunicationProtocol.NUM_SAMPLES: Num_samples_cmd(None,self),
-            CommunicationProtocol.READY: Ready_cmd(None,self)
+            CommunicationProtocol.BEAT: Beat_cmd(self),
+            CommunicationProtocol.STOP: Stop_cmd(self),
+            CommunicationProtocol.CONN_TO: Conn_to_cmd(self),
+            CommunicationProtocol.START_LEARNING: Start_learning_cmd(self),
+            CommunicationProtocol.STOP_LEARNING: Stop_learning_cmd(self),
+            CommunicationProtocol.PARAMS: Params_cmd(self),
+            CommunicationProtocol.NUM_SAMPLES: Num_samples_cmd(self),
+            CommunicationProtocol.READY: Ready_cmd(self)
         })
 
     def get_addr(self):
@@ -233,5 +233,33 @@ class NodeConnection(threading.Thread, Observable):
                 return False
         else:
             return False
+
+    ###########################
+    #    Command Callbacks    #
+    ###########################
+
+    def notify_conn_to(self, h, p):
+        """
+        Notify to the parent node that `CONN_TO` has been received.
+        """
+        self.notify(Events.CONN_TO, (h,p))
+
+    def notify_start_learning(self, r, e):
+        """
+        Notify to the parent node that `START_LEARNING` has been received.
+        """
+        self.notify(Events.START_LEARNING, (r,e))
+
+    def notify_stop_learning(self,cmd):
+        """
+        Notify to the parent node that `START_LEARNING` has been received.
+        """
+        self.notify(Events.STOP_LEARNING, None)
+
+    def notify_params(self,params):
+        """
+        Notify to the parent node that `PARAMS` has been received.
+        """
+        self.notify(Events.PARAMS_RECEIVED, (str(self.get_addr()), params, self.num_samples))
 
 

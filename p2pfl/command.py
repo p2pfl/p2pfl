@@ -17,11 +17,9 @@ class Command:
     Class that represents a command.
 
     Args:
-        parent_node: ------------------------
-        node_connection: ------------------------
+        node_connection: The node connection that is going to execute the command.
     """
-    def __init__(self, parent_node, node_connection):
-        self.parent_node = parent_node
+    def __init__(self, node_connection):
         self.node_connection = node_connection
 
     def execute(self,*args): pass
@@ -49,25 +47,21 @@ class Conn_to_cmd(Command):
     Command that should be executed as a response to a **conn_to** message.
     """
     def execute(self,h,p):
-        self.parent_node.connect_to(h, p, full=False)
+        self.node_connection.notify_conn_to(h,p)
 
 class Start_learning_cmd(Command):
     """
     Command that should be executed as a response to a **start_learning** message.
     """
     def execute(self, rounds, epochs):
-        # Thread process to avoid blocking the message receiving
-        learning_thread = threading.Thread(target=self.parent_node.start_learning,args=(rounds,epochs))
-        learning_thread.name = "learning_thread-" + self.parent_node.get_addr()[0] + ":" + str(self.parent_node.get_addr()[1])
-        learning_thread.daemon = True
-        learning_thread.start()
+        self.node_connection.notify_start_learning(rounds, epochs)
 
 class Stop_learning_cmd(Command):
     """
     Command that should be executed as a response to a **stop_learning** message.
     """
     def execute(self):
-        self.parent_node.stop_learning()
+        self.node_connection.notify_stop_learning()
 
 class Num_samples_cmd(Command):
     """
@@ -93,5 +87,6 @@ class Params_cmd(Command):
             self.node_connection.tmp = self.node_connection.tmp + 1
             params = self.node_connection.get_params()
             self.node_connection.clear_buffer()
-            self.parent_node.add_model(str(self.node_connection.get_addr()),params,self.node_connection.num_samples)
+            self.node_connection.notify_params(params)
+
         
