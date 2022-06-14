@@ -18,8 +18,7 @@ class CommunicationProtocol:
         - NUM_SAMPLES <num> 
         - PARAMS <data> \PARAMS
         - READY <round>
-        - SEND_MODEL
-
+        
     The unique non-static method is used to process messages with a connection stablished.
 
     Args:
@@ -39,7 +38,6 @@ class CommunicationProtocol:
     PARAMS         = "PARAMS" #special case
     PARAMS_CLOSE   = "\PARAMS" #special case
     READY          = "READY"
-    SEND_MODEL     = "SEND_MODEL"
 
     ########################
     #    MSG PROCESSING    #
