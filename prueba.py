@@ -40,5 +40,6 @@ def test_node_down_on_learning(n):
     for node in nodes:
         node.stop()
 
-test_node_down_on_learning(10)
+if __name__ == '__main__':
+    test_node_down_on_learning(3)
 

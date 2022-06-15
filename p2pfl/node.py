@@ -1,5 +1,6 @@
 from concurrent.futures import thread
 from distutils.log import debug
+from email.header import decode_header
 import socket
 import threading
 import logging
@@ -262,8 +263,9 @@ class Node(BaseNode, Observer):
             try:
                 if self.is_model_init:
                     # Add model to agregator
-                    if self.learner.check_parameters(m):
-                        self.agredator.add_model(node,self.learner.decode_parameters(m),w)
+                    decoded_model = self.learner.decode_parameters(m)
+                    if self.learner.check_parameters(decoded_model):
+                        self.agredator.add_model(node,decoded_model,w)
                     else:
                         raise ModelNotMatchingError("Not matching models")
                 else:

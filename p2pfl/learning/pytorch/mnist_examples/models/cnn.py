@@ -12,16 +12,16 @@ class CNN(pl.LightningModule):
     """
     Convolutional Neural Network (CNN) to solve MNIST with PyTorch Lightning.
     """
-    
-    def __init__(self, in_channels=1, out_channels=10):
+
+    def __init__(self, in_channels=1, out_channels=10, metric=Accuracy(), lr_rate=0.002):
 
         # Set seed for reproducibility iniciialization
         seed = 666
         torch.manual_seed(seed)
 
         super().__init__()
-        self.accuracy = Accuracy()
-        self.lr_rate = 0.02
+        self.metric = metric
+        self.lr_rate = lr_rate
 
         self.conv1 = nn.Conv2d(in_channels, 32, 3, 1)
         self.bn1 = nn.BatchNorm2d(32)
@@ -75,9 +75,9 @@ class CNN(pl.LightningModule):
         logits = self(x)
         loss = F.cross_entropy(self(x), y)
         out = torch.argmax(logits, dim=1)
-        acc = self.accuracy(out, y) 
+        metric = self.metric(out, y) 
         self.log("val_loss", loss, prog_bar=True)
-        self.log("val_acc", acc, prog_bar=True)    
+        self.log("val_metric", metric, prog_bar=True)    
         return loss
 
     def test_step(self, batch, batch_idx):
@@ -87,8 +87,8 @@ class CNN(pl.LightningModule):
         logits = self(x)
         loss = F.cross_entropy(self(x), y)
         out = torch.argmax(logits, dim=1)
-        acc = self.accuracy(out, y) 
+        metric = self.metric(out, y) 
         self.log("test_loss", loss, prog_bar=True)
-        self.log("test_acc", acc, prog_bar=True)
+        self.log("test_metric", metric, prog_bar=True)
         return loss
         
