@@ -101,6 +101,10 @@ class Node(BaseNode, Observer):
         if event == Events.END_CONNECTION:
             self.rm_neighbor(obj)
             self.agredator.check_and_run_agregation()
+            try:
+                self.__finish_wait_lock.release()
+            except:
+                pass
 
         elif event == Events.NODE_READY_EVENT:
             # Try to unlock to check if all nodes are ready (on_finish_round (agregator_thread))
@@ -343,12 +347,8 @@ class Node(BaseNode, Observer):
                 
                 # Send ready message --> quizá ya no haga falta bloquear el socket
                 self.broadcast(CommunicationProtocol.build_ready_msg(self.round))
-                    
                 
                 # Wait for ready messages
-                #
-                # -> plantearse timeout x si nodos no responden -> meter en memoria y preguntar profesores
-                #
                 logging.info("({}) Waiting other nodes.".format(self.get_addr()))
                 while True:
                     # If the trainning has been interrupted, stop waiting
@@ -358,7 +358,7 @@ class Node(BaseNode, Observer):
                         
                     if all([ nc.get_ready_status()>=self.round for nc in self.neightboors]):
                         break
-                    self.__finish_wait_lock.acquire(timeout=2)
+                    self.__finish_wait_lock.acquire()
                         
                 # Set Next Round
                 self.round = self.round + 1

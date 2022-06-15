@@ -42,11 +42,14 @@ class Agregator(threading.Thread, Observable):
         # Start agregation
         if len(self.models)!=(len(self.node.neightboors)+1):
             logging.info("({}) Agregating models. Timeout reached".format(self.node.get_addr()))
-            # Validamos que el nodo siga operativo (si no puediera quedar residual)
+            # Validamos que el nodo siga operativo (si no puediera quedar este thread residual)
             if self.node.round is None:
                 logging.info("({}) Shutting Down Agregator Process".format(self.node.get_addr()))
                 self.notify(Events.AGREGATION_FINISHED,None) # To avoid residual trainning-thread
                 return
+            else:
+                # Elimina del vecindario los nodos que no se hayan agregado
+                print("NOT IMPLEMENTED---------------------------------------------------------------------------------------------------")
         else:
             logging.info("({}) Agregating models.".format(self.node.get_addr()))
 
@@ -95,7 +98,6 @@ class Agregator(threading.Thread, Observable):
         # Try Unloock
         try:
             if force or len(self.models)==(len(self.node.neightboors)+1): 
-                print("({})releasing".format(self.node.get_addr()))
                 self.agregation_lock.release()
         except:
             pass
