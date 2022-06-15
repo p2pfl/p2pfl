@@ -70,9 +70,6 @@ class LightningLearner(NodeLearner):
             self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=self.logger, enable_checkpointing=False) 
             self.trainer.fit(self.model, self.data)
             self.trainer = None
-        
-        #data_ammount = len(self.data.train_dataloader().dataset) #revisarlo
-        #return self.get_parameters(), data_ammount, {}
 
     def evaluate(self, params):
         self.set_parameters(params)
