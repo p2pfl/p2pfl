@@ -77,43 +77,22 @@ def test_multimsg(two_nodes):
     time.sleep(0.1) 
     assert len(n2.neightboors) == 0
 
-def test_multimsg2(two_nodes):
+def test_bad_msg(two_nodes):
     n1, n2 = two_nodes
 
     # Conexión
     n1.connect_to(n2.host,n2.port)
     time.sleep(0.1) 
 
-    # Parametrizar num errores x nodo -> actualmente esta en 1 -> casque
+    # Ante 1 error se detendrá la conexión (actualmente según los parátros 1 error es suficiente)
     n1.broadcast(b"saludos Enrique y Dani")
     time.sleep(0.1) 
     assert len(n2.neightboors) == 0
 
 
-#------------------------------------------
-#   REVISAR INTERRUPCIONES MÁS A FONDO -> (cuando el learner aun no está corriendo pero el proceso está siendo llamado)
-#------------------------------------------
-def test_interrupt_train(two_nodes):
-    if __name__ == '__main__': # To avoid creating new process when current has not finished its bootstrapping phase
-        n1, n2 = two_nodes
-        n1.connect_to(n2.host,n2.port)
-
-        time.sleep(1) #Esperar por la asincronía
-
-        n1.set_start_learning(100,100)
-
-        time.sleep(1) #Esperar por la asincronía
-
-        n1.set_stop_learning()
-
-        while n1.round is not None and n2.round is not None:
-            print(n1.round,n2.round)
-            time.sleep(0.1)
-
-
-###################
-#  Tests Learning #
-###################
+########################
+#    Tests Learning    #
+########################
 
 #parametrizar, metiendo num rondas y num nodos :)
 @pytest.mark.parametrize('x',[(2,1),(2,2)]) 
@@ -167,3 +146,21 @@ def test_convergence(x):
     for node in nodes:
         node.stop()
         time.sleep(.1) #Esperar por la asincronía
+
+
+def test_interrupt_train(two_nodes):
+    if __name__ == '__main__': # To avoid creating new process when current has not finished its bootstrapping phase
+        n1, n2 = two_nodes
+        n1.connect_to(n2.host,n2.port)
+
+        time.sleep(1) #Esperar por la asincronía
+
+        n1.set_start_learning(100,100)
+
+        time.sleep(1) #Esperar por la asincronía
+
+        n1.set_stop_learning()
+
+        while n1.round is not None and n2.round is not None:
+            print(n1.round,n2.round)
+            time.sleep(0.1)
