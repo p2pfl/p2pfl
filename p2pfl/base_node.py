@@ -46,10 +46,6 @@ class BaseNode(threading.Thread):
         # Logging
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-        # Heartbeater
-        self.heartbeater = Heartbeater(self)
-        self.heartbeater.start()
-
         
     def get_addr(self):
         """
@@ -65,9 +61,11 @@ class BaseNode(threading.Thread):
     # Start the main loop in a new thread
     def start(self):
         """
-        Starts the node. It will listen for new connections and process them.
+        Starts the node. It will listen for new connections and process them. Heartbeater will be started too.
         """
         super().start()
+        # Heartbeater
+        (Heartbeater(self)).start()
 
     
     def stop(self): 
@@ -80,6 +78,9 @@ class BaseNode(threading.Thread):
             self.__send(self.host,self.port,b"")
         except:
             pass
+
+    def is_stopped(self):
+        return self.__terminate_flag.is_set()
 
     def __send(self, h, p, data, persist=False): 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -124,7 +125,6 @@ class BaseNode(threading.Thread):
         nei_copy_list = self.neightboors.copy()
         for n in nei_copy_list:
             n.stop()
-        self.heartbeater.stop()
         self.node_socket.close()
 
 

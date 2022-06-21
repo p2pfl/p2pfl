@@ -65,8 +65,8 @@ class Node(BaseNode, Observer):
         self.learner = learner(model, data, log_name=log_dir) 
         self.round = None
         self.totalrounds = None
-        self.agredator = agregator(self)
-        self.agredator.add_observer(self)
+        self.agregator = agregator( node_name = self.get_addr()[0] + ":" + str(self.get_addr()[1]) )
+        self.agregator.add_observer(self)
         self.is_model_init = False
 
         # Locks
@@ -84,7 +84,7 @@ class Node(BaseNode, Observer):
         """
         if self.round is not None:
             self.__stop_learning()
-            self.agredator.check_and_run_agregation(force=True)
+            self.agregator.check_and_run_agregation(force=True)
         super().stop()
 
     ################
@@ -101,7 +101,7 @@ class Node(BaseNode, Observer):
         """
         if event == Events.END_CONNECTION:
             self.rm_neighbor(obj)
-            self.agredator.check_and_run_agregation()
+            self.agregator.remove_node_to_agregate()
             try:
                 self.__finish_wait_lock.release()
             except:
@@ -217,19 +217,19 @@ class Node(BaseNode, Observer):
         """
         self.round = 0
         self.totalrounds = rounds
-
-        #esto de aqui es una apaño de los malos
-        if not self.is_model_init:
-            logging.info("({}) Initialicing Model Weights".format(self.get_addr()))
-            while not self.is_model_init:
-               time.sleep(0.1)
+        self.agregator.set_nodes_to_agregate(len(self.neightboors))
 
         # Indicates samples that be used in the learning process
         logging.info("({}) Broadcasting Number of Samples...".format(self.get_addr()))
         #esto ya no hará falta -> ahora multilee -> tb nos perjudica porque si ya se está mandado el modelo, va a promediarlo x 0
         self.broadcast(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples()))
-            
         
+        #esto de aqui es una apaño de los malos -> cambiar por lock
+        if not self.is_model_init:
+            logging.info("({}) Initialicing Model Weights".format(self.get_addr()))
+            while not self.is_model_init:
+               time.sleep(0.1)
+
         # Train
         self.learner.set_epochs(epochs)
         self.__train_step()
@@ -242,7 +242,8 @@ class Node(BaseNode, Observer):
         self.learner.interrupt_fit()
         self.round = None
         self.totalrounds = None
-        self.agredator.clear()
+        self.agregator.set_nodes_to_agregate(None)
+        self.agregator.clear()
 
     ####################################
     #         Model Agregation         #
@@ -269,7 +270,7 @@ class Node(BaseNode, Observer):
                     # Add model to agregator
                     decoded_model = self.learner.decode_parameters(m)
                     if self.learner.check_parameters(decoded_model):
-                        self.agredator.add_model(node,decoded_model,w)
+                        self.agregator.add_model(node,decoded_model,w)
                     else:
                         raise ModelNotMatchingError("Not matching models")
                 else:
@@ -308,12 +309,13 @@ class Node(BaseNode, Observer):
     ################################
 
     def __train_step(self):
+
         # Check if Learning has been interrupted
         if self.round is not None:
             self.__train()
         
         if self.round is not None:
-            self.agredator.add_model(str(self.get_addr()),self.learner.get_parameters(), self.learner.get_num_samples())
+            self.agregator.add_model(str(self.get_addr()),self.learner.get_parameters(), self.learner.get_num_samples())
             self.__bc_model()
 
         if self.round is not None:
@@ -372,6 +374,7 @@ class Node(BaseNode, Observer):
                 else:
                     self.round = None
                     self.is_model_init = False
+                    self.agregator.set_nodes_to_agregate(None)
                     logging.info("({}) Finish!!.".format(self.get_addr()))          
          
             else:

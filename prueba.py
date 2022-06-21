@@ -23,7 +23,7 @@ def test_node_down_on_learning(n):
         assert len(node.neightboors) == n-1
 
     # Start Learning
-    nodes[0].set_start_learning(rounds=10,epochs=2)
+    nodes[0].set_start_learning(rounds=60,epochs=2)
 
     # Wait 4 results
     while True:
@@ -41,5 +41,5 @@ def test_node_down_on_learning(n):
         node.stop()
 
 if __name__ == '__main__':
-    test_node_down_on_learning(3)
+    test_node_down_on_learning(5)
 

@@ -23,7 +23,7 @@ def test_node_abrupt_down(four_nodes):
     time.sleep(0.1) #Esperar por la asincronía
     assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == len(n4.neightboors) == 3
 
-    # Desconexión n4 abruptamente (socket closed)å
+    # Desconexión n4 abruptamente (socket closed)
     #    (n4): será consciente de que la comunicación con n1 se ha perdido cuando haga uso del socket (heartbeat)
     #   (otros) nuevamente el uso del socket (heartbeat) detectará que la conexión ha sido rechazada por el nodo
     for con in n4.neightboors:
@@ -31,15 +31,10 @@ def test_node_abrupt_down(four_nodes):
     time.sleep(HEARTBEAT_FREC+0.1) #Esperar por la asincronía
     assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == 2
     n4.stop()
-    
-    # Desconexión n3 abruptamente (deja de enviar heartbeat)
-    n3.heartbeater.stop()
-    time.sleep(SOCKET_TIEMOUT+0.1) #Esperar por la asincronía
-    assert len(n1.neightboors) == len(n2.neightboors) == 1
-    n3.stop()
-    
+
 
     # Desconexión n2 y n1
+    n3.stop()
     n2.stop()
     n1.stop()
 

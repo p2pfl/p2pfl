@@ -17,7 +17,7 @@ def test_encoding():
 def test_avg_simple():
     n = Node(None,None)
     n.start()
-    agregator = FedAvg(n)
+    agregator = FedAvg()
     a = OrderedDict([('a', torch.tensor(-1)), ('b', torch.tensor(-1))])
     b = OrderedDict([('a', torch.tensor(0)), ('b', torch.tensor(0))])
     c = OrderedDict([('a', torch.tensor(1)), ('b', torch.tensor(1))])
@@ -40,7 +40,7 @@ def test_avg_complex():
     n = Node(None,None)
     n.start()
 
-    agregator = FedAvg(n)
+    agregator = FedAvg()
     nl1 = LightningLearner(MLP(), None)
     params = nl1.get_parameters()
     params1 = nl1.get_parameters()

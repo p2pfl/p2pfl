@@ -19,15 +19,16 @@ class Agregator(threading.Thread, Observable):
     Also its a observable so, it will notify when the agregation was done.
 
     Args:
-        n: Node. Used to check the neightboors and decode parameters with the learner.
+        node_name: (str): String with the name of the node.
     """
 
-    def __init__(self, n):
+    def __init__(self, node_name="unknown"):
         threading.Thread.__init__(self)
         self.daemon = True
         Observable.__init__(self)
-        self.node = n
-        self.name = "agregator-" + n.get_addr()[0] + ":" + str(n.get_addr()[1])
+        self.num_nei = None
+        self.node_name = node_name
+        self.name = "agregator-" + node_name
         self.models = {}
         self.lock = threading.Lock()
         self.agregation_lock = threading.Lock()
@@ -39,19 +40,24 @@ class Agregator(threading.Thread, Observable):
         """
         # Wait for all models to be added or TIMEOUT
         self.agregation_lock.acquire(timeout=AGREGATION_TIEMOUT) 
+        
+        # Check if node still running (could happen if agregation thread was a residual thread)
+        if self.num_nei is None:
+            logging.info("({}) Shutting Down Agregator Process".format(self.node_name))
+            self.notify(Events.AGREGATION_FINISHED,None) # To avoid residual trainning-thread
+            return
+        
         # Start agregation
-        if len(self.models)!=(len(self.node.neightboors)+1):
-            logging.info("({}) Agregating models. Timeout reached".format(self.node.get_addr()))
-            # Validamos que el nodo siga operativo (si no puediera quedar este thread residual)
-            if self.node.round is None:
-                logging.info("({}) Shutting Down Agregator Process".format(self.node.get_addr()))
-                self.notify(Events.AGREGATION_FINISHED,None) # To avoid residual trainning-thread
-                return
-            else:
-                # Elimina del vecindario los nodos que no se hayan agregado
-                print("NOT IMPLEMENTED---------------------------------------------------------------------------------------------------")
+        if len(self.models)!=(self.num_nei+1):
+            logging.info("({}) Agregating models. Timeout reached".format(self.node_name))
+            # Delete nodes that was not added
+            
+
+            print("NOT IMPLEMENTED---------plantearlo bien------------------------------------------------------------------------------------------")
+        
+        
         else:
-            logging.info("({}) Agregating models.".format(self.node.get_addr()))
+            logging.info("({}) Agregating models.".format(self.node_name))
 
         # Notificamos al nodo
         self.notify(Events.AGREGATION_FINISHED,self.agregate(self.models)) 
@@ -63,6 +69,15 @@ class Agregator(threading.Thread, Observable):
         """
         print("Not implemented")
             
+    def set_nodes_to_agregate(self, n):
+        self.num_nei = n
+    
+    def remove_node_to_agregate(self, ammount=1):
+        if self.num_nei is not None:
+            self.num_nei = self.num_nei-ammount
+            # It cant produce training, if aggregation is running, clients only decrement
+            self.check_and_run_agregation()
+
     def add_model(self, n, m, w):
         """
         Add a model. The first model to be added starts the `run` method (timeout).
@@ -73,20 +88,23 @@ class Agregator(threading.Thread, Observable):
             w: Number of samples used to train the model.
 
         """
-        # Agregar modelo
-        self.lock.acquire()
-        self.models[n] = ((m, w))
-        logging.info("({}) Model added ({}/{}) from {}".format(self.node.get_addr(), str(len(self.models)), str(len(self.node.neightboors)+1), n))
-        # Start Timeout
-        if not self.is_alive():
-            self.start()
-        # Check if all models have been added
-        self.check_and_run_agregation()
-        # Try Unloock
-        try:
-            self.lock.release()
-        except:
-            pass
+        if self.num_nei is None:
+            logging.error("({}) Error, trying to add a model when the neighbors are not specificated".format(self.node_name))
+        else:
+            # Agregar modelo
+            self.lock.acquire()
+            self.models[n] = ((m, w))
+            logging.info("({}) Model added ({}/{}) from {}".format(self.node_name, str(len(self.models)), str(self.num_nei+1), n))
+            # Start Timeout
+            if not self.is_alive():
+                self.start()
+            # Check if all models have been added
+            self.check_and_run_agregation()
+            # Try Unloock
+            try:
+                self.lock.release()
+            except:
+                pass
         
     def check_and_run_agregation(self,force=False):
         """
@@ -97,7 +115,7 @@ class Agregator(threading.Thread, Observable):
         """
         # Try Unloock
         try:
-            if force or len(self.models)==(len(self.node.neightboors)+1): 
+            if force or len(self.models)==(self.num_nei+1): 
                 self.agregation_lock.release()
         except:
             pass
@@ -108,6 +126,8 @@ class Agregator(threading.Thread, Observable):
         Clear all for a new agregation.
         """
         observers = self.get_observers()
-        self.__init__(self.node)
+        num_nei = self.num_nei
+        self.__init__(node_name=self.node_name)
+        self.num_nei = num_nei
         for o in observers:
             self.add_observer(o)
