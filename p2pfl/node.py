@@ -1,19 +1,12 @@
-from concurrent.futures import thread
-from distutils.log import debug
-from email.header import decode_header
-import socket
 import threading
 import logging
-import sys
 import time
 from p2pfl.base_node import BaseNode
 from p2pfl.communication_protocol import CommunicationProtocol
-from p2pfl.const import *
+from p2pfl.settings import Settings
 from p2pfl.learning.agregators.fedavg import FedAvg
 from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
 from p2pfl.learning.pytorch.lightninglearner import LightningLearner
-from p2pfl.node_connection import NodeConnection
-from p2pfl.heartbeater import Heartbeater
 from p2pfl.utils.observer import Events, Observer
 
 
@@ -310,14 +303,24 @@ class Node(BaseNode, Observer):
 
     def __train_step(self):
 
-        # Check if Learning has been interrupted
+        # Train
         if self.round is not None:
             self.__train()
         
+        # Send Model
         if self.round is not None:
-            self.agregator.add_model(str(self.get_addr()),self.learner.get_parameters(), self.learner.get_num_samples())
+            self.agregator.add_model(str(self.get_addr()),self.learner.get_parameters(), self.learner.get_num_samples()[0])
             self.__bc_model()
 
+        # Wait for agregation
+        if self.round is not None:
+            self.__wait_model_agregation()
+
+        # Evaluate
+        if self.round is not None:
+            self.__evaluate()
+
+        # Finish round
         if self.round is not None:
             self.__on_round_finished()
        
@@ -326,9 +329,15 @@ class Node(BaseNode, Observer):
         logging.info("({}) Training...".format(self.get_addr()))
         self.learner.fit()
 
+    def __evaluate(self):
+        logging.info("({}) Evaluating...".format(self.get_addr()))
+        self.learner.evaluate()
+
+
+
     def __bc_model(self):
         encoded_msgs = CommunicationProtocol.build_params_msg(self.learner.encode_parameters())
-        logging.info("({}) Broadcasting model to {} clients. (size: {} bytes)".format(self.get_addr(),len(self.neightboors),len(encoded_msgs)*BUFFER_SIZE))
+        logging.info("({}) Broadcasting model to {} clients. (size: {} bytes)".format(self.get_addr(),len(self.neightboors),len(encoded_msgs)*Settings.BUFFER_SIZE))
 
         # Lock Neightboors Communication
         self.__set_sending_model(True)
@@ -342,7 +351,7 @@ class Node(BaseNode, Observer):
         for node in self.neightboors:
             node.set_sending_model(flag)
     
-    def __on_round_finished(self):
+    def __wait_model_agregation(self):
         try:
             if self.round is not None:
                 
@@ -363,21 +372,22 @@ class Node(BaseNode, Observer):
                     if all([ nc.get_ready_status()>=self.round for nc in self.neightboors]):
                         break
                     self.__finish_wait_lock.acquire()
-                        
-                # Set Next Round
-                self.round = self.round + 1
-                logging.info("({}) Round {} of {} finished.".format(self.get_addr(),self.round,self.totalrounds))
-
-                # Next Step or Finish
-                if self.round < self.totalrounds:
-                    self.__train_step()  
-                else:
-                    self.round = None
-                    self.is_model_init = False
-                    self.agregator.set_nodes_to_agregate(None)
-                    logging.info("({}) Finish!!.".format(self.get_addr()))          
-         
+                               
             else:
                 logging.info("({}) FL not running but models received".format(self.get_addr()))
         except Exception as e:
             logging.error("({}) Concurrence Error: {}".format(self.get_addr(),e))
+
+    def __on_round_finished(self):
+        # Set Next Round
+        self.round = self.round + 1
+        logging.info("({}) Round {} of {} finished.".format(self.get_addr(),self.round,self.totalrounds))
+
+        # Next Step or Finish
+        if self.round < self.totalrounds:
+            self.__train_step()  
+        else:
+            self.round = None
+            self.is_model_init = False
+            self.agregator.set_nodes_to_agregate(None)
+            logging.info("({}) Finish!!.".format(self.get_addr()))   

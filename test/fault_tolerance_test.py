@@ -1,4 +1,4 @@
-from p2pfl.const import AGREGATION_TIEMOUT, HEARTBEAT_FREC, SOCKET_TIEMOUT
+from p2pfl.settings import Settings
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
 from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
@@ -28,7 +28,7 @@ def test_node_abrupt_down(four_nodes):
     #   (otros) nuevamente el uso del socket (heartbeat) detectará que la conexión ha sido rechazada por el nodo
     for con in n4.neightboors:
         con.socket.close() #provocamos un bad file descriptor
-    time.sleep(HEARTBEAT_FREC+0.1) #Esperar por la asincronía
+    time.sleep(Settings.HEARTBEAT_FREC+0.1) #Esperar por la asincronía
     assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == 2
     n4.stop()
 
@@ -96,7 +96,7 @@ def test_bad_binary_model(two_nodes):
         time.sleep(0.1)
 
     # Wait agregation thread of node 2 -> test still running if we don't wait
-    time.sleep(AGREGATION_TIEMOUT+2)
+    time.sleep(Settings.AGREGATION_TIEMOUT+2)
         
 # Modelo incompatible
 def test_wrong_model():

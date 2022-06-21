@@ -1,5 +1,5 @@
 import logging
-from p2pfl.const import BUFFER_SIZE
+from p2pfl.settings import Settings
 
 ###############################
 #    CommunicationProtocol    # --> Patrón commando 
@@ -15,7 +15,7 @@ class CommunicationProtocol:
         - CONNECT_TO <ip> <port>
         - START_LEARNING <rounds> <epoches>
         - STOP_LEARNING
-        - NUM_SAMPLES <num> 
+        - NUM_SAMPLES <train_num> <test_num>
         - PARAMS <data> \PARAMS
         - READY <round>
         
@@ -35,7 +35,7 @@ class CommunicationProtocol:
     START_LEARNING = "START_LEARNING"
     STOP_LEARNING  = "STOP_LEARNING"
     NUM_SAMPLES    = "NUM_SAMPLES"
-    PARAMS         = "PARAMS" #special case
+    PARAMS         = "PARAMS"  #special case
     PARAMS_CLOSE   = "\PARAMS" #special case
     READY          = "READY"
 
@@ -167,10 +167,10 @@ class CommunicationProtocol:
         
                     # Number of samples
                     elif message[0] == CommunicationProtocol.NUM_SAMPLES:
-                        if len(message) > 1:
-                            if message[1].isdigit():
-                                cmds_success.append(self.__exec(CommunicationProtocol.NUM_SAMPLES, int(message[1])))
-                                message = message[2:]
+                        if len(message) > 2:
+                            if message[1].isdigit() and message[2].isdigit():
+                                cmds_success.append(self.__exec(CommunicationProtocol.NUM_SAMPLES, int(message[1]), int(message[2])))
+                                message = message[3:]
                             else:
                                 cmds_success.append(False)
                                 break
@@ -271,12 +271,12 @@ class CommunicationProtocol:
     def build_num_samples_msg(num):
         """
         Args:
-            num: The number of samples to train.
+            num: (Tuple) The number of samples to train and test.
 
         Returns:
             A encoded number of samples message.
         """
-        return (CommunicationProtocol.NUM_SAMPLES + " " + str(num) + "\n").encode("utf-8")
+        return (CommunicationProtocol.NUM_SAMPLES + " " + str(num[0]) + " " + str(num[1]) + "\n").encode("utf-8")
 
     def build_ready_msg(round):
         """
@@ -301,15 +301,15 @@ class CommunicationProtocol:
         end = CommunicationProtocol.PARAMS_CLOSE.encode("utf-8")
 
         # Spliting data
-        size = BUFFER_SIZE - len(header)
+        size = Settings.BUFFER_SIZE - len(header)
         data_msgs = []
         for i in range(0, len(data), size):
             data_msgs.append(header + (data[i:i+size]))
 
         # Adding closing message
-        if len(data_msgs[-1]) + len(end) <= BUFFER_SIZE:
+        if len(data_msgs[-1]) + len(end) <= Settings.BUFFER_SIZE:
             data_msgs[-1] += end
-            data_msgs[-1] += b'\0' * (BUFFER_SIZE - len(data_msgs[-1])) # padding to avoid message fragmentation
+            data_msgs[-1] += b'\0' * (Settings.BUFFER_SIZE - len(data_msgs[-1])) # padding to avoid message fragmentation
         else:
             data_msgs.append(header + end)
 

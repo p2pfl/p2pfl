@@ -67,8 +67,8 @@ class Num_samples_cmd(Command):
     """
     Command that should be executed as a response to a **num_samples** message.
     """
-    def execute(self,num):
-        self.node_connection.set_num_samples(num)
+    def execute(self, train_num, test_num):
+        self.node_connection.set_num_samples(train_num, test_num)
 
 class Ready_cmd(Command):
     """

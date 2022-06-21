@@ -1,7 +1,7 @@
 import threading
 import time
 from p2pfl.communication_protocol import CommunicationProtocol
-from p2pfl.const import *
+from p2pfl.settings import Settings
 
 #####################
 #    Heartbeater    #
@@ -28,4 +28,4 @@ class Heartbeater(threading.Thread):
             #   - If the model is sending, a beat is not necessary
             #   - If the connection its down timeouts will destroy connections
             self.nodo_padre.broadcast(CommunicationProtocol.build_beat_msg(), is_necesary=False)
-            time.sleep(HEARTBEAT_FREC)
+            time.sleep(Settings.HEARTBEAT_FREC)

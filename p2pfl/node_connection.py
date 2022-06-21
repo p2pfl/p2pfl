@@ -3,7 +3,7 @@ import threading
 import logging
 from p2pfl.command import *
 from p2pfl.communication_protocol import CommunicationProtocol
-from p2pfl.const import *
+from p2pfl.settings import Settings
 from p2pfl.utils.observer import Events, Observable
 
 ########################
@@ -35,7 +35,8 @@ class NodeConnection(threading.Thread, Observable):
         self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.errors = 0
         self.addr = addr
-        self.num_samples = 0
+        self.train_num_samples = 0
+        self.test_num_samples = 0
         self.param_bufffer = b""
         self.sending_model = False
         
@@ -94,14 +95,15 @@ class NodeConnection(threading.Thread, Observable):
         """
         return self.sending_model
 
-    def set_num_samples(self,num):
+    def set_num_samples(self,train,test):
         """
         Indicates the number of samples of the otrh node.
          
         Args:
             num: The number of samples of the other node.
         """
-        self.num_samples = num
+        self.train_num_samples = train
+        self.test_num_samples = test
 
     def add_param_segment(self,data):
         """
@@ -133,7 +135,7 @@ class NodeConnection(threading.Thread, Observable):
         """
         NodeConnection loop. Recive and process messages.
         """
-        self.socket.settimeout(SOCKET_TIEMOUT)
+        self.socket.settimeout(Settings.SOCKET_TIEMOUT)
         overflow = 0
         buffer = b""
         while not self.terminate_flag.is_set():
@@ -141,7 +143,7 @@ class NodeConnection(threading.Thread, Observable):
                 # Recive and process messages
                 msg = b""
                 if overflow == 0:
-                    msg = self.socket.recv(BUFFER_SIZE)
+                    msg = self.socket.recv(Settings.BUFFER_SIZE)
                 else:
                     msg = buffer + self.socket.recv(overflow) #alinear el colapso
                     buffer = b""
@@ -169,7 +171,7 @@ class NodeConnection(threading.Thread, Observable):
                     if errors>0:
                         self.errors += errors
                         # If we have too many errors, we stop the connection
-                        if self.errors >= MAX_ERRORS:
+                        if self.errors >= Settings.MAX_ERRORS:
                             self.terminate_flag.set()
                             logging.debug("Too mucho errors. {}".format(self.get_addr()))
                             logging.debug("Last error: {}".format(msg))           
@@ -260,6 +262,6 @@ class NodeConnection(threading.Thread, Observable):
         """
         Notify to the parent node that `PARAMS` has been received.
         """
-        self.notify(Events.PARAMS_RECEIVED, (str(self.get_addr()), params, self.num_samples))
+        self.notify(Events.PARAMS_RECEIVED, (str(self.get_addr()), params, self.train_num_samples))
 
 

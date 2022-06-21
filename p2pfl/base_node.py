@@ -3,7 +3,7 @@ import threading
 import logging
 import sys
 from p2pfl.communication_protocol import CommunicationProtocol
-from p2pfl.const import *
+from p2pfl.settings import Settings
 from p2pfl.node_connection import NodeConnection
 from p2pfl.heartbeater import Heartbeater
 
@@ -106,7 +106,7 @@ class BaseNode(threading.Thread):
         while not self.__terminate_flag.is_set(): 
             try:
                 (node_socket, addr) = self.node_socket.accept()
-                msg = node_socket.recv(BUFFER_SIZE)
+                msg = node_socket.recv(Settings.BUFFER_SIZE)
                 
                 # Process new connection
                 if msg:

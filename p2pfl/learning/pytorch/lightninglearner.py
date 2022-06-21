@@ -71,15 +71,12 @@ class LightningLearner(NodeLearner):
             self.trainer.fit(self.model, self.data)
             self.trainer = None
 
-    def evaluate(self, params):
-        self.set_parameters(params)
-
+    def evaluate(self):
+        self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=self.logger, enable_checkpointing=False) 
         results = self.trainer.test(self.model, self.data)
-        loss = results[0]["test_loss"]
-        acc = results[0]["test_acc"]
-
-        data_ammount = len(self.data.test_dataloader().dataset)
-        return loss, data_ammount, {"loss": loss, "test_acc": acc}
+        self.trainer = None
+        
+        return results[0]["test_loss"], results[0]["test_metric"]
 
 
     def interrupt_fit(self):
@@ -88,4 +85,4 @@ class LightningLearner(NodeLearner):
             self.trainer = None
 
     def get_num_samples(self):
-        return len(self.data.train_dataloader().dataset)
+        return (len(self.data.train_dataloader().dataset), len(self.data.test_dataloader().dataset))

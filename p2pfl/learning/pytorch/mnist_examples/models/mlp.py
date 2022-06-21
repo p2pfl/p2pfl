@@ -76,7 +76,7 @@ class MLP(pl.LightningModule):
         logits = self(x)
         loss = F.cross_entropy(self(x), y)
         out = torch.argmax(logits, dim=1)
-        metric = self.accuracy(out, y) 
+        metric = self.metric(out, y) 
         self.log("test_loss", loss, prog_bar=True)
         self.log("test_metric", metric, prog_bar=True)
         return loss

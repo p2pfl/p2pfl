@@ -2,14 +2,12 @@ from multiprocessing import Event
 import sys
 import threading
 import logging
-from p2pfl.const import AGREGATION_TIEMOUT
-
-from p2pfl.learning.exceptions import ModelNotMatchingError
+from p2pfl.settings import Settings
 from p2pfl.utils.observer import Events, Observable
    
 #-----------------------------------------------------------------------
 # 
-# Revisar otras estrategias de agregación para saber si se adaptarían
+# PUESTOS A HACER MENSAJES MAS COMPLEJOS, REVISAR QUE LAS ACTUALIZACIONES REALIZADAS POR LOS DIFERENTES NODOS SEAN CORRESPONDIENTES A LAS RONDAS ACTUALES
 #
 #-----------------------------------------------------------------------
 
@@ -39,7 +37,7 @@ class Agregator(threading.Thread, Observable):
         Wait for the agregation to be done or timeout. Then agregate the models and notify.
         """
         # Wait for all models to be added or TIMEOUT
-        self.agregation_lock.acquire(timeout=AGREGATION_TIEMOUT) 
+        self.agregation_lock.acquire(timeout=Settings.AGREGATION_TIEMOUT) 
         
         # Check if node still running (could happen if agregation thread was a residual thread)
         if self.num_nei is None:
@@ -50,12 +48,6 @@ class Agregator(threading.Thread, Observable):
         # Start agregation
         if len(self.models)!=(self.num_nei+1):
             logging.info("({}) Agregating models. Timeout reached".format(self.node_name))
-            # Delete nodes that was not added
-            
-
-            print("NOT IMPLEMENTED---------plantearlo bien------------------------------------------------------------------------------------------")
-        
-        
         else:
             logging.info("({}) Agregating models.".format(self.node_name))
 
@@ -70,9 +62,21 @@ class Agregator(threading.Thread, Observable):
         print("Not implemented")
             
     def set_nodes_to_agregate(self, n):
+        """
+        Indicate the number of nodes to agregate. None when agregation is not needed.
+
+        Args:
+            n: Number of nodes to agregate. None for no agregation.
+        """
         self.num_nei = n
     
     def remove_node_to_agregate(self, ammount=1):
+        """
+        Indicates that a node/s is not going to be agregated.
+
+        Args:
+            ammount: Number of nodes to remove.
+        """
         if self.num_nei is not None:
             self.num_nei = self.num_nei-ammount
             # It cant produce training, if aggregation is running, clients only decrement
