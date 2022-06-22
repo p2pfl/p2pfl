@@ -325,6 +325,13 @@ class Node(BaseNode, Observer):
             # Send Metrics
             self.__bc_metrics(metrics)
 
+
+        #
+        #
+        # NO HACE FALTA SINCRONIZAR, CUANDO SE ACTUALICE EL MODELO QUE SE CALCULE METRICA Y SE INDIQUE LA RONDA PARA AGREGAR A LOS LOGS!!!!
+        #
+        #
+
         # Wait for metric agregation
         #if self.round is not None:
         #    self.__wait_metric_agregation()
@@ -361,7 +368,7 @@ class Node(BaseNode, Observer):
         print(metrics)
 
         logging.info("({}) Broadcasting metrics to {} clients.".format(self.get_addr(),len(self.neightboors)))
-        encoded_msgs = CommunicationProtocol.build_metrics_msg(metrics[0],metrics[1])
+        encoded_msgs = CommunicationProtocol.build_metrics_msg(self.round,metrics[0],metrics[1])
         self.broadcast(encoded_msgs)
 
     def __set_sending_model(self, flag):

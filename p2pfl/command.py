@@ -93,17 +93,9 @@ class Metrics_cmd(Command):
     """
     Command that should be executed as a response to a **metrics** message.
     """
-    def execute(self,loss,metric):
+    def execute(self, round, loss, metric):
         print("SIN HACERR!!")
         #self.node_connection.notify_metrics(loss,metric)
-
-class Metrics_Ready_cmd(Command):
-    """
-    Command that should be executed as a response to a **metrics_ready** message.
-    """
-    def execute(self,round):
-        self.node_connection.set_metrics_ready_status(round)
-
 
 
         
