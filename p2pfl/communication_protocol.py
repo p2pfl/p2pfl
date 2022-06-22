@@ -17,7 +17,9 @@ class CommunicationProtocol:
         - STOP_LEARNING
         - NUM_SAMPLES <train_num> <test_num>
         - PARAMS <data> \PARAMS
-        - READY <round>
+        - MODELS_READY <round>
+        - METRICS <loss> <metric>
+        - METRICS_READY <round>
         
     The unique non-static method is used to process messages with a connection stablished.
 
@@ -37,7 +39,9 @@ class CommunicationProtocol:
     NUM_SAMPLES    = "NUM_SAMPLES"
     PARAMS         = "PARAMS"  #special case
     PARAMS_CLOSE   = "\PARAMS" #special case
-    READY          = "READY"
+    MODELS_READY   = "MODELS_READY"    
+    METRICS        = "METRICS"
+    METRICS_READY  = "METRICS_READY"
 
     ########################
     #    MSG PROCESSING    #
@@ -178,11 +182,11 @@ class CommunicationProtocol:
                             cmds_success.append(False)
                             break
 
-                    # Ready
-                    elif message[0] == CommunicationProtocol.READY:
+                    # Models Ready
+                    elif message[0] == CommunicationProtocol.MODELS_READY:
                         if len(message) > 1:
                             if message[1].isdigit():
-                                cmds_success.append(self.__exec(CommunicationProtocol.READY, int(message[1])))
+                                cmds_success.append(self.__exec(CommunicationProtocol.MODELS_READY, int(message[1])))
                                 message = message[2:]
                             else:
                                 cmds_success.append(False)
@@ -190,7 +194,33 @@ class CommunicationProtocol:
                         else:
                             cmds_success.append(False)
                             break
-                            
+
+                    # Metrics
+                    elif message[0] == CommunicationProtocol.METRICS:
+                        if len(message) > 2:
+                            try:
+                                cmds_success.append(self.__exec(CommunicationProtocol.METRICS, float(message[1]), float(message[2])))
+                                message = message[3:]
+                            except ValueError:
+                                cmds_success.append(False)
+                                break
+                        else:
+                            cmds_success.append(False)
+                            break
+
+                    # Metrics Ready
+                    elif message[0] == CommunicationProtocol.METRICS_READY:
+                        if len(message) > 1:
+                            if message[1].isdigit():
+                                cmds_success.append(self.__exec(CommunicationProtocol.METRICS_READY, int(message[1])))
+                                message = message[2:]
+                            else:
+                                cmds_success.append(False)
+                                break
+                        else:
+                            cmds_success.append(False)
+                            break
+
                     # Non Recognized message            
                     else:
                         cmds_success.append(False)
@@ -278,16 +308,6 @@ class CommunicationProtocol:
         """
         return (CommunicationProtocol.NUM_SAMPLES + " " + str(num[0]) + " " + str(num[1]) + "\n").encode("utf-8")
 
-    def build_ready_msg(round):
-        """
-        Args:
-            round: The last round finished.
-
-        Returns:
-            A encoded ready message.
-        """
-        return (CommunicationProtocol.READY + " " + str(round) + "\n").encode("utf-8")
-
     def build_params_msg(data):
         """
         Args:
@@ -314,3 +334,32 @@ class CommunicationProtocol:
             data_msgs.append(header + end)
 
         return data_msgs
+
+    def build_models_ready_msg(round):
+        """
+        Args:
+            round: The last round finished.
+
+        Returns:
+            A encoded ready message.
+        """
+        return (CommunicationProtocol.MODELS_READY + " " + str(round) + "\n").encode("utf-8")
+
+    def build_metrics_msg(loss, metric):
+        """
+        Args:
+            loss: The loss of the last round.
+            metric: The metric of the last round.
+        """
+        return (CommunicationProtocol.METRICS + " " + str(loss) + " " + str(metric) + "\n").encode("utf-8")
+
+    
+    def build_metrics_ready_msg(round):
+        """
+        Args:
+            round: The last round finished.
+            
+        Returns:
+            A encoded ready message.
+        """
+        return (CommunicationProtocol.METRICS_READY + " " + str(round) + "\n").encode("utf-8")  

@@ -40,7 +40,7 @@ class NodeConnection(threading.Thread, Observable):
         self.param_bufffer = b""
         self.sending_model = False
         
-        self.ready = -1
+        self.model_ready = -1
 
         self.tmp = 0
 
@@ -50,9 +50,11 @@ class NodeConnection(threading.Thread, Observable):
             CommunicationProtocol.CONN_TO: Conn_to_cmd(self),
             CommunicationProtocol.START_LEARNING: Start_learning_cmd(self),
             CommunicationProtocol.STOP_LEARNING: Stop_learning_cmd(self),
-            CommunicationProtocol.PARAMS: Params_cmd(self),
             CommunicationProtocol.NUM_SAMPLES: Num_samples_cmd(self),
-            CommunicationProtocol.READY: Ready_cmd(self)
+            CommunicationProtocol.PARAMS: Params_cmd(self),
+            CommunicationProtocol.MODELS_READY: Models_Ready_cmd(self),
+            CommunicationProtocol.METRICS: Metrics_cmd(self),
+            CommunicationProtocol.METRICS_READY: Metrics_Ready_cmd(self),
         })
 
     def get_addr(self):
@@ -62,22 +64,22 @@ class NodeConnection(threading.Thread, Observable):
         """
         return self.addr
 
-    def set_ready_status(self,round):
+    def set_model_ready_status(self,round):
         """
         Set the last ready round of the other node.
 
         Args:
             round: The last ready round of the other node.
         """
-        self.ready = round
-        self.notify(Events.NODE_READY_EVENT, self)
+        self.model_ready = round
+        self.notify(Events.NODE_MODELS_READY_EVENT, self)
 
-    def get_ready_status(self):
+    def get_ready_model_status(self):
         """
         Returns:
             The last ready round of the other node.
         """
-        return self.ready
+        return self.model_ready
 
     def set_sending_model(self,flag):
         """
@@ -264,4 +266,15 @@ class NodeConnection(threading.Thread, Observable):
         """
         self.notify(Events.PARAMS_RECEIVED, (str(self.get_addr()), params, self.train_num_samples))
 
+    def notify_metrics(self,loss,metric):
+        """
+        Notify to the parent node that `METRICS` has been received.
+        """
+        self.notify(Events.METRICS_RECEIVED, (str(self.get_addr()), loss, metric))
+
+    def notify_node_metrics_ready(self):
+        """
+        Notify to the parent node that `NODE_METRICS_READY` has been received.
+        """
+        self.notify(Events.NODE_METRICS_READY_EVENT, self)
 

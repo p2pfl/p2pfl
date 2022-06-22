@@ -74,10 +74,11 @@ class LightningLearner(NodeLearner):
     def evaluate(self):
         self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=self.logger, enable_checkpointing=False) 
         results = self.trainer.test(self.model, self.data)
+        loss = results[0]["test_loss"]
+        metric = results[0]["test_metric"]
         self.trainer = None
         
-        return results[0]["test_loss"], results[0]["test_metric"]
-
+        return loss,metric
 
     def interrupt_fit(self):
         if self.trainer is not None:

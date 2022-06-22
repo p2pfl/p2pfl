@@ -100,7 +100,7 @@ class Node(BaseNode, Observer):
             except:
                 pass
 
-        elif event == Events.NODE_READY_EVENT:
+        elif event == Events.NODE_MODELS_READY_EVENT:
             # Try to unlock to check if all nodes are ready (on_finish_round (agregator_thread))
             try:
                 self.__finish_wait_lock.release()
@@ -302,6 +302,9 @@ class Node(BaseNode, Observer):
     ################################
 
     def __train_step(self):
+        #
+        # Plantearse hacer antes la validación porque si no estaría conficionada por los nodos que entrenaron el modelo
+        #
 
         # Train
         if self.round is not None:
@@ -312,13 +315,19 @@ class Node(BaseNode, Observer):
             self.agregator.add_model(str(self.get_addr()),self.learner.get_parameters(), self.learner.get_num_samples()[0])
             self.__bc_model()
 
-        # Wait for agregation
+        # Wait for model agregation
         if self.round is not None:
             self.__wait_model_agregation()
 
         # Evaluate
         if self.round is not None:
-            self.__evaluate()
+            metrics = self.__evaluate()
+            # Send Metrics
+            self.__bc_metrics(metrics)
+
+        # Wait for metric agregation
+        #if self.round is not None:
+        #    self.__wait_metric_agregation()
 
         # Finish round
         if self.round is not None:
@@ -331,7 +340,7 @@ class Node(BaseNode, Observer):
 
     def __evaluate(self):
         logging.info("({}) Evaluating...".format(self.get_addr()))
-        self.learner.evaluate()
+        return self.learner.evaluate()
 
 
 
@@ -347,6 +356,14 @@ class Node(BaseNode, Observer):
         # UnLock Neightboors Communication
         self.__set_sending_model(False)
 
+    def __bc_metrics(self,metrics):
+
+        print(metrics)
+
+        logging.info("({}) Broadcasting metrics to {} clients.".format(self.get_addr(),len(self.neightboors)))
+        encoded_msgs = CommunicationProtocol.build_metrics_msg(metrics[0],metrics[1])
+        self.broadcast(encoded_msgs)
+
     def __set_sending_model(self, flag):
         for node in self.neightboors:
             node.set_sending_model(flag)
@@ -359,7 +376,7 @@ class Node(BaseNode, Observer):
                 self.__finish_agregation_lock.acquire()
                 
                 # Send ready message --> quizá ya no haga falta bloquear el socket
-                self.broadcast(CommunicationProtocol.build_ready_msg(self.round))
+                self.broadcast(CommunicationProtocol.build_models_ready_msg(self.round))
                 
                 # Wait for ready messages
                 logging.info("({}) Waiting other nodes.".format(self.get_addr()))
@@ -369,7 +386,7 @@ class Node(BaseNode, Observer):
                         logging.info("({}) Stopping on_round_finished process.".format(self.get_addr()))
                         return
                         
-                    if all([ nc.get_ready_status()>=self.round for nc in self.neightboors]):
+                    if all([ nc.get_ready_model_status()>=self.round for nc in self.neightboors]):
                         break
                     self.__finish_wait_lock.acquire()
                                

@@ -70,13 +70,6 @@ class Num_samples_cmd(Command):
     def execute(self, train_num, test_num):
         self.node_connection.set_num_samples(train_num, test_num)
 
-class Ready_cmd(Command):
-    """
-    Command that should be executed as a response to a **ready** message.
-    """
-    def execute(self,round):
-        self.node_connection.set_ready_status(round)
-
 class Params_cmd(Command):
     """
     Command that should be executed as a response to a **params** message.
@@ -88,5 +81,29 @@ class Params_cmd(Command):
             params = self.node_connection.get_params()
             self.node_connection.clear_buffer()
             self.node_connection.notify_params(params)
+
+class Models_Ready_cmd(Command):
+    """
+    Command that should be executed as a response to a **ready** message.
+    """
+    def execute(self,round):
+        self.node_connection.set_model_ready_status(round)
+
+class Metrics_cmd(Command):
+    """
+    Command that should be executed as a response to a **metrics** message.
+    """
+    def execute(self,loss,metric):
+        print("SIN HACERR!!")
+        #self.node_connection.notify_metrics(loss,metric)
+
+class Metrics_Ready_cmd(Command):
+    """
+    Command that should be executed as a response to a **metrics_ready** message.
+    """
+    def execute(self,round):
+        self.node_connection.set_metrics_ready_status(round)
+
+
 
         
