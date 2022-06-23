@@ -70,15 +70,22 @@ class LightningLearner(NodeLearner):
             self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=self.logger, enable_checkpointing=False) 
             self.trainer.fit(self.model, self.data)
             self.trainer = None
+            self.logger.finalize_round()
 
     def evaluate(self):
-        self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=self.logger, enable_checkpointing=False) 
-        results = self.trainer.test(self.model, self.data)
+        self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=None, enable_checkpointing=False) 
+        results = self.trainer.test(self.model, self.data, verbose=False)
         loss = results[0]["test_loss"]
         metric = results[0]["test_metric"]
         self.trainer = None
-        
+        self.log_validation_metrics((loss, metric))
+
         return loss,metric
+
+    def log_validation_metrics(self, metrics, round=None):
+        loss, metric = metrics
+        self.logger.log_scalar("test_loss", loss, round)
+        self.logger.log_scalar("test_metric", metric, round)
 
     def interrupt_fit(self):
         if self.trainer is not None:

@@ -113,7 +113,6 @@ class CommunicationProtocol:
             return [self.__exec(CommunicationProtocol.PARAMS, msg[len(header):], False)]
 
         else:      
-
             # Try to decode the message
             message = ""
             try:
@@ -130,7 +129,7 @@ class CommunicationProtocol:
                     if message[0] == CommunicationProtocol.BEAT:
                         cmds_success.append(self.__exec(CommunicationProtocol.BEAT))
                         message = message[1:]
-
+                    
                     # Stop
                     elif message[0] == CommunicationProtocol.STOP:
                         cmds_success.append(self.__exec(CommunicationProtocol.STOP))
@@ -198,8 +197,10 @@ class CommunicationProtocol:
                         if len(message) > 3:
                             try:
                                 cmds_success.append(self.__exec(CommunicationProtocol.METRICS, int(message[1]), float(message[2]), float(message[3])))
-                                message = message[3:]
-                            except ValueError:
+                                print(cmds_success[-1])
+                                message = message[4:]
+                            except Exception as e:
+                                print(e)
                                 cmds_success.append(False)
                                 break
                         else:

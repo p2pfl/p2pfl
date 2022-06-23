@@ -302,9 +302,10 @@ class Node(BaseNode, Observer):
     ################################
 
     def __train_step(self):
-        #
-        # Plantearse hacer antes la validación porque si no estaría conficionada por los nodos que entrenaron el modelo
-        #
+
+        # Evaluate and send metrics
+        if self.round is not None:
+            self.__bc_metrics(self.__evaluate())
 
         # Train
         if self.round is not None:
@@ -319,11 +320,6 @@ class Node(BaseNode, Observer):
         if self.round is not None:
             self.__wait_model_agregation()
 
-        # Evaluate
-        if self.round is not None:
-            metrics = self.__evaluate()
-            # Send Metrics
-            self.__bc_metrics(metrics)
 
 
         #
@@ -347,7 +343,9 @@ class Node(BaseNode, Observer):
 
     def __evaluate(self):
         logging.info("({}) Evaluating...".format(self.get_addr()))
-        return self.learner.evaluate()
+        retults = self.learner.evaluate()
+        logging.info("({}) Evaluated. Losss of {} and Metric of {}. (Check tensorboard for more info)".format(self.get_addr(),retults[0],retults[1]))
+        return retults
 
 
 
@@ -364,9 +362,6 @@ class Node(BaseNode, Observer):
         self.__set_sending_model(False)
 
     def __bc_metrics(self,metrics):
-
-        print(metrics)
-
         logging.info("({}) Broadcasting metrics to {} clients.".format(self.get_addr(),len(self.neightboors)))
         encoded_msgs = CommunicationProtocol.build_metrics_msg(self.round,metrics[0],metrics[1])
         self.broadcast(encoded_msgs)
@@ -411,6 +406,9 @@ class Node(BaseNode, Observer):
         if self.round < self.totalrounds:
             self.__train_step()  
         else:
+            # Calculate final metrics before finishing
+            self.__bc_metrics(self.__evaluate())
+            # Finish
             self.round = None
             self.is_model_init = False
             self.agregator.set_nodes_to_agregate(None)
