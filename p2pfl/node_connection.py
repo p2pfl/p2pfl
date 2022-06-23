@@ -265,15 +265,9 @@ class NodeConnection(threading.Thread, Observable):
         """
         self.notify(Events.PARAMS_RECEIVED, (str(self.get_addr()), params, self.train_num_samples))
 
-    def notify_metrics(self,loss,metric):
+    def notify_metrics(self,round,loss,metric):
         """
         Notify to the parent node that `METRICS` has been received.
         """
-        self.notify(Events.METRICS_RECEIVED, (str(self.get_addr()), loss, metric))
-
-    def notify_node_metrics_ready(self):
-        """
-        Notify to the parent node that `NODE_METRICS_READY` has been received.
-        """
-        self.notify(Events.NODE_METRICS_READY_EVENT, self)
-
+        name = str(self.get_addr()[0]) + ":" + str(self.get_addr()[1])
+        self.notify(Events.METRICS_RECEIVED, (name, round, loss, metric))

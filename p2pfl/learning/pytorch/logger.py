@@ -84,12 +84,17 @@ class FederatedTensorboardLogger(LightningLoggerBase):
                     m = f"\n you tried to log {v} which is currently not supported. Try a dict or a scalar/tensor."
                     raise ValueError(m) from ex
 
-    def log_scalar(self, key, value, round=None):
+    def log_scalar(self, key, value, round=None, name=None):
         """
         """
         if round is None:
             round = self.round
-        self.writer.add_scalar(key, value, round)
+
+        if name is None:
+            self.writer.add_scalar(key, value, round)
+        else:
+            self.writer.add_scalars(key, {name: value}, round)
+
 
     @rank_zero_only
     def save(self):
@@ -107,3 +112,6 @@ class FederatedTensorboardLogger(LightningLoggerBase):
         # Finish Round
         self.global_step = self.global_step + self.local_step
         self.round = self.round + 1
+
+    def close(self):
+        self.writer.close()

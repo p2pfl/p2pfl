@@ -78,6 +78,7 @@ class Node(BaseNode, Observer):
         if self.round is not None:
             self.__stop_learning()
             self.agregator.check_and_run_agregation(force=True)
+        self.learner.close()
         super().stop()
 
     ################
@@ -126,7 +127,12 @@ class Node(BaseNode, Observer):
     
         elif event == Events.PARAMS_RECEIVED:
             self.add_model(obj[0],obj[1],obj[2])
-
+        
+        elif event == Events.METRICS_RECEIVED:
+            # Log Metrics
+            print("METRICS RECEIVED {}".format(obj))
+            name, round, loss, metric = obj
+            self.learner.log_validation_metrics(loss,metric,round=round,name=name)
 
     ####################################
     #         Learning Setters         #
@@ -210,6 +216,7 @@ class Node(BaseNode, Observer):
         """
         self.round = 0
         self.totalrounds = rounds
+        self.learner.init()
         self.agregator.set_nodes_to_agregate(len(self.neightboors))
 
         # Indicates samples that be used in the learning process
@@ -344,7 +351,7 @@ class Node(BaseNode, Observer):
     def __evaluate(self):
         logging.info("({}) Evaluating...".format(self.get_addr()))
         retults = self.learner.evaluate()
-        logging.info("({}) Evaluated. Losss of {} and Metric of {}. (Check tensorboard for more info)".format(self.get_addr(),retults[0],retults[1]))
+        logging.info("({}) Evaluated. Losss: {}, Metric: {}. (Check tensorboard for more info)".format(self.get_addr(),retults[0],retults[1]))
         return retults
 
 
@@ -361,7 +368,9 @@ class Node(BaseNode, Observer):
         # UnLock Neightboors Communication
         self.__set_sending_model(False)
 
-    def __bc_metrics(self,metrics):
+
+    # SI ESTAMOS EN SIMULACION NO PERMITIR BROADCASTEAERLAS -> tonter'ia
+    def __bc_metrics(self,metrics): 
         logging.info("({}) Broadcasting metrics to {} clients.".format(self.get_addr(),len(self.neightboors)))
         encoded_msgs = CommunicationProtocol.build_metrics_msg(self.round,metrics[0],metrics[1])
         self.broadcast(encoded_msgs)

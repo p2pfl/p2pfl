@@ -197,7 +197,6 @@ class CommunicationProtocol:
                         if len(message) > 3:
                             try:
                                 cmds_success.append(self.__exec(CommunicationProtocol.METRICS, int(message[1]), float(message[2]), float(message[3])))
-                                print(cmds_success[-1])
                                 message = message[4:]
                             except Exception as e:
                                 print(e)

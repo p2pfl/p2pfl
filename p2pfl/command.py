@@ -94,8 +94,7 @@ class Metrics_cmd(Command):
     Command that should be executed as a response to a **metrics** message.
     """
     def execute(self, round, loss, metric):
-        print("SIN HACERR!!")
-        #self.node_connection.notify_metrics(loss,metric)
+        self.node_connection.notify_metrics(round,loss,metric)
 
 
         

@@ -7,18 +7,21 @@ from collections import OrderedDict
 import pickle
 
 ###########################
-#    LightningLearner    #
+#    LightningLearner     #
 ###########################
+
+# Agregue metodo close() para cerrar el logger y reset() para resetear el logger
 
 class LightningLearner(NodeLearner):
     """
     Learner with PyTorch Lightning.
     """
 
-    def __init__(self, model, data, log_name=None, experiment_version=0):
+    def __init__(self, model, data, log_name=None):
         self.model = model            
         self.data = data
-        self.logger = FederatedTensorboardLogger("training_logs", name=log_name, version=experiment_version)
+        self.log_name = log_name
+        self.logger = None
         self.trainer = None
         self.epochs = 1
 
@@ -78,14 +81,13 @@ class LightningLearner(NodeLearner):
         loss = results[0]["test_loss"]
         metric = results[0]["test_metric"]
         self.trainer = None
-        self.log_validation_metrics((loss, metric))
+        self.log_validation_metrics(loss, metric)
 
         return loss,metric
 
-    def log_validation_metrics(self, metrics, round=None):
-        loss, metric = metrics
-        self.logger.log_scalar("test_loss", loss, round)
-        self.logger.log_scalar("test_metric", metric, round)
+    def log_validation_metrics(self, loss, metric, round=None, name=None):
+        self.logger.log_scalar("test_loss", loss, round,name=name)
+        self.logger.log_scalar("test_metric", metric, round,name=name)
 
     def interrupt_fit(self):
         if self.trainer is not None:
@@ -94,3 +96,11 @@ class LightningLearner(NodeLearner):
 
     def get_num_samples(self):
         return (len(self.data.train_dataloader().dataset), len(self.data.test_dataloader().dataset))
+
+    def init(self):
+        self.close()
+        self.logger = FederatedTensorboardLogger("training_logs", name=self.log_name)
+   
+    def close(self):
+        if self.logger is not None:
+            self.logger.close()

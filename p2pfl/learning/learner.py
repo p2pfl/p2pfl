@@ -116,3 +116,14 @@ class NodeLearner:
         """
         pass
 
+    def close(self): 
+        """
+        Close the learner.
+        """
+        pass
+
+    def init(self): 
+        """
+        Init the learner.
+        """
+        pass
