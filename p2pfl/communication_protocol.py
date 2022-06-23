@@ -19,6 +19,7 @@ class CommunicationProtocol:
         - PARAMS <data> \PARAMS
         - MODELS_READY <round>
         - METRICS <round> <loss> <metric>
+        - VOTE_TRAIN_SET <ip1> <port1> <punct1> <ip2> <port2> <punct2> <ip3> <port3> <punct3>
         
     The unique non-static method is used to process messages with a connection stablished.
 
@@ -40,6 +41,7 @@ class CommunicationProtocol:
     PARAMS_CLOSE   = "\PARAMS" #special case
     MODELS_READY   = "MODELS_READY"    
     METRICS        = "METRICS"
+    VOTE_TRAIN_SET = "VOTE_TRAIN_SET"
 
     ########################
     #    MSG PROCESSING    #
@@ -199,7 +201,31 @@ class CommunicationProtocol:
                                 cmds_success.append(self.__exec(CommunicationProtocol.METRICS, int(message[1]), float(message[2]), float(message[3])))
                                 message = message[4:]
                             except Exception as e:
-                                print(e)
+                                cmds_success.append(False)
+                                break
+                        else:
+                            cmds_success.append(False)
+                            break
+
+                    # Vote train set
+                    elif message[0] == CommunicationProtocol.VOTE_TRAIN_SET:
+                        if len(message) > 9:
+                            if message[2].isdigit() and message[3].isdigit() and  message[5].isdigit() and message[6].isdigit() and  message[8].isdigit() and message[9].isdigit():
+                                cmds_success.append(
+                                    self.__exec(
+                                        CommunicationProtocol.VOTE_TRAIN_SET, 
+                                        [
+                                            (message[1], int(message[2])),
+                                            (message[4], int(message[5])),
+                                            (message[7], int(message[8])),
+                                        ],
+                                        [
+                                            int(message[3]), int(message[6]), int(message[9])
+                                        ]
+                                    )
+                                )
+                                message = message[10:]
+                            else:
                                 cmds_success.append(False)
                                 break
                         else:
@@ -336,5 +362,24 @@ class CommunicationProtocol:
             round: The round when the metrics was calculated.
             loss: The loss of the last round.
             metric: The metric of the last round.
+        
+        Returns:
+            A encoded metrics message.
         """
         return (CommunicationProtocol.METRICS + " " + str(round) + " " + str(loss) + " " + str(metric) + "\n").encode("utf-8")
+
+    def build_vote_train_set_msg(candidates, weights):
+        """
+        Args:
+            candidates: The candidates to vote for.
+            weights: The weights of the candidates.
+        
+        Returns:
+            A encoded vote train set message.
+        """
+
+        print(candidates)
+        aux = ""
+        for i in range(len(candidates)):
+            aux = aux + " " + " ".join([str(x) for x in candidates[i]]) + " " + str(weights[i])
+        return (CommunicationProtocol.VOTE_TRAIN_SET + " " + aux + "\n").encode("utf-8")

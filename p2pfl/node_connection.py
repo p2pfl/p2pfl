@@ -54,6 +54,7 @@ class NodeConnection(threading.Thread, Observable):
             CommunicationProtocol.PARAMS: Params_cmd(self),
             CommunicationProtocol.MODELS_READY: Models_Ready_cmd(self),
             CommunicationProtocol.METRICS: Metrics_cmd(self),
+            CommunicationProtocol.VOTE_TRAIN_SET: Vote_train_set_cmd(self)
         })
 
     def get_addr(self):

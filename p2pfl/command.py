@@ -97,4 +97,11 @@ class Metrics_cmd(Command):
         self.node_connection.notify_metrics(round,loss,metric)
 
 
-        
+class Vote_train_set_cmd(Command):
+    """
+    Command that should be executed as a response to a **vote** message.
+    """
+    def execute(self, candidates, weights):
+        print("aun no implementao")
+        pass
+        #self.node_connection.notify_vote(vote) 

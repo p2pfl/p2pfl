@@ -18,6 +18,7 @@ class Events():
     STOP_LEARNING = "STOP_LEARNING"
     PARAMS_RECEIVED = "PARAMS_RECEIVED"
     METRICS_RECEIVED = "METRICS_RECEIVED"
+    VOTE_RECEIVED_EVENT = "VOTE_RECEIVED_EVENT"
 
 ##################################
 #    Generic Observable class    #

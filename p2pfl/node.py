@@ -1,3 +1,5 @@
+import math
+import random
 import threading
 import logging
 import time
@@ -310,6 +312,9 @@ class Node(BaseNode, Observer):
 
     def __train_step(self):
 
+        # Set train set
+        self.__vote_train_set()
+
         # Evaluate and send metrics
         if self.round is not None:
             self.__bc_metrics(self.__evaluate())
@@ -378,31 +383,54 @@ class Node(BaseNode, Observer):
     def __set_sending_model(self, flag):
         for node in self.neightboors:
             node.set_sending_model(flag)
-    
+
+    # Returns participants in the training round
+    def __vote_train_set(self):
+
+        # Vote
+        if self.neightboors != []:
+            candidates = random.choices(self.neightboors, k=3)
+            candidates = [candidate.get_addr() for candidate in candidates]
+            weights = [random.randint(0,1000),math.floor(random.randint(0,1000)/2),math.floor(random.randint(0,1000)/4)]
+            # Send vote
+            self.broadcast(CommunicationProtocol.build_vote_train_set_msg(candidates,weights))
+                    
+            # cambiar nombre a los locks
+
+            """
+            # Wait for other votes
+            logging.info("({}) Waiting other node votes.".format(self.get_addr()))
+            while True:
+                # If the trainning has been interrupted, stop waiting
+                if self.round is None:
+                    logging.info("({}) Stopping on_round_finished process.".format(self.get_addr()))
+                    return
+                            
+                if all([ nc.get_ready_model_status()>=self.round for nc in self.neightboors]):
+                    break
+                self.__finish_wait_lock.acquire()
+            """
+                                
     def __wait_model_agregation(self):
         try:
-            if self.round is not None:
+            # Wait to finish self agregation
+            self.__finish_agregation_lock.acquire()
                 
-                # Wait to finish self agregation
-                self.__finish_agregation_lock.acquire()
+            # Send ready message --> quizá ya no haga falta bloquear el socket
+            self.broadcast(CommunicationProtocol.build_models_ready_msg(self.round))
                 
-                # Send ready message --> quizá ya no haga falta bloquear el socket
-                self.broadcast(CommunicationProtocol.build_models_ready_msg(self.round))
-                
-                # Wait for ready messages
-                logging.info("({}) Waiting other nodes.".format(self.get_addr()))
-                while True:
-                    # If the trainning has been interrupted, stop waiting
-                    if self.round is None:
-                        logging.info("({}) Stopping on_round_finished process.".format(self.get_addr()))
-                        return
+            # Wait for ready messages
+            logging.info("({}) Waiting other nodes.".format(self.get_addr()))
+            while True:
+                # If the trainning has been interrupted, stop waiting
+                if self.round is None:
+                    logging.info("({}) Stopping on_round_finished process.".format(self.get_addr()))
+                    return
                         
-                    if all([ nc.get_ready_model_status()>=self.round for nc in self.neightboors]):
-                        break
-                    self.__finish_wait_lock.acquire()
+                if all([ nc.get_ready_model_status()>=self.round for nc in self.neightboors]):
+                    break
+                self.__finish_wait_lock.acquire() # timeout? --> plantearlo al acabar de codificar el 3 sprint -> creo que este ser'ia el 2 timeout necesario
                                
-            else:
-                logging.info("({}) FL not running but models received".format(self.get_addr()))
         except Exception as e:
             logging.error("({}) Concurrence Error: {}".format(self.get_addr(),e))
 
