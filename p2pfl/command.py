@@ -77,7 +77,6 @@ class Params_cmd(Command):
     def execute(self,msg,done):
         self.node_connection.add_param_segment(msg)
         if done:
-            self.node_connection.tmp = self.node_connection.tmp + 1
             params = self.node_connection.get_params()
             self.node_connection.clear_buffer()
             self.node_connection.notify_params(params)
@@ -101,7 +100,5 @@ class Vote_train_set_cmd(Command):
     """
     Command that should be executed as a response to a **vote** message.
     """
-    def execute(self, candidates, weights):
-        print("aun no implementao")
-        pass
-        #self.node_connection.notify_vote(vote) 
+    def execute(self, votes):
+        self.node_connection.set_train_set_votes(votes)

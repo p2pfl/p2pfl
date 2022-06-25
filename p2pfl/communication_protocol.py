@@ -1,4 +1,5 @@
 import logging
+import traceback
 from p2pfl.settings import Settings
 
 ###############################
@@ -19,7 +20,7 @@ class CommunicationProtocol:
         - PARAMS <data> \PARAMS
         - MODELS_READY <round>
         - METRICS <round> <loss> <metric>
-        - VOTE_TRAIN_SET <ip1> <port1> <punct1> <ip2> <port2> <punct2> <ip3> <port3> <punct3>
+        - VOTE_TRAIN_SET (<ip1> <port1> <punct1>)* VOTE_TRAIN_SET_CLOSE
         
     The unique non-static method is used to process messages with a connection stablished.
 
@@ -30,18 +31,19 @@ class CommunicationProtocol:
         command_dict: Dictionary with the callbacks to execute at `process_message`.
     """
 
-    BEAT           = "BEAT"
-    STOP           = "STOP"
-    CONN           = "CONNECT"
-    CONN_TO        = "CONNECT_TO"
-    START_LEARNING = "START_LEARNING"
-    STOP_LEARNING  = "STOP_LEARNING"
-    NUM_SAMPLES    = "NUM_SAMPLES"
-    PARAMS         = "PARAMS"  #special case
-    PARAMS_CLOSE   = "\PARAMS" #special case
-    MODELS_READY   = "MODELS_READY"    
-    METRICS        = "METRICS"
-    VOTE_TRAIN_SET = "VOTE_TRAIN_SET"
+    BEAT                = "BEAT"
+    STOP                = "STOP"
+    CONN                = "CONNECT"
+    CONN_TO             = "CONNECT_TO"
+    START_LEARNING      = "START_LEARNING"
+    STOP_LEARNING       = "STOP_LEARNING"
+    NUM_SAMPLES         = "NUM_SAMPLES"
+    PARAMS              = "PARAMS"  #special case
+    PARAMS_CLOSE        = "\PARAMS" #special case
+    MODELS_READY        = "MODELS_READY"    
+    METRICS             = "METRICS"
+    VOTE_TRAIN_SET      = "VOTE_TRAIN_SET"
+    VOTE_TRAIN_SET_CLOSE  = "\VOTE_TRAIN_SET"
 
     ########################
     #    MSG PROCESSING    #
@@ -209,28 +211,26 @@ class CommunicationProtocol:
 
                     # Vote train set
                     elif message[0] == CommunicationProtocol.VOTE_TRAIN_SET:
-                        if len(message) > 9:
-                            if message[2].isdigit() and message[3].isdigit() and  message[5].isdigit() and message[6].isdigit() and  message[8].isdigit() and message[9].isdigit():
-                                cmds_success.append(
-                                    self.__exec(
-                                        CommunicationProtocol.VOTE_TRAIN_SET, 
-                                        [
-                                            (message[1], int(message[2])),
-                                            (message[4], int(message[5])),
-                                            (message[7], int(message[8])),
-                                        ],
-                                        [
-                                            int(message[3]), int(message[6]), int(message[9])
-                                        ]
-                                    )
-                                )
-                                message = message[10:]
-                            else:
-                                cmds_success.append(False)
-                                break
-                        else:
+                        try:
+                            # Divide messages and check length of message
+                            close_pos = message.index(CommunicationProtocol.VOTE_TRAIN_SET_CLOSE)
+                            vote_msg = message[1:close_pos]
+                            if len(vote_msg)%3 != 0:
+                                raise Exception("Invalid vote message")
+                            message = message[close_pos+1:]
+
+                            # Process vote message
+                            votes = []
+                            for i in range(0, len(vote_msg), 3):
+                                votes.append(((vote_msg[i], int(vote_msg[i+1])), int(vote_msg[i+2])))
+                            self.__exec(CommunicationProtocol.VOTE_TRAIN_SET, dict(votes))
+
+                        except Exception as e:
+                            print(traceback.format_exc())
+                            print(e)
                             cmds_success.append(False)
                             break
+
 
                     # Non Recognized message            
                     else:
@@ -368,7 +368,7 @@ class CommunicationProtocol:
         """
         return (CommunicationProtocol.METRICS + " " + str(round) + " " + str(loss) + " " + str(metric) + "\n").encode("utf-8")
 
-    def build_vote_train_set_msg(candidates, weights):
+    def build_vote_train_set_msg(votes):
         """
         Args:
             candidates: The candidates to vote for.
@@ -377,9 +377,7 @@ class CommunicationProtocol:
         Returns:
             A encoded vote train set message.
         """
-
-        print(candidates)
         aux = ""
-        for i in range(len(candidates)):
-            aux = aux + " " + " ".join([str(x) for x in candidates[i]]) + " " + str(weights[i])
-        return (CommunicationProtocol.VOTE_TRAIN_SET + " " + aux + "\n").encode("utf-8")
+        for v in votes:
+            aux = aux + " " + v[0][0] + " " + str(v[0][1]) + " " + str(v[1])
+        return (CommunicationProtocol.VOTE_TRAIN_SET + " " + aux + " " + CommunicationProtocol.VOTE_TRAIN_SET_CLOSE +"\n").encode("utf-8")

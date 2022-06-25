@@ -16,3 +16,4 @@ class Settings():
     HEARTBEAT_FREC = 5
     MAX_ERRORS = 1
     AGREGATION_TIEMOUT = 15
+    TRAIN_SET_SIZE = 7

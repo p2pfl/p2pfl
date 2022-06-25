@@ -10,6 +10,8 @@ from p2pfl.utils.observer import Events, Observable
 #    NodeConnection    #
 ########################
 
+# organizar algo código
+
 class NodeConnection(threading.Thread, Observable):
     """
     This class represents a connection to a node. It is a thread, so it's going to process all messages in a background thread using the CommunicationProtocol.
@@ -42,7 +44,7 @@ class NodeConnection(threading.Thread, Observable):
         
         self.model_ready = -1
 
-        self.tmp = 0
+        self.train_set_votes = []
 
         self.comm_protocol = CommunicationProtocol({
             CommunicationProtocol.BEAT: Beat_cmd(self),
@@ -73,6 +75,33 @@ class NodeConnection(threading.Thread, Observable):
         """
         self.model_ready = round
         self.notify(Events.NODE_MODELS_READY_EVENT, self)
+
+    ###################
+    # Train set votes #
+    ###################
+
+    def set_train_set_votes(self,votes):
+        """
+        Set the last ready round of the other node.
+
+        Args:
+            round: The last ready round of the other node.
+        """
+        self.train_set_votes = votes
+        self.notify(Events.TRAIN_SET_VOTE_RECEIVED_EVENT, self)
+
+    def get_train_set_votes(self):
+        """
+        Returns:
+            The votes for the treining set of the other node.
+        """
+        return self.train_set_votes
+
+    def clear_train_set_votes(self):
+        """
+        Clear the votes.
+        """
+        self.train_set_votes = []
 
     def get_ready_model_status(self):
         """

@@ -21,7 +21,7 @@ from p2pfl.utils.observer import Events, Observer
 
 # Cambiar algunos int nones por -1 para preservar el tipo
 
-#Desacoplar el lerarner + Meter versiones de logs
+# Num samples -> meterlo en el handshaking -> puede traer problemas en topoligías no completamente conectadas
 
 ###################################################################################################################
 # FULL CONNECTED HAY QUE IMPLEMENTARLO DE FORMA QUE CUANDO SE INTRODUCE UN NODO EN LA RED, SE HACE UN BROADCAST
@@ -60,12 +60,14 @@ class Node(BaseNode, Observer):
         self.learner = learner(model, data, log_name=log_dir) 
         self.round = None
         self.totalrounds = None
+        self.train_set = []
         self.agregator = agregator( node_name = self.get_addr()[0] + ":" + str(self.get_addr()[1]) )
         self.agregator.add_observer(self)
         self.is_model_init = False
 
         # Locks
-        self.__finish_wait_lock = threading.Lock()
+        self.__wait_models_ready_lock = threading.Lock()
+        self.__wait_votes_ready_lock = threading.Lock()
         self.__finish_agregation_lock = threading.Lock()
         self.__finish_agregation_lock.acquire()
         
@@ -79,7 +81,6 @@ class Node(BaseNode, Observer):
         """
         if self.round is not None:
             self.__stop_learning()
-            self.agregator.check_and_run_agregation(force=True)
         self.learner.close()
         super().stop()
 
@@ -99,14 +100,15 @@ class Node(BaseNode, Observer):
             self.rm_neighbor(obj)
             self.agregator.remove_node_to_agregate()
             try:
-                self.__finish_wait_lock.release()
+                self.__wait_models_ready_lock.release()
+                self.__wait_votes_ready_lock.release()
             except:
                 pass
 
         elif event == Events.NODE_MODELS_READY_EVENT:
             # Try to unlock to check if all nodes are ready (on_finish_round (agregator_thread))
             try:
-                self.__finish_wait_lock.release()
+                self.__wait_models_ready_lock.release()
             except:
                 pass
 
@@ -132,10 +134,17 @@ class Node(BaseNode, Observer):
         
         elif event == Events.METRICS_RECEIVED:
             # Log Metrics
-            print("METRICS RECEIVED {}".format(obj))
             name, round, loss, metric = obj
             self.learner.log_validation_metrics(loss,metric,round=round,name=name)
 
+        elif event == Events.TRAIN_SET_VOTE_RECEIVED_EVENT:
+            try:
+                self.__wait_votes_ready_lock.release()
+            except:
+                pass
+                
+        else:
+            logging.error("({}) Event not handled: {}".format(self.get_addr(),event))
     ####################################
     #         Learning Setters         #
     ####################################
@@ -219,12 +228,12 @@ class Node(BaseNode, Observer):
         self.round = 0
         self.totalrounds = rounds
         self.learner.init()
-        self.agregator.set_nodes_to_agregate(len(self.neightboors))
 
         # Indicates samples that be used in the learning process
-        logging.info("({}) Broadcasting Number of Samples...".format(self.get_addr()))
+        logging.info("({}) Broadcasting Number of Samples...".format(self.get_addr()))  # esto meterlo en el handsaking
+
         #esto ya no hará falta -> ahora multilee -> tb nos perjudica porque si ya se está mandado el modelo, va a promediarlo x 0
-        self.broadcast(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples()))
+        self.broadcast(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())) # si no se manda bien promedia x 0
         
         #esto de aqui es una apaño de los malos -> cambiar por lock
         if not self.is_model_init:
@@ -241,11 +250,21 @@ class Node(BaseNode, Observer):
         Stop the learning process in the local node. Interrupts learning process if its running.
         """
         logging.info("({}) Stopping learning".format(self.get_addr()))
-        self.learner.interrupt_fit()
+        # Rounds
         self.round = None
         self.totalrounds = None
+        # Leraner
+        self.learner.interrupt_fit()
+        # Agregator
+        self.agregator.check_and_run_agregation(force=True)  
         self.agregator.set_nodes_to_agregate(None)
         self.agregator.clear()
+        # Try to free wait locks
+        try:
+            self.__wait_models_ready_lock.release()
+            self.__wait_votes_ready_lock.release()
+        except:
+            pass
 
     ####################################
     #         Model Agregation         #
@@ -313,40 +332,41 @@ class Node(BaseNode, Observer):
     def __train_step(self):
 
         # Set train set
-        self.__vote_train_set()
-
-        # Evaluate and send metrics
         if self.round is not None:
-            self.__bc_metrics(self.__evaluate())
-
-        # Train
-        if self.round is not None:
-            self.__train()
+            train_set  = self.__vote_train_set() # este trainset es de strincgs no de node conections
         
-        # Send Model
-        if self.round is not None:
-            self.agregator.add_model(str(self.get_addr()),self.learner.get_parameters(), self.learner.get_num_samples()[0])
-            self.__bc_model()
+            if train_set is not None:
+                self.train_set = train_set
+
+            print("{} Train set: {}".format(self.get_addr(),self.train_set))
+
+            self.agregator.set_nodes_to_agregate(len(self.train_set)) ## en caso de que se caida un nodo se tiene que validar si es del trainset
+
+
+        
+        if self.get_addr() in self.train_set:
+                
+            # Evaluate and send metrics
+            if self.round is not None:
+                self.__bc_metrics(self.__evaluate())
+
+            # Train
+            if self.round is not None:
+                self.__train()
+            
+            # Send Model
+            if self.round is not None:
+                self.agregator.add_model(str(self.get_addr()),self.learner.get_parameters(), self.learner.get_num_samples()[0])
+                self.__bc_model()
 
         # Wait for model agregation
         if self.round is not None:
             self.__wait_model_agregation()
 
-
-
-        #
-        #
-        # NO HACE FALTA SINCRONIZAR, CUANDO SE ACTUALICE EL MODELO QUE SE CALCULE METRICA Y SE INDIQUE LA RONDA PARA AGREGAR A LOS LOGS!!!!
-        #
-        #
-
-        # Wait for metric agregation
-        #if self.round is not None:
-        #    self.__wait_metric_agregation()
-
         # Finish round
         if self.round is not None:
             self.__on_round_finished()
+    
        
         
     def __train(self):
@@ -389,27 +409,53 @@ class Node(BaseNode, Observer):
 
         # Vote
         if self.neightboors != []:
+            # Send vote
             candidates = random.choices(self.neightboors, k=3)
             candidates = [candidate.get_addr() for candidate in candidates]
             weights = [random.randint(0,1000),math.floor(random.randint(0,1000)/2),math.floor(random.randint(0,1000)/4)]
-            # Send vote
-            self.broadcast(CommunicationProtocol.build_vote_train_set_msg(candidates,weights))
+            votes = list(zip(candidates,weights))
+            self.broadcast(CommunicationProtocol.build_vote_train_set_msg(votes))
                     
-            # cambiar nombre a los locks
-
-            """
             # Wait for other votes
             logging.info("({}) Waiting other node votes.".format(self.get_addr()))
             while True:
                 # If the trainning has been interrupted, stop waiting
                 if self.round is None:
                     logging.info("({}) Stopping on_round_finished process.".format(self.get_addr()))
-                    return
+                    return None
                             
-                if all([ nc.get_ready_model_status()>=self.round for nc in self.neightboors]):
-                    break
-                self.__finish_wait_lock.acquire()
-            """
+                if all([ nc.get_train_set_votes()!=[] for nc in self.neightboors]):
+
+                    # Y EN CASO DE EMPATE?
+
+                    results = dict(votes)
+
+
+                    for nc in self.neightboors:
+                        
+                        for i in range(len(nc.get_train_set_votes())):
+                            k = list(nc.get_train_set_votes().keys())[i]
+                            v = list(nc.get_train_set_votes().values())[i]
+
+                            if k in results:
+                                results[k] += v
+                            else:
+                                results[k] = v
+
+
+                    # Order by votes and get TOP X
+                    results = sorted(results.items(), key=lambda x: x[1], reverse=True)
+                    top = min(len(results), Settings.TRAIN_SET_SIZE)
+                    results = results[0:top]
+                    results = {k: v for k, v in results}
+
+                    # Clear votes    
+                    for n in self.neightboors:
+                        n.clear_train_set_votes()
+
+                    return results 
+                self.__wait_votes_ready_lock.acquire()
+            
                                 
     def __wait_model_agregation(self):
         try:
@@ -429,7 +475,7 @@ class Node(BaseNode, Observer):
                         
                 if all([ nc.get_ready_model_status()>=self.round for nc in self.neightboors]):
                     break
-                self.__finish_wait_lock.acquire() # timeout? --> plantearlo al acabar de codificar el 3 sprint -> creo que este ser'ia el 2 timeout necesario
+                self.__wait_models_ready_lock.acquire()
                                
         except Exception as e:
             logging.error("({}) Concurrence Error: {}".format(self.get_addr(),e))

@@ -70,13 +70,13 @@ class LightningLearner(NodeLearner):
 
     def fit(self):
         if self.epochs > 0:
-            self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=self.logger, enable_checkpointing=False) 
+            self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=self.logger, enable_checkpointing=False, enable_model_summary=False) 
             self.trainer.fit(self.model, self.data)
             self.trainer = None
             self.logger.finalize_round()
 
     def evaluate(self):
-        self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=None, enable_checkpointing=False) 
+        self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=None, enable_checkpointing=False)
         results = self.trainer.test(self.model, self.data, verbose=False)
         loss = results[0]["test_loss"]
         metric = results[0]["test_metric"]

@@ -1,5 +1,3 @@
-from multiprocessing import Event
-import sys
 import threading
 import logging
 from p2pfl.settings import Settings
@@ -24,7 +22,7 @@ class Agregator(threading.Thread, Observable):
         threading.Thread.__init__(self)
         self.daemon = True
         Observable.__init__(self)
-        self.num_nei = None
+        self.train_set_size = None
         self.node_name = node_name
         self.name = "agregator-" + node_name
         self.models = {}
@@ -40,13 +38,13 @@ class Agregator(threading.Thread, Observable):
         self.agregation_lock.acquire(timeout=Settings.AGREGATION_TIEMOUT) 
         
         # Check if node still running (could happen if agregation thread was a residual thread)
-        if self.num_nei is None:
+        if self.train_set_size is None:
             logging.info("({}) Shutting Down Agregator Process".format(self.node_name))
             self.notify(Events.AGREGATION_FINISHED,None) # To avoid residual trainning-thread
             return
         
         # Start agregation
-        if len(self.models)!=(self.num_nei+1):
+        if len(self.models)!=(self.train_set_size):
             logging.info("({}) Agregating models. Timeout reached".format(self.node_name))
         else:
             logging.info("({}) Agregating models.".format(self.node_name))
@@ -68,7 +66,7 @@ class Agregator(threading.Thread, Observable):
         Args:
             n: Number of nodes to agregate. None for no agregation.
         """
-        self.num_nei = n
+        self.train_set_size = n
     
     def remove_node_to_agregate(self, ammount=1):
         """
@@ -77,8 +75,8 @@ class Agregator(threading.Thread, Observable):
         Args:
             ammount: Number of nodes to remove.
         """
-        if self.num_nei is not None:
-            self.num_nei = self.num_nei-ammount
+        if self.train_set_size is not None:
+            self.train_set_size = self.train_set_size-ammount
             # It cant produce training, if aggregation is running, clients only decrement
             self.check_and_run_agregation()
 
@@ -92,13 +90,13 @@ class Agregator(threading.Thread, Observable):
             w: Number of samples used to train the model.
 
         """
-        if self.num_nei is None:
+        if self.train_set_size is None:
             logging.error("({}) Error, trying to add a model when the neighbors are not specificated".format(self.node_name))
         else:
             # Agregar modelo
             self.lock.acquire()
             self.models[n] = ((m, w))
-            logging.info("({}) Model added ({}/{}) from {}".format(self.node_name, str(len(self.models)), str(self.num_nei+1), n))
+            logging.info("({}) Model added ({}/{}) from {}".format(self.node_name, str(len(self.models)), str(self.train_set_size), n))
             # Start Timeout
             if not self.is_alive():
                 self.start()
@@ -119,7 +117,7 @@ class Agregator(threading.Thread, Observable):
         """
         # Try Unloock
         try:
-            if force or len(self.models)==(self.num_nei+1): 
+            if force or len(self.models)==(self.train_set_size): 
                 self.agregation_lock.release()
         except:
             pass
@@ -130,8 +128,8 @@ class Agregator(threading.Thread, Observable):
         Clear all for a new agregation.
         """
         observers = self.get_observers()
-        num_nei = self.num_nei
+        train_set_size = self.train_set_size
         self.__init__(node_name=self.node_name)
-        self.num_nei = num_nei
+        self.train_set_size = train_set_size
         for o in observers:
             self.add_observer(o)
