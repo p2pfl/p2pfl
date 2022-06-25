@@ -5,5 +5,7 @@ from collections import OrderedDict
 import torch
 import time
 
-node = Node(MLP(),MnistFederatedDM(),port=6666)
-node.start()
+if __name__ == '__main__':
+            
+    node = Node(MLP(),MnistFederatedDM(),port=6666)
+    node.start()

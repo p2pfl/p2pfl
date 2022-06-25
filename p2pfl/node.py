@@ -333,17 +333,21 @@ class Node(BaseNode, Observer):
 
         # Set train set
         if self.round is not None:
-            train_set  = self.__vote_train_set() # este trainset es de strincgs no de node conections
+            self.train_set = self.__vote_train_set() # este trainset es de strincgs no de node conections
         
-            if train_set is not None:
-                self.train_set = train_set
-
-            print("{} Train set: {}".format(self.get_addr(),self.train_set))
+            # If the node isnt connected
+            if self.train_set == []:
+                self.train_set = [self.get_addr()]
+            
+            logging.info("{} Train set of {} nodes.".format(self.get_addr(),len(self.train_set)))
 
             self.agregator.set_nodes_to_agregate(len(self.train_set)) ## en caso de que se caida un nodo se tiene que validar si es del trainset
-
-
         
+        # Train if the node was selected or if no exist candidates (node non-connected) 
+        print("====== {} in {}".format(self.get_addr(),self.train_set))
+        """
+        ====== ('127.0.0.1', 6666) in [('127.0.0.1', 52604), ('localhost', 6666)]
+        """
         if self.get_addr() in self.train_set:
                 
             # Evaluate and send metrics
@@ -366,8 +370,7 @@ class Node(BaseNode, Observer):
         # Finish round
         if self.round is not None:
             self.__on_round_finished()
-    
-       
+
         
     def __train(self):
         logging.info("({}) Training...".format(self.get_addr()))
@@ -422,7 +425,7 @@ class Node(BaseNode, Observer):
                 # If the trainning has been interrupted, stop waiting
                 if self.round is None:
                     logging.info("({}) Stopping on_round_finished process.".format(self.get_addr()))
-                    return None
+                    return []
                             
                 if all([ nc.get_train_set_votes()!=[] for nc in self.neightboors]):
 
@@ -453,9 +456,11 @@ class Node(BaseNode, Observer):
                     for n in self.neightboors:
                         n.clear_train_set_votes()
 
-                    return results 
+                    return list(results.keys())
+
                 self.__wait_votes_ready_lock.acquire()
-            
+        else:
+            return []
                                 
     def __wait_model_agregation(self):
         try:

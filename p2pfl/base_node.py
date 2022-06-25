@@ -29,7 +29,7 @@ class BaseNode(threading.Thread):
     def __init__(self, host="127.0.0.1", port=0):
         threading.Thread.__init__(self)
         self.__terminate_flag = threading.Event()
-        self.host = host
+        self.host = socket.gethostbyname(host)
         self.port = port
 
         # Setting Up Node Socket (listening)
@@ -222,6 +222,7 @@ class BaseNode(threading.Thread):
             full = "0"
             
         # Check if connection with the node already exist
+        h = socket.gethostbyname(h)
         if self.get_neighbor(h,p) == None:
 
             # Send connection request
