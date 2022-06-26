@@ -78,6 +78,7 @@ class Agregator(threading.Thread, Observable):
         if self.train_set_size is not None:
             self.train_set_size = self.train_set_size-ammount
             # It cant produce training, if aggregation is running, clients only decrement
+            logging.info("({}) Node Removed ({}/{})".format(self.node_name, str(len(self.models)), str(self.train_set_size)))
             self.check_and_run_agregation()
 
     def add_model(self, n, m, w):
@@ -117,7 +118,7 @@ class Agregator(threading.Thread, Observable):
         """
         # Try Unloock
         try:
-            if force or len(self.models)==(self.train_set_size): 
+            if force or len(self.models)>=(self.train_set_size): 
                 self.agregation_lock.release()
         except:
             pass

@@ -63,6 +63,7 @@ def test_node_down_on_learning(n):
     nodes[0].set_start_learning(rounds=2,epochs=0)
 
     # Stopping node
+    time.sleep(0.3)
     nodes[1].stop()
     # Wait 4 results
     while True:

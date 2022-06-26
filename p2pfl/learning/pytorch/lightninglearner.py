@@ -76,14 +76,17 @@ class LightningLearner(NodeLearner):
             self.logger.finalize_round()
 
     def evaluate(self):
-        self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=None, enable_checkpointing=False)
-        results = self.trainer.test(self.model, self.data, verbose=False)
-        loss = results[0]["test_loss"]
-        metric = results[0]["test_metric"]
-        self.trainer = None
-        self.log_validation_metrics(loss, metric)
+        if self.epochs > 0:
+            self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=None, enable_checkpointing=False)
+            results = self.trainer.test(self.model, self.data, verbose=False)
+            loss = results[0]["test_loss"]
+            metric = results[0]["test_metric"]
+            self.trainer = None
+            self.log_validation_metrics(loss, metric)
 
-        return loss,metric
+            return loss,metric
+        else:
+            return 0,0
 
     def log_validation_metrics(self, loss, metric, round=None, name=None):
         self.logger.log_scalar("test_loss", loss, round,name=name)

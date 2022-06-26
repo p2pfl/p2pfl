@@ -331,6 +331,14 @@ class Node(BaseNode, Observer):
 
     def __train_step(self):
 
+        """
+        ERROR:root:(127.0.0.1:53591) Error, trying to add a model when the neighbors are not specificated
+        ERROR:root:(127.0.0.1:53590) Error, trying to add a model when the neighbors are not specificated
+
+        # FALLO DE PARALELISMO:    
+            test_node_down_on_learning -> vencen timeouts (cuando se baja un nodo realmente no se inicio el training pero ya se votó)
+        """
+
         # Set train set
         if self.round is not None:
             self.train_set = self.__vote_train_set() # este trainset es de strincgs no de node conections
@@ -339,15 +347,12 @@ class Node(BaseNode, Observer):
             if self.train_set == []:
                 self.train_set = [self.get_addr()]
             
+            self.agregator.set_nodes_to_agregate(len(self.train_set)) ## en caso de que se caida un nodo se tiene que validar si es del trainset
+            
             logging.info("{} Train set of {} nodes.".format(self.get_addr(),len(self.train_set)))
 
-            self.agregator.set_nodes_to_agregate(len(self.train_set)) ## en caso de que se caida un nodo se tiene que validar si es del trainset
         
         # Train if the node was selected or if no exist candidates (node non-connected) 
-        print("====== {} in {}".format(self.get_addr(),self.train_set))
-        """
-        ====== ('127.0.0.1', 6666) in [('127.0.0.1', 52604), ('localhost', 6666)]
-        """
         if self.get_addr() in self.train_set:
                 
             # Evaluate and send metrics
@@ -467,7 +472,11 @@ class Node(BaseNode, Observer):
             # Wait to finish self agregation
             self.__finish_agregation_lock.acquire()
                 
-            # Send ready message --> quizá ya no haga falta bloquear el socket
+            # Verify that trainning has not been interrupted
+            if self.round is None:
+                return
+
+            # Send ready message
             self.broadcast(CommunicationProtocol.build_models_ready_msg(self.round))
                 
             # Wait for ready messages

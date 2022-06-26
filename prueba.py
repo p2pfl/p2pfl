@@ -43,5 +43,6 @@ def test_node_down_on_learning(n):
 
 
 if __name__ == '__main__':
-    test_node_down_on_learning(2)
+    for _ in range(6):
+        test_node_down_on_learning(2)
 
