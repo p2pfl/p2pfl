@@ -342,14 +342,23 @@ class Node(BaseNode, Observer):
         # Set train set
         if self.round is not None:
             self.train_set = self.__vote_train_set() # este trainset es de strincgs no de node conections
-        
+
+            # Verify if node set is valid (can happend that a node was down when the votes were being processed)
+            #
+            #   ESTA PARTE VA A SER TEDIOSA PARA REDES COMPLETAMENTE DESCENTRALIZADAS PUES NO SE TIENE UN DIRECTORIO DE NODOS
+            #
+            for tsn in self.train_set:
+                if tsn not in [ n.get_addr() for n in self.neightboors]:
+                    if tsn != self.get_addr():
+                        self.train_set.remove(tsn)
+                    
             # If the node isnt connected
             if self.train_set == []:
                 self.train_set = [self.get_addr()]
-            
+
             self.agregator.set_nodes_to_agregate(len(self.train_set)) ## en caso de que se caida un nodo se tiene que validar si es del trainset
             
-            logging.info("{} Train set of {} nodes.".format(self.get_addr(),len(self.train_set)))
+            logging.info("{} Train set of {} nodes. {}".format(self.get_addr(),len(self.train_set),self.train_set))
 
         
         # Train if the node was selected or if no exist candidates (node non-connected) 
@@ -416,10 +425,11 @@ class Node(BaseNode, Observer):
     def __vote_train_set(self):
 
         # Vote
-        if self.neightboors != []:
+        candidates = [candidate.get_addr() for candidate in self.neightboors.copy()] # to avoid concurrent modification
+        if candidates != []:
             # Send vote
-            candidates = random.choices(self.neightboors, k=3)
-            candidates = [candidate.get_addr() for candidate in candidates]
+            logging.info("({}) Sending train set vote.".format(self.get_addr()))
+            candidates = random.choices(candidates, k=Settings.TRAIN_SET_SIZE)
             weights = [random.randint(0,1000),math.floor(random.randint(0,1000)/2),math.floor(random.randint(0,1000)/4)]
             votes = list(zip(candidates,weights))
             self.broadcast(CommunicationProtocol.build_vote_train_set_msg(votes))
@@ -452,7 +462,8 @@ class Node(BaseNode, Observer):
 
 
                     # Order by votes and get TOP X
-                    results = sorted(results.items(), key=lambda x: x[1], reverse=True)
+                    results = sorted(results.items(), key=lambda x: x[0], reverse=True) # to equal solve of draw
+                    results = sorted(results, key=lambda x: x[1], reverse=True)
                     top = min(len(results), Settings.TRAIN_SET_SIZE)
                     results = results[0:top]
                     results = {k: v for k, v in results}
@@ -463,15 +474,20 @@ class Node(BaseNode, Observer):
 
                     return list(results.keys())
 
-                self.__wait_votes_ready_lock.acquire()
+                self.__wait_votes_ready_lock.acquire(timeout=2)
         else:
             return []
                                 
     def __wait_model_agregation(self):
         try:
+
+            print("waiting self agregation")
+
             # Wait to finish self agregation
             self.__finish_agregation_lock.acquire()
                 
+            print("waited self agregation")
+            
             # Verify that trainning has not been interrupted
             if self.round is None:
                 return
@@ -489,7 +505,7 @@ class Node(BaseNode, Observer):
                         
                 if all([ nc.get_ready_model_status()>=self.round for nc in self.neightboors]):
                     break
-                self.__wait_models_ready_lock.acquire()
+                self.__wait_models_ready_lock.acquire(timeout=2)
                                
         except Exception as e:
             logging.error("({}) Concurrence Error: {}".format(self.get_addr(),e))
