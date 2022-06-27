@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from p2pfl.settings import Settings
 
 ###############################
@@ -132,20 +133,36 @@ class CommunicationProtocol:
                 if len(message) > 0:
                     # Beat
                     if message[0] == CommunicationProtocol.BEAT:
-                        cmds_success.append(self.__exec(CommunicationProtocol.BEAT))
-                        message = message[1:]
+                        if len(message) > 1:
+                            if message[1].isdigit():
+                                cmds_success.append(self.__exec(CommunicationProtocol.BEAT))
+                                message = message[2:]
+                            else:
+                                cmds_success.append(False)
+                                break
+                        else:
+                            cmds_success.append(False)
+                            break
                     
                     # Stop
                     elif message[0] == CommunicationProtocol.STOP:
-                        cmds_success.append(self.__exec(CommunicationProtocol.STOP))
-                        message = message[1:] 
+                        if len(message) > 1:
+                            if message[1].isdigit():
+                                cmds_success.append(self.__exec(CommunicationProtocol.STOP))
+                                message = message[2:]
+                            else:
+                                cmds_success.append(False)
+                                break
+                        else:
+                            cmds_success.append(False)
+                            break
 
                     # Connect to
                     elif message[0] == CommunicationProtocol.CONN_TO:
-                        if len(message) > 2:
-                            if message[2].isdigit():
+                        if len(message) > 3:
+                            if message[2].isdigit() and message[3].isdigit():
                                 cmds_success.append(self.__exec(CommunicationProtocol.CONN_TO, message[1], int(message[2])))
-                                message = message[3:] 
+                                message = message[4:] 
                             else:
                                 cmds_success.append(False)
                                 break
@@ -155,10 +172,10 @@ class CommunicationProtocol:
 
                     # Start learning
                     elif message[0] == CommunicationProtocol.START_LEARNING:
-                        if len(message) > 2:
-                            if message[1].isdigit() and message[2].isdigit():
+                        if len(message) > 3:
+                            if message[1].isdigit() and message[2].isdigit() and message[3].isdigit():
                                 cmds_success.append(self.__exec(CommunicationProtocol.START_LEARNING, int(message[1]), int(message[2])))
-                                message = message[3:]
+                                message = message[4:]
                             else:
                                 cmds_success.append(False)
                                 break
@@ -168,15 +185,23 @@ class CommunicationProtocol:
 
                     # Stop learning
                     elif message[0] == CommunicationProtocol.STOP_LEARNING:
-                        cmds_success.append(self.__exec(CommunicationProtocol.STOP_LEARNING))
-                        message = message[1:]
+                        if len(message) > 1:            
+                            if message[1].isdigit():
+                                cmds_success.append(self.__exec(CommunicationProtocol.STOP_LEARNING))
+                                message = message[2:]
+                            else:
+                                cmds_success.append(False)
+                                break
+                        else:
+                            cmds_success.append(False)
+                            break
         
                     # Number of samples
                     elif message[0] == CommunicationProtocol.NUM_SAMPLES:
-                        if len(message) > 2:
-                            if message[1].isdigit() and message[2].isdigit():
+                        if len(message) > 3:
+                            if message[1].isdigit() and message[2].isdigit() and message[3].isdigit():
                                 cmds_success.append(self.__exec(CommunicationProtocol.NUM_SAMPLES, int(message[1]), int(message[2])))
-                                message = message[3:]
+                                message = message[4:]
                             else:
                                 cmds_success.append(False)
                                 break
@@ -186,10 +211,10 @@ class CommunicationProtocol:
 
                     # Models Ready
                     elif message[0] == CommunicationProtocol.MODELS_READY:
-                        if len(message) > 1:
-                            if message[1].isdigit():
+                        if len(message) > 2:
+                            if message[1].isdigit() and message[2].isdigit():
                                 cmds_success.append(self.__exec(CommunicationProtocol.MODELS_READY, int(message[1])))
-                                message = message[2:]
+                                message = message[3:]
                             else:
                                 cmds_success.append(False)
                                 break
@@ -199,10 +224,11 @@ class CommunicationProtocol:
 
                     # Metrics
                     elif message[0] == CommunicationProtocol.METRICS:
-                        if len(message) > 3:
+                        if len(message) > 4:
                             try:
                                 cmds_success.append(self.__exec(CommunicationProtocol.METRICS, int(message[1]), float(message[2]), float(message[3])))
-                                message = message[4:]
+                                hash=int(message[4])
+                                message = message[5:]
                             except Exception as e:
                                 cmds_success.append(False)
                                 break
@@ -218,7 +244,8 @@ class CommunicationProtocol:
                             vote_msg = message[1:close_pos]
                             if len(vote_msg)%3 != 0:
                                 raise Exception("Invalid vote message")
-                            message = message[close_pos+1:]
+                            hash = int(message[close_pos+1])
+                            message = message[close_pos+2:]
 
                             # Process vote message
                             votes = []
@@ -232,10 +259,10 @@ class CommunicationProtocol:
 
                     # Learning is running
                     elif message[0] == CommunicationProtocol.LEARNING_IS_RUNNING:
-                        if len(message) > 2:
-                            if message[1].isdigit() and message[2].isdigit():
+                        if len(message) > 3:
+                            if message[1].isdigit() and message[2].isdigit() and message[3].isdigit():
                                 cmds_success.append(self.__exec(CommunicationProtocol.LEARNING_IS_RUNNING, int(message[1]), int(message[2])))
-                                message = message[3:]
+                                message = message[4:]
                             else:
                                 cmds_success.append(False)
                                 break
@@ -265,31 +292,24 @@ class CommunicationProtocol:
     #     MSG BUILDERS    # ---->  STATIC METHODS
     #######################
 
+    def generate_hased_message(msg):
+        id = abs(hash(msg+str(datetime.now())))
+        return (msg + " " + str(id) + "\n").encode("utf-8")
+
     def build_beat_msg():
         """ 
         Returns:
             A encoded beat message.
         """
-        return (CommunicationProtocol.BEAT + "\n").encode("utf-8")
+        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.BEAT)
 
     def build_stop_msg():
         """ 
         Returns:
             A encoded stop message.
         """
-        return (CommunicationProtocol.STOP + "\n").encode("utf-8")
+        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.STOP)
 
-    def build_connect_msg(ip, port, broadcast):
-        """
-        Args:
-            ip: The ip address of the node that tries to connect.
-            port: The port of the node that tries to connect.
-            broadcast: Whether or not to broadcast the message.
-
-        Returns:
-            A encoded connect message.
-        """
-        return (CommunicationProtocol.CONN + " " + ip + " " + str(port) + " " + str(broadcast) + "\n").encode("utf-8")
 
     def build_connect_to_msg(ip, port):
         """
@@ -300,7 +320,7 @@ class CommunicationProtocol:
         Returns:
             A encoded connect to message.
         """
-        return (CommunicationProtocol.CONN_TO + " " + ip + " " + str(port) + "\n").encode("utf-8")
+        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.CONN_TO + " " + ip + " " + str(port))
 
     def build_start_learning_msg(rounds, epochs):
         """
@@ -311,14 +331,16 @@ class CommunicationProtocol:
         Returns:
             A encoded start learning message.
         """
-        return (CommunicationProtocol.START_LEARNING + " " + str(rounds) + " " + str(epochs) + "\n").encode("utf-8")
+        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.START_LEARNING + " " + str(rounds) + " " + str(epochs))
+
 
     def build_stop_learning_msg():
         """
         Returns:
             A encoded stop learning message.
         """
-        return (CommunicationProtocol.STOP_LEARNING + "\n").encode("utf-8")
+        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.STOP_LEARNING)
+
 
     def build_num_samples_msg(num):
         """
@@ -328,10 +350,84 @@ class CommunicationProtocol:
         Returns:
             A encoded number of samples message.
         """
-        return (CommunicationProtocol.NUM_SAMPLES + " " + str(num[0]) + " " + str(num[1]) + "\n").encode("utf-8")
+        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.NUM_SAMPLES + " " + str(num[0]) + " " + str(num[1]))
+
+
+    def build_models_ready_msg(round):
+        """
+        Args:
+            round: The last round finished.
+
+        Returns:
+            A encoded ready message.
+        """
+        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.MODELS_READY + " " + str(round))
+
+
+    def build_metrics_msg(round, loss, metric):
+        """
+        Args:
+            round: The round when the metrics was calculated.
+            loss: The loss of the last round.
+            metric: The metric of the last round.
+        
+        Returns:
+            A encoded metrics message.
+        """
+        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.METRICS + " " + str(round) + " " + str(loss) + " " + str(metric))
+
+
+    def build_vote_train_set_msg(votes):
+        """
+        Args:
+            candidates: The candidates to vote for.
+            weights: The weights of the candidates.
+        
+        Returns:
+            A encoded vote train set message.
+        """
+        aux = ""
+        for v in votes:
+            aux = aux + " " + v[0][0] + " " + str(v[0][1]) + " " + str(v[1])
+        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.VOTE_TRAIN_SET + " " + aux + " " + CommunicationProtocol.VOTE_TRAIN_SET_CLOSE)
+        
+
+    def build_learning_is_running_msg(round, epoch):
+        """
+        Args:
+            round: The round that is running.
+            epoch: The epoch that is running.
+        
+        Returns:
+            A encoded learning is running message.
+        """
+        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.LEARNING_IS_RUNNING + " " + str(round) + " " + str(epoch))
+
+    ###########################
+    #     Special Messages    #
+    ###########################
+
+    def build_connect_msg(ip, port, broadcast):
+        """
+        Build Handshake message.
+
+        Not Hashed. Special case of message.
+
+        Args:
+            ip: The ip address of the node that tries to connect.
+            port: The port of the node that tries to connect.
+            broadcast: Whether or not to broadcast the message.
+
+        Returns:
+            A encoded connect message.
+        """
+        return (CommunicationProtocol.CONN + " " + ip + " " + str(port) + " " + str(broadcast) + "\n").encode("utf-8")
 
     def build_params_msg(data):
         """
+        Build model serialized messages.
+        Not Hashed. Special case of message (binary message).
+
         Args:
             data: The model parameters to send (encoded).
 
@@ -356,50 +452,3 @@ class CommunicationProtocol:
             data_msgs.append(header + end)
 
         return data_msgs
-
-    def build_models_ready_msg(round):
-        """
-        Args:
-            round: The last round finished.
-
-        Returns:
-            A encoded ready message.
-        """
-        return (CommunicationProtocol.MODELS_READY + " " + str(round) + "\n").encode("utf-8")
-
-    def build_metrics_msg(round, loss, metric):
-        """
-        Args:
-            round: The round when the metrics was calculated.
-            loss: The loss of the last round.
-            metric: The metric of the last round.
-        
-        Returns:
-            A encoded metrics message.
-        """
-        return (CommunicationProtocol.METRICS + " " + str(round) + " " + str(loss) + " " + str(metric) + "\n").encode("utf-8")
-
-    def build_vote_train_set_msg(votes):
-        """
-        Args:
-            candidates: The candidates to vote for.
-            weights: The weights of the candidates.
-        
-        Returns:
-            A encoded vote train set message.
-        """
-        aux = ""
-        for v in votes:
-            aux = aux + " " + v[0][0] + " " + str(v[0][1]) + " " + str(v[1])
-        return (CommunicationProtocol.VOTE_TRAIN_SET + " " + aux + " " + CommunicationProtocol.VOTE_TRAIN_SET_CLOSE +"\n").encode("utf-8")
-
-    def build_learning_is_running_msg(round, epoch):
-        """
-        Args:
-            round: The round that is running.
-            epoch: The epoch that is running.
-        
-        Returns:
-            A encoded learning is running message.
-        """
-        return (CommunicationProtocol.LEARNING_IS_RUNNING + " " + str(round) + " " + str(epoch) + "\n").encode("utf-8")
