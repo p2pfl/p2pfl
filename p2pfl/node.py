@@ -33,7 +33,7 @@ class Node(BaseNode, Observer):
     #     Node Init     #
     #####################
 
-    def __init__(self, model, data, host="127.0.0.1", port=0, learner=LightningLearner, agregator=FedAvg):
+    def __init__(self, model, data, host="127.0.0.1", port=0, learner=LightningLearner, agregator=FedAvg, simulation=True):
         """
         Class based on a base node that allows ***p2p Federated Learning**. 
             
@@ -64,6 +64,7 @@ class Node(BaseNode, Observer):
         self.agregator = agregator( node_name = self.get_addr()[0] + ":" + str(self.get_addr()[1]) )
         self.agregator.add_observer(self)
         self.is_model_init = False
+        self.simulation = simulation
 
         # Locks
         self.__wait_models_ready_lock = threading.Lock()
@@ -331,14 +332,6 @@ class Node(BaseNode, Observer):
 
     def __train_step(self):
 
-        """
-        ERROR:root:(127.0.0.1:53591) Error, trying to add a model when the neighbors are not specificated
-        ERROR:root:(127.0.0.1:53590) Error, trying to add a model when the neighbors are not specificated
-
-        # FALLO DE PARALELISMO:    
-            test_node_down_on_learning -> vencen timeouts (cuando se baja un nodo realmente no se inicio el training pero ya se votó)
-        """
-
         # Set train set
         if self.round is not None:
             self.train_set = self.__vote_train_set() # este trainset es de strincgs no de node conections
@@ -366,7 +359,9 @@ class Node(BaseNode, Observer):
                 
             # Evaluate and send metrics
             if self.round is not None:
-                self.__bc_metrics(self.__evaluate())
+                metrics=self.__evaluate()
+                if not self.simulation:
+                    self.__bc_metrics(metrics)
 
             # Train
             if self.round is not None:
@@ -399,6 +394,19 @@ class Node(BaseNode, Observer):
 
 
     def __bc_model(self):
+        encoded_msgs = CommunicationProtocol.build_params_msg(self.learner.encode_parameters())
+        logging.info("({}) Broadcasting model to {} clients. (size: {} bytes)".format(self.get_addr(),len(self.neightboors),len(encoded_msgs)*Settings.BUFFER_SIZE))
+
+        # Lock Neightboors Communication
+        self.__set_sending_model(True)
+        # Send Fragments
+        for msg in encoded_msgs:
+            self.broadcast(msg)
+        # UnLock Neightboors Communication
+        self.__set_sending_model(False)
+
+    def __gossip_model(self):
+        
         encoded_msgs = CommunicationProtocol.build_params_msg(self.learner.encode_parameters())
         logging.info("({}) Broadcasting model to {} clients. (size: {} bytes)".format(self.get_addr(),len(self.neightboors),len(encoded_msgs)*Settings.BUFFER_SIZE))
 
@@ -512,6 +520,7 @@ class Node(BaseNode, Observer):
 
     def __on_round_finished(self):
         # Set Next Round
+        self.learner.finalize_round() # revisar x si esto pueiera quedar mejor
         self.round = self.round + 1
         logging.info("({}) Round {} of {} finished.".format(self.get_addr(),self.round,self.totalrounds))
 
@@ -520,7 +529,9 @@ class Node(BaseNode, Observer):
             self.__train_step()  
         else:
             # Calculate final metrics before finishing
-            self.__bc_metrics(self.__evaluate())
+            metrics = self.__evaluate()
+            if not self.simulation:
+                self.__bc_metrics(metrics)
             # Finish
             self.round = None
             self.is_model_init = False

@@ -1,10 +1,10 @@
+from collections import OrderedDict
+import pickle
 import torch
 from pytorch_lightning import Trainer
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
 from p2pfl.learning.pytorch.logger import FederatedTensorboardLogger
-from collections import OrderedDict
-import pickle
 
 ###########################
 #    LightningLearner     #
@@ -73,7 +73,6 @@ class LightningLearner(NodeLearner):
             self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=self.logger, enable_checkpointing=False, enable_model_summary=False) 
             self.trainer.fit(self.model, self.data)
             self.trainer = None
-            self.logger.finalize_round()
 
     def evaluate(self):
         if self.epochs > 0:
@@ -107,3 +106,7 @@ class LightningLearner(NodeLearner):
     def close(self):
         if self.logger is not None:
             self.logger.close()
+
+    def finalize_round(self):
+        self.logger.finalize_round()
+

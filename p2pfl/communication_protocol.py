@@ -1,5 +1,4 @@
 import logging
-import traceback
 from p2pfl.settings import Settings
 
 ###############################
@@ -226,8 +225,6 @@ class CommunicationProtocol:
                             self.__exec(CommunicationProtocol.VOTE_TRAIN_SET, dict(votes))
 
                         except Exception as e:
-                            print(traceback.format_exc())
-                            print(e)
                             cmds_success.append(False)
                             break
 

@@ -64,8 +64,8 @@ class FederatedTensorboardLogger(LightningLoggerBase):
         """
 
         # FL round information
-        __step = self.global_step + self.local_step
         self.local_step = step
+        __step = self.global_step + self.local_step
 
         # Log Round
         self.writer.add_scalar("fl_round", self.round, __step)
@@ -111,7 +111,10 @@ class FederatedTensorboardLogger(LightningLoggerBase):
     def finalize_round(self):
         # Finish Round
         self.global_step = self.global_step + self.local_step
+        self.local_step = 0
         self.round = self.round + 1
+
+    
 
     def close(self):
         self.writer.close()

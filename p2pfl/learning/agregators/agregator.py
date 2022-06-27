@@ -26,6 +26,7 @@ class Agregator(threading.Thread, Observable):
         self.node_name = node_name
         self.name = "agregator-" + node_name
         self.models = {}
+        self.result_model = None # ---------------------------------------
         self.lock = threading.Lock()
         self.agregation_lock = threading.Lock()
         self.agregation_lock.acquire()
