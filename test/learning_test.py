@@ -5,6 +5,11 @@ from p2pfl.learning.pytorch.lightninglearner import LightningLearner
 from collections import OrderedDict
 import torch
 
+
+#####################################################
+#    Test things related to the learning process    #
+#####################################################
+
 def test_encoding():
     nl1 = LightningLearner(MLP(), None)
     params = nl1.encode_parameters()
@@ -64,6 +69,3 @@ def test_avg_complex():
         assert torch.eq(a, b).all()
 
     n.stop()
-
-def test_connect_to_train_running():
-    assert False

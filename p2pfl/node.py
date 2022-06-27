@@ -125,8 +125,9 @@ class Node(BaseNode, Observer):
             obj.send(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())) #----ojo tb tiene que hacerlo el que se conecta
             # Comunicate to the new node that a training process is running
             if self.round is not None:
-                print("-----------------------------------------------------------")
-                obj.send(CommunicationProtocol.build_learning_is_running_msg(self.round, self.totalrounds))
+                print("TO IMPLEMET WHEN THE TOPOLOGY WAS NOT FULLY CONNECTED")
+                obj.stop()
+                #obj.send(CommunicationProtocol.build_learning_is_running_msg(self.round, self.totalrounds))
 
         elif event == Events.NODE_MODELS_READY_EVENT:
             # Try to unlock to check if all nodes are ready (on_finish_round (agregator_thread))
