@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+import random
 from p2pfl.settings import Settings
 
 ###############################
@@ -10,20 +11,20 @@ from p2pfl.settings import Settings
 class CommunicationProtocol:
     """
     Manages the meaning of communication messages. The valid messages are: 
-        - BEAT
-        - STOP
+        - BEAT <HASH>
+        - STOP <HASH>
+        - CONNECT_TO <ip> <port> <HASH>
+        - START_LEARNING <rounds> <epoches> <HASH>
+        - STOP_LEARNING <HASH>
+        - NUM_SAMPLES <train_num> <test_num> <HASH>
+        - MODELS_READY <round> <HASH>
+        - METRICS <round> <loss> <metric> <HASH>
+        - VOTE_TRAIN_SET (<ip1> <port1> <punct1>)* VOTE_TRAIN_SET_CLOSE <HASH>
+        - LEARNING_IS_RUNNING <round> <total_rounds> <HASH>
         - CONNECT <ip> <port> <broadcast>
-        - CONNECT_TO <ip> <port>
-        - START_LEARNING <rounds> <epoches>
-        - STOP_LEARNING
-        - NUM_SAMPLES <train_num> <test_num>
         - PARAMS <data> \PARAMS
-        - MODELS_READY <round>
-        - METRICS <round> <loss> <metric>
-        - VOTE_TRAIN_SET (<ip1> <port1> <punct1>)* VOTE_TRAIN_SET_CLOSE
-        - LEARNING_IS_RUNNING <round> <total_rounds>
 
-    The unique non-static method is used to process messages with a connection stablished.
+    The unique non-static method is used to process messages with a connection stablished. XXXXXXXXXXXXXXXXXXXXXX EXPLAIN GOSSIP
 
     Args:
         command_dict: Dictionary with the callbacks to execute at `process_message`.
@@ -53,6 +54,21 @@ class CommunicationProtocol:
 
     def __init__(self, command_dict):
         self.command_dict = command_dict
+        # Last messages
+        self.last_messages = []
+
+    # DEBE TENERSE EN CUENTA QUE EL PROCESADO DE MENSAJES DEBE SER TOLERANTE A RECIBIR MENSAJES DUPLICADOS
+
+    def add_processed_messages(self,messages):
+        """
+        Add messages to the last messages. If ammount is higher than `Settings.AMOUNT_LAST_MESSAGES_SAVED` remove the oldest to keep the size.
+        Args:
+            hash_messages: List of hashes of the messages.
+        """
+
+        self.last_messages = self.last_messages + messages
+        if len(self.last_messages)>Settings.AMOUNT_LAST_MESSAGES_SAVED:
+            self.last_messages = self.last_messages[len(self.last_messages)-Settings.AMOUNT_LAST_MESSAGES_SAVED:]
 
     # Check if connection is correct and execute the callback (static)
     def process_connection(message, callback):
@@ -106,7 +122,8 @@ class CommunicationProtocol:
             True if the message was processed and no errors occurred, False otherwise.
 
         """
-        cmds_success = []
+        exec_msgs = {}
+        error = False
         header = CommunicationProtocol.PARAMS.encode("utf-8")
         if msg[0:len(header)] == header:
             end = CommunicationProtocol.PARAMS_CLOSE.encode("utf-8")
@@ -114,9 +131,9 @@ class CommunicationProtocol:
             # Check if done
             end_pos = msg.find(end)
             if end_pos != -1:
-                return [self.__exec(CommunicationProtocol.PARAMS, msg[len(header):end_pos], True)]
+                return [], not self.__exec(None,CommunicationProtocol.PARAMS, msg[len(header):end_pos], True)
 
-            return [self.__exec(CommunicationProtocol.PARAMS, msg[len(header):], False)]
+            return [],not self.__exec(None,CommunicationProtocol.PARAMS, msg[len(header):], False)
 
         else:      
             # Try to decode the message
@@ -125,7 +142,7 @@ class CommunicationProtocol:
                 message = msg.decode("utf-8")
                 message = message.split()
             except:
-                cmds_success.append(False)
+                error = True
 
             # Process messages
             while len(message) > 0:
@@ -134,106 +151,137 @@ class CommunicationProtocol:
                     # Beat
                     if message[0] == CommunicationProtocol.BEAT:
                         if len(message) > 1:
-                            if message[1].isdigit():
-                                cmds_success.append(self.__exec(CommunicationProtocol.BEAT))
+                            hash_ = message[1]
+                            if self.__exec(hash_,CommunicationProtocol.BEAT):
+                                exec_msgs[hash_] = " ".join(message[0:2]) + "\n"
                                 message = message[2:]
                             else:
-                                cmds_success.append(False)
+                                error = True
                                 break
                         else:
-                            cmds_success.append(False)
+                            error = True
                             break
                     
                     # Stop
                     elif message[0] == CommunicationProtocol.STOP:
                         if len(message) > 1:
-                            if message[1].isdigit():
-                                cmds_success.append(self.__exec(CommunicationProtocol.STOP))
+                            hash_ = message[1]
+                            if self.__exec(hash_,CommunicationProtocol.STOP):
+                                exec_msgs[hash_] = " ".join(message[0:2]) + "\n"
                                 message = message[2:]
                             else:
-                                cmds_success.append(False)
+                                error = True
                                 break
                         else:
-                            cmds_success.append(False)
+                            error = True
                             break
 
                     # Connect to
                     elif message[0] == CommunicationProtocol.CONN_TO:
                         if len(message) > 3:
-                            if message[2].isdigit() and message[3].isdigit():
-                                cmds_success.append(self.__exec(CommunicationProtocol.CONN_TO, message[1], int(message[2])))
-                                message = message[4:] 
+                            if message[2].isdigit():
+                                hash_ = message[3]
+                                if self.__exec(hash_,CommunicationProtocol.CONN_TO, message[1], int(message[2])):
+                                    exec_msgs[hash_] = " ".join(message[0:4]) + "\n"
+                                    message = message[4:]
+                                else:
+                                    error = True
+                                    break 
                             else:
-                                cmds_success.append(False)
+                                error = True
                                 break
                         else:
-                            cmds_success.append(False)
+                            error = True
                             break
 
                     # Start learning
                     elif message[0] == CommunicationProtocol.START_LEARNING:
                         if len(message) > 3:
-                            if message[1].isdigit() and message[2].isdigit() and message[3].isdigit():
-                                cmds_success.append(self.__exec(CommunicationProtocol.START_LEARNING, int(message[1]), int(message[2])))
-                                message = message[4:]
+                            if message[1].isdigit() and message[2].isdigit():
+                                hash_ = message[3]
+                                if self.__exec(hash_,CommunicationProtocol.START_LEARNING, int(message[1]), int(message[2])):
+                                    exec_msgs[message[3]] = " ".join(message[0:4]) + "\n"
+                                    message = message[4:]
+                                else:
+                                    error = True
+                                    break
                             else:
-                                cmds_success.append(False)
+                                error = True
                                 break
                         else:
-                            cmds_success.append(False)
+                            error = True
                             break
 
                     # Stop learning
                     elif message[0] == CommunicationProtocol.STOP_LEARNING:
                         if len(message) > 1:            
                             if message[1].isdigit():
-                                cmds_success.append(self.__exec(CommunicationProtocol.STOP_LEARNING))
-                                message = message[2:]
+                                hash_ = message[1]
+                                if self.__exec(hash_,CommunicationProtocol.STOP_LEARNING):
+                                    exec_msgs[hash_] = " ".join(message[0:2]) + "\n"
+                                    message = message[2:]
+                                else:
+                                    error = True
+                                    break
                             else:
-                                cmds_success.append(False)
+                                error = True
                                 break
                         else:
-                            cmds_success.append(False)
+                            error = True
                             break
         
                     # Number of samples
                     elif message[0] == CommunicationProtocol.NUM_SAMPLES:
                         if len(message) > 3:
-                            if message[1].isdigit() and message[2].isdigit() and message[3].isdigit():
-                                cmds_success.append(self.__exec(CommunicationProtocol.NUM_SAMPLES, int(message[1]), int(message[2])))
-                                message = message[4:]
+                            if message[1].isdigit() and message[2].isdigit():
+                                hash_=message[3]
+                                if self.__exec(hash_,CommunicationProtocol.NUM_SAMPLES, int(message[1]), int(message[2])):
+                                    exec_msgs[hash_] = " ".join(message[0:4]) + "\n"
+                                    message = message[4:]
+                                else:
+                                    error = True
+                                    break                        
                             else:
-                                cmds_success.append(False)
+                                error = True
                                 break
                         else:
-                            cmds_success.append(False)
+                            error = True
                             break
 
                     # Models Ready
                     elif message[0] == CommunicationProtocol.MODELS_READY:
                         if len(message) > 2:
-                            if message[1].isdigit() and message[2].isdigit():
-                                cmds_success.append(self.__exec(CommunicationProtocol.MODELS_READY, int(message[1])))
-                                message = message[3:]
+                            if message[1].isdigit():
+                                hash_=message[2]
+                                if self.__exec(hash_,CommunicationProtocol.MODELS_READY, int(message[1])):
+                                    exec_msgs[hash_] = " ".join(message[0:3]) + "\n"
+                                    message = message[3:]
+                                else:
+                                    error = True
+                                    break
                             else:
-                                cmds_success.append(False)
+                                error = True
                                 break
                         else:
-                            cmds_success.append(False)
+                            error = True
                             break
 
                     # Metrics
                     elif message[0] == CommunicationProtocol.METRICS:
                         if len(message) > 4:
                             try:
-                                cmds_success.append(self.__exec(CommunicationProtocol.METRICS, int(message[1]), float(message[2]), float(message[3])))
-                                hash=int(message[4])
-                                message = message[5:]
+                                hash_ = message[4]
+                                if self.__exec(hash_,CommunicationProtocol.METRICS, int(message[1]), float(message[2]), float(message[3])):
+                                    exec_msgs[hash_] = " ".join(message[0:5]) + "\n"
+                                    message = message[5:]
+                                else:
+                                    error = True
+                                    break
                             except Exception as e:
-                                cmds_success.append(False)
+                                error = True
                                 break
                         else:
-                            cmds_success.append(False)
+                            error = True
                             break
 
                     # Vote train set
@@ -244,44 +292,59 @@ class CommunicationProtocol:
                             vote_msg = message[1:close_pos]
                             if len(vote_msg)%3 != 0:
                                 raise Exception("Invalid vote message")
-                            hash = int(message[close_pos+1])
+                            hash_ = message[close_pos+1]
                             message = message[close_pos+2:]
 
                             # Process vote message
                             votes = []
                             for i in range(0, len(vote_msg), 3):
                                 votes.append(((vote_msg[i], int(vote_msg[i+1])), int(vote_msg[i+2])))
-                            self.__exec(CommunicationProtocol.VOTE_TRAIN_SET, dict(votes))
+
+                            if self.__exec(hash_,CommunicationProtocol.VOTE_TRAIN_SET, dict(votes)):
+                                exec_msgs[hash_] = " ".join(message[0:2]) + "\n"
+                            else:
+                                error = True
+                                break
+
 
                         except Exception as e:
-                            cmds_success.append(False)
+                            error = True
                             break
 
                     # Learning is running
                     elif message[0] == CommunicationProtocol.LEARNING_IS_RUNNING:
                         if len(message) > 3:
                             if message[1].isdigit() and message[2].isdigit() and message[3].isdigit():
-                                cmds_success.append(self.__exec(CommunicationProtocol.LEARNING_IS_RUNNING, int(message[1]), int(message[2])))
-                                message = message[4:]
+                                hash_ = message[3]
+                                if self.__exec(hash_,CommunicationProtocol.LEARNING_IS_RUNNING, int(message[1])):
+                                    exec_msgs[hash_] = " ".join(message[0:4]) + "\n"
+                                    message = message[4:]
+                                else:
+                                    error = True
+                                    break
                             else:
-                                cmds_success.append(False)
+                                error = True
                                 break
                         else:
-                            cmds_success.append(False)
+                            error = True
                             break
 
                     # Non Recognized message            
                     else:
-                        cmds_success.append(False)
+                        error = True
                         break
                 
             # Return
-            return cmds_success
+            return exec_msgs,error
 
     # Exec callbacks
-    def __exec(self,action, *args):
+    def __exec(self,hash_,action, *args):
         try:
-            self.command_dict[action].execute(*args)
+            if hash_ is None:
+                self.command_dict[action].execute(*args)
+            elif hash_ not in self.last_messages:
+                self.command_dict[action].execute(*args)
+                self.add_processed_messages([hash_])
             return True
         except Exception as e:
             logging.info("Error executing callback: " + str(e))
@@ -293,7 +356,8 @@ class CommunicationProtocol:
     #######################
 
     def generate_hased_message(msg):
-        id = abs(hash(msg+str(datetime.now())))
+        # random number to avoid generating the same hash for a different message (at she same time)
+        id = hash(msg+str(datetime.now())+str(random.randint(0,100000)))
         return (msg + " " + str(id) + "\n").encode("utf-8")
 
     def build_beat_msg():

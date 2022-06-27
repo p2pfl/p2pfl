@@ -177,7 +177,7 @@ class NodeConnection(threading.Thread, Observable):
         buffer = b""
         while not self.terminate_flag.is_set():
             try:
-                # Recive and process messages
+                # Recive message
                 msg = b""
                 if overflow == 0:
                     msg = self.socket.recv(Settings.BUFFER_SIZE)
@@ -185,16 +185,10 @@ class NodeConnection(threading.Thread, Observable):
                     msg = buffer + self.socket.recv(overflow) #alinear el colapso
                     buffer = b""
                     overflow = 0
-
-                """
-                #Write msgs to a file
-                with open("caca/{}.log".format(self.name), "a") as myfile:
-                    myfile.write(str(msg))
-                    myfile.write("\n")
-                """
-
+                
+                # Process messages
                 if msg!=b"":
-                    #Check colapse
+                    #Check if colapse is happening
                     overflow = CommunicationProtocol.check_collapse(msg)
                     if overflow>0:
                         buffer = msg[overflow:]
@@ -202,16 +196,13 @@ class NodeConnection(threading.Thread, Observable):
                         logging.debug("{} (NodeConnection Run) Collapse detected: {}".format(self.get_addr(), msg))
 
                     # Process message and count errors
-                    results = self.comm_protocol.process_message(msg)
-                    errors = len(results) - sum(results)
-                    # Add errors to the counter
-                    if errors>0:
-                        self.errors += errors
-                        # If we have too many errors, we stop the connection
-                        if self.errors >= Settings.MAX_ERRORS:
-                            self.terminate_flag.set()
-                            logging.debug("Too mucho errors. {}".format(self.get_addr()))
-                            logging.debug("Last error: {}".format(msg))           
+                    exec_msgs,error = self.comm_protocol.process_message(msg)
+                    
+                    # Error happened
+                    if error:
+                        self.terminate_flag.set()
+                        logging.debug("An error happened. {}".format(self.get_addr()))
+                        logging.debug("Last error: {}".format(msg))           
 
             except socket.timeout:
                 logging.debug("{} (NodeConnection Loop) Timeout".format(self.get_addr()))
