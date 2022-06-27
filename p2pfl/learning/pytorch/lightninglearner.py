@@ -5,6 +5,7 @@ from pytorch_lightning import Trainer
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
 from p2pfl.learning.pytorch.logger import FederatedTensorboardLogger
+import logging
 
 ###########################
 #    LightningLearner     #
@@ -24,6 +25,10 @@ class LightningLearner(NodeLearner):
         self.logger = None
         self.trainer = None
         self.epochs = 1
+
+        # To avoid GPU/TPU printings
+        logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
+
 
     def set_model(self, model):
         self.model = model
@@ -69,23 +74,30 @@ class LightningLearner(NodeLearner):
         self.epochs = epochs
 
     def fit(self):
-        if self.epochs > 0:
-            self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=self.logger, enable_checkpointing=False, enable_model_summary=False) 
-            self.trainer.fit(self.model, self.data)
-            self.trainer = None
+        try:
+            if self.epochs > 0:
+                self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=self.logger, enable_checkpointing=False, enable_model_summary=False) 
+                self.trainer.fit(self.model, self.data)
+                self.trainer = None
+        except Exception as e:
+            logging.error("Something went wrong with pytorch lightning. {}".format(e))
 
     def evaluate(self):
-        if self.epochs > 0:
-            self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=None, enable_checkpointing=False)
-            results = self.trainer.test(self.model, self.data, verbose=False)
-            loss = results[0]["test_loss"]
-            metric = results[0]["test_metric"]
-            self.trainer = None
-            self.log_validation_metrics(loss, metric)
+        try:
+            if self.epochs > 0:
+                self.trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=None, enable_checkpointing=False)
+                results = self.trainer.test(self.model, self.data, verbose=False)
+                loss = results[0]["test_loss"]
+                metric = results[0]["test_metric"]
+                self.trainer = None
+                self.log_validation_metrics(loss, metric)
 
-            return loss,metric
-        else:
-            return 0,0
+                return loss,metric
+            else:
+                return None
+        except Exception as e:
+            logging.error("Something went wrong with pytorch lightning. {}".format(e))
+            return None
 
     def log_validation_metrics(self, loss, metric, round=None, name=None):
         self.logger.log_scalar("test_loss", loss, round,name=name)

@@ -3,6 +3,7 @@ import random
 import threading
 import logging
 import time
+from unittest import result
 from p2pfl.base_node import BaseNode
 from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.settings import Settings
@@ -379,7 +380,7 @@ class Node(BaseNode, Observer):
             # Send Model
             if self.round is not None:
                 self.agregator.add_model(str(self.get_addr()),self.learner.get_parameters(), self.learner.get_num_samples()[0])
-                self.__bc_model(train_set=True)
+                self.__bc_model(train_set=True) # this is going to produce duplicated models -> buut its fault tolerent
 
             # Wait for model agregation
             if self.round is not None:
@@ -411,11 +412,12 @@ class Node(BaseNode, Observer):
 
     def __evaluate(self):
         logging.info("({}) Evaluating...".format(self.get_addr()))
-        retults = self.learner.evaluate()
-        logging.info("({}) Evaluated. Losss: {}, Metric: {}. (Check tensorboard for more info)".format(self.get_addr(),retults[0],retults[1]))
-        # Send metrics
-        if not self.simulation:
-            self.__bc_metrics(retults)
+        results = self.learner.evaluate()
+        if results is not None:
+            logging.info("({}) Evaluated. Losss: {}, Metric: {}. (Check tensorboard for more info)".format(self.get_addr(),results[0],results[1]))
+            # Send metrics
+            if not self.simulation:
+                self.__bc_metrics(results)
 
 
     def __bc_model(self, train_set=None):

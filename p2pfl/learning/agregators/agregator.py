@@ -95,20 +95,21 @@ class Agregator(threading.Thread, Observable):
         if self.train_set_size is None:
             logging.error("({}) Error, trying to add a model when the neighbors are not specificated".format(self.node_name))
         else:
-            # Agregar modelo
-            self.lock.acquire()
-            self.models[n] = ((m, w))
-            logging.info("({}) Model added ({}/{}) from {}".format(self.node_name, str(len(self.models)), str(self.train_set_size), n))
-            # Start Timeout
-            if not self.is_alive():
-                self.start()
-            # Check if all models have been added
-            self.check_and_run_agregation()
-            # Try Unloock
-            try:
-                self.lock.release()
-            except:
-                pass
+            if self.train_set_size>len(self.models):
+                # Agregar modelo
+                self.lock.acquire()
+                self.models[n] = ((m, w))
+                logging.info("({}) Model added ({}/{}) from {}".format(self.node_name, str(len(self.models)), str(self.train_set_size), n))
+                # Start Timeout
+                if not self.is_alive():
+                    self.start()
+                # Check if all models have been added
+                self.check_and_run_agregation()
+                # Try Unloock
+                try:
+                    self.lock.release()
+                except:
+                    pass
         
     def check_and_run_agregation(self,force=False):
         """

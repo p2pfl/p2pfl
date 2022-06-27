@@ -4,8 +4,8 @@ from torchvision.datasets import MNIST
 from math import floor
 from pytorch_lightning import LightningDataModule
 # To Avoid Crashes with a lot of nodes
-# import torch.multiprocessing
-# torch.multiprocessing.set_sharing_strategy('file_system')
+import torch.multiprocessing
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 #######################################
 #    FederatedDataModule for MNIST    #
