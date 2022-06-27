@@ -20,7 +20,8 @@ class CommunicationProtocol:
         - MODELS_READY <round>
         - METRICS <round> <loss> <metric>
         - VOTE_TRAIN_SET (<ip1> <port1> <punct1>)* VOTE_TRAIN_SET_CLOSE
-        
+        - LEARNING_IS_RUNNING <round> <total_rounds>
+
     The unique non-static method is used to process messages with a connection stablished.
 
     Args:
@@ -42,7 +43,8 @@ class CommunicationProtocol:
     MODELS_READY        = "MODELS_READY"    
     METRICS             = "METRICS"
     VOTE_TRAIN_SET      = "VOTE_TRAIN_SET"
-    VOTE_TRAIN_SET_CLOSE  = "\VOTE_TRAIN_SET"
+    VOTE_TRAIN_SET_CLOSE= "\VOTE_TRAIN_SET"
+    LEARNING_IS_RUNNING = "LEARNING_IS_RUNNING"
 
     ########################
     #    MSG PROCESSING    #
@@ -228,6 +230,18 @@ class CommunicationProtocol:
                             cmds_success.append(False)
                             break
 
+                    # Learning is running
+                    elif message[0] == CommunicationProtocol.LEARNING_IS_RUNNING:
+                        if len(message) > 2:
+                            if message[1].isdigit() and message[2].isdigit():
+                                cmds_success.append(self.__exec(CommunicationProtocol.LEARNING_IS_RUNNING, int(message[1]), int(message[2])))
+                                message = message[3:]
+                            else:
+                                cmds_success.append(False)
+                                break
+                        else:
+                            cmds_success.append(False)
+                            break
 
                     # Non Recognized message            
                     else:
@@ -378,3 +392,14 @@ class CommunicationProtocol:
         for v in votes:
             aux = aux + " " + v[0][0] + " " + str(v[0][1]) + " " + str(v[1])
         return (CommunicationProtocol.VOTE_TRAIN_SET + " " + aux + " " + CommunicationProtocol.VOTE_TRAIN_SET_CLOSE +"\n").encode("utf-8")
+
+    def build_learning_is_running_msg(round, epoch):
+        """
+        Args:
+            round: The round that is running.
+            epoch: The epoch that is running.
+        
+        Returns:
+            A encoded learning is running message.
+        """
+        return (CommunicationProtocol.LEARNING_IS_RUNNING + " " + str(round) + " " + str(epoch) + "\n").encode("utf-8")

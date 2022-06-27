@@ -64,3 +64,6 @@ def test_avg_complex():
         assert torch.eq(a, b).all()
 
     n.stop()
+
+def test_connect_to_train_running():
+    assert False

@@ -102,7 +102,7 @@ class BaseNode(threading.Thread):
         """
         The main loop of the node. It will listen for new connections and process them.
         """
-        logging.info('Nodo a la escucha en {} {}'.format(self.host, self.port))
+        logging.info('Nodo listening at {}:{}'.format(self.host, self.port))
         while not self.__terminate_flag.is_set(): 
             try:
                 (node_socket, addr) = self.node_socket.accept()
@@ -141,7 +141,7 @@ class BaseNode(threading.Thread):
         
                 # Add neightboor
                 if result == 0:
-                    logging.info('({}) Conexión aceptada con {}'.format(self.get_addr(),(h,p)))
+                    logging.info('{} Conexión aceptada con {}:{}'.format(self.get_addr(),h,p))
                     nc = NodeConnection(self,node_socket,(h,p))
                     nc.add_observer(self)
                     nc.start()
@@ -230,13 +230,17 @@ class BaseNode(threading.Thread):
             s = self.__send(h,p,msg,persist=True)
             
             # Add socket to neightboors
+            logging.info("{} Connected to {}:{}".format(self.get_addr(),h,p))
             nc = NodeConnection(self,s,(h,p))
             nc.add_observer(self)
             nc.start()
             self.add_neighbor(nc)
+            return nc
         
         else:
-            logging.info('El nodo ya se encuentra conectado con {}:{}'.format(h,p))
+            logging.info("{} Already connected to {}:{}".format(self.get_addr(),h,p))
+            return None
+
 
     def disconnect_from(self, h, p):
         """

@@ -16,9 +16,12 @@ if __name__ == '__main__':
         node.connect_to("localhost",6666)
         time.sleep(0.1)
 
-        node.set_start_learning(rounds=2,epochs=0)
+        break
+        #node.set_start_learning(rounds=2,epochs=1)
 
+        """
         # Wait 4 results
+        
         while True:
             time.sleep(1)
 
@@ -28,3 +31,4 @@ if __name__ == '__main__':
         node.stop()
 
         break
+        """

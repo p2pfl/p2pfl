@@ -102,3 +102,10 @@ class Vote_train_set_cmd(Command):
     """
     def execute(self, votes):
         self.node_connection.set_train_set_votes(votes)
+
+class Learning_is_running_cmd(Command):
+    """
+    Command that should be executed as a response to a **learning_is_running** message.
+    """
+    def execute(self,round,total_rounds):
+        self.node_connection.notify_learning_is_running(round,total_rounds)

@@ -75,7 +75,18 @@ class Node(BaseNode, Observer):
     #######################
     #   Node Management   #
     #######################
-    
+
+    def connect_to(self, h, p, full=True):
+        nc = None
+        if self.round is None:
+            nc = super().connect_to(h, p, full)
+            if nc is not None:
+                # Send number of samples
+                nc.send(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples()))
+        else:
+            logging.info("({}) Cant connect to other nodes when learning is running. (however, other nodes can be connected to the node.)".format(self.get_addr()))
+        return nc
+
     def stop(self): 
         """
         Stop the node and the learning if it is running.
@@ -99,12 +110,22 @@ class Node(BaseNode, Observer):
         """
         if event == Events.END_CONNECTION:
             self.rm_neighbor(obj)
-            self.agregator.remove_node_to_agregate()
-            try:
-                self.__wait_models_ready_lock.release()
-                self.__wait_votes_ready_lock.release()
-            except:
-                pass
+            if self.round is not None:
+                if obj.get_addr() in self.train_set:
+                    self.agregator.remove_node_to_agregate()
+                try:
+                    self.__wait_models_ready_lock.release()
+                    self.__wait_votes_ready_lock.release()
+                except:
+                    pass
+                
+        elif event == Events.NODE_CONNECTED_EVENT:
+            # Send number of samples
+            obj.send(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())) #----ojo tb tiene que hacerlo el que se conecta
+            # Comunicate to the new node that a training process is running
+            if self.round is not None:
+                print("-----------------------------------------------------------")
+                obj.send(CommunicationProtocol.build_learning_is_running_msg(self.round, self.totalrounds))
 
         elif event == Events.NODE_MODELS_READY_EVENT:
             # Try to unlock to check if all nodes are ready (on_finish_round (agregator_thread))
@@ -143,6 +164,9 @@ class Node(BaseNode, Observer):
                 self.__wait_votes_ready_lock.release()
             except:
                 pass
+
+        elif event == Events.LEARNING_IS_RUNNING_EVENT:
+            print("NOT IMPLEMETED YET",obj)
                 
         else:
             logging.error("({}) Event not handled: {}".format(self.get_addr(),event))
@@ -334,34 +358,19 @@ class Node(BaseNode, Observer):
 
         # Set train set
         if self.round is not None:
-            self.train_set = self.__vote_train_set() # este trainset es de strincgs no de node conections
-
-            # Verify if node set is valid (can happend that a node was down when the votes were being processed)
-            #
-            #   ESTA PARTE VA A SER TEDIOSA PARA REDES COMPLETAMENTE DESCENTRALIZADAS PUES NO SE TIENE UN DIRECTORIO DE NODOS
-            #
-            for tsn in self.train_set:
-                if tsn not in [ n.get_addr() for n in self.neightboors]:
-                    if tsn != self.get_addr():
-                        self.train_set.remove(tsn)
-                    
-            # If the node isnt connected
-            if self.train_set == []:
-                self.train_set = [self.get_addr()]
-
-            self.agregator.set_nodes_to_agregate(len(self.train_set)) ## en caso de que se caida un nodo se tiene que validar si es del trainset
-            
-            logging.info("{} Train set of {} nodes. {}".format(self.get_addr(),len(self.train_set),self.train_set))
-
+            self.train_set = self.__vote_train_set() # Trainset (node names (strigns))
+            self.__validate_train_set()
         
         # Train if the node was selected or if no exist candidates (node non-connected) 
         if self.get_addr() in self.train_set:
-                
+
+            # Set Models To Agregate 
+            self.agregator.set_nodes_to_agregate(len(self.train_set)) 
+            
             # Evaluate and send metrics
             if self.round is not None:
-                metrics=self.__evaluate()
-                if not self.simulation:
-                    self.__bc_metrics(metrics)
+                self.__evaluate()
+                
 
             # Train
             if self.round is not None:
@@ -370,11 +379,26 @@ class Node(BaseNode, Observer):
             # Send Model
             if self.round is not None:
                 self.agregator.add_model(str(self.get_addr()),self.learner.get_parameters(), self.learner.get_num_samples()[0])
-                self.__bc_model()
+                self.__bc_model(train_set=True)
 
-        # Wait for model agregation
+            # Wait for model agregation
+            if self.round is not None:
+                self.__wait_model_agregation()
+
+            # Broadcast to non train_set nodes
+            if self.round is not None:
+                self.__bc_model(train_set=False)
+
+        else: 
+            # Set Models To Agregate 
+            self.agregator.set_nodes_to_agregate(1)
+
+        # Synchronize all nodes
         if self.round is not None:
-            self.__wait_model_agregation()
+            self.__sync_nodes(agregated=True)
+
+        # DIFUNDIR MODELO DESPUES DE AGREGARLO -> ÚNICAMENTE SE DEBE DE AGREGAR CON EL TRAINSET
+        # EL RESTO ÚNICAMENTE ESPERA 1 MODELO
 
         # Finish round
         if self.round is not None:
@@ -389,11 +413,19 @@ class Node(BaseNode, Observer):
         logging.info("({}) Evaluating...".format(self.get_addr()))
         retults = self.learner.evaluate()
         logging.info("({}) Evaluated. Losss: {}, Metric: {}. (Check tensorboard for more info)".format(self.get_addr(),retults[0],retults[1]))
-        return retults
+        # Send metrics
+        if not self.simulation:
+            self.__bc_metrics(retults)
 
 
+    def __bc_model(self, train_set=None):
+        exclude = []
+        if train_set is not None:
+            if train_set:
+                exclude = [x for x in self.neightboors if x.get_addr() not in self.train_set]
+            else:
+                exclude = [x for x in self.neightboors if x.get_addr() in self.train_set]
 
-    def __bc_model(self):
         encoded_msgs = CommunicationProtocol.build_params_msg(self.learner.encode_parameters())
         logging.info("({}) Broadcasting model to {} clients. (size: {} bytes)".format(self.get_addr(),len(self.neightboors),len(encoded_msgs)*Settings.BUFFER_SIZE))
 
@@ -401,20 +433,7 @@ class Node(BaseNode, Observer):
         self.__set_sending_model(True)
         # Send Fragments
         for msg in encoded_msgs:
-            self.broadcast(msg)
-        # UnLock Neightboors Communication
-        self.__set_sending_model(False)
-
-    def __gossip_model(self):
-        
-        encoded_msgs = CommunicationProtocol.build_params_msg(self.learner.encode_parameters())
-        logging.info("({}) Broadcasting model to {} clients. (size: {} bytes)".format(self.get_addr(),len(self.neightboors),len(encoded_msgs)*Settings.BUFFER_SIZE))
-
-        # Lock Neightboors Communication
-        self.__set_sending_model(True)
-        # Send Fragments
-        for msg in encoded_msgs:
-            self.broadcast(msg)
+            self.broadcast(msg, exc=exclude)
         # UnLock Neightboors Communication
         self.__set_sending_model(False)
 
@@ -486,15 +505,25 @@ class Node(BaseNode, Observer):
         else:
             return []
                                 
+    def __validate_train_set(self):
+        # Verify if node set is valid (can happend that a node was down when the votes were being processed)
+        #   ----> ESTA PARTE VA A SER TEDIOSA PARA REDES COMPLETAMENTE DESCENTRALIZADAS PUES NO SE TIENE UN DIRECTORIO DE NODOS
+        for tsn in self.train_set:
+            if tsn not in [ n.get_addr() for n in self.neightboors]:
+                if tsn != self.get_addr():
+                    self.train_set.remove(tsn)
+                
+        # If the node isnt connected
+        if self.train_set == []:
+            self.train_set = [self.get_addr()]
+
+        logging.info("{} Train set of {} nodes. {}".format(self.get_addr(),len(self.train_set),self.train_set))
+    
     def __wait_model_agregation(self):
         try:
 
-            print("waiting self agregation")
-
             # Wait to finish self agregation
             self.__finish_agregation_lock.acquire()
-                
-            print("waited self agregation")
             
             # Verify that trainning has not been interrupted
             if self.round is None:
@@ -511,7 +540,39 @@ class Node(BaseNode, Observer):
                     logging.info("({}) Stopping on_round_finished process.".format(self.get_addr()))
                     return
                         
-                if all([ nc.get_ready_model_status()>=self.round for nc in self.neightboors]):
+                train_set = [x for x in self.neightboors if x.get_addr() in self.train_set]
+                
+                if all([ nc.get_ready_model_status()>=self.round for nc in train_set]):
+                    break
+                self.__wait_models_ready_lock.acquire(timeout=2)
+                               
+        except Exception as e:
+            logging.error("({}) Concurrence Error: {}".format(self.get_addr(),e))
+
+    def __sync_nodes(self,agregated=False):
+        try:
+            if not agregated:
+                # Wait to finish self agregation
+                self.__finish_agregation_lock.acquire()
+                
+                # Verify that trainning has not been interrupted
+                if self.round is None:
+                    return
+
+                # Send ready message
+                self.broadcast(CommunicationProtocol.build_models_ready_msg(self.round))
+                
+            # Wait for ready messages
+            logging.info("({}) Waiting other nodes.".format(self.get_addr()))
+            while True:
+                # If the trainning has been interrupted, stop waiting
+                if self.round is None:
+                    logging.info("({}) Stopping on_round_finished process.".format(self.get_addr()))
+                    return
+                        
+                train_set = [x for x in self.neightboors if x.get_addr() in self.train_set]
+                
+                if all([ nc.get_ready_model_status()>=self.round for nc in train_set]):
                     break
                 self.__wait_models_ready_lock.acquire(timeout=2)
                                
@@ -528,10 +589,8 @@ class Node(BaseNode, Observer):
         if self.round < self.totalrounds:
             self.__train_step()  
         else:
-            # Calculate final metrics before finishing
-            metrics = self.__evaluate()
-            if not self.simulation:
-                self.__bc_metrics(metrics)
+            # At end, all nodes compute metrics
+            self.__evaluate()
             # Finish
             self.round = None
             self.is_model_init = False

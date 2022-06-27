@@ -56,7 +56,8 @@ class NodeConnection(threading.Thread, Observable):
             CommunicationProtocol.PARAMS: Params_cmd(self),
             CommunicationProtocol.MODELS_READY: Models_Ready_cmd(self),
             CommunicationProtocol.METRICS: Metrics_cmd(self),
-            CommunicationProtocol.VOTE_TRAIN_SET: Vote_train_set_cmd(self)
+            CommunicationProtocol.VOTE_TRAIN_SET: Vote_train_set_cmd(self),
+            CommunicationProtocol.LEARNING_IS_RUNNING: Learning_is_running_cmd(self),
         })
 
     def get_addr(self):
@@ -161,6 +162,11 @@ class NodeConnection(threading.Thread, Observable):
     ################### 
     #    Main Loop    # 
     ###################
+
+    def start(self):
+        self.notify(Events.NODE_CONNECTED_EVENT, self)
+        return super().start()
+
 
     def run(self):
         """
@@ -301,3 +307,9 @@ class NodeConnection(threading.Thread, Observable):
         """
         name = str(self.get_addr()[0]) + ":" + str(self.get_addr()[1])
         self.notify(Events.METRICS_RECEIVED, (name, round, loss, metric))
+
+    def notify_learning_is_running(self,round,total_rounds):
+        """
+        Notify to the parent node that `LEARNING_IS_RUNNING` has been received.
+        """
+        self.notify(Events.LEARNING_IS_RUNNING_EVENT, (round,total_rounds))
