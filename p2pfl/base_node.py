@@ -41,7 +41,7 @@ class BaseNode(threading.Thread, Observer):
         self.node_socket.listen(50) # no more than 50 connections at queue
         if port==0:
             self.port = self.node_socket.getsockname()[1]
-        self.name = "node-" + self.get_addr()[0] + ":" + str(self.get_addr()[1])
+        self.name = "node-" + self.get_name()
         
         # Neightboors
         self.neightboors = []
@@ -66,6 +66,13 @@ class BaseNode(threading.Thread, Observer):
             tuple: The address of the node.    
         """
         return self.host,self.port
+
+    def get_name(self):
+        """
+        Returns:
+            str: The name of the node.
+        """
+        return str(self.get_addr()[0]) + ":" + str(self.get_addr()[1]) 
 
     #######################
     #   Node Management   #
@@ -162,7 +169,7 @@ class BaseNode(threading.Thread, Observer):
                 # Add neightboor
                 if result == 0:
                     logging.info('{} Conexión aceptada con {}:{}'.format(self.get_addr(),h,p))
-                    nc = NodeConnection(self,node_socket,(h,p))
+                    nc = NodeConnection(self.get_name(),node_socket,(h,p))
                     nc.add_observer(self)
                     nc.start()
                     self.add_neighbor(nc)
@@ -203,11 +210,11 @@ class BaseNode(threading.Thread, Observer):
             node, msgs = obj
             print("Processed {} messages ({})".format(len(msgs),msgs))
 
-            # cambiarlo por una única instancia de comm proto x nodo
+            # Comunicate to nodes the new messages processed
             for nc in self.neightboors:
                 nc.add_processed_messages(list(msgs.keys()))
 
-            # add to gossiper
+            # Gossip the new messages
             self.gossiper.add_messages(list(msgs.values()),node)
 
             
@@ -280,7 +287,7 @@ class BaseNode(threading.Thread, Observer):
             
             # Add socket to neightboors
             logging.info("{} Connected to {}:{}".format(self.get_addr(),h,p))
-            nc = NodeConnection(self,s,(h,p))
+            nc = NodeConnection(self.get_name(),s,(h,p))
 
             #
             #

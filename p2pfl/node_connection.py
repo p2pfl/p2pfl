@@ -28,9 +28,9 @@ class NodeConnection(threading.Thread, Observable):
         addr: The address of the node that is connected to.
     """
 
-    def __init__(self, parent_node, s, addr):
+    def __init__(self, parent_node_name, s, addr):
         threading.Thread.__init__(self)
-        self.name = "node_connection-" + str(parent_node.get_addr()[0]) + ":" + str(parent_node.get_addr()[1]) + "-" + str(addr[0]) + ":" + str(addr[1])
+        self.name = "node_connection-" + parent_node_name + "-" + str(addr[0]) + ":" + str(addr[1])
         Observable.__init__(self)
         self.terminate_flag = threading.Event()
         self.socket = s
@@ -61,10 +61,14 @@ class NodeConnection(threading.Thread, Observable):
         })
 
 
-    #
-    # TEMPORAL -> usar misma instancia de comm protocol para todos los nodos
-    #
     def add_processed_messages(self,msgs):
+        """
+        Add to a list of messages that have been processed. (By other nodes)
+
+        Args:
+            msgs: The list of messages that have been processed.
+
+        """
         self.comm_protocol.add_processed_messages(msgs)
 
     def get_addr(self):

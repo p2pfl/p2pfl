@@ -8,7 +8,7 @@ class Gossiper(threading.Thread):
     def __init__(self, node):
         self.msgs = {}
         self.node = node
-        threading.Thread.__init__(self, name=("gossiper-" + str(node.get_addr()[0]) + "-" + str(node.get_addr()[1]) ))
+        threading.Thread.__init__(self, name=("gossiper-" + node.get_name() ))
         self.add_lock = threading.Lock()
         self.terminate_flag = threading.Event()
 

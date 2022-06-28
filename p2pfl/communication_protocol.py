@@ -1,10 +1,11 @@
 import logging
 from datetime import datetime
 import random
+import threading
 from p2pfl.settings import Settings
 
 ###############################
-#    CommunicationProtocol    # --> Patrón commando 
+#    CommunicationProtocol    # --> Invoker of Command Patern
 ###############################
 
 
@@ -28,7 +29,9 @@ class CommunicationProtocol:
             - LEARNING_IS_RUNNING <round> <total_rounds>
 
 
-    The unique non-static method is used to process messages with a connection stablished. XXXXXXXXXXXXXXXXXXXXXX EXPLAIN GOSSIP
+    The unique non-static method is used to process messages with a connection stablished. 
+    
+    XXXXXXXXXXXXXXXXXXXXXX EXPLAIN GOSSIP
 
     Args:
         command_dict: Dictionary with the callbacks to execute at `process_message`.
@@ -52,16 +55,16 @@ class CommunicationProtocol:
     VOTE_TRAIN_SET_CLOSE= "\VOTE_TRAIN_SET"
     LEARNING_IS_RUNNING = "LEARNING_IS_RUNNING" # Non Gossiped
 
-    ########################
-    #    MSG PROCESSING    #
-    ########################
+
+    ############################################
+    #    MSG PROCESSING (Non Static Methods)   #
+    ############################################
+
 
     def __init__(self, command_dict):
         self.command_dict = command_dict
-        # Last messages
         self.last_messages = []
-
-    # DEBE TENERSE EN CUENTA QUE EL PROCESADO DE MENSAJES DEBE SER TOLERANTE A RECIBIR MENSAJES DUPLICADOS
+        self.last_messages_lock = threading.Lock()
 
     def add_processed_messages(self,messages):
         """
@@ -69,52 +72,13 @@ class CommunicationProtocol:
         Args:
             hash_messages: List of hashes of the messages.
         """
-
+        self.last_messages_lock.acquire()
         self.last_messages = self.last_messages + messages
+        # Remove oldest messages
         if len(self.last_messages)>Settings.AMOUNT_LAST_MESSAGES_SAVED:
             self.last_messages = self.last_messages[len(self.last_messages)-Settings.AMOUNT_LAST_MESSAGES_SAVED:]
+        self.last_messages_lock.release()
 
-    # Check if connection is correct and execute the callback (static)
-    def process_connection(message, callback):
-        """"
-        Static method that checks if the message is a valid connection message and executes the callback (do the connection).
-
-        Args:
-            message: The message to check.
-            callback: What do if the connection message is legit.
-        
-        """
-        message = message.split()
-        if len(message) > 3:
-            if message[0] == CommunicationProtocol.CONN:
-                try:
-                    broadcast = message[3] == "1"
-                    callback(message[1], int(message[2]), broadcast)
-                    return True
-                except:
-                    return False
-            else:
-                return False
-        else:
-            return False
-
-    def check_collapse(msg):
-        """"
-        Static method that checks if in the message there is a collapse (a binary message (it should fill all the buffer) and a non-binary message before it).
-
-        Args:
-            msg: The message to check.
-
-        Returns:
-            Length of the collapse (number of bytes to the binary headear). 
-        """
-        header = CommunicationProtocol.PARAMS.encode("utf-8")
-        header_pos = msg.find(header)
-        if header_pos != -1 and msg[0:len(header)] != header:
-            return header_pos
-   
-        return 0
-    
     def process_message(self, msg):
         """
         Processes a message and executes the callback associated with it.        
@@ -347,13 +311,58 @@ class CommunicationProtocol:
             logging.exception(e)
             return False
 
-    #######################
-    #     MSG BUILDERS    # ---->  STATIC METHODS
-    #######################
 
-    #
-    # BORRAR HASH DE LOS QUE NO SE NECESITE
-    #
+    ########################################
+    #    MSG PROCESSING (Static Methods)   #
+    ########################################
+
+
+    # Check if connection is correct and execute the callback (static)
+    def process_connection(message, callback):
+        """"
+        Static method that checks if the message is a valid connection message and executes the callback (do the connection).
+
+        Args:
+            message: The message to check.
+            callback: What do if the connection message is legit.
+        
+        """
+        message = message.split()
+        if len(message) > 3:
+            if message[0] == CommunicationProtocol.CONN:
+                try:
+                    broadcast = message[3] == "1"
+                    callback(message[1], int(message[2]), broadcast)
+                    return True
+                except:
+                    return False
+            else:
+                return False
+        else:
+            return False
+
+    def check_collapse(msg):
+        """"
+        Static method that checks if in the message there is a collapse (a binary message (it should fill all the buffer) and a non-binary message before it).
+
+        Args:
+            msg: The message to check.
+
+        Returns:
+            Length of the collapse (number of bytes to the binary headear). 
+        """
+        header = CommunicationProtocol.PARAMS.encode("utf-8")
+        header_pos = msg.find(header)
+        if header_pos != -1 and msg[0:len(header)] != header:
+            return header_pos
+   
+        return 0
+    
+
+    #######################################
+    #     MSG BUILDERS (Static Methods)   #
+    #######################################
+
 
     def generate_hased_message(msg):
         # random number to avoid generating the same hash for a different message (at she same time)

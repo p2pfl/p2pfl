@@ -3,8 +3,8 @@ import random
 import threading
 import logging
 import time
-from unittest import result
 from p2pfl.base_node import BaseNode
+from p2pfl.command import *
 from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.settings import Settings
 from p2pfl.learning.agregators.fedavg import FedAvg
@@ -28,7 +28,7 @@ from p2pfl.utils.observer import Events, Observer
 # FULL CONNECTED HAY QUE IMPLEMENTARLO DE FORMA QUE CUANDO SE INTRODUCE UN NODO EN LA RED, SE HACE UN BROADCAST
 ###################################################################################################################
 
-class Node(BaseNode, Observer):
+class Node(BaseNode):
 
     #####################
     #     Node Init     #
@@ -62,7 +62,7 @@ class Node(BaseNode, Observer):
         self.round = None
         self.totalrounds = None
         self.train_set = []
-        self.agregator = agregator( node_name = self.get_addr()[0] + ":" + str(self.get_addr()[1]) )
+        self.agregator = agregator( node_name = self.get_name() )
         self.agregator.add_observer(self)
         self.is_model_init = False
         self.simulation = simulation
@@ -72,7 +72,6 @@ class Node(BaseNode, Observer):
         self.__wait_votes_ready_lock = threading.Lock()
         self.__finish_agregation_lock = threading.Lock()
         self.__finish_agregation_lock.acquire()
-
         
     #######################
     #   Node Management   #
@@ -173,10 +172,7 @@ class Node(BaseNode, Observer):
 
         elif event == Events.LEARNING_IS_RUNNING_EVENT:
             print("NOT IMPLEMETED YET",obj)
-                
-        else:
-            logging.error("({}) Event not handled: {}".format(self.get_addr(),event))
-            
+
     ####################################
     #         Learning Setters         #
     ####################################
@@ -245,7 +241,7 @@ class Node(BaseNode, Observer):
 
     def __start_learning_thread(self,rounds,epochs):
         learning_thread = threading.Thread(target=self.__start_learning,args=(rounds,epochs))
-        learning_thread.name = "learning_thread-" + self.get_addr()[0] + ":" + str(self.get_addr()[1])
+        learning_thread.name = "learning_thread-" + self.get_name()
         learning_thread.daemon = True
         learning_thread.start()
 
