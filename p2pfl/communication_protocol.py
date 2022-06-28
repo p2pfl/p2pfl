@@ -14,13 +14,13 @@ class CommunicationProtocol:
     Manages the meaning of communication messages. The valid messages are:
         Gossiped messages: 
             - BEAT <HASH> -----------------------------------------------------------------cambiar (indicar el nodo que lo envio)
-            - CONNECT_TO <ip> <port> <HASH>
             - START_LEARNING <rounds> <epoches> <HASH>
             - STOP_LEARNING <HASH>
             - METRICS <round> <loss> <metric> <HASH> -----------------------------------------------------------------cambiar (indicar el nodo que lo envio)
 
         Non Gossiped messages (communication over only 2 nodes):
             - CONNECT <ip> <port> <broadcast>
+            - CONNECT_TO <ip> <port>
             - STOP 
             - NUM_SAMPLES <train_num> <test_num>
             - PARAMS <data> \PARAMS
@@ -144,12 +144,10 @@ class CommunicationProtocol:
 
                     # Connect to
                     elif message[0] == CommunicationProtocol.CONN_TO:
-                        if len(message) > 3:
+                        if len(message) > 2:
                             if message[2].isdigit():
-                                hash_ = message[3]
-                                cmd_text = (" ".join(message[0:4]) + "\n").encode("utf-8")
-                                if self.__exec(CommunicationProtocol.CONN_TO, hash_, cmd_text, message[1], int(message[2])):
-                                    message = message[4:]
+                                if self.__exec(CommunicationProtocol.CONN_TO, None, None, message[1], int(message[2])):
+                                    message = message[3:]
                                 else:
                                     error = True
                                     break 
@@ -392,7 +390,7 @@ class CommunicationProtocol:
         Returns:
             A encoded connect to message.
         """
-        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.CONN_TO + " " + ip + " " + str(port))
+        return (CommunicationProtocol.CONN_TO + " " + ip + " " + str(port) + "\n").encode("utf-8")
 
     def build_start_learning_msg(rounds, epochs):
         """

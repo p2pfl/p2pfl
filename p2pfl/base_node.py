@@ -208,7 +208,7 @@ class BaseNode(threading.Thread, Observer):
         elif event == Events.PROCESSED_MESSAGES_EVENT:
 
             node, msgs = obj
-            print("Processed {} messages ({})".format(len(msgs),msgs))
+            #print("Processed {} messages ({})".format(len(msgs),msgs))
 
             # Comunicate to nodes the new messages processed
             for nc in self.neightboors:
