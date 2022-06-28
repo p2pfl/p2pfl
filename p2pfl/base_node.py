@@ -50,12 +50,7 @@ class BaseNode(threading.Thread, Observer):
         # Logging
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-        # Heartbeater and Gossiper (pendiennte de dejar los dos con una composicion y un observador)
-
-        #
-        # Cambiar el observer a basenode
-        #
-
+        # Heartbeater and Gossiper
         self.gossiper = None
         self.heartbeater = None
 
@@ -84,11 +79,14 @@ class BaseNode(threading.Thread, Observer):
         Starts the node. It will listen for new connections and process them. Heartbeater will be started too.
         """
         super().start()
-        # Heartbeater
-        self.heartbeater = Heartbeater(self)
-        self.gossiper = Gossiper(self)
+        # Heartbeater and Gossiper
+        self.heartbeater = Heartbeater(self.get_name())
+        self.gossiper = Gossiper(self.get_name(),self.neightboors)
+        self.heartbeater.add_observer(self)
+        self.gossiper.add_observer(self)
         self.heartbeater.start()
         self.gossiper.start()
+        
 
     
     def stop(self): 
@@ -143,7 +141,7 @@ class BaseNode(threading.Thread, Observer):
                 logging.exception(e)
 
         # Stop Heartbeater and Gossiper
-        #self.heartbeater.stop()
+        self.heartbeater.stop()
         self.gossiper.stop()
         # Stop Node
         logging.info('Bajando el nodo, dejando de escuchar en {} {} y desconectándose de {} nodos'.format(self.host, self.port, len(self.neightboors))) 
@@ -205,6 +203,12 @@ class BaseNode(threading.Thread, Observer):
         elif event == Events.CONN_TO:
             self.connect_to(obj[0], obj[1], full=False)
 
+        elif event == Events.SEND_BEAT_EVENT:
+            self.broadcast(CommunicationProtocol.build_beat_msg(), is_necesary=False)
+
+        elif event == Events.GOSSIP_BROADCAST_EVENT:
+            self.broadcast(obj[0],exc=obj[1]) 
+            
         elif event == Events.PROCESSED_MESSAGES_EVENT:
 
             node, msgs = obj

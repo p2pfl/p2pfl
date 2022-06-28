@@ -1,16 +1,17 @@
 import time
 import threading
-
 from p2pfl.settings import Settings
+from p2pfl.utils.observer import Events, Observable
 
-class Gossiper(threading.Thread):
+class Gossiper(threading.Thread, Observable):
     
     # Meterlo como un observer -> Hacer del mismo modo el heartbeater
 
-    def __init__(self, node):
+    def __init__(self, node_name, neighbors):
+        Observable.__init__(self)
+        threading.Thread.__init__(self, name=("gossiper-" + node_name ))
+        self.neighbors = neighbors # list as reference of the original neighbors list
         self.msgs = {}
-        self.node = node
-        threading.Thread.__init__(self, name=("gossiper-" + node.get_name() ))
         self.add_lock = threading.Lock()
         self.terminate_flag = threading.Event()
 
@@ -36,21 +37,21 @@ class Gossiper(threading.Thread):
             # Send to all the nodes except the ones that the message was already sent to
             if len(self.msgs) > 0:
                 msg_list = list(self.msgs.items()).copy()
-                nei = set(self.node.get_neighbors())
+                nei = set(self.neighbors)
 
                 for msg,nodes in msg_list:
                     nodes = set(nodes)
                     sended = len(nei - nodes)
 
                     if messages_left - sended >= 0:
-                        self.node.broadcast(msg,exc=list(nodes)) 
+                        self.notify(Events.GOSSIP_BROADCAST_EVENT, (msg,list(nodes)))
                         del self.msgs[msg]
                         if messages_left == 0:
                             break
                     else:
                         # Lists to concatenate / Sets to difference
                         excluded = (list(nei - nodes))[:abs(messages_left - sended)]
-                        self.node.broadcast(msg,exc=list(nodes)+excluded)
+                        self.notify(Events.GOSSIP_BROADCAST_EVENT, (msg,list(nodes)+excluded))
                         self.msgs[msg] = list(nodes) + list(nei - set(excluded))
                         break
 

@@ -10,6 +10,7 @@ class Events():
     """
     Class that represents the events that can be observed.
     """
+    SEND_BEAT_EVENT                 = "SEND_BEAT_EVENT"
     END_CONNECTION                  = "END_CONNECTION"
     NODE_MODELS_READY_EVENT         = "NODE_MODELS_READY_EVENT"
     AGREGATION_FINISHED             = "AGREGATION_FINISHED"
@@ -22,6 +23,7 @@ class Events():
     NODE_CONNECTED_EVENT            = "NODE_CONNECTED_EVENT"
     LEARNING_IS_RUNNING_EVENT       = "LEARNING_IS_RUNNING_EVENT"
     PROCESSED_MESSAGES_EVENT        = "PROCESSED_MESSAGES_EVENT"
+    GOSSIP_BROADCAST_EVENT          = "GOSSIP_BROADCAST_EVENT"
 
 ##################################
 #    Generic Observable class    #
