@@ -2,13 +2,15 @@ import socket
 import threading
 import logging
 import sys
+
 from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.gossiper import Gossiper
 from p2pfl.settings import Settings
 from p2pfl.node_connection import NodeConnection
 from p2pfl.heartbeater import Heartbeater
+from p2pfl.utils.observer import Events, Observer
 
-class BaseNode(threading.Thread):
+class BaseNode(threading.Thread, Observer):
     """
     This class represents a base node in the network (without **FL**). It is a thread, so it's going to process all messages in a background thread using the CommunicationProtocol.
 
@@ -182,6 +184,33 @@ class BaseNode(threading.Thread):
     #  Neighborhood management  #
     #############################
 
+    def update(self,event,obj):
+        """
+        Observer update method. Used to handle events that can occur in the agregator or neightboors.
+        
+        Args:
+            event (Events): Event that has occurred.
+            obj: Object that has been updated. 
+        """
+        if event == Events.END_CONNECTION:
+            self.rm_neighbor(obj)
+
+        elif event == Events.CONN_TO:
+            self.connect_to(obj[0], obj[1], full=False)
+
+        elif event == Events.PROCESSED_MESSAGES_EVENT:
+
+            node, msgs = obj
+            print("Processed {} messages ({})".format(len(msgs),msgs))
+
+            # cambiarlo por una única instancia de comm proto x nodo
+            for nc in self.neightboors:
+                nc.add_processed_messages(list(msgs.keys()))
+
+            # add to gossiper
+            self.gossiper.add_messages(list(msgs.values()),node)
+
+            
     def get_neighbor(self, h, p):
         """
         Get a NodeConnection from the neightboors list.

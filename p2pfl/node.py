@@ -110,8 +110,12 @@ class Node(BaseNode, Observer):
             event (Events): Event that has occurred.
             obj: Object that has been updated. 
         """
+        # Execute BaseNode update
+        super().update(event,obj)
+
+        # Execute Node update
         if event == Events.END_CONNECTION:
-            self.rm_neighbor(obj)
+            # If a training process is running, comunicate the disconnection
             if self.round is not None:
                 if obj.get_addr() in self.train_set:
                     self.agregator.remove_node_to_agregate()
@@ -128,7 +132,7 @@ class Node(BaseNode, Observer):
             if self.round is not None:
                 print("TO IMPLEMET WHEN THE TOPOLOGY WAS NOT FULLY CONNECTED")
                 obj.stop()
-                #obj.send(CommunicationProtocol.build_learning_is_running_msg(self.round, self.totalrounds))
+                obj.send(CommunicationProtocol.build_learning_is_running_msg(self.round, self.totalrounds))
 
         elif event == Events.NODE_MODELS_READY_EVENT:
             # Try to unlock to check if all nodes are ready (on_finish_round (agregator_thread))
@@ -138,15 +142,13 @@ class Node(BaseNode, Observer):
                 pass
 
         elif event == Events.AGREGATION_FINISHED:
+            # Set parameters and communate it to the training process
             if obj is not None:
                 self.learner.set_parameters(obj)
             try:
                 self.__finish_agregation_lock.release()
             except:
                 pass
-
-        elif event == Events.CONN_TO:
-            self.connect_to(obj[0], obj[1], full=False)
 
         elif event == Events.START_LEARNING:
             self.__start_learning_thread(obj[0],obj[1])
@@ -163,30 +165,18 @@ class Node(BaseNode, Observer):
             self.learner.log_validation_metrics(loss,metric,round=round,name=name)
 
         elif event == Events.TRAIN_SET_VOTE_RECEIVED_EVENT:
+            # Communicate to the training process that a vote has been received
             try:
                 self.__wait_votes_ready_lock.release()
             except:
                 pass
-
-        elif event == Events.PROCESSED_MESSAGES_EVENT:
-            # realmente necesitamos para algo saber quien lo proces'o?
-
-            node, msgs = obj
-            print("Processed {} messages ({})".format(len(msgs),msgs))
-
-            # cambiarlo por una única instancia de comm proto x nodo
-            for nc in self.neightboors:
-                nc.add_processed_messages(list(msgs.keys()))
-
-            # add to gossiper
-            self.gossiper.add_messages(list(msgs.values()),node)
-
 
         elif event == Events.LEARNING_IS_RUNNING_EVENT:
             print("NOT IMPLEMETED YET",obj)
                 
         else:
             logging.error("({}) Event not handled: {}".format(self.get_addr(),event))
+            
     ####################################
     #         Learning Setters         #
     ####################################

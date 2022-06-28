@@ -1,13 +1,33 @@
-from p2pfl.communication_protocol import CommunicationProtocol
-from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
-from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
-from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
-from p2pfl.node import Node
 import pytest
+from p2pfl.base_node import BaseNode
+from p2pfl.communication_protocol import CommunicationProtocol
 import time
-import torch
-from test.fixtures import two_nodes, four_nodes
 
+
+@pytest.fixture
+def two_nodes():
+    n1 = BaseNode()
+    n2 = BaseNode()
+    n1.start()
+    n2.start()
+
+    yield n1,n2
+
+    n1.stop()
+    n2.stop()
+
+@pytest.fixture
+def four_nodes():
+    n1 = BaseNode()
+    n2 = BaseNode()
+    n3 = BaseNode()
+    n4 = BaseNode()
+    n1.start()
+    n2.start()
+    n3.start()
+    n4.start()
+
+    return n1,n2,n3,n4
 ###########################
 #  Tests Infraestructure  #
 ###########################
