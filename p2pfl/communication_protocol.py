@@ -10,19 +10,23 @@ from p2pfl.settings import Settings
 
 class CommunicationProtocol:
     """
-    Manages the meaning of communication messages. The valid messages are: 
-        - BEAT <HASH>
-        - STOP <HASH>
-        - CONNECT_TO <ip> <port> <HASH>
-        - START_LEARNING <rounds> <epoches> <HASH>
-        - STOP_LEARNING <HASH>
-        - NUM_SAMPLES <train_num> <test_num> <HASH>
-        - MODELS_READY <round> <HASH>
-        - METRICS <round> <loss> <metric> <HASH>
-        - VOTE_TRAIN_SET (<ip1> <port1> <punct1>)* VOTE_TRAIN_SET_CLOSE <HASH>
-        - LEARNING_IS_RUNNING <round> <total_rounds> <HASH>
-        - CONNECT <ip> <port> <broadcast>
-        - PARAMS <data> \PARAMS
+    Manages the meaning of communication messages. The valid messages are:
+        Gossiped messages: 
+            - BEAT <HASH> -----------------------------------------------------------------cambiar (indicar el nodo que lo envio)
+            - CONNECT_TO <ip> <port> <HASH>
+            - START_LEARNING <rounds> <epoches> <HASH>
+            - STOP_LEARNING <HASH>
+            - METRICS <round> <loss> <metric> <HASH> -----------------------------------------------------------------cambiar (indicar el nodo que lo envio)
+
+        Non Gossiped messages (communication over only 2 nodes):
+            - CONNECT <ip> <port> <broadcast>
+            - STOP 
+            - NUM_SAMPLES <train_num> <test_num>
+            - PARAMS <data> \PARAMS
+            - MODELS_READY <round> -----------------------------------------------------------------cambiar con heartbeater 2.0
+            - VOTE_TRAIN_SET (<ip1> <port1> <punct1>)* VOTE_TRAIN_SET_CLOSE -----------------------------------------------------------------cambiar con heartbeater 2.0
+            - LEARNING_IS_RUNNING <round> <total_rounds>
+
 
     The unique non-static method is used to process messages with a connection stablished. XXXXXXXXXXXXXXXXXXXXXX EXPLAIN GOSSIP
 
@@ -34,19 +38,19 @@ class CommunicationProtocol:
     """
 
     BEAT                = "BEAT"
-    STOP                = "STOP"
-    CONN                = "CONNECT"
+    STOP                = "STOP"            # Non Gossiped
+    CONN                = "CONNECT"         # Non Gossiped
     CONN_TO             = "CONNECT_TO"
     START_LEARNING      = "START_LEARNING"
     STOP_LEARNING       = "STOP_LEARNING"
-    NUM_SAMPLES         = "NUM_SAMPLES"
-    PARAMS              = "PARAMS"  #special case
-    PARAMS_CLOSE        = "\PARAMS" #special case
+    NUM_SAMPLES         = "NUM_SAMPLES"     # Non Gossiped
+    PARAMS              = "PARAMS"          # special case (binary) 
+    PARAMS_CLOSE        = "\PARAMS"         # special case (binary)
     MODELS_READY        = "MODELS_READY"    
     METRICS             = "METRICS"
     VOTE_TRAIN_SET      = "VOTE_TRAIN_SET"
     VOTE_TRAIN_SET_CLOSE= "\VOTE_TRAIN_SET"
-    LEARNING_IS_RUNNING = "LEARNING_IS_RUNNING"
+    LEARNING_IS_RUNNING = "LEARNING_IS_RUNNING" # Non Gossiped
 
     ########################
     #    MSG PROCESSING    #
@@ -122,7 +126,7 @@ class CommunicationProtocol:
             True if the message was processed and no errors occurred, False otherwise.
 
         """
-        exec_msgs = {}
+        self.tmp_exec_msgs = {}
         error = False
         header = CommunicationProtocol.PARAMS.encode("utf-8")
         if msg[0:len(header)] == header:
@@ -131,9 +135,9 @@ class CommunicationProtocol:
             # Check if done
             end_pos = msg.find(end)
             if end_pos != -1:
-                return [], not self.__exec(None,CommunicationProtocol.PARAMS, msg[len(header):end_pos], True)
+                return [], not self.__exec(CommunicationProtocol.PARAMS, None, None, msg[len(header):end_pos], True)
 
-            return [],not self.__exec(None,CommunicationProtocol.PARAMS, msg[len(header):], False)
+            return [],not self.__exec(CommunicationProtocol.PARAMS, None, None, msg[len(header):], False)
 
         else:      
             # Try to decode the message
@@ -152,8 +156,8 @@ class CommunicationProtocol:
                     if message[0] == CommunicationProtocol.BEAT:
                         if len(message) > 1:
                             hash_ = message[1]
-                            if self.__exec(hash_,CommunicationProtocol.BEAT):
-                                exec_msgs[hash_] = " ".join(message[0:2]) + "\n"
+                            cmd_text = (" ".join(message[0:2]) + "\n").encode("utf-8")
+                            if self.__exec(CommunicationProtocol.BEAT,hash_, cmd_text):
                                 message = message[2:]
                             else:
                                 error = True
@@ -162,13 +166,11 @@ class CommunicationProtocol:
                             error = True
                             break
                     
-                    # Stop
+                    # Stop (non gossiped)
                     elif message[0] == CommunicationProtocol.STOP:
-                        if len(message) > 1:
-                            hash_ = message[1]
-                            if self.__exec(hash_,CommunicationProtocol.STOP):
-                                exec_msgs[hash_] = " ".join(message[0:2]) + "\n"
-                                message = message[2:]
+                        if len(message) > 0:
+                            if self.__exec(CommunicationProtocol.STOP, None, None):
+                                message = message[1:]
                             else:
                                 error = True
                                 break
@@ -181,8 +183,8 @@ class CommunicationProtocol:
                         if len(message) > 3:
                             if message[2].isdigit():
                                 hash_ = message[3]
-                                if self.__exec(hash_,CommunicationProtocol.CONN_TO, message[1], int(message[2])):
-                                    exec_msgs[hash_] = " ".join(message[0:4]) + "\n"
+                                cmd_text = (" ".join(message[0:4]) + "\n").encode("utf-8")
+                                if self.__exec(CommunicationProtocol.CONN_TO, hash_, cmd_text, message[1], int(message[2])):
                                     message = message[4:]
                                 else:
                                     error = True
@@ -199,8 +201,8 @@ class CommunicationProtocol:
                         if len(message) > 3:
                             if message[1].isdigit() and message[2].isdigit():
                                 hash_ = message[3]
-                                if self.__exec(hash_,CommunicationProtocol.START_LEARNING, int(message[1]), int(message[2])):
-                                    exec_msgs[message[3]] = " ".join(message[0:4]) + "\n"
+                                cmd_text = (" ".join(message[0:4]) + "\n").encode("utf-8")
+                                if self.__exec(CommunicationProtocol.START_LEARNING, hash_, cmd_text, int(message[1]), int(message[2])):
                                     message = message[4:]
                                 else:
                                     error = True
@@ -217,8 +219,8 @@ class CommunicationProtocol:
                         if len(message) > 1:            
                             if message[1].isdigit():
                                 hash_ = message[1]
-                                if self.__exec(hash_,CommunicationProtocol.STOP_LEARNING):
-                                    exec_msgs[hash_] = " ".join(message[0:2]) + "\n"
+                                cmd_text = (" ".join(message[0:2]) + "\n").encode("utf-8")
+                                if self.__exec(CommunicationProtocol.STOP_LEARNING, hash_, cmd_text):
                                     message = message[2:]
                                 else:
                                     error = True
@@ -230,14 +232,12 @@ class CommunicationProtocol:
                             error = True
                             break
         
-                    # Number of samples
+                    # Number of samples (non gossiped)
                     elif message[0] == CommunicationProtocol.NUM_SAMPLES:
-                        if len(message) > 3:
+                        if len(message) > 2:
                             if message[1].isdigit() and message[2].isdigit():
-                                hash_=message[3]
-                                if self.__exec(hash_,CommunicationProtocol.NUM_SAMPLES, int(message[1]), int(message[2])):
-                                    exec_msgs[hash_] = " ".join(message[0:4]) + "\n"
-                                    message = message[4:]
+                                if self.__exec(CommunicationProtocol.NUM_SAMPLES, None, None, int(message[1]), int(message[2])):
+                                    message = message[3:]
                                 else:
                                     error = True
                                     break                        
@@ -250,12 +250,10 @@ class CommunicationProtocol:
 
                     # Models Ready
                     elif message[0] == CommunicationProtocol.MODELS_READY:
-                        if len(message) > 2:
+                        if len(message) > 1:
                             if message[1].isdigit():
-                                hash_=message[2]
-                                if self.__exec(hash_,CommunicationProtocol.MODELS_READY, int(message[1])):
-                                    exec_msgs[hash_] = " ".join(message[0:3]) + "\n"
-                                    message = message[3:]
+                                if self.__exec(CommunicationProtocol.MODELS_READY, None, None, int(message[1])):
+                                    message = message[2:]
                                 else:
                                     error = True
                                     break
@@ -271,8 +269,8 @@ class CommunicationProtocol:
                         if len(message) > 4:
                             try:
                                 hash_ = message[4]
-                                if self.__exec(hash_,CommunicationProtocol.METRICS, int(message[1]), float(message[2]), float(message[3])):
-                                    exec_msgs[hash_] = " ".join(message[0:5]) + "\n"
+                                cmd_text = (" ".join(message[0:5]) + "\n").encode("utf-8")
+                                if self.__exec(CommunicationProtocol.METRICS, hash_, cmd_text, int(message[1]), float(message[2]), float(message[3])):
                                     message = message[5:]
                                 else:
                                     error = True
@@ -292,17 +290,14 @@ class CommunicationProtocol:
                             vote_msg = message[1:close_pos]
                             if len(vote_msg)%3 != 0:
                                 raise Exception("Invalid vote message")
-                            hash_ = message[close_pos+1]
-                            message = message[close_pos+2:]
+                            message = message[close_pos+1:]
 
                             # Process vote message
                             votes = []
                             for i in range(0, len(vote_msg), 3):
                                 votes.append(((vote_msg[i], int(vote_msg[i+1])), int(vote_msg[i+2])))
 
-                            if self.__exec(hash_,CommunicationProtocol.VOTE_TRAIN_SET, dict(votes)):
-                                exec_msgs[hash_] = " ".join(message[0:2]) + "\n"
-                            else:
+                            if not self.__exec(CommunicationProtocol.VOTE_TRAIN_SET, None, None, dict(votes)):
                                 error = True
                                 break
 
@@ -313,12 +308,10 @@ class CommunicationProtocol:
 
                     # Learning is running
                     elif message[0] == CommunicationProtocol.LEARNING_IS_RUNNING:
-                        if len(message) > 3:
+                        if len(message) > 2:
                             if message[1].isdigit() and message[2].isdigit() and message[3].isdigit():
-                                hash_ = message[3]
-                                if self.__exec(hash_,CommunicationProtocol.LEARNING_IS_RUNNING, int(message[1])):
-                                    exec_msgs[hash_] = " ".join(message[0:4]) + "\n"
-                                    message = message[4:]
+                                if self.__exec(hash_,CommunicationProtocol.LEARNING_IS_RUNNING, None, None, int(message[1])):
+                                    message = message[3:]
                                 else:
                                     error = True
                                     break
@@ -335,16 +328,19 @@ class CommunicationProtocol:
                         break
                 
             # Return
-            return exec_msgs,error
+            return self.tmp_exec_msgs,error
 
     # Exec callbacks
-    def __exec(self,hash_,action, *args):
+    def __exec(self,action,hash_, cmd_text, *args):
         try:
-            if hash_ is None:
+            # Check if can be executed
+            if hash_ not in self.last_messages or hash_ is None:
                 self.command_dict[action].execute(*args)
-            elif hash_ not in self.last_messages:
-                self.command_dict[action].execute(*args)
-                self.add_processed_messages([hash_])
+                # Save to gossip
+                if hash_ is not None:
+                    self.tmp_exec_msgs[hash_] = cmd_text
+                    self.add_processed_messages([hash_]) # si es una única instancia llegaría con esto
+                return True
             return True
         except Exception as e:
             logging.info("Error executing callback: " + str(e))
@@ -354,6 +350,10 @@ class CommunicationProtocol:
     #######################
     #     MSG BUILDERS    # ---->  STATIC METHODS
     #######################
+
+    #
+    # BORRAR HASH DE LOS QUE NO SE NECESITE
+    #
 
     def generate_hased_message(msg):
         # random number to avoid generating the same hash for a different message (at she same time)
@@ -372,8 +372,7 @@ class CommunicationProtocol:
         Returns:
             A encoded stop message.
         """
-        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.STOP)
-
+        return (CommunicationProtocol.STOP + "\n").encode("utf-8")
 
     def build_connect_to_msg(ip, port):
         """
@@ -414,7 +413,7 @@ class CommunicationProtocol:
         Returns:
             A encoded number of samples message.
         """
-        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.NUM_SAMPLES + " " + str(num[0]) + " " + str(num[1]))
+        return (CommunicationProtocol.NUM_SAMPLES + " " + str(num[0]) + " " + str(num[1]) + "\n").encode("utf-8")
 
 
     def build_models_ready_msg(round):
@@ -425,7 +424,7 @@ class CommunicationProtocol:
         Returns:
             A encoded ready message.
         """
-        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.MODELS_READY + " " + str(round))
+        return (CommunicationProtocol.MODELS_READY + " " + str(round) + "\n").encode("utf-8")
 
 
     def build_metrics_msg(round, loss, metric):
@@ -453,7 +452,7 @@ class CommunicationProtocol:
         aux = ""
         for v in votes:
             aux = aux + " " + v[0][0] + " " + str(v[0][1]) + " " + str(v[1])
-        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.VOTE_TRAIN_SET + " " + aux + " " + CommunicationProtocol.VOTE_TRAIN_SET_CLOSE)
+        return (CommunicationProtocol.VOTE_TRAIN_SET + " " + aux + " " + CommunicationProtocol.VOTE_TRAIN_SET_CLOSE + "\n").encode("utf-8")
         
 
     def build_learning_is_running_msg(round, epoch):
@@ -465,7 +464,7 @@ class CommunicationProtocol:
         Returns:
             A encoded learning is running message.
         """
-        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.LEARNING_IS_RUNNING + " " + str(round) + " " + str(epoch))
+        return (CommunicationProtocol.LEARNING_IS_RUNNING + " " + str(round) + " " + str(epoch) + "\n").encode("utf-8")
 
     ###########################
     #     Special Messages    #

@@ -72,6 +72,7 @@ class Node(BaseNode, Observer):
         self.__wait_votes_ready_lock = threading.Lock()
         self.__finish_agregation_lock = threading.Lock()
         self.__finish_agregation_lock.acquire()
+
         
     #######################
     #   Node Management   #
@@ -166,6 +167,20 @@ class Node(BaseNode, Observer):
                 self.__wait_votes_ready_lock.release()
             except:
                 pass
+
+        elif event == Events.PROCESSED_MESSAGES_EVENT:
+            # realmente necesitamos para algo saber quien lo proces'o?
+
+            node, msgs = obj
+            print("Processed {} messages ({})".format(len(msgs),msgs))
+
+            # cambiarlo por una única instancia de comm proto x nodo
+            for nc in self.neightboors:
+                nc.add_processed_messages(list(msgs.keys()))
+
+            # add to gossiper
+            self.gossiper.add_messages(list(msgs.values()),node)
+
 
         elif event == Events.LEARNING_IS_RUNNING_EVENT:
             print("NOT IMPLEMETED YET",obj)

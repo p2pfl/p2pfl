@@ -60,6 +60,13 @@ class NodeConnection(threading.Thread, Observable):
             CommunicationProtocol.LEARNING_IS_RUNNING: Learning_is_running_cmd(self),
         })
 
+
+    #
+    # TEMPORAL -> usar misma instancia de comm protocol para todos los nodos
+    #
+    def add_processed_messages(self,msgs):
+        self.comm_protocol.add_processed_messages(msgs)
+
     def get_addr(self):
         """
         Returns:
@@ -197,7 +204,9 @@ class NodeConnection(threading.Thread, Observable):
 
                     # Process message and count errors
                     exec_msgs,error = self.comm_protocol.process_message(msg)
-                    
+                    if len(exec_msgs) > 0:
+                        self.notify(Events.PROCESSED_MESSAGES_EVENT, (self,exec_msgs)) # Notify the parent node
+
                     # Error happened
                     if error:
                         self.terminate_flag.set()

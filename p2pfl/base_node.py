@@ -3,6 +3,7 @@ import threading
 import logging
 import sys
 from p2pfl.communication_protocol import CommunicationProtocol
+from p2pfl.gossiper import Gossiper
 from p2pfl.settings import Settings
 from p2pfl.node_connection import NodeConnection
 from p2pfl.heartbeater import Heartbeater
@@ -42,9 +43,19 @@ class BaseNode(threading.Thread):
         
         # Neightboors
         self.neightboors = []
+        self.nei_lock = threading.Lock()
 
         # Logging
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+
+        # Heartbeater and Gossiper (pendiennte de dejar los dos con una composicion y un observador)
+
+        #
+        # Cambiar el observer a basenode
+        #
+
+        self.gossiper = None
+        self.heartbeater = None
 
         
     def get_addr(self):
@@ -65,7 +76,10 @@ class BaseNode(threading.Thread):
         """
         super().start()
         # Heartbeater
-        (Heartbeater(self)).start()
+        self.heartbeater = Heartbeater(self)
+        self.gossiper = Gossiper(self)
+        self.heartbeater.start()
+        self.gossiper.start()
 
     
     def stop(self): 
@@ -119,7 +133,10 @@ class BaseNode(threading.Thread):
             except Exception as e:
                 logging.exception(e)
 
-        #Stop Node
+        # Stop Heartbeater and Gossiper
+        #self.heartbeater.stop()
+        self.gossiper.stop()
+        # Stop Node
         logging.info('Bajando el nodo, dejando de escuchar en {} {} y desconectándose de {} nodos'.format(self.host, self.port, len(self.neightboors))) 
         # Al realizar esta copia evitamor errores de concurrencia al recorrer la misma, puesto que sabemos que se van a eliminar los nodos de la misma
         nei_copy_list = self.neightboors.copy()
@@ -131,6 +148,7 @@ class BaseNode(threading.Thread):
     def __process_new_connection(self, node_socket, h, p, broadcast):
         try:
             # Check if connection with the node already exist
+            self.nei_lock.acquire()
             if self.get_neighbor(h,p) == None:
 
                 # Check if ip and port are correct
@@ -151,7 +169,8 @@ class BaseNode(threading.Thread):
                         self.broadcast(CommunicationProtocol.build_connect_to_msg(h,p),exc=[nc])
             else:
                 node_socket.close()
-
+            self.nei_lock.release()
+            
         except Exception as e:
             logging.exception(e)
             node_socket.close()
@@ -223,6 +242,7 @@ class BaseNode(threading.Thread):
             
         # Check if connection with the node already exist
         h = socket.gethostbyname(h)
+        self.nei_lock.acquire()
         if self.get_neighbor(h,p) == None:
 
             # Send connection request
@@ -232,14 +252,25 @@ class BaseNode(threading.Thread):
             # Add socket to neightboors
             logging.info("{} Connected to {}:{}".format(self.get_addr(),h,p))
             nc = NodeConnection(self,s,(h,p))
+
+            #
+            #
+            # SE ESTA HACIENDO USO DEL OBSERVER SIN NISIQUIERA HEREDARLO
+            #
+            #
+
             nc.add_observer(self)
             nc.start()
             self.add_neighbor(nc)
+            self.nei_lock.release()
+
             return nc
         
         else:
             logging.info("{} Already connected to {}:{}".format(self.get_addr(),h,p))
+            self.nei_lock.release()
             return None
+        
 
 
     def disconnect_from(self, h, p):
