@@ -6,3 +6,5 @@ torchvision
 sphinx
 myst-parser
 furo
+pycryptodome
+pycryptoplus

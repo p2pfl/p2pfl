@@ -4,6 +4,7 @@ import logging
 import sys
 
 from p2pfl.communication_protocol import CommunicationProtocol
+from p2pfl.encrypter import Encrypter
 from p2pfl.gossiper import Gossiper
 from p2pfl.settings import Settings
 from p2pfl.node_connection import NodeConnection
@@ -53,7 +54,6 @@ class BaseNode(threading.Thread, Observer):
         # Heartbeater and Gossiper
         self.gossiper = None
         self.heartbeater = None
-
         
     def get_addr(self):
         """
@@ -86,8 +86,6 @@ class BaseNode(threading.Thread, Observer):
         self.gossiper.add_observer(self)
         self.heartbeater.start()
         self.gossiper.start()
-        
-
     
     def stop(self): 
         """
@@ -163,6 +161,16 @@ class BaseNode(threading.Thread, Observer):
                 s.settimeout(2)
                 result = s.connect_ex((h,p)) 
                 s.close()
+
+                # Send public key to the node
+                """
+                serialized_public_key = Encrypter.serialize_key(self.public_key)
+                node_socket.sendall(serialized_public_key)
+
+                # Receive public key from the node
+                node_pub_key = node_socket.recv(len(serialized_public_key))
+                node_pub_key = Encrypter.deserialize_key(node_pub_key)
+                """
         
                 # Add neightboor
                 if result == 0:
@@ -274,43 +282,58 @@ class BaseNode(threading.Thread, Observer):
             h (str): The host of the node.
             p (int): The port of the node.
             full (bool): If True, the node will be connected to the entire network.
+
+        Returns:
+            node: The node that has been connected to.
         """
         if full:
             full = "1"
         else:
             full = "0"
-            
-        # Check if connection with the node already exist
-        h = socket.gethostbyname(h)
-        self.nei_lock.acquire()
-        if self.get_neighbor(h,p) == None:
-
-            # Send connection request
-            msg=CommunicationProtocol.build_connect_msg(self.host,self.port,full)
-            s = self.__send(h,p,msg,persist=True)
-            
-            # Add socket to neightboors
-            logging.info("{} Connected to {}:{}".format(self.get_addr(),h,p))
-            nc = NodeConnection(self.get_name(),s,(h,p))
-
-            #
-            #
-            # SE ESTA HACIENDO USO DEL OBSERVER SIN NISIQUIERA HEREDARLO
-            #
-            #
-
-            nc.add_observer(self)
-            nc.start()
-            self.add_neighbor(nc)
-            self.nei_lock.release()
-
-            return nc
         
-        else:
-            logging.info("{} Already connected to {}:{}".format(self.get_addr(),h,p))
-            self.nei_lock.release()
+        try:
+            # Check if connection with the node already exist
+            h = socket.gethostbyname(h)
+            self.nei_lock.acquire()
+            if self.get_neighbor(h,p) == None:
+            
+                # Send connection request
+                msg=CommunicationProtocol.build_connect_msg(self.host,self.port,full)
+                s = self.__send(h,p,msg,persist=True)
+                
+                """
+                serialized_public_key = Encrypter.serialize_key(self.public_key)
+
+                # Receive public key from the node
+                node_pub_key = s.recv(len(serialized_public_key))
+                node_pub_key = Encrypter.deserialize_key(node_pub_key)
+                                
+                # Send public key to the node
+                s.sendall(serialized_public_key)
+                """
+
+                # Add socket to neightboors
+                logging.info("{} Connected to {}:{}".format(self.get_addr(),h,p))
+                nc = NodeConnection(self.get_name(),s,(h,p))
+
+                nc.add_observer(self)
+                nc.start()
+                self.add_neighbor(nc)
+                self.nei_lock.release()
+                return nc
+        
+            else:
+                logging.info("{} Already connected to {}:{}".format(self.get_addr(),h,p))
+                self.nei_lock.release()
+                return None
+    
+        except:
+            logging.info("{} Can't connect to the node {}:{}".format(self.get_addr(),h,p))
+            try:
+                self.nei_lock.release()
+            except:
+                pass
             return None
-        
 
 
     def disconnect_from(self, h, p):

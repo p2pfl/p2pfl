@@ -45,6 +45,11 @@ def test_node_paring(two_nodes):
     time.sleep(0.1) #Esperar por la asincronía
     assert len(n1.neightboors) == len(n2.neightboors)== 0
 
+def test_connect_invalid_node():
+    n = BaseNode()
+    n.connect_to("google.es","80")
+    n.connect_to("holadani.holaenrique","666")
+    assert len(n.get_neighbors()) == 0
 
 def test_full_connected(four_nodes):
     n1, n2, n3, n4 = four_nodes

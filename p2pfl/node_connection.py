@@ -3,6 +3,7 @@ import threading
 import logging
 from p2pfl.command import *
 from p2pfl.communication_protocol import CommunicationProtocol
+from p2pfl.encrypter import Encrypter
 from p2pfl.settings import Settings
 from p2pfl.utils.observer import Events, Observable
 
@@ -59,7 +60,6 @@ class NodeConnection(threading.Thread, Observable):
             CommunicationProtocol.VOTE_TRAIN_SET: Vote_train_set_cmd(self),
             CommunicationProtocol.LEARNING_IS_RUNNING: Learning_is_running_cmd(self),
         })
-
 
     def add_processed_messages(self,msgs):
         """
@@ -224,7 +224,6 @@ class NodeConnection(threading.Thread, Observable):
 
             except Exception as e:
                 logging.debug("{} (NodeConnection Loop) Exception: ".format(self.get_addr()) + str(e))
-                #logging.exception(e)
                 self.terminate_flag.set()
                 break
         
@@ -272,6 +271,7 @@ class NodeConnection(threading.Thread, Observable):
                     return False
             except Exception as e:
                 logging.debug("{} (NodeConnection Send) Exception: ".format(self.get_addr()) + str(e))
+                logging.exception(e)
                 self.terminate_flag.set() #exit
                 return False
         else:
