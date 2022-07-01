@@ -14,7 +14,7 @@ from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 #    RSA Encryption Test    #
 #############################
 
-def test_rsa_encription_decription1():
+def test_rsa_encryption_decription1():
     rsa = RSACipher()
     rsa.load_pair_public_key(rsa.serialize_key())
     message = "Hello World!".encode("utf-8")
@@ -22,7 +22,7 @@ def test_rsa_encription_decription1():
     decrypted_message = rsa.decrypt(encrypted_message)
     assert message == decrypted_message
 
-def test_rsa_encription_decription2():
+def test_rsa_encryption_decription2():
     cipher1 = RSACipher()
     cipher2 = RSACipher()
     cipher1.load_pair_public_key(cipher2.serialize_key())
@@ -40,7 +40,7 @@ def test_rsa_encription_decription2():
 #    AES Encryption Test    #
 #############################
 
-def test_aes_encription_decription1():
+def test_aes_encryption_decription1():
     cipher = AESCipher()
     message="zzZZZZ!"
     encoded_mesage = cipher.add_padding(message.encode("utf-8"))
@@ -49,7 +49,7 @@ def test_aes_encription_decription1():
     decoded_message = " ".join(decrypted_message.decode("utf-8").split())
     assert message == decoded_message
 
-def test_aes_encription_decription2():
+def test_aes_encryption_decription2():
     cipher1 = AESCipher()
     cipher2 = AESCipher(key=cipher1.get_key())
     message="balb l    ablab alb  a lbalabla     bal"
@@ -59,7 +59,7 @@ def test_aes_encription_decription2():
     decoded_message = decrypted_message.decode("utf-8")
     assert message.split() == decoded_message.split()
 
-def test_aes_encription_decription_model():
+def test_aes_encryption_decription_model():
     cipher = AESCipher()
     nl = LightningLearner(MLP(), None)
     encoded_parameters = nl.encode_parameters()

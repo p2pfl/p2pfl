@@ -115,8 +115,9 @@ class Node(BaseNode):
         if event == Events.END_CONNECTION:
             # If a training process is running, comunicate the disconnection
             if self.round is not None:
-                if obj.get_addr() in self.train_set:
-                    self.agregator.remove_node_to_agregate()
+                node = str(obj.get_addr())
+                if node in self.train_set:
+                    self.agregator.remove_node_to_agregate(node)
                 try:
                     self.__wait_models_ready_lock.release()
                     self.__wait_votes_ready_lock.release()
@@ -284,7 +285,7 @@ class Node(BaseNode):
         self.learner.interrupt_fit()
         # Agregator
         self.agregator.check_and_run_agregation(force=True)  
-        self.agregator.set_nodes_to_agregate(None)
+        self.agregator.set_nodes_to_agregate([])
         self.agregator.clear()
         # Try to free wait locks
         try:
@@ -360,14 +361,15 @@ class Node(BaseNode):
 
         # Set train set
         if self.round is not None:
-            self.train_set = self.__vote_train_set() # Trainset (node names (strigns))
+            self.train_set = self.__vote_train_set() # stringified to avoid comparing pointers
             self.__validate_train_set()
         
         # Train if the node was selected or if no exist candidates (node non-connected) 
-        if self.get_addr() in self.train_set:
+        is_train_set = str(self.get_addr()) in self.train_set
+        if is_train_set:
 
             # Set Models To Agregate 
-            self.agregator.set_nodes_to_agregate(len(self.train_set)) 
+            self.agregator.set_nodes_to_agregate(self.train_set) # cambiarlo la lista para que solo puedan agregarse los que estén en la lista
             
             # Evaluate and send metrics
             if self.round is not None:
@@ -393,11 +395,11 @@ class Node(BaseNode):
 
         else: 
             # Set Models To Agregate 
-            self.agregator.set_nodes_to_agregate(1)
+            self.agregator.set_waiting_agregated_model()
 
         # Synchronize all nodes
         if self.round is not None:
-            self.__sync_nodes(agregated=True)
+            self.__sync_nodes(agregated=is_train_set)
 
         # DIFUNDIR MODELO DESPUES DE AGREGARLO -> ÚNICAMENTE SE DEBE DE AGREGAR CON EL TRAINSET
         # EL RESTO ÚNICAMENTE ESPERA 1 MODELO
@@ -425,9 +427,9 @@ class Node(BaseNode):
         exclude = []
         if train_set is not None:
             if train_set:
-                exclude = [x for x in self.neightboors if x.get_addr() not in self.train_set]
+                exclude = [x for x in self.neightboors if str(x.get_addr()) not in self.train_set]
             else:
-                exclude = [x for x in self.neightboors if x.get_addr() in self.train_set]
+                exclude = [x for x in self.neightboors if str(x.get_addr()) in self.train_set]
 
         encoded_msgs = CommunicationProtocol.build_params_msg(self.learner.encode_parameters())
         logging.info("({}) Broadcasting model to {} clients. (size: {} bytes)".format(self.get_addr(),len(self.neightboors),len(encoded_msgs)*Settings.BUFFER_SIZE))
@@ -473,23 +475,15 @@ class Node(BaseNode):
                     return []
                             
                 if all([ nc.get_train_set_votes()!=[] for nc in self.neightboors]):
-
-                    # Y EN CASO DE EMPATE?
-
                     results = dict(votes)
-
-
                     for nc in self.neightboors:
-                        
                         for i in range(len(nc.get_train_set_votes())):
                             k = list(nc.get_train_set_votes().keys())[i]
                             v = list(nc.get_train_set_votes().values())[i]
-
                             if k in results:
                                 results[k] += v
                             else:
                                 results[k] = v
-
 
                     # Order by votes and get TOP X
                     results = sorted(results.items(), key=lambda x: x[0], reverse=True) # to equal solve of draw
@@ -498,13 +492,18 @@ class Node(BaseNode):
                     results = results[0:top]
                     results = {k: v for k, v in results}
 
+                    votes = list(results.keys())
+                    votes = [str(x) for x in votes]
+
                     # Clear votes    
                     for n in self.neightboors:
                         n.clear_train_set_votes()
 
-                    return list(results.keys())
+                    logging.info("({}) Computed {} votes.".format(self.get_addr(),len(self.neightboors)+1))
 
-                self.__wait_votes_ready_lock.acquire(timeout=2)
+                    return votes
+
+                self.__wait_votes_ready_lock.acquire(timeout=2) # si se tarda m'as de x continuar 
         else:
             return []
                                 
@@ -512,13 +511,13 @@ class Node(BaseNode):
         # Verify if node set is valid (can happend that a node was down when the votes were being processed)
         #   ----> ESTA PARTE VA A SER TEDIOSA PARA REDES COMPLETAMENTE DESCENTRALIZADAS PUES NO SE TIENE UN DIRECTORIO DE NODOS
         for tsn in self.train_set:
-            if tsn not in [ n.get_addr() for n in self.neightboors]:
-                if tsn != self.get_addr():
+            if tsn not in [ str(n.get_addr()) for n in self.neightboors]:
+                if tsn != str(self.get_addr()):
                     self.train_set.remove(tsn)
                 
         # If the node isnt connected
         if self.train_set == []:
-            self.train_set = [self.get_addr()]
+            self.train_set = [str(self.get_addr())]
 
         logging.info("{} Train set of {} nodes. {}".format(self.get_addr(),len(self.train_set),self.train_set))
     
@@ -597,5 +596,4 @@ class Node(BaseNode):
             # Finish
             self.round = None
             self.is_model_init = False
-            self.agregator.set_nodes_to_agregate(None)
             logging.info("({}) Finish!!.".format(self.get_addr()))   

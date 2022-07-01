@@ -22,11 +22,11 @@ class Agregator(threading.Thread, Observable):
         threading.Thread.__init__(self)
         self.daemon = True
         Observable.__init__(self)
-        self.train_set_size = None
+        self.train_set = []
+        self.waiting_agregated_model = False
         self.node_name = node_name
         self.name = "agregator-" + node_name
         self.models = {}
-        self.result_model = None # ---------------------------------------
         self.lock = threading.Lock()
         self.agregation_lock = threading.Lock()
         self.agregation_lock.acquire()
@@ -39,13 +39,13 @@ class Agregator(threading.Thread, Observable):
         self.agregation_lock.acquire(timeout=Settings.AGREGATION_TIEMOUT) 
         
         # Check if node still running (could happen if agregation thread was a residual thread)
-        if self.train_set_size is None:
+        if self.train_set == []:
             logging.info("({}) Shutting Down Agregator Process".format(self.node_name))
             self.notify(Events.AGREGATION_FINISHED,None) # To avoid residual trainning-thread
             return
         
         # Start agregation
-        if len(self.models)!=(self.train_set_size):
+        if len(self.models)!=len(self.train_set):
             logging.info("({}) Agregating models. Timeout reached".format(self.node_name))
         else:
             logging.info("({}) Agregating models.".format(self.node_name))
@@ -60,27 +60,29 @@ class Agregator(threading.Thread, Observable):
         """
         print("Not implemented")
             
-    def set_nodes_to_agregate(self, n):
+    def set_nodes_to_agregate(self, l):
         """
         Indicate the number of nodes to agregate. None when agregation is not needed.
 
         Args:
             n: Number of nodes to agregate. None for no agregation.
         """
-        self.train_set_size = n
+        self.train_set = l
     
-    def remove_node_to_agregate(self, ammount=1):
+    def remove_node_to_agregate(self, node):
         """
-        Indicates that a node/s is not going to be agregated.
+        Indicates that a node is not going to be agregated.
 
         Args:
-            ammount: Number of nodes to remove.
+            node: Nodes to remove.
         """
-        if self.train_set_size is not None:
-            self.train_set_size = self.train_set_size-ammount
-            # It cant produce training, if aggregation is running, clients only decrement
-            logging.info("({}) Node Removed ({}/{})".format(self.node_name, str(len(self.models)), str(self.train_set_size)))
-            self.check_and_run_agregation()
+        self.train_set.remove(node)
+        logging.info("({}) Node Removed ({}/{})".format(self.node_name, str(len(self.models)), str(len(self.train_set))))
+        # It cant produce training, if aggregation is running, clients only decrement
+        self.check_and_run_agregation()
+        
+    def set_waiting_agregated_model(self):
+        self.waiting_agregated_model = True
 
     def add_model(self, n, m, w):
         """
@@ -92,25 +94,36 @@ class Agregator(threading.Thread, Observable):
             w: Number of samples used to train the model.
 
         """
-        if self.train_set_size is None:
-            logging.error("({}) Error, trying to add a model when the neighbors are not specificated".format(self.node_name))
+        if self.waiting_agregated_model:
+            logging.info("({}) Recived a model from {}".format(self.node_name, n))
+            self.waiting_agregated_model = False
+            self.notify(Events.AGREGATION_FINISHED,m) 
         else:
-            if self.train_set_size>len(self.models):
-                # Agregar modelo
-                self.lock.acquire()
-                self.models[n] = ((m, w))
-                logging.info("({}) Model added ({}/{}) from {}".format(self.node_name, str(len(self.models)), str(self.train_set_size), n))
-                # Start Timeout
-                if not self.is_alive():
-                    self.start()
-                # Check if all models have been added
-                self.check_and_run_agregation()
-                # Try Unloock
-                try:
-                    self.lock.release()
-                except:
-                    pass
-        
+            if len(self.train_set)>len(self.models):
+                if (str(n)) in [str(x) for x in self.train_set]: # To avoid comparing pointers
+                    if n not in self.models:
+                        # Agregar modelo
+                        self.lock.acquire()
+                        self.models[n] = ((m, w))
+                        logging.info("({}) Model added ({}/{}) from {}".format(self.node_name, str(len(self.models)), str(len(self.train_set)), n))
+                        # Start Timeout
+                        if not self.is_alive():
+                            self.start()
+                        # Check if all models have been added
+                        self.check_and_run_agregation()
+                        # Try Unloock
+                        try:
+                            self.lock.release()
+                        except:
+                            pass 
+                
+                    else:
+                        logging.info("({}) Can't add a model that has already been added {}".format(self.node_name, n))
+                else:
+                    logging.info("({}) Can't add a model from a node ({}) that is not in the training test.".format(self.node_name, n))
+  
+                
+            
     def check_and_run_agregation(self,force=False):
         """
         Check if all models have been added and start agregation if so.
@@ -120,7 +133,7 @@ class Agregator(threading.Thread, Observable):
         """
         # Try Unloock
         try:
-            if force or len(self.models)>=(self.train_set_size): 
+            if (force or len(self.models)>=len(self.train_set)) and self.train_set!=[]: 
                 self.agregation_lock.release()
         except:
             pass
@@ -131,8 +144,6 @@ class Agregator(threading.Thread, Observable):
         Clear all for a new agregation.
         """
         observers = self.get_observers()
-        train_set_size = self.train_set_size
         self.__init__(node_name=self.node_name)
-        self.train_set_size = train_set_size
         for o in observers:
             self.add_observer(o)

@@ -54,7 +54,7 @@ class RSACipher(Encrypter):
 
     def encrypt(self, message):
         """
-        Encrypts a message using RSA. Its encripted with the public key of the pair.
+        Encrypts a message using RSA. Its encrypted with the public key of the pair.
         
         Args:
             message: (str) The message to encrypt.
