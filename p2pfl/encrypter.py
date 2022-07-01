@@ -78,9 +78,6 @@ class RSACipher(Encrypter):
         cipher = PKCS1_OAEP.new(self.private_key)
         return cipher.decrypt(base64.b64decode(message))
 
-
-
-
 #
 #
 # REVISAR MODOS AES Y DOCUMENTAR
@@ -120,3 +117,10 @@ class AESCipher(Encrypter):
 
     def get_block_size():
         return AES.block_size
+
+    def key_len():
+        """ 
+        Returns:
+            key_len: (int) The length of the key in bytes.
+        """
+        return 256

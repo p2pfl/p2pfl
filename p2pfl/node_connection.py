@@ -29,7 +29,7 @@ class NodeConnection(threading.Thread, Observable):
         addr: The address of the node that is connected to.
     """
 
-    def __init__(self, parent_node_name, s, addr):
+    def __init__(self, parent_node_name, s, addr, aes_cipher):
         threading.Thread.__init__(self)
         self.name = "node_connection-" + parent_node_name + "-" + str(addr[0]) + ":" + str(addr[1])
         Observable.__init__(self)
@@ -44,6 +44,8 @@ class NodeConnection(threading.Thread, Observable):
         self.sending_model = False
         
         self.model_ready = -1
+
+        self.aes_cipher = aes_cipher
 
         self.train_set_votes = []
 
@@ -196,7 +198,11 @@ class NodeConnection(threading.Thread, Observable):
                     msg = buffer + self.socket.recv(overflow) #alinear el colapso
                     buffer = b""
                     overflow = 0
-                
+
+                # Decrypt message
+                if self.aes_cipher is not None:
+                    print("por hacer")                
+            
                 # Process messages
                 if msg!=b"":
                     #Check if colapse is happening
@@ -265,6 +271,10 @@ class NodeConnection(threading.Thread, Observable):
             try:
                 # If model is sending, we cant send a message
                 if not self.is_sending_model() or is_necesary:
+                    # Encrypt message
+                    if self.aes_cipher is not None:
+                        print("por hacer")
+                    # Send message
                     self.socket.sendall(data)
                     return True
                 else:

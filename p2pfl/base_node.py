@@ -4,7 +4,7 @@ import logging
 import sys
 
 from p2pfl.communication_protocol import CommunicationProtocol
-from p2pfl.encrypter import Encrypter
+from p2pfl.encrypter import AESCipher, RSACipher
 from p2pfl.gossiper import Gossiper
 from p2pfl.settings import Settings
 from p2pfl.node_connection import NodeConnection
@@ -30,11 +30,12 @@ class BaseNode(threading.Thread, Observer):
     #     Node Init     #
     #####################
 
-    def __init__(self, host="127.0.0.1", port=0):
+    def __init__(self, host="127.0.0.1", port=0, simulation=True):
         threading.Thread.__init__(self)
         self.__terminate_flag = threading.Event()
         self.host = socket.gethostbyname(host)
         self.port = port
+        self.simulation = simulation
 
         # Setting Up Node Socket (listening)
         self.node_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #TCP Socket
@@ -162,20 +163,21 @@ class BaseNode(threading.Thread, Observer):
                 result = s.connect_ex((h,p)) 
                 s.close()
 
-                # Send public key to the node
-                """
-                serialized_public_key = Encrypter.serialize_key(self.public_key)
-                node_socket.sendall(serialized_public_key)
+                aes_cipher = None
+                if not self.simulation:
+                    # Encryption (asymmetric)
+                    rsa = RSACipher()
+                    node_socket.sendall(rsa.serialize_key())
+                    rsa.load_pair_public_key(node_socket.recv(len(rsa.serialize_key())))
 
-                # Receive public key from the node
-                node_pub_key = node_socket.recv(len(serialized_public_key))
-                node_pub_key = Encrypter.deserialize_key(node_pub_key)
-                """
-        
+                    # Encryption (symmetric)
+                    aes_cipher = AESCipher()
+                    node_socket.sendall(aes_cipher.get_key())
+
                 # Add neightboor
                 if result == 0:
                     logging.info('{} Conexión aceptada con {}:{}'.format(self.get_addr(),h,p))
-                    nc = NodeConnection(self.get_name(),node_socket,(h,p))
+                    nc = NodeConnection(self.get_name(),node_socket,(h,p),aes_cipher)
                     nc.add_observer(self)
                     nc.start()
                     self.add_neighbor(nc)
@@ -300,21 +302,19 @@ class BaseNode(threading.Thread, Observer):
                 # Send connection request
                 msg=CommunicationProtocol.build_connect_msg(self.host,self.port,full)
                 s = self.__send(h,p,msg,persist=True)
-                
-                """
-                serialized_public_key = Encrypter.serialize_key(self.public_key)
 
-                # Receive public key from the node
-                node_pub_key = s.recv(len(serialized_public_key))
-                node_pub_key = Encrypter.deserialize_key(node_pub_key)
-                                
-                # Send public key to the node
-                s.sendall(serialized_public_key)
-                """
+                aes_cipher = None
+                if not self.simulation:
+                    # Encryption (asymetric)
+                    rsa = RSACipher()
+                    rsa.load_pair_public_key(s.recv(len(rsa.serialize_key())))
+                    s.sendall(rsa.serialize_key())
+                    # Encryption (symetric)
+                    aes_cipher = AESCipher(key=s.recv(AESCipher.key_len()))
 
                 # Add socket to neightboors
                 logging.info("{} Connected to {}:{}".format(self.get_addr(),h,p))
-                nc = NodeConnection(self.get_name(),s,(h,p))
+                nc = NodeConnection(self.get_name(),s,(h,p),aes_cipher)
 
                 nc.add_observer(self)
                 nc.start()

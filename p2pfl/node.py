@@ -53,7 +53,7 @@ class Node(BaseNode):
             agredator (Agregator): Agregator to be used in the learning process.
             is_model_init (bool): Flag to indicate if the model has been initialized.
         """
-        BaseNode.__init__(self,host,port)
+        BaseNode.__init__(self,host,port, simulation)
         Observer.__init__(self)
 
         # Learning
@@ -65,7 +65,6 @@ class Node(BaseNode):
         self.agregator = agregator( node_name = self.get_name() )
         self.agregator.add_observer(self)
         self.is_model_init = False
-        self.simulation = simulation
 
         # Locks
         self.__wait_models_ready_lock = threading.Lock()
