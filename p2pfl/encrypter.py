@@ -103,19 +103,30 @@ class AESCipher(Encrypter):
     def decrypt(self, enc):
         return self.cipher.decrypt(enc)
     
-    def encode_with_padding(self, msg):
-        # Siempre añade apdding (si el tamaño de bloque coincide agrega 1 mas para evitar conflictos)
-        msg_pad =  msg + (self.bs - len(msg) % self.bs) * chr(self.bs - len(msg) % self.bs)
-        return msg_pad.encode("utf-8")
+    def padding_to_encoded_text(self, msg):
+        """
+        Add padding to a encoded UTF-8 text. Adds " " charactets (1 byte) to fill the rest of the block.
 
-    def decode_without_padding(self,msg):
-        msg_without_padding = msg[:-ord(msg[len(msg) - 1:])]
-        return msg_without_padding.decode("utf-8")
+        Args:
+            msg: (str) The encoded text.
+        
+        Returns:
+            msg: (str) The encoded text with padding.
+        """
+        pading_char = " ".encode("utf-8")
+        bytes_left = self.bs - len(msg) % self.bs
+        for i in range(bytes_left):
+            msg += pading_char
+        return msg 
 
     def get_key(self):
         return self.key
 
     def get_block_size():
+        """
+        Returns:
+            block_size: (int) The length of the block in bytes.
+        """
         return AES.block_size
 
     def key_len():

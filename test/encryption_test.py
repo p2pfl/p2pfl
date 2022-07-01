@@ -43,17 +43,21 @@ def test_rsa_encription_decription2():
 def test_aes_encription_decription1():
     cipher = AESCipher()
     message="zzZZZZ!"
-    encrypted_message = cipher.encrypt(cipher.encode_with_padding(message))
-    decrypted_message = cipher.decode_without_padding(cipher.decrypt(encrypted_message))
-    assert message == decrypted_message
+    encoded_mesage = cipher.padding_to_encoded_text(message.encode("utf-8"))
+    encrypted_message = cipher.encrypt(encoded_mesage)
+    decrypted_message = cipher.decrypt(encrypted_message)
+    decoded_message = " ".join(decrypted_message.decode("utf-8").split())
+    assert message == decoded_message
 
 def test_aes_encription_decription2():
     cipher1 = AESCipher()
     cipher2 = AESCipher(key=cipher1.get_key())
-    message="balblablabalbalbalablabal"
-    encrypted_message = cipher1.encrypt(cipher1.encode_with_padding(message))
-    decrypted_message = cipher2.decode_without_padding(cipher2.decrypt(encrypted_message))
-    assert message == decrypted_message
+    message="balb l    ablab alb  a lbalabla     bal"
+    encoded_mesage = cipher1.padding_to_encoded_text(message.encode("utf-8"))
+    encrypted_message = cipher1.encrypt(encoded_mesage)
+    decrypted_message = cipher2.decrypt(encrypted_message)
+    decoded_message = decrypted_message.decode("utf-8")
+    assert message.split() == decoded_message.split()
 
 def test_aes_encription_decription_model():
     cipher = AESCipher()
