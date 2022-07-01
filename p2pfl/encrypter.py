@@ -103,7 +103,7 @@ class AESCipher(Encrypter):
     def decrypt(self, enc):
         return self.cipher.decrypt(enc)
     
-    def padding_to_encoded_text(self, msg):
+    def add_padding(self, msg):
         """
         Add padding to a encoded UTF-8 text. Adds " " charactets (1 byte) to fill the rest of the block.
 
@@ -113,10 +113,16 @@ class AESCipher(Encrypter):
         Returns:
             msg: (str) The encoded text with padding.
         """
-        pading_char = " ".encode("utf-8")
+        # Calculate the number of bytes needed to fill the block
         bytes_left = self.bs - len(msg) % self.bs
+        if bytes_left == self.bs:
+            bytes_left = 0
+
+        # Add padding
+        pading_char = " ".encode("utf-8")
         for i in range(bytes_left):
             msg += pading_char
+
         return msg 
 
     def get_key(self):

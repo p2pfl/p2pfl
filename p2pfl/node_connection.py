@@ -201,7 +201,7 @@ class NodeConnection(threading.Thread, Observable):
 
                 # Decrypt message
                 if self.aes_cipher is not None:
-                    print("por hacer")                
+                    msg = self.aes_cipher.decrypt(msg)
             
                 # Process messages
                 if msg!=b"":
@@ -273,7 +273,8 @@ class NodeConnection(threading.Thread, Observable):
                 if not self.is_sending_model() or is_necesary:
                     # Encrypt message
                     if self.aes_cipher is not None:
-                        print("por hacer")
+                        data = self.aes_cipher.add_padding(data) # -> It cant broke the model because it fills all the block space
+                        data = self.aes_cipher.encrypt(data)
                     # Send message
                     self.socket.sendall(data)
                     return True

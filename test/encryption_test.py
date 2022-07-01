@@ -43,7 +43,7 @@ def test_rsa_encription_decription2():
 def test_aes_encription_decription1():
     cipher = AESCipher()
     message="zzZZZZ!"
-    encoded_mesage = cipher.padding_to_encoded_text(message.encode("utf-8"))
+    encoded_mesage = cipher.add_padding(message.encode("utf-8"))
     encrypted_message = cipher.encrypt(encoded_mesage)
     decrypted_message = cipher.decrypt(encrypted_message)
     decoded_message = " ".join(decrypted_message.decode("utf-8").split())
@@ -53,7 +53,7 @@ def test_aes_encription_decription2():
     cipher1 = AESCipher()
     cipher2 = AESCipher(key=cipher1.get_key())
     message="balb l    ablab alb  a lbalabla     bal"
-    encoded_mesage = cipher1.padding_to_encoded_text(message.encode("utf-8"))
+    encoded_mesage = cipher1.add_padding(message.encode("utf-8"))
     encrypted_message = cipher1.encrypt(encoded_mesage)
     decrypted_message = cipher2.decrypt(encrypted_message)
     decoded_message = decrypted_message.decode("utf-8")
@@ -66,7 +66,7 @@ def test_aes_encription_decription_model():
 
     messages = CommunicationProtocol.build_params_msg(encoded_parameters)
 
-    encrypted_messages = [cipher.encrypt(x) for x in messages]
+    encrypted_messages = [cipher.encrypt(cipher.add_padding(x)) for x in messages]
     decrypted_messages = [cipher.decrypt(x) for x in encrypted_messages]
 
     for i in range(len(messages)):

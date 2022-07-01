@@ -29,6 +29,7 @@ def test_convergence(x):
         time.sleep(0.1)
 
     # Check if they are connected
+    time.sleep(3)     
     for node in nodes:
         assert len(node.neightboors) == n-1
 
