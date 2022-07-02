@@ -144,8 +144,7 @@ class Node(BaseNode):
             if obj is not None:
                 self.learner.set_parameters(obj)
                 # Share that agregation is done
-                if [str(self.get_addr()) in self.train_set]:
-                    self.broadcast(CommunicationProtocol.build_models_ready_msg(self.round))
+                self.broadcast(CommunicationProtocol.build_models_ready_msg(self.round))
 
             try:
                 self.__finish_agregation_lock.release()
@@ -385,14 +384,10 @@ class Node(BaseNode):
             if self.round is not None:
                 self.__train()
             
-            # Send Model
+            # Agregate Model
             if self.round is not None:
                 self.agregator.add_model(str(self.get_addr()),self.learner.get_parameters(), self.learner.get_num_samples()[0])
                 self.__gossip_agregation() # this is going to produce duplicated models -> buut its fault tolerent
-
-            # Wait for model agregation
-            if self.round is not None:
-                self.__wait_model_agregation() # tal vez no sea necesario si se hace en gossip
 
             # Broadcast to non train_set nodes
             if self.round is not None:
@@ -404,7 +399,7 @@ class Node(BaseNode):
 
         # Synchronize all nodes
         if self.round is not None:
-            self.__sync_nodes(agregated=is_train_set)
+            self.__sync_nodes()
 
         # DIFUNDIR MODELO DESPUES DE AGREGARLO -> ÚNICAMENTE SE DEBE DE AGREGAR CON EL TRAINSET
         # EL RESTO ÚNICAMENTE ESPERA 1 MODELO
@@ -433,8 +428,13 @@ class Node(BaseNode):
         #
         # Meterle un timeout para no enviar infinito
         #
-
+        
         while True:
+            # If the trainning has been interrupted, stop waiting
+            if self.round is None:
+                logging.info("({}) Stopping on_round_finished process.".format(self.get_name()))
+                return
+
             # Get time to calculate frequency
             begin = time.time()
 
@@ -452,7 +452,6 @@ class Node(BaseNode):
             # Select a random subset of neightboors
             samples = min(Settings.GOSSIP_MODELS_PER_ROUND,len(nei))
             nei = random.sample(nei, samples)
-
 
             # Lock Neightboors Communication
             for nc in nei:
@@ -486,9 +485,6 @@ class Node(BaseNode):
                 exclude = [x for x in self.neightboors if str(x.get_addr()) in self.train_set]
         else:
             logging.info("({}) Broadcasting model to {} nodes. (size: {} bytes)".format(self.get_name(),len(self.neightboors),len(encoded_msgs)*Settings.BUFFER_SIZE))
-
-
-
 
         # Lock Neightboors Communication
         self.__set_sending_model(True)
@@ -588,48 +584,17 @@ class Node(BaseNode):
 
         logging.info("{} Train set of {} nodes. {}".format(self.get_name(),len(self.train_set),self.train_set))
     
-    def __wait_model_agregation(self):
+    def __sync_nodes(self):
         try:
-
             # Wait to finish self agregation
             self.__finish_agregation_lock.acquire()
-            
+                
             # Verify that trainning has not been interrupted
             if self.round is None:
                 return
 
-            # Send ready message
-            self.broadcast(CommunicationProtocol.build_models_ready_msg(self.round))
-                
-            # Wait for ready messages
-            logging.info("({}) Waiting other nodes for model agregation.".format(self.get_name()))
-            while True:
-                # If the trainning has been interrupted, stop waiting
-                if self.round is None:
-                    logging.info("({}) Stopping on_round_finished process.".format(self.get_name()))
-                    return
-                        
-                train_set = [x for x in self.neightboors if x.get_addr() in self.train_set]
-                
-                if all([ nc.get_ready_model_status()>=self.round for nc in train_set]):
-                    break
-                self.__wait_models_ready_lock.acquire(timeout=2)
-                               
-        except Exception as e:
-            logging.error("({}) Concurrence Error: {}".format(self.get_name(),e))
-
-    def __sync_nodes(self,agregated=False):
-        try:
-            if not agregated:
-                # Wait to finish self agregation
-                self.__finish_agregation_lock.acquire()
-                
-                # Verify that trainning has not been interrupted
-                if self.round is None:
-                    return
-
-                # Send ready message
-                self.broadcast(CommunicationProtocol.build_models_ready_msg(self.round))
+                # Send ready message (se manda en el uodate)
+                #self.broadcast(CommunicationProtocol.build_models_ready_msg(self.round))
                 
             # Wait for ready messages
             logging.info("({}) Waiting other nodes to synchorinize the end of the round.".format(self.get_name()))
