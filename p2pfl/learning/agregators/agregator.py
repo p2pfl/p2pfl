@@ -23,6 +23,7 @@ class Agregator(threading.Thread, Observable):
         self.daemon = True
         Observable.__init__(self)
         self.train_set = []
+        self.train_set_lock = threading.Lock()
         self.waiting_agregated_model = False
         self.node_name = node_name
         self.name = "agregator-" + node_name
@@ -67,7 +68,9 @@ class Agregator(threading.Thread, Observable):
         Args:
             n: Number of nodes to agregate. None for no agregation.
         """
+        self.train_set_lock.acquire()
         self.train_set = l
+        self.train_set_lock.release()
     
     def remove_node_to_agregate(self, node):
         """
@@ -76,11 +79,18 @@ class Agregator(threading.Thread, Observable):
         Args:
             node: Nodes to remove.
         """
-        self.train_set.remove(node)
-        logging.info("({}) Node Removed ({}/{})".format(self.node_name, str(len(self.models)), str(len(self.train_set))))
-        # It cant produce training, if aggregation is running, clients only decrement
-        self.check_and_run_agregation()
-        
+        try:
+            self.train_set_lock.acquire()
+            self.train_set.remove(node)
+            self.train_set_lock.release()
+            logging.info("({}) Node Removed ({}/{})".format(self.node_name, str(len(self.models)), str(len(self.train_set))))
+            # It cant produce training, if aggregation is running, clients only decrement
+            self.check_and_run_agregation()
+            
+        except:
+            self.train_set_lock.release()
+            
+
     def set_waiting_agregated_model(self):
         self.waiting_agregated_model = True
 

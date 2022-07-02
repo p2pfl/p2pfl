@@ -360,6 +360,9 @@ class BaseNode(threading.Thread, Observer):
             ttl (int): The time to live of the message.
             exc (list): The neightboors to be excluded.
             is_necesary (bool): If False, the message will be sent only if its posible.
+
+        Returns:
+            bool: If True, the message has been sent.
         """
         sended=True 
         for n in self.neightboors:

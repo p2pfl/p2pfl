@@ -28,7 +28,7 @@ class Gossiper(threading.Thread, Observable):
         """
         while not self.terminate_flag.is_set():
 
-            messages_left = Settings.GOSSIP_MODEL_SENDS_BY_ROUND
+            messages_left = Settings.GOSSIP_MESSAGES_PER_ROUND
             
             # Lock
             self.add_lock.acquire()
@@ -60,7 +60,7 @@ class Gossiper(threading.Thread, Observable):
             
             # Wait to guarantee the frequency of gossipping
             time_diff = time.time() - begin
-            time_sleep = 1/Settings.GOSSIP_FREC-time_diff
+            time_sleep = 1/Settings.GOSSIP_MESSAGES_FREC-time_diff
             if time_sleep > 0:
                 time.sleep(time_sleep)
 

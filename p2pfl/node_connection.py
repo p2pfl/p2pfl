@@ -35,6 +35,7 @@ class NodeConnection(threading.Thread, Observable):
         Observable.__init__(self)
         self.terminate_flag = threading.Event()
         self.socket = s
+        self.socket_lock = threading.Lock()
         self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.errors = 0
         self.addr = addr
@@ -191,24 +192,26 @@ class NodeConnection(threading.Thread, Observable):
         while not self.terminate_flag.is_set():
             try:
                 # Recive message
-                msg = b""
+                og_msg = b""
                 if overflow == 0:
-                    msg = self.socket.recv(Settings.BUFFER_SIZE)
+                    og_msg = self.socket.recv(Settings.BUFFER_SIZE)
                 else:
-                    msg = buffer + self.socket.recv(overflow) #alinear el colapso
+                    og_msg = buffer + self.socket.recv(overflow) #alinear el colapso
                     buffer = b""
                     overflow = 0
 
                 # Decrypt message
                 if self.aes_cipher is not None:
-                    msg = self.aes_cipher.decrypt(msg)
+                    msg = self.aes_cipher.decrypt(og_msg)
+                else:
+                    msg = og_msg
             
                 # Process messages
                 if msg!=b"":
                     #Check if colapse is happening
                     overflow = CommunicationProtocol.check_collapse(msg)
                     if overflow>0:
-                        buffer = msg[overflow:]
+                        buffer = og_msg[overflow:]
                         msg = msg[:overflow]
                         logging.debug("{} (NodeConnection Run) Collapse detected: {}".format(self.get_addr(), msg))
 
@@ -220,8 +223,7 @@ class NodeConnection(threading.Thread, Observable):
                     # Error happened
                     if error:
                         self.terminate_flag.set()
-                        logging.debug("An error happened. {}".format(self.get_addr()))
-                        logging.debug("Last error: {}".format(msg))           
+                        logging.debug("({}) An error happened. Last error: {}".format(self.get_addr(),msg))       
 
             except socket.timeout:
                 logging.debug("{} (NodeConnection Loop) Timeout".format(self.get_addr()))
@@ -276,7 +278,9 @@ class NodeConnection(threading.Thread, Observable):
                         data = self.aes_cipher.add_padding(data) # -> It cant broke the model because it fills all the block space
                         data = self.aes_cipher.encrypt(data)
                     # Send message
+                    self.socket_lock.acquire()
                     self.socket.sendall(data)
+                    self.socket_lock.release()
                     return True
                 else:
                     return False
