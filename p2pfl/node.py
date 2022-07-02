@@ -60,6 +60,7 @@ class Node(BaseNode):
         log_dir = str(self.host) + "_" + str(self.port)
         self.learner = learner(model, data, log_name=log_dir) 
         self.round = None
+        self.__start_thread_lock = threading.Lock()
         self.totalrounds = None
         self.train_set = []
         self.agregator = agregator( node_name = self.get_name() )
@@ -242,6 +243,7 @@ class Node(BaseNode):
     ##################################
 
     def __start_learning_thread(self,rounds,epochs):
+        
         if self.round is None:
             learning_thread = threading.Thread(target=self.__start_learning,args=(rounds,epochs))
             learning_thread.name = "learning_thread-" + self.get_name()
@@ -256,25 +258,28 @@ class Node(BaseNode):
             rounds: Number of rounds of the learning process.
             epochs: Number of epochs of the learning process.
         """
-        self.round = 0
-        self.totalrounds = rounds
-        self.learner.init()
+        self.__start_thread_lock.acquire() # Used to avoid create duplicated training threads
+        if self.round is None:
+            self.round = 0
+            self.totalrounds = rounds
+            self.learner.init()
+            self.__start_thread_lock.release()
 
-        # Indicates samples that be used in the learning process
-        logging.info("({}) Broadcasting Number of Samples...".format(self.get_name()))  # esto meterlo en el handsaking
+            # Indicates samples that be used in the learning process
+            logging.info("({}) Broadcasting Number of Samples...".format(self.get_name()))  # esto meterlo en el handsaking
 
-        #esto ya no hará falta -> ahora multilee -> tb nos perjudica porque si ya se está mandado el modelo, va a promediarlo x 0
-        self.broadcast(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())) # si no se manda bien promedia x 0
-        
-        #esto de aqui es una apaño de los malos -> cambiar por lock
-        if not self.is_model_init:
-            logging.info("({}) Initialicing Model Weights".format(self.get_name()))
-            while not self.is_model_init:
-               time.sleep(0.1)
+            #esto ya no hará falta -> ahora multilee -> tb nos perjudica porque si ya se está mandado el modelo, va a promediarlo x 0
+            self.broadcast(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())) # si no se manda bien promedia x 0
+            
+            #esto de aqui es una apaño de los malos -> cambiar por lock
+            if not self.is_model_init:
+                logging.info("({}) Initialicing Model Weights".format(self.get_name()))
+                while not self.is_model_init:
+                    time.sleep(0.1)
 
-        # Train
-        self.learner.set_epochs(epochs)
-        self.__train_step()
+            # Train
+            self.learner.set_epochs(epochs)
+            self.__train_step()
 
     def __stop_learning(self): 
         """
@@ -322,7 +327,9 @@ class Node(BaseNode):
                     # Add model to agregator
                     decoded_model, contributors = self.learner.decode_parameters(m)
                     if self.learner.check_parameters(decoded_model):
-                        self.agregator.add_model(node,decoded_model,w)
+                        models_added = self.agregator.add_model(node,decoded_model,w)
+                        #if models_added is not None:
+                        #    self.broadcast(CommunicationProtocol.build_models_agregated_msg(models_added))
                     else:
                         raise ModelNotMatchingError("Not matching models")
                 else:
@@ -369,9 +376,8 @@ class Node(BaseNode):
             self.__validate_train_set()
         
         # Train if the node was selected or if no exist candidates (node non-connected) 
-        is_train_set = str(self.get_addr()) in self.train_set
+        is_train_set = self.get_name() in self.train_set
         if is_train_set:
-
 
             # Set Models To Agregate 
             self.agregator.set_nodes_to_agregate(self.train_set) # cambiarlo la lista para que solo puedan agregarse los que estén en la lista
@@ -386,7 +392,7 @@ class Node(BaseNode):
             
             # Agregate Model
             if self.round is not None:
-                self.agregator.add_model(str(self.get_addr()),self.learner.get_parameters(), self.learner.get_num_samples()[0])
+                self.agregator.add_model(self.get_name(),self.learner.get_parameters(), self.learner.get_num_samples()[0])
                 self.__gossip_agregation() # this is going to produce duplicated models -> buut its fault tolerent
 
             # Broadcast to non train_set nodes
@@ -429,6 +435,8 @@ class Node(BaseNode):
         # Meterle un timeout para no enviar infinito
         #
         
+        # MODELS AGREGATED vs MODELS READY -> revisar diferencias
+
         while True:
             # If the trainning has been interrupted, stop waiting
             if self.round is None:
@@ -443,10 +451,10 @@ class Node(BaseNode):
             encoded_msgs = CommunicationProtocol.build_params_msg(model)
 
             logging.info("({}) Broadcasting model to train set nodes. (size: {} bytes)".format(self.get_name(),len(encoded_msgs)*Settings.BUFFER_SIZE))
-            nei = [nc for nc in self.neightboors if str(nc.get_addr()) in self.train_set and nc.get_ready_model_status()<self.round]
+            nei = [nc for nc in self.neightboors if nc.get_name() in self.train_set and nc.get_ready_model_status()<self.round]
 
             if nei == []:
-                logging.info("({}) GOSSIPEAO".format(self.get_name()))
+                logging.info("({}) GOssip finished.".format(self.get_name()))
                 break
 
             # Select a random subset of neightboors
@@ -479,10 +487,10 @@ class Node(BaseNode):
         if train_set is not None:
             if train_set:
                 logging.info("({}) Broadcasting model to train set nodes. (size: {} bytes)".format(self.get_name(),len(encoded_msgs)*Settings.BUFFER_SIZE))
-                exclude = [x for x in self.neightboors if str(x.get_addr()) not in self.train_set]
+                exclude = [x for x in self.neightboors if x.get_name() not in self.train_set]
             else:
                 logging.info("({}) Broadcasting model to non train set nodes. (size: {} bytes)".format(self.get_name(),len(encoded_msgs)*Settings.BUFFER_SIZE))
-                exclude = [x for x in self.neightboors if str(x.get_addr()) in self.train_set]
+                exclude = [x for x in self.neightboors if x.get_name() in self.train_set]
         else:
             logging.info("({}) Broadcasting model to {} nodes. (size: {} bytes)".format(self.get_name(),len(self.neightboors),len(encoded_msgs)*Settings.BUFFER_SIZE))
 
@@ -556,7 +564,7 @@ class Node(BaseNode):
                     results = {k: v for k, v in results}
 
                     votes = list(results.keys())
-                    votes = [str(x) for x in votes]
+                    votes = [x[0]+":"+str(x[1]) for x in votes]
 
                     # Clear votes    
                     for n in self.neightboors:
@@ -574,13 +582,13 @@ class Node(BaseNode):
         # Verify if node set is valid (can happend that a node was down when the votes were being processed)
         #   ----> ESTA PARTE VA A SER TEDIOSA PARA REDES COMPLETAMENTE DESCENTRALIZADAS PUES NO SE TIENE UN DIRECTORIO DE NODOS
         for tsn in self.train_set:
-            if tsn not in [ str(n.get_addr()) for n in self.neightboors]:
-                if tsn != str(self.get_addr()):
+            if tsn not in [ n.get_name() for n in self.neightboors]:
+                if tsn != self.get_name():
                     self.train_set.remove(tsn)
                 
         # If the node isnt connected
         if self.train_set == []:
-            self.train_set = [str(self.get_addr())]
+            self.train_set = [self.get_name()]
 
         logging.info("{} Train set of {} nodes. {}".format(self.get_name(),len(self.train_set),self.train_set))
     
@@ -604,7 +612,7 @@ class Node(BaseNode):
                     logging.info("({}) Stopping on_round_finished process.".format(self.get_name()))
                     return
                         
-                train_set = [x for x in self.neightboors if x.get_addr() in self.train_set]
+                train_set = [x for x in self.neightboors if x.get_name() in self.train_set]
                 
                 if all([ nc.get_ready_model_status()>=self.round for nc in train_set]):
                     break

@@ -104,6 +104,11 @@ class Agregator(threading.Thread, Observable):
             w: Number of samples used to train the model.
 
         """
+
+        #
+        # Weights should be in a list
+        #
+
         if self.waiting_agregated_model:
             logging.info("({}) Recived a model from {}".format(self.node_name, n))
             self.waiting_agregated_model = False
@@ -126,13 +131,27 @@ class Agregator(threading.Thread, Observable):
                             self.lock.release()
                         except:
                             pass 
+                        
+                        #print(self.models.keys())
+                        return self.models
                 
                 #    else:
                 #        logging.info("({}) Can't add a model that has already been added {}".format(self.node_name, n))
                 #else:
                 #    logging.info("({}) Can't add a model from a node ({}) that is not in the training test.".format(self.node_name, n))
-  
+
+        return None
                 
+    def get_partial_agregation(self,except_nodes):
+        """
+        Get the partial agregation of the models.
+
+        Args:
+            except_nodes: Nodes to exclude.
+        """
+        models = self.models.copy()
+        models = {k:v for k,v in models.items() if k not in except_nodes}
+        return (self.agregate(self.models),models.keys())
             
     def check_and_run_agregation(self,force=False):
         """

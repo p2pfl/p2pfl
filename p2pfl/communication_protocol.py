@@ -25,9 +25,9 @@ class CommunicationProtocol:
             - NUM_SAMPLES <train_num> <test_num>
             - PARAMS <data> \PARAMS
             - MODELS_READY <round> -----------------------------------------------------------------cambiar con heartbeater 2.0
-            - VOTE_TRAIN_SET (<ip1> <port1> <punct1>)* VOTE_TRAIN_SET_CLOSE -----------------------------------------------------------------cambiar con heartbeater 2.0
+            - VOTE_TRAIN_SET (<node> <punct>)* VOTE_TRAIN_SET_CLOSE -----------------------------------------------------------------cambiar con heartbeater 2.0
             - LEARNING_IS_RUNNING <round> <total_rounds>
-
+            - MODELS_AGREGATED <node>* MODELS_AGREGATED_CLOSE
 
     The unique non-static method is used to process messages with a connection stablished. 
     
@@ -40,20 +40,22 @@ class CommunicationProtocol:
         command_dict: Dictionary with the callbacks to execute at `process_message`.
     """
 
-    BEAT                = "BEAT"
-    STOP                = "STOP"            # Non Gossiped
-    CONN                = "CONNECT"         # Non Gossiped
-    CONN_TO             = "CONNECT_TO"
-    START_LEARNING      = "START_LEARNING"
-    STOP_LEARNING       = "STOP_LEARNING"
-    NUM_SAMPLES         = "NUM_SAMPLES"     # Non Gossiped
-    PARAMS              = "PARAMS"          # special case (binary) 
-    PARAMS_CLOSE        = "\PARAMS"         # special case (binary)
-    MODELS_READY        = "MODELS_READY"    
-    METRICS             = "METRICS"
-    VOTE_TRAIN_SET      = "VOTE_TRAIN_SET"
-    VOTE_TRAIN_SET_CLOSE= "\VOTE_TRAIN_SET"
-    LEARNING_IS_RUNNING = "LEARNING_IS_RUNNING" # Non Gossiped
+    BEAT                    = "BEAT"
+    STOP                    = "STOP"            # Non Gossiped
+    CONN                    = "CONNECT"         # Non Gossiped
+    CONN_TO                 = "CONNECT_TO"
+    START_LEARNING          = "START_LEARNING"
+    STOP_LEARNING           = "STOP_LEARNING"
+    NUM_SAMPLES             = "NUM_SAMPLES"     # Non Gossiped
+    PARAMS                  = "PARAMS"          # special case (binary) 
+    PARAMS_CLOSE            = "\PARAMS"         # special case (binary)
+    MODELS_READY            = "MODELS_READY"    
+    METRICS                 = "METRICS"
+    VOTE_TRAIN_SET          = "VOTE_TRAIN_SET" # ---------- cambiarlo por node (h:p) en vez de h p
+    VOTE_TRAIN_SET_CLOSE    = "\VOTE_TRAIN_SET"
+    LEARNING_IS_RUNNING     = "LEARNING_IS_RUNNING" # Non Gossiped
+    MODELS_AGREGATED        = "MODELS_AGREGATED"    # Non Gossiped
+    MODELS_AGREGATED_CLOSE  = "MODELS_AGREGATED"    # Non Gossiped
 
 
     ############################################
@@ -250,19 +252,19 @@ class CommunicationProtocol:
                             # Divide messages and check length of message
                             close_pos = message.index(CommunicationProtocol.VOTE_TRAIN_SET_CLOSE)
                             vote_msg = message[1:close_pos]
-                            if len(vote_msg)%3 != 0:
+                            if len(vote_msg)%2 != 0:
                                 raise Exception("Invalid vote message")
                             message = message[close_pos+1:]
 
                             # Process vote message
                             votes = []
-                            for i in range(0, len(vote_msg), 3):
-                                votes.append(((vote_msg[i], int(vote_msg[i+1])), int(vote_msg[i+2])))
+                            for i in range(0, len(vote_msg), 2):
+                                host, port = (vote_msg[i]).split(":")
+                                votes.append(((host, int(port)), int(vote_msg[i+1])))
 
                             if not self.__exec(CommunicationProtocol.VOTE_TRAIN_SET, None, None, dict(votes)):
                                 error = True
                                 break
-
 
                         except Exception as e:
                             error = True
@@ -281,6 +283,31 @@ class CommunicationProtocol:
                                 error = True
                                 break
                         else:
+                            error = True
+                            break
+                    
+                    # Models Agregated
+                    elif message[0] == CommunicationProtocol.MODELS_AGREGATED:
+                        try:
+                            # Divide messages and check length of message
+                            close_pos = message.index(CommunicationProtocol.MODELS_AGREGATED_CLOSE)
+                            content = message[1:close_pos]
+                            message = message[close_pos+1:]
+
+                            # Get Nodes
+                            nodes=[]
+                            for n in content:
+                                host,port = n.split(":")
+                                port = int(port)
+                                nodes.append((host,port))
+
+                            # Exec
+                            if not self.__exec(CommunicationProtocol.MODELS_AGREGATED, None, None, nodes):
+                                error = True
+                                break
+
+
+                        except Exception as e:
                             error = True
                             break
 
@@ -458,8 +485,8 @@ class CommunicationProtocol:
         """
         aux = ""
         for v in votes:
-            aux = aux + " " + v[0][0] + " " + str(v[0][1]) + " " + str(v[1])
-        return (CommunicationProtocol.VOTE_TRAIN_SET + " " + aux + " " + CommunicationProtocol.VOTE_TRAIN_SET_CLOSE + "\n").encode("utf-8")
+            aux = aux + " " + v[0][0] + ":" + str(v[0][1]) + " " + str(v[1])
+        return (CommunicationProtocol.VOTE_TRAIN_SET + aux + " " + CommunicationProtocol.VOTE_TRAIN_SET_CLOSE + "\n").encode("utf-8")
         
 
     def build_learning_is_running_msg(round, epoch):
@@ -472,6 +499,20 @@ class CommunicationProtocol:
             A encoded learning is running message.
         """
         return (CommunicationProtocol.LEARNING_IS_RUNNING + " " + str(round) + " " + str(epoch) + "\n").encode("utf-8")
+
+    def build_models_agregated_msg(nodes):
+        """
+        Args:
+            nodes: The nodes that have the models.
+        
+        Returns:
+            A encoded models agregated message.
+        """
+        aux = ""
+        for n in nodes:
+            aux = aux + " " + n[0] + ":" + str(n[1])
+        return (CommunicationProtocol.MODELS_AGREGATED + aux + " " + CommunicationProtocol.MODELS_AGREGATED_CLOSE + "\n").encode("utf-8")
+
 
     ###########################
     #     Special Messages    #

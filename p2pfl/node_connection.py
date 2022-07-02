@@ -81,6 +81,13 @@ class NodeConnection(threading.Thread, Observable):
         """
         return self.addr
 
+    def get_name(self):
+        """
+        Returns:
+            The name of the connection.
+        """
+        return self.addr[0] + ":" + str(self.addr[1])
+
     def set_model_ready_status(self,round):
         """
         Set the last ready round of the other node.
@@ -213,7 +220,7 @@ class NodeConnection(threading.Thread, Observable):
                     if overflow>0:
                         buffer = og_msg[overflow:]
                         msg = msg[:overflow]
-                        logging.debug("({}) (NodeConnection Run) Collapse detected: {}".format(self.name, msg))
+                        logging.debug("({}) (NodeConnection Run) Collapse detected: {}".format(self.get_name(), msg))
 
                     # Process message and count errors
                     exec_msgs,error = self.comm_protocol.process_message(msg)
@@ -223,20 +230,20 @@ class NodeConnection(threading.Thread, Observable):
                     # Error happened
                     if error:
                         self.terminate_flag.set()
-                        logging.debug("({}) An error happened. Last error: {}".format(self.name,msg))       
+                        logging.debug("({}) An error happened. Last error: {}".format(self.get_name(),msg))       
 
             except socket.timeout:
-                logging.debug("({}) (NodeConnection Loop) Timeout".format(self.name))
+                logging.debug("({}) (NodeConnection Loop) Timeout".format(self.get_name()))
                 self.terminate_flag.set()
                 break
 
             except Exception as e:
-                logging.debug("({}) (NodeConnection Loop) Exception: ".format(self.name) + str(e))
+                logging.debug("({}) (NodeConnection Loop) Exception: ".format(self.get_name()) + str(e))
                 self.terminate_flag.set()
                 break
         
         #Down Connection
-        logging.debug("Closed connection: {}".format(self.name))
+        logging.debug("Closed connection: {}".format(self.get_name()))
         self.notify(Events.END_CONNECTION, self) # Notify the parent node
         self.socket.close()
 
@@ -318,7 +325,7 @@ class NodeConnection(threading.Thread, Observable):
         """
         Notify to the parent node that `PARAMS` has been received.
         """
-        self.notify(Events.PARAMS_RECEIVED, (str(self.get_addr()), params, self.train_num_samples))
+        self.notify(Events.PARAMS_RECEIVED, (self.get_name(), params, self.train_num_samples))
 
     def notify_metrics(self,round,loss,metric):
         """
