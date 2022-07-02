@@ -213,7 +213,7 @@ class NodeConnection(threading.Thread, Observable):
                     if overflow>0:
                         buffer = og_msg[overflow:]
                         msg = msg[:overflow]
-                        logging.debug("{} (NodeConnection Run) Collapse detected: {}".format(self.get_addr(), msg))
+                        logging.debug("({}) (NodeConnection Run) Collapse detected: {}".format(self.name, msg))
 
                     # Process message and count errors
                     exec_msgs,error = self.comm_protocol.process_message(msg)
@@ -223,20 +223,20 @@ class NodeConnection(threading.Thread, Observable):
                     # Error happened
                     if error:
                         self.terminate_flag.set()
-                        logging.debug("({}) An error happened. Last error: {}".format(self.get_addr(),msg))       
+                        logging.debug("({}) An error happened. Last error: {}".format(self.name,msg))       
 
             except socket.timeout:
-                logging.debug("{} (NodeConnection Loop) Timeout".format(self.get_addr()))
+                logging.debug("({}) (NodeConnection Loop) Timeout".format(self.name))
                 self.terminate_flag.set()
                 break
 
             except Exception as e:
-                logging.debug("{} (NodeConnection Loop) Exception: ".format(self.get_addr()) + str(e))
+                logging.debug("({}) (NodeConnection Loop) Exception: ".format(self.name) + str(e))
                 self.terminate_flag.set()
                 break
         
         #Down Connection
-        logging.debug("Closed connection: {}".format(self.get_addr()))
+        logging.debug("Closed connection: {}".format(self.name))
         self.notify(Events.END_CONNECTION, self) # Notify the parent node
         self.socket.close()
 

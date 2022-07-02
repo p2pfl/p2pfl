@@ -133,7 +133,7 @@ class BaseNode(threading.Thread, Observer):
                     msg = msg.decode("UTF-8")
                     callback = lambda h,p,b: self.__process_new_connection(node_socket, h, p, b)
                     if not CommunicationProtocol.process_connection(msg,callback):
-                        logging.debug('({}) Conexión rechazada con {}:{}'.format(self.get_addr(),addr,msg))
+                        logging.debug('({}) Conexión rechazada con {}:{}'.format(self.get_name(),addr,msg))
                         node_socket.close()         
                         
             except Exception as e:
@@ -313,7 +313,7 @@ class BaseNode(threading.Thread, Observer):
                     aes_cipher = AESCipher(key=s.recv(AESCipher.key_len()))
 
                 # Add socket to neightboors
-                logging.info("{} Connected to {}:{}".format(self.get_addr(),h,p))
+                logging.info("{} Connected to {}:{}".format(self.get_name(),h,p))
                 nc = NodeConnection(self.get_name(),s,(h,p),aes_cipher)
 
                 nc.add_observer(self)
@@ -323,12 +323,12 @@ class BaseNode(threading.Thread, Observer):
                 return nc
         
             else:
-                logging.info("{} Already connected to {}:{}".format(self.get_addr(),h,p))
+                logging.info("{} Already connected to {}:{}".format(self.get_name(),h,p))
                 self.nei_lock.release()
                 return None
     
         except:
-            logging.info("{} Can't connect to the node {}:{}".format(self.get_addr(),h,p))
+            logging.info("{} Can't connect to the node {}:{}".format(self.get_name(),h,p))
             try:
                 self.nei_lock.release()
             except:
