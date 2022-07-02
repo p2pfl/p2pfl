@@ -127,10 +127,10 @@ class Agregator(threading.Thread, Observable):
                         except:
                             pass 
                 
-                    else:
-                        logging.info("({}) Can't add a model that has already been added {}".format(self.node_name, n))
-                else:
-                    logging.info("({}) Can't add a model from a node ({}) that is not in the training test.".format(self.node_name, n))
+                #    else:
+                #        logging.info("({}) Can't add a model that has already been added {}".format(self.node_name, n))
+                #else:
+                #    logging.info("({}) Can't add a model from a node ({}) that is not in the training test.".format(self.node_name, n))
   
                 
             

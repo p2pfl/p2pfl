@@ -12,12 +12,13 @@ import torch
 
 def test_encoding():
     nl1 = LightningLearner(MLP(), None)
-    params = nl1.encode_parameters()
+    encoded_params = nl1.encode_parameters()
 
     nl2 = LightningLearner(MLP(), None)
-    nl2.set_parameters(nl2.decode_parameters(params))
+    decoded_params,_ = nl2.decode_parameters(encoded_params)
+    nl2.set_parameters(decoded_params)
 
-    params == nl2.encode_parameters()
+    encoded_params == nl2.encode_parameters()
 
 def test_avg_simple():
     n = Node(None,None)

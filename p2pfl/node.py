@@ -321,7 +321,7 @@ class Node(BaseNode):
             try:
                 if self.is_model_init:
                     # Add model to agregator
-                    decoded_model = self.learner.decode_parameters(m)
+                    decoded_model, contributors = self.learner.decode_parameters(m)
                     if self.learner.check_parameters(decoded_model):
                         self.agregator.add_model(node,decoded_model,w)
                     else:
@@ -330,7 +330,8 @@ class Node(BaseNode):
                     # Initialize model
                     self.is_model_init = True
                     logging.info("({}) Model initialized".format(self.get_name()))
-                    self.learner.set_parameters(self.learner.decode_parameters(m))
+                    model, _ = self.learner.decode_parameters(m)
+                    self.learner.set_parameters(model)
             
             except DecodingParamsError as e:
                 # Bajamos el nodo
@@ -387,7 +388,6 @@ class Node(BaseNode):
             # Send Model
             if self.round is not None:
                 self.agregator.add_model(str(self.get_addr()),self.learner.get_parameters(), self.learner.get_num_samples()[0])
-                #self.__bc_model(train_set=True)
                 self.__gossip_agregation() # this is going to produce duplicated models -> buut its fault tolerent
 
             # Wait for model agregation
@@ -438,7 +438,9 @@ class Node(BaseNode):
             # Get time to calculate frequency
             begin = time.time()
 
-            encoded_msgs = CommunicationProtocol.build_params_msg(self.learner.encode_parameters())
+            # Model for agregation is a tuple (model, node_contributors)
+            model = self.learner.encode_parameters()
+            encoded_msgs = CommunicationProtocol.build_params_msg(model)
 
             logging.info("({}) Broadcasting model to train set nodes. (size: {} bytes)".format(self.get_name(),len(encoded_msgs)*Settings.BUFFER_SIZE))
             nei = [nc for nc in self.neightboors if str(nc.get_addr()) in self.train_set and nc.get_ready_model_status()<self.round]
