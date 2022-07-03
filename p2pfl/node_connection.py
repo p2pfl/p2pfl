@@ -50,6 +50,9 @@ class NodeConnection(threading.Thread, Observable):
 
         self.train_set_votes = []
 
+        self.models_agregated = []
+
+
         self.comm_protocol = CommunicationProtocol({
             CommunicationProtocol.BEAT: Beat_cmd(self),
             CommunicationProtocol.STOP: Stop_cmd(self),
@@ -62,6 +65,7 @@ class NodeConnection(threading.Thread, Observable):
             CommunicationProtocol.METRICS: Metrics_cmd(self),
             CommunicationProtocol.VOTE_TRAIN_SET: Vote_train_set_cmd(self),
             CommunicationProtocol.LEARNING_IS_RUNNING: Learning_is_running_cmd(self),
+            CommunicationProtocol.MODELS_AGREGATED: Models_agregated_cmd(self),
         })
 
     def add_processed_messages(self,msgs):
@@ -97,6 +101,26 @@ class NodeConnection(threading.Thread, Observable):
         """
         self.model_ready = round
         self.notify(Events.NODE_MODELS_READY_EVENT, self)
+
+    ####################
+    # Models Agregated #
+    ####################
+
+    def set_models_agregated(self,models):
+        """
+        Set the models agregated.
+        
+        Args:
+            models: The models agregated.
+        """
+        self.models_agregated = models
+
+    def get_models_agregated(self):
+        """
+        Returns:
+            The models agregated.
+        """
+        return self.models_agregated
 
     ###################
     # Train set votes #

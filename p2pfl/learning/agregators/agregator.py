@@ -23,7 +23,6 @@ class Agregator(threading.Thread, Observable):
         self.daemon = True
         Observable.__init__(self)
         self.train_set = []
-        self.train_set_lock = threading.Lock()
         self.waiting_agregated_model = False
         self.node_name = node_name
         self.name = "agregator-" + node_name
@@ -63,33 +62,12 @@ class Agregator(threading.Thread, Observable):
             
     def set_nodes_to_agregate(self, l):
         """
-        Indicate the number of nodes to agregate. None when agregation is not needed.
+        List with the name of nodes to agregate.
 
         Args:
-            n: Number of nodes to agregate. None for no agregation.
+            n: Number of nodes to agregate. Empty for no agregation.
         """
-        self.train_set_lock.acquire()
         self.train_set = l
-        self.train_set_lock.release()
-    
-    def remove_node_to_agregate(self, node):
-        """
-        Indicates that a node is not going to be agregated.
-
-        Args:
-            node: Nodes to remove.
-        """
-        try:
-            self.train_set_lock.acquire()
-            self.train_set.remove(node)
-            self.train_set_lock.release()
-            logging.info("({}) Node Removed ({}/{})".format(self.node_name, str(len(self.models)), str(len(self.train_set))))
-            # It cant produce training, if aggregation is running, clients only decrement
-            self.check_and_run_agregation()
-            
-        except:
-            self.train_set_lock.release()
-            
 
     def set_waiting_agregated_model(self):
         self.waiting_agregated_model = True
@@ -133,7 +111,7 @@ class Agregator(threading.Thread, Observable):
                             pass 
                         
                         #print(self.models.keys())
-                        return self.models
+                        return list(self.models.keys())
                 
                 #    else:
                 #        logging.info("({}) Can't add a model that has already been added {}".format(self.node_name, n))

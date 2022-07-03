@@ -63,6 +63,7 @@ class Node(BaseNode):
         self.__start_thread_lock = threading.Lock()
         self.totalrounds = None
         self.train_set = []
+        self.train_set_lock = threading.Lock()
         self.agregator = agregator( node_name = self.get_name() )
         self.agregator.add_observer(self)
         self.is_model_init = False
@@ -116,8 +117,19 @@ class Node(BaseNode):
         if event == Events.END_CONNECTION:
             # If a training process is running, comunicate the disconnection
             if self.round is not None:
-                node = str(obj.get_addr())
-                self.agregator.remove_node_to_agregate(node)
+                # Try to remove from trainset
+                try:
+                    self.train_set_lock.acquire()
+                    node = obj.get_name()
+                    self.train_set.remove(node)
+                    self.train_set_lock.release()
+                    # It cant produce training, if aggregation is running, clients only decrement
+                    self.agregator.check_and_run_agregation()
+                    
+                except:
+                    self.train_set_lock.release()
+
+                # Refresh training process waiters            
                 try:
                     self.__wait_models_ready_lock.release()
                     self.__wait_votes_ready_lock.release()
@@ -328,8 +340,8 @@ class Node(BaseNode):
                     decoded_model, contributors = self.learner.decode_parameters(m)
                     if self.learner.check_parameters(decoded_model):
                         models_added = self.agregator.add_model(node,decoded_model,w)
-                        #if models_added is not None:
-                        #    self.broadcast(CommunicationProtocol.build_models_agregated_msg(models_added))
+                        if models_added is not None:
+                            self.broadcast(CommunicationProtocol.build_models_agregated_msg(models_added))
                     else:
                         raise ModelNotMatchingError("Not matching models")
                 else:
@@ -380,7 +392,7 @@ class Node(BaseNode):
         if is_train_set:
 
             # Set Models To Agregate 
-            self.agregator.set_nodes_to_agregate(self.train_set) # cambiarlo la lista para que solo puedan agregarse los que estén en la lista
+            self.agregator.set_nodes_to_agregate(self.train_set) # reference to self node stringified list of nodes
             
             # Evaluate and send metrics
             if self.round is not None:
@@ -451,10 +463,13 @@ class Node(BaseNode):
             encoded_msgs = CommunicationProtocol.build_params_msg(model)
 
             logging.info("({}) Broadcasting model to train set nodes. (size: {} bytes)".format(self.get_name(),len(encoded_msgs)*Settings.BUFFER_SIZE))
-            nei = [nc for nc in self.neightboors if nc.get_name() in self.train_set and nc.get_ready_model_status()<self.round]
+            nei = [nc for nc in self.neightboors if nc.get_name() in self.train_set and len(nc.get_models_agregated())<len(self.train_set)]
 
             if nei == []:
                 logging.info("({}) GOssip finished.".format(self.get_name()))
+                # HARDCODED PERO ES PA VER SI TIRA
+                for nc in [nc for nc in self.neightboors if nc.get_name() in self.train_set]:
+                    nc.set_models_agregated([])
                 break
 
             # Select a random subset of neightboors
@@ -513,16 +528,17 @@ class Node(BaseNode):
         for node in self.neightboors:
             node.set_sending_model(flag)
 
-    # Returns participants in the training round
+    # Returns participants in the training round. (stringified list of nodes)
     def __vote_train_set(self):
 
         # Vote
-        candidates = [candidate.get_addr() for candidate in self.neightboors.copy()] # to avoid concurrent modification
+        candidates = [candidate.get_name() for candidate in self.neightboors.copy()] # to avoid concurrent modification
         initial_candidates_len = len(candidates)
         if candidates != []:
             # Send vote
             logging.info("({}) Sending train set vote.".format(self.get_name()))
-            candidates = random.choices(candidates, k=Settings.TRAIN_SET_SIZE)
+            samples = min(Settings.TRAIN_SET_SIZE,len(candidates))
+            candidates = random.sample(candidates, samples)
             weights = [random.randint(0,1000),math.floor(random.randint(0,1000)/2),math.floor(random.randint(0,1000)/4)]
             votes = list(zip(candidates,weights))
 
@@ -538,6 +554,8 @@ class Node(BaseNode):
                     logging.info("({}) Stopping on_round_finished process.".format(self.get_name()))
                     return []
                             
+                logging.debug("({}) Waiting other node votes: {}".format(self.get_name(),[ (nc.get_name(),nc.get_train_set_votes()!=[]) for nc in self.neightboors]))
+
                 if all([ nc.get_train_set_votes()!=[] for nc in self.neightboors]):
                     # Printea cuando se van a tener problemas de desincronizacion
                     if initial_candidates_len != len(self.neightboors):
@@ -564,7 +582,6 @@ class Node(BaseNode):
                     results = {k: v for k, v in results}
 
                     votes = list(results.keys())
-                    votes = [x[0]+":"+str(x[1]) for x in votes]
 
                     # Clear votes    
                     for n in self.neightboors:
@@ -600,9 +617,6 @@ class Node(BaseNode):
             # Verify that trainning has not been interrupted
             if self.round is None:
                 return
-
-                # Send ready message (se manda en el uodate)
-                #self.broadcast(CommunicationProtocol.build_models_ready_msg(self.round))
                 
             # Wait for ready messages
             logging.info("({}) Waiting other nodes to synchorinize the end of the round.".format(self.get_name()))

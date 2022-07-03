@@ -55,7 +55,7 @@ class CommunicationProtocol:
     VOTE_TRAIN_SET_CLOSE    = "\VOTE_TRAIN_SET"
     LEARNING_IS_RUNNING     = "LEARNING_IS_RUNNING" # Non Gossiped
     MODELS_AGREGATED        = "MODELS_AGREGATED"    # Non Gossiped
-    MODELS_AGREGATED_CLOSE  = "MODELS_AGREGATED"    # Non Gossiped
+    MODELS_AGREGATED_CLOSE  = "\MODELS_AGREGATED"    # Non Gossiped
 
 
     ############################################
@@ -259,8 +259,7 @@ class CommunicationProtocol:
                             # Process vote message
                             votes = []
                             for i in range(0, len(vote_msg), 2):
-                                host, port = (vote_msg[i]).split(":")
-                                votes.append(((host, int(port)), int(vote_msg[i+1])))
+                                votes.append((vote_msg[i], int(vote_msg[i+1])))
 
                             if not self.__exec(CommunicationProtocol.VOTE_TRAIN_SET, None, None, dict(votes)):
                                 error = True
@@ -306,8 +305,8 @@ class CommunicationProtocol:
                                 error = True
                                 break
 
-
                         except Exception as e:
+                            logging.exception(e)
                             error = True
                             break
 
@@ -485,7 +484,7 @@ class CommunicationProtocol:
         """
         aux = ""
         for v in votes:
-            aux = aux + " " + v[0][0] + ":" + str(v[0][1]) + " " + str(v[1])
+            aux = aux + " " + v[0]+ " " + str(v[1])
         return (CommunicationProtocol.VOTE_TRAIN_SET + aux + " " + CommunicationProtocol.VOTE_TRAIN_SET_CLOSE + "\n").encode("utf-8")
         
 
@@ -503,14 +502,14 @@ class CommunicationProtocol:
     def build_models_agregated_msg(nodes):
         """
         Args:
-            nodes: The nodes that have the models.
+            nodes: List of strings to indicate agregated nodes.
         
         Returns:
             A encoded models agregated message.
         """
         aux = ""
         for n in nodes:
-            aux = aux + " " + n[0] + ":" + str(n[1])
+            aux = aux + " " + n
         return (CommunicationProtocol.MODELS_AGREGATED + aux + " " + CommunicationProtocol.MODELS_AGREGATED_CLOSE + "\n").encode("utf-8")
 
 

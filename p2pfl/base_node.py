@@ -176,7 +176,7 @@ class BaseNode(threading.Thread, Observer):
 
                 # Add neightboor
                 if result == 0:
-                    logging.info('{} Conexión aceptada con {}:{}'.format(self.get_addr(),h,p))
+                    logging.info('{} Conexión aceptada con {}:{}'.format(self.get_name(),h,p))
                     nc = NodeConnection(self.get_name(),node_socket,(h,p),aes_cipher)
                     nc.add_observer(self)
                     nc.start()
@@ -365,7 +365,8 @@ class BaseNode(threading.Thread, Observer):
             bool: If True, the message has been sent.
         """
         sended=True 
-        for n in self.neightboors:
+
+        for n in self.neightboors.copy(): # to avoid concurrent modification
             if not (n in exc):
                 sended = sended and n.send(msg, is_necesary)
         return sended

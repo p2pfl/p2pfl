@@ -109,3 +109,10 @@ class Learning_is_running_cmd(Command):
     """
     def execute(self,round,total_rounds):
         self.node_connection.notify_learning_is_running(round,total_rounds)
+
+class Models_agregated_cmd(Command):
+    """
+    Command that should be executed as a response to a **models_agregated** message.
+    """
+    def execute(self,node_list):
+        self.node_connection.set_models_agregated(node_list)
