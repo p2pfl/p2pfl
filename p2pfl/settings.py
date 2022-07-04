@@ -24,11 +24,12 @@ class Settings():
     SOCKET_TIEMOUT = 15
     HEARTBEAT_FREC = 5
     AGREGATION_TIEMOUT = 15
-    TRAIN_SET_SIZE = 20
+    TRAIN_SET_SIZE = 10
     AMOUNT_LAST_MESSAGES_SAVED = 100 # Used to control gossiping
     GOSSIP_MESSAGES_FREC = 100 # X rounds per second
     GOSSIP_MESSAGES_PER_ROUND = 100 # send X messages per round
 
+    GOSSIP_EXIT_ON_X_EQUAL_ROUNDS = 3 # If X rounds are equal, exit gossiping
 
     FRAGMENTS_DELAY = 0.001  # en un futuro molar'ia hacer un mecanismo que se adapte din'amicamente a la velocidad de los nodos
 

@@ -296,9 +296,7 @@ class CommunicationProtocol:
                             # Get Nodes
                             nodes=[]
                             for n in content:
-                                host,port = n.split(":")
-                                port = int(port)
-                                nodes.append((host,port))
+                                nodes.append(n)
 
                             # Exec
                             if not self.__exec(CommunicationProtocol.MODELS_AGREGATED, None, None, nodes):

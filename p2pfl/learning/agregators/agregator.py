@@ -33,10 +33,14 @@ class Agregator(threading.Thread, Observable):
         self.agregation_lock = threading.Lock()
         self.agregation_lock.acquire()
 
+        self.thread_executed = False
+
     def run(self):
         """
         Wait for the agregation to be done or timeout. Then agregate the models and notify.
         """
+        self.thread_executed = True
+
         # Wait for all models to be added or TIMEOUT
         self.agregation_lock.acquire(timeout=Settings.AGREGATION_TIEMOUT) 
         
@@ -100,43 +104,44 @@ class Agregator(threading.Thread, Observable):
             self.waiting_agregated_model = False
             self.notify(Events.AGREGATION_FINISHED,model) 
         else:
+            if nodes is not None:
+                self.lock.acquire()
 
-            self.lock.acquire()
-
-            # Get a list of nodes added
-            models_added = [nodes.split() for nodes in list(self.models.keys())] 
-            models_added = [element for sublist in models_added for element in sublist] # Flatten list
-            
-            #logging.debug("{} models_added: {} / {}".format(self.node_name,models_added,self.train_set))
-            
-            # Check if agregation is needed
-            if len(self.train_set)>len(models_added):
-                # Check if all nodes are in the train_set 
-                if all([n in self.train_set for n in nodes]): 
-                    # Check if all nodes are not agregated                    
-                    if all([n not in models_added for n in nodes]):
-                        # Agregar modelo
-                        self.models[" ".join(nodes)] = ((model, sum(self.node_weights[n] for n in nodes)))
-                        logging.info("({}) Model added ({}/{}) from {}".format(self.node_name, str(len(models_added)+len(nodes)), str(len(self.train_set)), str(nodes)))
-                        # Start Timeout
-                        if not self.is_alive():
-                            self.start()
-                        # Check if all models have been added
-                        self.check_and_run_agregation()
-                        # Try Unloock
-                        try:
-                            self.lock.release()
-                        except:
-                            pass 
-                        
-                          
-                        #print(self.models.keys())
-                        return models_added + nodes
+                # Get a list of nodes added
+                models_added = [nodes.split() for nodes in list(self.models.keys())] 
+                models_added = [element for sublist in models_added for element in sublist] # Flatten list
                 
+                #logging.debug("{} models_added: {} / {}".format(self.node_name,models_added,self.train_set))
+                
+                # Check if agregation is needed
+                if len(self.train_set)>len(models_added):
+                    # Check if all nodes are in the train_set 
+                    if all([n in self.train_set for n in nodes]): 
+                        # Check if all nodes are not agregated                    
+                        if all([n not in models_added for n in nodes]):
+                            # Agregar modelo
+                            self.models[" ".join(nodes)] = ((model, sum(self.node_weights[n] for n in nodes)))
+                            logging.info("({}) Model added ({}/{}) from {}".format(self.node_name, str(len(models_added)+len(nodes)), str(len(self.train_set)), str(nodes)))
+                            # Start Timeout
+                            if not self.thread_executed:
+                                self.start()
+                            # Check if all models have been added
+                            self.check_and_run_agregation()
+                            # Try Unloock
+                            try:
+                                self.lock.release()
+                            except:
+                                pass 
+                            
+                            
+                            #print(self.models.keys())
+                            return models_added + nodes
+                    """
+                        else:
+                            logging.info("({}) Can't add a model that has already been added {}".format(self.node_name, nodes))
                     else:
-                        logging.info("({}) Can't add a model that has already been added {}".format(self.node_name, nodes))
-                else:
-                    logging.info("({}) Can't add a model from a node ({}) that is not in the training test.".format(self.node_name, nodes))
+                        logging.info("({}) Can't add a model from a node ({}) that is not in the training test.".format(self.node_name, nodes))
+                    """
 
         try:
             self.lock.release()
@@ -152,9 +157,21 @@ class Agregator(threading.Thread, Observable):
         Args:
             except_nodes: Nodes to exclude.
         """
+
+
+        dict_aux = {}
+        nodes_agregated = []
         models = self.models.copy()
-        models = {k:v for k,v in models.items() if k not in except_nodes}
-        return (self.agregate(self.models),list(models.keys()))
+        for n,m in list(models.items()):
+            splited_nodes = n.split() 
+            if all([n not in except_nodes for n in splited_nodes]):
+                dict_aux[n] = m
+                nodes_agregated += splited_nodes
+
+        if len(dict_aux) == 0:
+            return None,None
+
+        return (self.agregate(dict_aux),nodes_agregated)
             
     def check_and_run_agregation(self,force=False):
         """

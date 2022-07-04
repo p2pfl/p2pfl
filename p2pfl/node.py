@@ -1,3 +1,4 @@
+from distutils.log import debug
 import math
 import random
 import threading
@@ -287,7 +288,6 @@ class Node(BaseNode):
             
             #esto de aqui es una apaño de los malos -> cambiar por lock
             if not self.is_model_init:
-                logging.info("({}) Initialicing Model Weights".format(self.get_name()))
                 while not self.is_model_init:
                     time.sleep(0.1)
 
@@ -344,7 +344,6 @@ class Node(BaseNode):
 
                     logging.debug("({}) Adding model of {}".format(self.get_name(),contributors))
                     
-
                     if self.learner.check_parameters(decoded_model):
                         models_added = self.agregator.add_model(decoded_model,contributors)
                         if models_added is not None:
@@ -354,7 +353,7 @@ class Node(BaseNode):
                 else:
                     # Initialize model
                     self.is_model_init = True
-                    logging.info("({}) Model initialized".format(self.get_name()))
+                    logging.info("({}) Initialicing Model Weights".format(self.get_name()))
                     model, _ = self.learner.decode_parameters(m)
                     self.learner.set_parameters(model)
             
@@ -415,6 +414,7 @@ class Node(BaseNode):
             # Agregate Model
             if self.round is not None:
                 self.agregator.add_model(self.learner.get_parameters(),[self.get_name()])
+                self.broadcast(CommunicationProtocol.build_models_agregated_msg([self.get_name()]))
                 self.__gossip_agregation() # this is going to produce duplicated models -> buut its fault tolerent
 
             # Broadcast to non train_set nodes
@@ -424,6 +424,7 @@ class Node(BaseNode):
         else: 
             # Set Models To Agregate 
             self.agregator.set_waiting_agregated_model()
+            self.is_model_init = True # no hace falta inicializar modelo, no se usará
 
         # Synchronize all nodes
         if self.round is not None:
@@ -453,32 +454,44 @@ class Node(BaseNode):
 
     def __gossip_agregation(self):
 
-        #
-        # Meterle un timeout para no enviar infinito -> si en 3 rondas consecutivas manda literalmente lo musmo paramos
-        #
-        #
-        # MANDAR ÚNICAMENTE SI SE DISPONEN DE LOS MODELOS
-        #
-        # REVISAR CONCURRENCIA ': A VECES SE FUMA EL ULTIMO MENSAJE DE AGREGADO 5 de 5 y no manda el mensaje correspondiente
-        #
+        # Initialize list with status of nodes in the last X iterations
+        last_x_messages = [] 
+        j = 0
 
         while True:
+            
+            # Get time to calculate frequency
+            begin = time.time()
+
             # If the trainning has been interrupted, stop waiting
             if self.round is None:
                 logging.info("({}) Stopping on_round_finished process.".format(self.get_name()))
                 return
 
-            # Get time to calculate frequency
-            begin = time.time()
-
+            # Get nodes wich need models
             nei = [nc for nc in self.neightboors if nc.get_name() in self.train_set and len(nc.get_models_agregated())<len(self.train_set)]
 
+            # Determine end of gossip
             if nei == []:
-                logging.info("({}) GOssip finished.".format(self.get_name()))
-                # HARDCODED PERO ES PA VER SI TIRA
-                for nc in [nc for nc in self.neightboors if nc.get_name() in self.train_set]:
-                    nc.set_models_agregated([])
-                break
+                logging.info("({}) Gossip finished.".format(self.get_name()))
+                return
+
+            # Save state of neightboors. If nodes are not responding gossip will stop
+            if len(last_x_messages) != Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS:
+                last_x_messages.append(str([(nc.get_name(),len((nc.get_models_agregated()))) for nc in nei]))
+            else:
+                last_x_messages[j] = str([(nc.get_name(),len((nc.get_models_agregated()))) for nc in nei])
+                j = (j+1)%Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS
+
+                #logging.debug("({}) Gossiping. Last X iterations: {}".format(self.get_name(),last_x_messages))
+
+                # Check if las messages are the same
+                for i in range(len(last_x_messages)-1):
+                    if last_x_messages[i] != last_x_messages[i+1]:
+                        break
+                    return
+
+
 
             # Select a random subset of neightboors
             samples = min(Settings.GOSSIP_MODELS_PER_ROUND,len(nei))
@@ -488,31 +501,35 @@ class Node(BaseNode):
             for nc in nei:
                 nc.set_sending_model(True)
 
-            logging.info("({}) Gossiping model to {} train set nodes. {}".format(self.get_name(), len(nei), nei))
+            logging.info("({}) Gossiping model to {} train set nodes.".format(self.get_name(), len(nei)))
 
             # Generate and Send Model Partial Agregations (model, node_contributors)
-            for n in nei:
-                partial_agregation, contributors = self.agregator.get_partial_agregation(n.get_models_agregated())
+            for nc in nei:
+                partial_agregation, contributors = self.agregator.get_partial_agregation(nc.get_models_agregated())
+
+                if partial_agregation is not None:
+
+                    #logging.debug
 
 
 
-                contributors=[self.get_name()]# hard coded!!
+                    #contributors=[self.get_name()]# hard coded!!
 
 
 
-                model = self.learner.encode_parameters(params=partial_agregation, contributors=contributors)
+                    model = self.learner.encode_parameters(params=partial_agregation, contributors=contributors)
 
-                # degging
-                #_,contributors = self.learner.decode_parameters(model)
-                #logging.debug("Sending a model with {} contributors".format(contributors))
+                    # degging
+                    #_,contributors = self.learner.decode_parameters(model)
+                    #logging.debug("Sending a model with {} contributors".format(contributors))
 
-                encoded_msgs = CommunicationProtocol.build_params_msg(model)
-                # Send Fragments
-                for msg in encoded_msgs:
-                    n.send(msg, True)
-                    if Settings.FRAGMENTS_DELAY > 0:
-                        time.sleep(Settings.FRAGMENTS_DELAY)
-
+                    encoded_msgs = CommunicationProtocol.build_params_msg(model)
+                    # Send Fragments
+                    for msg in encoded_msgs:
+                        nc.send(msg, True)
+                        if Settings.FRAGMENTS_DELAY > 0:
+                            time.sleep(Settings.FRAGMENTS_DELAY)
+                
             # Lock Neightboors Communication
             for nc in nei:
                 nc.set_sending_model(False)
@@ -676,6 +693,9 @@ class Node(BaseNode):
         self.agregator.clear()
         self.learner.finalize_round() # revisar x si esto pueiera quedar mejor
         self.round = self.round + 1
+        # Clear node agregation
+        for nc in [nc for nc in self.neightboors if nc.get_name() in self.train_set]:
+            nc.set_models_agregated([])
 
         logging.info("({}) Round {} of {} finished.".format(self.get_name(),self.round,self.totalrounds))
 
