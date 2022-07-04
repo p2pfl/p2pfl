@@ -24,6 +24,8 @@ from p2pfl.utils.observer import Events, Observer
 
 # Num samples -> meterlo en el handshaking -> puede traer problemas en topoligías no completamente conectadas
 
+# concurrencia .copy() vs locks -> tratar de borrar los copys (sobre todo en nei)
+
 ###################################################################################################################
 # FULL CONNECTED HAY QUE IMPLEMENTARLO DE FORMA QUE CUANDO SE INTRODUCE UN NODO EN LA RED, SE HACE UN BROADCAST
 ###################################################################################################################
@@ -171,7 +173,7 @@ class Node(BaseNode):
             self.__stop_learning()
     
         elif event == Events.PARAMS_RECEIVED:
-            self.add_model(obj[0],obj[1],obj[2])
+            self.add_model(obj)
         
         elif event == Events.METRICS_RECEIVED:
             # Log Metrics
@@ -323,7 +325,7 @@ class Node(BaseNode):
     #-------------------------------------------------------
     
     
-    def add_model(self,node,m,w): 
+    def add_model(self,m): 
         """
         Add a model. The model isn't inicializated, the recieved model is used for it. Otherwise, the model is agregated using the **agregator**.
 
@@ -338,8 +340,13 @@ class Node(BaseNode):
                 if self.is_model_init:
                     # Add model to agregator
                     decoded_model, contributors = self.learner.decode_parameters(m)
+
+
+                    logging.debug("({}) Adding model of {}".format(self.get_name(),contributors))
+                    
+
                     if self.learner.check_parameters(decoded_model):
-                        models_added = self.agregator.add_model(node,decoded_model,w)
+                        models_added = self.agregator.add_model(decoded_model,contributors)
                         if models_added is not None:
                             self.broadcast(CommunicationProtocol.build_models_agregated_msg(models_added))
                     else:
@@ -391,8 +398,11 @@ class Node(BaseNode):
         is_train_set = self.get_name() in self.train_set
         if is_train_set:
 
-            # Set Models To Agregate 
+            # Set Models To Agregate and their weights
             self.agregator.set_nodes_to_agregate(self.train_set) # reference to self node stringified list of nodes
+            node_w = [(nc.get_name(), nc.get_num_samples()[0]) for nc in self.neightboors if nc.get_name() in self.train_set]
+            node_w.append((self.get_name(),self.learner.get_num_samples()[0]))
+            self.agregator.set_node_weights(dict(node_w))
             
             # Evaluate and send metrics
             if self.round is not None:
@@ -404,7 +414,7 @@ class Node(BaseNode):
             
             # Agregate Model
             if self.round is not None:
-                self.agregator.add_model(self.get_name(),self.learner.get_parameters(), self.learner.get_num_samples()[0])
+                self.agregator.add_model(self.learner.get_parameters(),[self.get_name()])
                 self.__gossip_agregation() # this is going to produce duplicated models -> buut its fault tolerent
 
             # Broadcast to non train_set nodes
@@ -444,10 +454,13 @@ class Node(BaseNode):
     def __gossip_agregation(self):
 
         #
-        # Meterle un timeout para no enviar infinito
+        # Meterle un timeout para no enviar infinito -> si en 3 rondas consecutivas manda literalmente lo musmo paramos
         #
-        
-        # MODELS AGREGATED vs MODELS READY -> revisar diferencias
+        #
+        # MANDAR ÚNICAMENTE SI SE DISPONEN DE LOS MODELOS
+        #
+        # REVISAR CONCURRENCIA ': A VECES SE FUMA EL ULTIMO MENSAJE DE AGREGADO 5 de 5 y no manda el mensaje correspondiente
+        #
 
         while True:
             # If the trainning has been interrupted, stop waiting
@@ -458,11 +471,6 @@ class Node(BaseNode):
             # Get time to calculate frequency
             begin = time.time()
 
-            # Model for agregation is a tuple (model, node_contributors)
-            model = self.learner.encode_parameters()
-            encoded_msgs = CommunicationProtocol.build_params_msg(model)
-
-            logging.info("({}) Broadcasting model to train set nodes. (size: {} bytes)".format(self.get_name(),len(encoded_msgs)*Settings.BUFFER_SIZE))
             nei = [nc for nc in self.neightboors if nc.get_name() in self.train_set and len(nc.get_models_agregated())<len(self.train_set)]
 
             if nei == []:
@@ -480,10 +488,30 @@ class Node(BaseNode):
             for nc in nei:
                 nc.set_sending_model(True)
 
-            # Send Fragments
-            for msg in encoded_msgs:
-                for n in nei:
+            logging.info("({}) Gossiping model to {} train set nodes. {}".format(self.get_name(), len(nei), nei))
+
+            # Generate and Send Model Partial Agregations (model, node_contributors)
+            for n in nei:
+                partial_agregation, contributors = self.agregator.get_partial_agregation(n.get_models_agregated())
+
+
+
+                contributors=[self.get_name()]# hard coded!!
+
+
+
+                model = self.learner.encode_parameters(params=partial_agregation, contributors=contributors)
+
+                # degging
+                #_,contributors = self.learner.decode_parameters(model)
+                #logging.debug("Sending a model with {} contributors".format(contributors))
+
+                encoded_msgs = CommunicationProtocol.build_params_msg(model)
+                # Send Fragments
+                for msg in encoded_msgs:
                     n.send(msg, True)
+                    if Settings.FRAGMENTS_DELAY > 0:
+                        time.sleep(Settings.FRAGMENTS_DELAY)
 
             # Lock Neightboors Communication
             for nc in nei:
@@ -494,7 +522,6 @@ class Node(BaseNode):
             time_sleep = 1/Settings.GOSSIP_MODELS_FREC-time_diff
             if time_sleep > 0:
                 time.sleep(time_sleep)
-
 
     def __bc_model(self, train_set=None):
         encoded_msgs = CommunicationProtocol.build_params_msg(self.learner.encode_parameters())
@@ -548,15 +575,24 @@ class Node(BaseNode):
                     
             # Wait for other votes
             logging.info("({}) Waiting other node votes.".format(self.get_name()))
+
+
+
             while True:
                 # If the trainning has been interrupted, stop waiting
                 if self.round is None:
                     logging.info("({}) Stopping on_round_finished process.".format(self.get_name()))
                     return []
-                            
-                logging.debug("({}) Waiting other node votes: {}".format(self.get_name(),[ (nc.get_name(),nc.get_train_set_votes()!=[]) for nc in self.neightboors]))
 
-                if all([ nc.get_train_set_votes()!=[] for nc in self.neightboors]):
+
+                #logging.debug("({}) Waiting other node votes: {}".format(self.get_name(),[ (nc.get_name(),nc.get_train_set_votes()!=[]) for nc in self.neightboors]))
+
+                """
+                DEBUG:root:(127.0.0.1:51855) Waiting other node votes: [('127.0.0.1:38951', True), ('127.0.0.1:33317', False), ('127.0.0.1:56003', False)]
+                INFO:root:127.0.0.1:51855 Train set of 4 nodes. ['127.0.0.1:38951', '127.0.0.1:33317', '127.0.0.1:51855', '127.0.0.1:56003']
+                """
+
+                if all([ nc.get_train_set_votes()!=[] for nc in self.neightboors.copy()]):
                     # Printea cuando se van a tener problemas de desincronizacion
                     if initial_candidates_len != len(self.neightboors):
                         logging.error("({}) Not all nodes voted. Problem will be resolved on gossip without full connected topology.".format(self.get_name()))
@@ -575,7 +611,7 @@ class Node(BaseNode):
                     results = sorted(results.items(), key=lambda x: x[0], reverse=True) # to equal solve of draw
                     results = sorted(results, key=lambda x: x[1], reverse=True)
 
-                    logging.info("({}) VOTING RESULTS: {}".format(self.get_name(),results))
+                    #logging.info("({}) VOTING RESULTS: {}".format(self.get_name(),results))
 
                     top = min(len(results), Settings.TRAIN_SET_SIZE)
                     results = results[0:top]
@@ -619,7 +655,7 @@ class Node(BaseNode):
                 return
                 
             # Wait for ready messages
-            logging.info("({}) Waiting other nodes to synchorinize the end of the round.".format(self.get_name()))
+            #logging.info("({}) Waiting other nodes to synchorinize the end of the round.".format(self.get_name()))
             while True:
                 # If the trainning has been interrupted, stop waiting
                 if self.round is None:
@@ -637,8 +673,10 @@ class Node(BaseNode):
 
     def __on_round_finished(self):
         # Set Next Round
+        self.agregator.clear()
         self.learner.finalize_round() # revisar x si esto pueiera quedar mejor
         self.round = self.round + 1
+
         logging.info("({}) Round {} of {} finished.".format(self.get_name(),self.round,self.totalrounds))
 
         # Next Step or Finish
@@ -650,4 +688,7 @@ class Node(BaseNode):
             # Finish
             self.round = None
             self.is_model_init = False
-            logging.info("({}) Finish!!.".format(self.get_name()))   
+            logging.info("({}) Taining finished!!.".format(self.get_name(),self.round,self.totalrounds))
+
+
+        

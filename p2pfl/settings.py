@@ -30,7 +30,7 @@ class Settings():
     GOSSIP_MESSAGES_PER_ROUND = 100 # send X messages per round
 
 
-    FRAGMENTS_DELAY = 0.1  # en un futuro molar'ia hacer un mecanismo que se adapte din'amicamente a la velocidad de los nodos
+    FRAGMENTS_DELAY = 0.001  # en un futuro molar'ia hacer un mecanismo que se adapte din'amicamente a la velocidad de los nodos
 
     GOSSIP_MODELS_FREC = 4  # X times per second | A really high value will make to send duplicated models (send twice before getting a models left update) 
                             # SE PODRÍa TRATAR DE NO MANDARLO ANTES DE OBTENER RESPUESTA

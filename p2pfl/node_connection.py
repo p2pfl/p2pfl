@@ -182,6 +182,9 @@ class NodeConnection(threading.Thread, Observable):
         self.train_num_samples = train
         self.test_num_samples = test
 
+    def get_num_samples(self):
+        return self.train_num_samples, self.test_num_samples
+
     def add_param_segment(self,data):
         """
         Add a segment of parameters to the buffer.
@@ -349,7 +352,8 @@ class NodeConnection(threading.Thread, Observable):
         """
         Notify to the parent node that `PARAMS` has been received.
         """
-        self.notify(Events.PARAMS_RECEIVED, (self.get_name(), params, self.train_num_samples))
+        # ahora
+        self.notify(Events.PARAMS_RECEIVED, (params))
 
     def notify_metrics(self,round,loss,metric):
         """

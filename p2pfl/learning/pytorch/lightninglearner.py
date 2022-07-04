@@ -39,9 +39,9 @@ class LightningLearner(NodeLearner):
     # Encoded to numpy serialized
     def encode_parameters(self, params=None, contributors=None):
         if params is None:
-            params = self.model
-        array = [val.cpu().numpy() for _, val in params.state_dict().items()]
-        return pickle.dumps((array,None))
+            params = self.model.state_dict()
+        array = [val.cpu().numpy() for _, val in params.items()]
+        return pickle.dumps((array,contributors))
 
     def decode_parameters(self, data):
         try:
