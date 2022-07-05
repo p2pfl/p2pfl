@@ -30,7 +30,7 @@ class BaseNode(threading.Thread, Observer):
     #     Node Init     #
     #####################
 
-    def __init__(self, host="127.0.0.1", port=0, simulation=True):
+    def __init__(self, host="127.0.0.1", port=None, simulation=True):
         threading.Thread.__init__(self)
         self.__terminate_flag = threading.Event()
         self.host = socket.gethostbyname(host)
@@ -39,10 +39,12 @@ class BaseNode(threading.Thread, Observer):
 
         # Setting Up Node Socket (listening)
         self.node_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #TCP Socket
-        self.node_socket.bind((host, port))
-        self.node_socket.listen(50) # no more than 50 connections at queue
-        if port==0:
+        if port==None:
+            self.node_socket.bind((host, 0)) # gets a random free port
             self.port = self.node_socket.getsockname()[1]
+        else:
+            self.node_socket.bind((host, port))
+        self.node_socket.listen(50) # no more than 50 connections at queue
         self.name = "node-" + self.get_name()
         
         # Neightboors

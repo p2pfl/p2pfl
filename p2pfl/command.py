@@ -116,3 +116,11 @@ class Models_agregated_cmd(Command):
     """
     def execute(self,node_list):
         self.node_connection.set_models_agregated(node_list)
+
+class Model_initialized_cmd(Command):
+    """
+    Command that should be executed as a response to a **model_initialized** message.
+    """
+    def execute(self):
+        print("POR HACER")
+        self.node_connection.set_model_initialized(True)

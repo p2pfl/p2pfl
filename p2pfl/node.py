@@ -37,7 +37,7 @@ class Node(BaseNode):
     #     Node Init     #
     #####################
 
-    def __init__(self, model, data, host="127.0.0.1", port=0, learner=LightningLearner, agregator=FedAvg, simulation=True):
+    def __init__(self, model, data, host="127.0.0.1", port=None, learner=LightningLearner, agregator=FedAvg, simulation=True):
         """
         Class based on a base node that allows ***p2p Federated Learning**. 
             
@@ -69,7 +69,7 @@ class Node(BaseNode):
         self.train_set_lock = threading.Lock()
         self.agregator = agregator( node_name = self.get_name() )
         self.agregator.add_observer(self)
-        self.is_model_init = False
+        self.model_initialized = False
 
         # Locks
         self.__wait_models_ready_lock = threading.Lock()
@@ -234,9 +234,8 @@ class Node(BaseNode):
             logging.info("({}) Broadcasting start learning...".format(self.get_name()))
             self.broadcast(CommunicationProtocol.build_start_learning_msg(rounds,epochs))
             # Initialize model
-            logging.info("({}) Sending Initial Model Weights".format(self.get_name()))
-            self.is_model_init = True
-            self.__bc_model()
+            self.broadcast(CommunicationProtocol.build_model_initialized_msg())
+            self.model_initialized = True
             # Learning Thread
             self.__start_learning_thread(rounds,epochs)
         else:
@@ -280,16 +279,11 @@ class Node(BaseNode):
             self.learner.init()
             self.__start_thread_lock.release()
 
-            # Indicates samples that be used in the learning process
-            logging.info("({}) Broadcasting Number of Samples...".format(self.get_name()))  # esto meterlo en el handsaking
+            # Gossiping model inicialization            
+            self.__gossip_init_model()
 
-            #esto ya no hará falta -> ahora multilee -> tb nos perjudica porque si ya se está mandado el modelo, va a promediarlo x 0
+            # Updates the number of samples by node
             self.broadcast(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())) # si no se manda bien promedia x 0
-            
-            #esto de aqui es una apaño de los malos -> cambiar por lock
-            if not self.is_model_init:
-                while not self.is_model_init:
-                    time.sleep(0.1)
 
             # Train
             self.learner.set_epochs(epochs)
@@ -337,12 +331,9 @@ class Node(BaseNode):
         # Check if Learning is running
         if self.round is not None:
             try:
-                if self.is_model_init:
+                if self.model_initialized:
                     # Add model to agregator
                     decoded_model, contributors = self.learner.decode_parameters(m)
-
-
-                    logging.debug("({}) Adding model of {}".format(self.get_name(),contributors))
                     
                     if self.learner.check_parameters(decoded_model):
                         models_added = self.agregator.add_model(decoded_model,contributors)
@@ -352,8 +343,9 @@ class Node(BaseNode):
                         raise ModelNotMatchingError("Not matching models")
                 else:
                     # Initialize model
-                    self.is_model_init = True
+                    self.model_initialized = True
                     logging.info("({}) Initialicing Model Weights".format(self.get_name()))
+                    self.broadcast(CommunicationProtocol.build_model_initialized_msg())
                     model, _ = self.learner.decode_parameters(m)
                     self.learner.set_parameters(model)
             
@@ -424,7 +416,7 @@ class Node(BaseNode):
         else: 
             # Set Models To Agregate 
             self.agregator.set_waiting_agregated_model()
-            self.is_model_init = True # no hace falta inicializar modelo, no se usará
+            self.model_initialized = True # no hace falta inicializar modelo, no se usará
 
         # Synchronize all nodes
         if self.round is not None:
@@ -491,8 +483,6 @@ class Node(BaseNode):
                         break
                     return
 
-
-
             # Select a random subset of neightboors
             samples = min(Settings.GOSSIP_MODELS_PER_ROUND,len(nei))
             nei = random.sample(nei, samples)
@@ -509,13 +499,7 @@ class Node(BaseNode):
 
                 if partial_agregation is not None:
 
-                    #logging.debug
-
-
-
                     #contributors=[self.get_name()]# hard coded!!
-
-
 
                     model = self.learner.encode_parameters(params=partial_agregation, contributors=contributors)
 
@@ -539,6 +523,30 @@ class Node(BaseNode):
             time_sleep = 1/Settings.GOSSIP_MODELS_FREC-time_diff
             if time_sleep > 0:
                 time.sleep(time_sleep)
+
+
+    def __gossip_init_model(self): # parametrizas con una funcion de obtencion de nodos y fuera
+
+        if self.model_initialized:
+                
+            logging.info("({}) Gossiping model to {} train set nodes.".format(self.get_name(), len(self.neightboors)))
+
+            encoded_msgs = CommunicationProtocol.build_params_msg(self.learner.encode_parameters())
+        
+            # Lock Neightboors Communication
+            self.__set_sending_model(True)
+            # Send Fragments
+            for msg in encoded_msgs:
+                self.broadcast(msg)
+            # UnLock Neightboors Communication
+            self.__set_sending_model(False)
+
+        else:
+            # esto de aqui es una apaño de los malos -> cambiar por lock
+            if not self.model_initialized:
+                while not self.model_initialized:
+                    time.sleep(0.1)
+
 
     def __bc_model(self, train_set=None):
         encoded_msgs = CommunicationProtocol.build_params_msg(self.learner.encode_parameters())
@@ -707,7 +715,7 @@ class Node(BaseNode):
             self.__evaluate()
             # Finish
             self.round = None
-            self.is_model_init = False
+            self.model_initialized = False
             logging.info("({}) Taining finished!!.".format(self.get_name(),self.round,self.totalrounds))
 
 

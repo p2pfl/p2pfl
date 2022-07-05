@@ -66,6 +66,7 @@ class NodeConnection(threading.Thread, Observable):
             CommunicationProtocol.VOTE_TRAIN_SET: Vote_train_set_cmd(self),
             CommunicationProtocol.LEARNING_IS_RUNNING: Learning_is_running_cmd(self),
             CommunicationProtocol.MODELS_AGREGATED: Models_agregated_cmd(self),
+            CommunicationProtocol.MODEL_INITIALIZED: Model_initialized_cmd(self),
         })
 
     def add_processed_messages(self,msgs):
@@ -101,6 +102,23 @@ class NodeConnection(threading.Thread, Observable):
         """
         self.model_ready = round
         self.notify(Events.NODE_MODELS_READY_EVENT, self)
+    
+    #####################
+    # Model Initialized #
+    #####################
+
+    def set_model_initialized(self, value):
+        """
+        Set the model initialized.
+        """
+        self.model_initialized = value
+
+    def get_model_initialized(self):
+        """
+        Returns:
+            The model initialized.
+        """
+        return self.model_initialized
 
     ####################
     # Models Agregated #

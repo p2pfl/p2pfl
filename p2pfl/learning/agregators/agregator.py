@@ -101,7 +101,6 @@ class Agregator(threading.Thread, Observable):
 
         if self.waiting_agregated_model:
             logging.info("({}) Recived an agregated model.".format(self.node_name))
-            self.waiting_agregated_model = False
             self.notify(Events.AGREGATION_FINISHED,model) 
         else:
             if nodes is not None:

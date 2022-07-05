@@ -24,7 +24,7 @@ def test_node_down_on_learning(n):
         assert len(node.neightboors) == n-1
 
     # Start Learning
-    nodes[0].set_start_learning(rounds=10,epochs=2)
+    nodes[0].set_start_learning(rounds=4,epochs=0)
 
     # Stopping node
     #nodes[1].stop()
@@ -46,7 +46,7 @@ def test_node_down_on_learning(n):
 
 if __name__ == '__main__':
     for _ in range(50):
-        test_node_down_on_learning(20)
+        test_node_down_on_learning(5)
         print("\n\n\n\n\n")
         break
 

@@ -28,6 +28,7 @@ class CommunicationProtocol:
             - VOTE_TRAIN_SET (<node> <punct>)* VOTE_TRAIN_SET_CLOSE -----------------------------------------------------------------cambiar con heartbeater 2.0
             - LEARNING_IS_RUNNING <round> <total_rounds>
             - MODELS_AGREGATED <node>* MODELS_AGREGATED_CLOSE
+            - MODEL_INITIALIZED
 
     The unique non-static method is used to process messages with a connection stablished. 
     
@@ -56,7 +57,7 @@ class CommunicationProtocol:
     LEARNING_IS_RUNNING     = "LEARNING_IS_RUNNING" # Non Gossiped
     MODELS_AGREGATED        = "MODELS_AGREGATED"    # Non Gossiped
     MODELS_AGREGATED_CLOSE  = "\MODELS_AGREGATED"    # Non Gossiped
-
+    MODEL_INITIALIZED       = "MODEL_INITIALIZED" # Non Gossiped
 
     ############################################
     #    MSG PROCESSING (Non Static Methods)   #
@@ -116,14 +117,71 @@ class CommunicationProtocol:
 
             # Process messages
             while len(message) > 0:
-                # Check message and exec message
-                if len(message) > 0:
-                    # Beat
-                    if message[0] == CommunicationProtocol.BEAT:
-                        if len(message) > 1:
+
+                # Beat
+                if message[0] == CommunicationProtocol.BEAT:
+                    if len(message) > 1:
+                        hash_ = message[1]
+                        cmd_text = (" ".join(message[0:2]) + "\n").encode("utf-8")
+                        if self.__exec(CommunicationProtocol.BEAT,hash_, cmd_text):
+                            message = message[2:]
+                        else:
+                            error = True
+                            break
+                    else:
+                        error = True
+                        break
+                    
+                # Stop (non gossiped)
+                elif message[0] == CommunicationProtocol.STOP:
+                    if self.__exec(CommunicationProtocol.STOP, None, None):
+                        message = message[1:]
+                    else:
+                        error = True
+                        break
+                   
+
+                # Connect to
+                elif message[0] == CommunicationProtocol.CONN_TO:
+                    if len(message) > 2:
+                        if message[2].isdigit():
+                            if self.__exec(CommunicationProtocol.CONN_TO, None, None, message[1], int(message[2])):
+                                message = message[3:]
+                            else:
+                                error = True
+                                break 
+                        else:
+                            error = True
+                            break
+                    else:
+                        error = True
+                        break
+
+                # Start learning
+                elif message[0] == CommunicationProtocol.START_LEARNING:
+                    if len(message) > 3:
+                        if message[1].isdigit() and message[2].isdigit():
+                            hash_ = message[3]
+                            cmd_text = (" ".join(message[0:4]) + "\n").encode("utf-8")
+                            if self.__exec(CommunicationProtocol.START_LEARNING, hash_, cmd_text, int(message[1]), int(message[2])):
+                                message = message[4:]
+                            else:
+                                error = True
+                                break
+                        else:
+                            error = True
+                            break
+                    else:
+                        error = True
+                        break
+
+                # Stop learning
+                elif message[0] == CommunicationProtocol.STOP_LEARNING:
+                    if len(message) > 1:            
+                        if message[1].isdigit():
                             hash_ = message[1]
                             cmd_text = (" ".join(message[0:2]) + "\n").encode("utf-8")
-                            if self.__exec(CommunicationProtocol.BEAT,hash_, cmd_text):
+                            if self.__exec(CommunicationProtocol.STOP_LEARNING, hash_, cmd_text):
                                 message = message[2:]
                             else:
                                 error = True
@@ -131,187 +189,134 @@ class CommunicationProtocol:
                         else:
                             error = True
                             break
-                    
-                    # Stop (non gossiped)
-                    elif message[0] == CommunicationProtocol.STOP:
-                        if len(message) > 0:
-                            if self.__exec(CommunicationProtocol.STOP, None, None):
-                                message = message[1:]
-                            else:
-                                error = True
-                                break
-                        else:
-                            error = True
-                            break
-
-                    # Connect to
-                    elif message[0] == CommunicationProtocol.CONN_TO:
-                        if len(message) > 2:
-                            if message[2].isdigit():
-                                if self.__exec(CommunicationProtocol.CONN_TO, None, None, message[1], int(message[2])):
-                                    message = message[3:]
-                                else:
-                                    error = True
-                                    break 
-                            else:
-                                error = True
-                                break
-                        else:
-                            error = True
-                            break
-
-                    # Start learning
-                    elif message[0] == CommunicationProtocol.START_LEARNING:
-                        if len(message) > 3:
-                            if message[1].isdigit() and message[2].isdigit():
-                                hash_ = message[3]
-                                cmd_text = (" ".join(message[0:4]) + "\n").encode("utf-8")
-                                if self.__exec(CommunicationProtocol.START_LEARNING, hash_, cmd_text, int(message[1]), int(message[2])):
-                                    message = message[4:]
-                                else:
-                                    error = True
-                                    break
-                            else:
-                                error = True
-                                break
-                        else:
-                            error = True
-                            break
-
-                    # Stop learning
-                    elif message[0] == CommunicationProtocol.STOP_LEARNING:
-                        if len(message) > 1:            
-                            if message[1].isdigit():
-                                hash_ = message[1]
-                                cmd_text = (" ".join(message[0:2]) + "\n").encode("utf-8")
-                                if self.__exec(CommunicationProtocol.STOP_LEARNING, hash_, cmd_text):
-                                    message = message[2:]
-                                else:
-                                    error = True
-                                    break
-                            else:
-                                error = True
-                                break
-                        else:
-                            error = True
-                            break
-        
-                    # Number of samples (non gossiped)
-                    elif message[0] == CommunicationProtocol.NUM_SAMPLES:
-                        if len(message) > 2:
-                            if message[1].isdigit() and message[2].isdigit():
-                                if self.__exec(CommunicationProtocol.NUM_SAMPLES, None, None, int(message[1]), int(message[2])):
-                                    message = message[3:]
-                                else:
-                                    error = True
-                                    break                        
-                            else:
-                                error = True
-                                break
-                        else:
-                            error = True
-                            break
-
-                    # Models Ready
-                    elif message[0] == CommunicationProtocol.MODELS_READY:
-                        if len(message) > 1:
-                            if message[1].isdigit():
-                                if self.__exec(CommunicationProtocol.MODELS_READY, None, None, int(message[1])):
-                                    message = message[2:]
-                                else:
-                                    error = True
-                                    break
-                            else:
-                                error = True
-                                break
-                        else:
-                            error = True
-                            break
-
-                    # Metrics
-                    elif message[0] == CommunicationProtocol.METRICS:
-                        if len(message) > 4:
-                            try:
-                                hash_ = message[4]
-                                cmd_text = (" ".join(message[0:5]) + "\n").encode("utf-8")
-                                if self.__exec(CommunicationProtocol.METRICS, hash_, cmd_text, int(message[1]), float(message[2]), float(message[3])):
-                                    message = message[5:]
-                                else:
-                                    error = True
-                                    break
-                            except Exception as e:
-                                error = True
-                                break
-                        else:
-                            error = True
-                            break
-
-                    # Vote train set
-                    elif message[0] == CommunicationProtocol.VOTE_TRAIN_SET:
-                        try:
-                            # Divide messages and check length of message
-                            close_pos = message.index(CommunicationProtocol.VOTE_TRAIN_SET_CLOSE)
-                            vote_msg = message[1:close_pos]
-                            if len(vote_msg)%2 != 0:
-                                raise Exception("Invalid vote message")
-                            message = message[close_pos+1:]
-
-                            # Process vote message
-                            votes = []
-                            for i in range(0, len(vote_msg), 2):
-                                votes.append((vote_msg[i], int(vote_msg[i+1])))
-
-                            if not self.__exec(CommunicationProtocol.VOTE_TRAIN_SET, None, None, dict(votes)):
-                                error = True
-                                break
-
-                        except Exception as e:
-                            error = True
-                            break
-
-                    # Learning is running
-                    elif message[0] == CommunicationProtocol.LEARNING_IS_RUNNING:
-                        if len(message) > 2:
-                            if message[1].isdigit() and message[2].isdigit() and message[3].isdigit():
-                                if self.__exec(hash_,CommunicationProtocol.LEARNING_IS_RUNNING, None, None, int(message[1])):
-                                    message = message[3:]
-                                else:
-                                    error = True
-                                    break
-                            else:
-                                error = True
-                                break
-                        else:
-                            error = True
-                            break
-                    
-                    # Models Agregated
-                    elif message[0] == CommunicationProtocol.MODELS_AGREGATED:
-                        try:
-                            # Divide messages and check length of message
-                            close_pos = message.index(CommunicationProtocol.MODELS_AGREGATED_CLOSE)
-                            content = message[1:close_pos]
-                            message = message[close_pos+1:]
-
-                            # Get Nodes
-                            nodes=[]
-                            for n in content:
-                                nodes.append(n)
-
-                            # Exec
-                            if not self.__exec(CommunicationProtocol.MODELS_AGREGATED, None, None, nodes):
-                                error = True
-                                break
-
-                        except Exception as e:
-                            logging.exception(e)
-                            error = True
-                            break
-
-                    # Non Recognized message            
                     else:
                         error = True
                         break
+        
+                # Number of samples (non gossiped)
+                elif message[0] == CommunicationProtocol.NUM_SAMPLES:
+                    if len(message) > 2:
+                        if message[1].isdigit() and message[2].isdigit():
+                            if self.__exec(CommunicationProtocol.NUM_SAMPLES, None, None, int(message[1]), int(message[2])):
+                                message = message[3:]
+                            else:
+                                error = True
+                                break                        
+                        else:
+                            error = True
+                            break
+                    else:
+                        error = True
+                        break
+
+                # Models Ready
+                elif message[0] == CommunicationProtocol.MODELS_READY:
+                    if len(message) > 1:
+                        if message[1].isdigit():
+                            if self.__exec(CommunicationProtocol.MODELS_READY, None, None, int(message[1])):
+                                message = message[2:]
+                            else:
+                                error = True
+                                break
+                        else:
+                            error = True
+                            break
+                    else:
+                        error = True
+                        break
+
+                # Metrics
+                elif message[0] == CommunicationProtocol.METRICS:
+                    if len(message) > 4:
+                        try:
+                            hash_ = message[4]
+                            cmd_text = (" ".join(message[0:5]) + "\n").encode("utf-8")
+                            if self.__exec(CommunicationProtocol.METRICS, hash_, cmd_text, int(message[1]), float(message[2]), float(message[3])):
+                                message = message[5:]
+                            else:
+                                error = True
+                                break
+                        except Exception as e:
+                            error = True
+                            break
+                    else:
+                        error = True
+                        break
+
+                # Vote train set
+                elif message[0] == CommunicationProtocol.VOTE_TRAIN_SET:
+                    try:
+                        # Divide messages and check length of message
+                        close_pos = message.index(CommunicationProtocol.VOTE_TRAIN_SET_CLOSE)
+                        vote_msg = message[1:close_pos]
+                        if len(vote_msg)%2 != 0:
+                            raise Exception("Invalid vote message")
+                        message = message[close_pos+1:]
+
+                        # Process vote message
+                        votes = []
+                        for i in range(0, len(vote_msg), 2):
+                            votes.append((vote_msg[i], int(vote_msg[i+1])))
+
+                        if not self.__exec(CommunicationProtocol.VOTE_TRAIN_SET, None, None, dict(votes)):
+                            error = True
+                            break
+
+                    except Exception as e:
+                        error = True
+                        break
+
+                # Learning is running
+                elif message[0] == CommunicationProtocol.LEARNING_IS_RUNNING:
+                    if len(message) > 2:
+                        if message[1].isdigit() and message[2].isdigit() and message[3].isdigit():
+                            if self.__exec(hash_,CommunicationProtocol.LEARNING_IS_RUNNING, None, None, int(message[1])):
+                                message = message[3:]
+                            else:
+                                error = True
+                                break
+                        else:
+                            error = True
+                            break
+                    else:
+                        error = True
+                        break
+                    
+                # Models Agregated
+                elif message[0] == CommunicationProtocol.MODELS_AGREGATED:
+                    try:
+                        # Divide messages and check length of message
+                        close_pos = message.index(CommunicationProtocol.MODELS_AGREGATED_CLOSE)
+                        content = message[1:close_pos]
+                        message = message[close_pos+1:]
+
+                        # Get Nodes
+                        nodes=[]
+                        for n in content:
+                            nodes.append(n)
+
+                        # Exec
+                        if not self.__exec(CommunicationProtocol.MODELS_AGREGATED, None, None, nodes):
+                            error = True
+                            break
+
+                    except Exception as e:
+                        logging.exception(e)
+                        error = True
+                        break
+
+                # Model Initialized
+                elif message[0] == CommunicationProtocol.MODEL_INITIALIZED:
+                    if self.__exec(CommunicationProtocol.MODEL_INITIALIZED, None, None):
+                        message = message[1:]
+                    else:
+                        error = True
+                        break
+                    
+                # Non Recognized message            
+                else:
+                    error = True
+                    break
                 
             # Return
             return self.tmp_exec_msgs,error
@@ -510,6 +515,12 @@ class CommunicationProtocol:
             aux = aux + " " + n
         return (CommunicationProtocol.MODELS_AGREGATED + aux + " " + CommunicationProtocol.MODELS_AGREGATED_CLOSE + "\n").encode("utf-8")
 
+    def build_model_initialized_msg():
+        """
+        Returns:
+            A encoded model inicialized message.
+        """
+        return (CommunicationProtocol.MODEL_INITIALIZED + "\n").encode("utf-8")
 
     ###########################
     #     Special Messages    #
