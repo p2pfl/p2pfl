@@ -24,7 +24,7 @@ class Settings():
     SOCKET_TIEMOUT = 15
     HEARTBEAT_FREC = 5
     AGREGATION_TIEMOUT = 15
-    TRAIN_SET_SIZE = 10
+    TRAIN_SET_SIZE = 1
     AMOUNT_LAST_MESSAGES_SAVED = 100 # Used to control gossiping
     GOSSIP_MESSAGES_FREC = 100 # X rounds per second
     GOSSIP_MESSAGES_PER_ROUND = 100 # send X messages per round

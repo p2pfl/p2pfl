@@ -122,5 +122,4 @@ class Model_initialized_cmd(Command):
     Command that should be executed as a response to a **model_initialized** message.
     """
     def execute(self):
-        print("POR HACER")
         self.node_connection.set_model_initialized(True)

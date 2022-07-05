@@ -26,6 +26,7 @@ class Agregator(threading.Thread, Observable):
         self.train_set = []
         self.node_weights = {}
         self.waiting_agregated_model = False
+        self.__agregated_waited_model = False
         self.node_name = node_name
         self.name = "agregator-" + node_name
         self.models = {}
@@ -99,8 +100,9 @@ class Agregator(threading.Thread, Observable):
         # Weights should be in a list
         #
 
-        if self.waiting_agregated_model:
+        if self.waiting_agregated_model and not self.__agregated_waited_model:
             logging.info("({}) Recived an agregated model.".format(self.node_name))
+            self.__agregated_waited_model = True
             self.notify(Events.AGREGATION_FINISHED,model) 
         else:
             if nodes is not None:

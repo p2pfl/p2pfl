@@ -48,6 +48,8 @@ class NodeConnection(threading.Thread, Observable):
 
         self.aes_cipher = aes_cipher
 
+        self.model_initialized = False
+
         self.train_set_votes = []
 
         self.models_agregated = []
