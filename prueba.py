@@ -46,7 +46,7 @@ def test_node_down_on_learning(n):
 
 if __name__ == '__main__':
     for _ in range(50):
-        test_node_down_on_learning(10)
+        test_node_down_on_learning(5)
         print("\n\n\n\n\n")
         #break
 

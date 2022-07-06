@@ -95,6 +95,10 @@ class NodeConnection(threading.Thread, Observable):
         """
         return self.addr[0] + ":" + str(self.addr[1])
 
+    ###############
+    # Model Ready #
+    ###############
+
     def set_model_ready_status(self,round):
         """
         Set the last ready round of the other node.
@@ -103,7 +107,13 @@ class NodeConnection(threading.Thread, Observable):
             round: The last ready round of the other node.
         """
         self.model_ready = round
-        self.notify(Events.NODE_MODELS_READY_EVENT, self)
+
+    def get_ready_model_status(self):
+        """
+        Returns:
+            The last ready round of the other node.
+        """
+        return self.model_ready
     
     #####################
     # Model Initialized #
@@ -169,12 +179,6 @@ class NodeConnection(threading.Thread, Observable):
         """
         self.train_set_votes = []
 
-    def get_ready_model_status(self):
-        """
-        Returns:
-            The last ready round of the other node.
-        """
-        return self.model_ready
 
     def set_sending_model(self,flag):
         """
@@ -240,7 +244,7 @@ class NodeConnection(threading.Thread, Observable):
         """
         NodeConnection loop. Recive and process messages.
         """
-        self.socket.settimeout(Settings.SOCKET_TIEMOUT)
+        self.socket.settimeout(Settings.SOCKET_TIMEOUT)
         overflow = 0
         buffer = b""
         while not self.terminate_flag.is_set():

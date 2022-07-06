@@ -149,17 +149,6 @@ class Node(BaseNode):
                 obj.stop()
                 obj.send(CommunicationProtocol.build_learning_is_running_msg(self.round, self.totalrounds))
 
-        elif event == Events.NODE_MODELS_READY_EVENT:
-            # Try to unlock to check if all nodes are ready (on_finish_round (agregator_thread))
-            #print("AHORA ESTO TEN SENTIDO?")
-            #print("?")
-            """
-            try:
-                self.__wait_models_ready_lock.release() 
-            except:
-                pass
-            """
-
         elif event == Events.AGREGATION_FINISHED:
             # Set parameters and communate it to the training process
             if obj is not None:
@@ -286,7 +275,7 @@ class Node(BaseNode):
             self.__start_thread_lock.release()
 
             # Gossiping model inicialization            
-            self.__gossip_model(initialization=True)
+            self.__gossip_model_difusion(initialization=True)
 
             # Updates the number of samples by node
             self.broadcast(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())) # si no se manda bien promedia x 0
@@ -413,7 +402,7 @@ class Node(BaseNode):
             if self.round is not None:
                 self.agregator.add_model(self.learner.get_parameters(),[self.get_name()])
                 self.broadcast(CommunicationProtocol.build_models_agregated_msg([self.get_name()]))
-                self.__gossip_agregation() # this is going to produce duplicated models -> buut its fault tolerent
+                self.__gossip_model_agregation() # this is going to produce duplicated models -> buut its fault tolerent
 
         else: 
             # Set Models To Agregate 
@@ -422,7 +411,7 @@ class Node(BaseNode):
 
         # Gossip agregated model (also syncrhonizes nodes)
         if self.round is not None:
-            self.__gossip_model()
+            self.__gossip_model_difusion()
 
         # DIFUNDIR MODELO DESPUES DE AGREGARLO -> ÚNICAMENTE SE DEBE DE AGREGAR CON EL TRAINSET
         # EL RESTO ÚNICAMENTE ESPERA 1 MODELO
@@ -573,10 +562,40 @@ class Node(BaseNode):
     #    Model Gossiping    #    ->    Metodos bastante parecidos, mirar si se podr'ian unificar
     #########################
 
-    def __gossip_agregation(self):
+    def __gossip_model_agregation(self):
+        # Anonymous function 
+        candidate_condition = lambda nc: nc.get_name() in self.train_set and len(nc.get_models_agregated())<len(self.train_set)
+        status_function = lambda nc: ( nc.get_name(),len(nc.get_models_agregated()) )
+        model_function = lambda nc: self.agregator.get_partial_agregation(nc.get_models_agregated())
+
+        # Gossip
+        self.__gossip_model(candidate_condition,status_function,model_function)
+         
+    def __gossip_model_difusion(self,initialization=False):
+
+        # Wait a model (init or agregated)
+        if initialization:
+            logging.info("({}) Waiting initialization.".format(self.get_name()))
+            self.__wait_init_model_lock.acquire()
+            logging.info("({}) Gossiping model initialization.".format(self.get_name(), len(self.neightboors)))
+            candidate_condition = lambda nc: not nc.get_model_initialized()
+        else:
+            logging.info("({}) Waiting aregation.".format(self.get_name()))
+            self.__finish_agregation_lock.acquire()
+            logging.info("({}) Gossiping agregated model.".format(self.get_name(), len(self.neightboors)))
+            candidate_condition = lambda nc: nc.get_ready_model_status()<=self.round
+
+        # Anonymous function 
+        status_function = lambda nc: nc.get_name()
+        model_function = lambda _: (self.learner.get_parameters(),None) # At diffusion, contributors are not relevant
+
+        # Gossip
+        self.__gossip_model(candidate_condition,status_function,model_function)       
+        
+    def __gossip_model(self, candidate_condition, status_function, model_function):
 
         # Initialize list with status of nodes in the last X iterations
-        last_x_messages = [] 
+        last_x_status = [] 
         j = 0
 
         while True:
@@ -586,11 +605,11 @@ class Node(BaseNode):
 
             # If the trainning has been interrupted, stop waiting
             if self.round is None:
-                logging.info("({}) Stopping on_round_finished process.".format(self.get_name()))
+                logging.info("({}) Stopping model gossip process.".format(self.get_name()))
                 return
 
             # Get nodes wich need models
-            nei = [nc for nc in self.neightboors if nc.get_name() in self.train_set and len(nc.get_models_agregated())<len(self.train_set)]
+            nei = [nc for nc in self.neightboors if candidate_condition(nc)]
 
             # Determine end of gossip
             if nei == []:
@@ -598,17 +617,15 @@ class Node(BaseNode):
                 return
 
             # Save state of neightboors. If nodes are not responding gossip will stop
-            if len(last_x_messages) != Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS:
-                last_x_messages.append(str([(nc.get_name(),len((nc.get_models_agregated()))) for nc in nei]))
+            if len(last_x_status) != Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS:
+                last_x_status.append([status_function(nc) for nc in nei])
             else:
-                last_x_messages[j] = str([(nc.get_name(),len((nc.get_models_agregated()))) for nc in nei])
+                last_x_status[j] = str([status_function for nc in nei])
                 j = (j+1)%Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS
 
-                #logging.debug("({}) Gossiping. Last X iterations: {}".format(self.get_name(),last_x_messages))
-
                 # Check if las messages are the same
-                for i in range(len(last_x_messages)-1):
-                    if last_x_messages[i] != last_x_messages[i+1]:
+                for i in range(len(last_x_status)-1):
+                    if last_x_status[i] != last_x_status[i+1]:
                         break
                     return
 
@@ -624,101 +641,17 @@ class Node(BaseNode):
 
             # Generate and Send Model Partial Agregations (model, node_contributors)
             for nc in nei:
-                partial_agregation, contributors = self.agregator.get_partial_agregation(nc.get_models_agregated())
+                model,contributors = model_function(nc)
 
-                if partial_agregation is not None:
-
-                    #contributors=[self.get_name()]# hard coded!!
-
-                    model = self.learner.encode_parameters(params=partial_agregation, contributors=contributors)
-
-                    # degging
-                    #_,contributors = self.learner.decode_parameters(model)
-                    #logging.debug("Sending a model with {} contributors".format(contributors))
-
-                    encoded_msgs = CommunicationProtocol.build_params_msg(model)
+                # Send Partial Agregation
+                if model is not None:
+                    encoded_model = self.learner.encode_parameters(params=model, contributors=contributors)
+                    encoded_msgs = CommunicationProtocol.build_params_msg(encoded_model)
                     # Send Fragments
                     for msg in encoded_msgs:
                         nc.send(msg, True)
                         if Settings.FRAGMENTS_DELAY > 0:
                             time.sleep(Settings.FRAGMENTS_DELAY)
-                
-            # Lock Neightboors Communication
-            for nc in nei:
-                nc.set_sending_model(False)
-
-            # Wait to guarantee the frequency of gossipping
-            time_diff = time.time() - begin
-            time_sleep = 1/Settings.GOSSIP_MODELS_FREC-time_diff
-            if time_sleep > 0:
-                time.sleep(time_sleep)
-
-
-    def __gossip_model(self, initialization=False): # parametrizas con una funcion de obtencion de nodos y fuera
-
-        if initialization:
-            logging.info("({}) Waiting initialization.".format(self.get_name()))
-            self.__wait_init_model_lock.acquire()
-            logging.info("({}) Gossiping model initialization.".format(self.get_name(), len(self.neightboors)))
-        else:
-            logging.info("({}) Waiting aregation.".format(self.get_name()))
-            self.__finish_agregation_lock.acquire()
-            logging.info("({}) Gossiping agregated model.".format(self.get_name(), len(self.neightboors)))
-
-        encoded_msgs = CommunicationProtocol.build_params_msg(self.learner.encode_parameters())
-
-        # Initialize list with status of nodes in the last X iterations
-        last_x_messages = [] 
-        j = 0
-
-        while True:
-            
-            # Get time to calculate frequency
-            begin = time.time()
-
-            # If the trainning has been interrupted, stop waiting
-            if self.round is None:
-                logging.info("({}) Stopping on_round_finished process.".format(self.get_name()))
-                return
-
-            # Get nodes wich need models
-            if initialization:
-                nei = [nc for nc in self.neightboors if not nc.get_model_initialized()]
-            else:
-                nei = [nc for nc in self.neightboors if nc.get_ready_model_status()<=self.round]
-
-            # Determine end of gossip
-            if nei == []:
-                logging.info("({}) Gossip finished.".format(self.get_name()))
-                return
-
-            # Save state of neightboors. If nodes are not responding gossip will stop
-            if len(last_x_messages) != Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS:
-                last_x_messages.append(str([nc.get_name() for nc in nei]))
-            else:
-                last_x_messages[j] = str([nc.get_name() for nc in nei])
-                j = (j+1)%Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS
-
-                # Check if las messages are the same
-                for i in range(len(last_x_messages)-1):
-                    if last_x_messages[i] != last_x_messages[i+1]:
-                        break
-                    return
-
-            # Select a random subset of neightboors
-            samples = min(Settings.GOSSIP_MODELS_PER_ROUND,len(nei))
-            nei = random.sample(nei, samples)
-
-            # Lock Neightboors Communication
-            for nc in nei:
-                nc.set_sending_model(True)
-
-            # Generate and Send Model Partial Agregations (model, node_contributors)
-            for nc in nei:
-                for msg in encoded_msgs:
-                    nc.send(msg, True)
-                    if Settings.FRAGMENTS_DELAY > 0:
-                        time.sleep(Settings.FRAGMENTS_DELAY)
                 
             # Lock Neightboors Communication
             for nc in nei:

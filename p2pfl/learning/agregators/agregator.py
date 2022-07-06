@@ -43,7 +43,7 @@ class Agregator(threading.Thread, Observable):
         self.thread_executed = True
 
         # Wait for all models to be added or TIMEOUT
-        self.agregation_lock.acquire(timeout=Settings.AGREGATION_TIEMOUT) 
+        self.agregation_lock.acquire(timeout=Settings.AGREGATION_TIMEOUT) 
         
         # Check if node still running (could happen if agregation thread was a residual thread)
         if self.train_set == []:

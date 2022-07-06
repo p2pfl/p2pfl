@@ -97,7 +97,7 @@ def test_bad_binary_model(two_nodes):
         time.sleep(0.1)
 
     # Wait agregation thread of node 2 -> test still running if we don't wait
-    time.sleep(Settings.AGREGATION_TIEMOUT+2)
+    time.sleep(Settings.AGREGATION_TIMEOUT+2)
         
 # Modelo incompatible
 def test_wrong_model():

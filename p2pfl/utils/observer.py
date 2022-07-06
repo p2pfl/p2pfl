@@ -12,7 +12,6 @@ class Events():
     """
     SEND_BEAT_EVENT                 = "SEND_BEAT_EVENT"
     END_CONNECTION                  = "END_CONNECTION"
-    NODE_MODELS_READY_EVENT         = "NODE_MODELS_READY_EVENT"
     AGREGATION_FINISHED             = "AGREGATION_FINISHED"
     CONN_TO                         = "CONN_TO"
     START_LEARNING                  = "START_LEARNING"
