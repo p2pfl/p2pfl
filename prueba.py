@@ -27,7 +27,7 @@ def test_node_down_on_learning(n):
     nodes[0].set_start_learning(rounds=4,epochs=0)
 
     # Stopping node
-    #nodes[1].stop()
+    nodes[1].stop()
     
     # Wait 4 results
     while True:

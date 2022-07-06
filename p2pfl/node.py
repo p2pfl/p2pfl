@@ -473,26 +473,28 @@ class Node(BaseNode):
             # Wait for other votes
             logging.info("({}) Waiting other node votes.".format(self.get_name()))
 
-
+            # Get time
+            count = 0
+            begin = time.time()                
 
             while True:
+    
                 # If the trainning has been interrupted, stop waiting
                 if self.round is None:
                     logging.info("({}) Stopping on_round_finished process.".format(self.get_name()))
                     return []
 
+                # Update time counters (timeout)
+                count = count + (time.time() - begin)
+                timeout = count > Settings.TIMEOUT_WAIT_VOTE
 
-                #logging.debug("({}) Waiting other node votes: {}".format(self.get_name(),[ (nc.get_name(),nc.get_train_set_votes()!=[]) for nc in self.neightboors]))
-
-                """
-                DEBUG:root:(127.0.0.1:51855) Waiting other node votes: [('127.0.0.1:38951', True), ('127.0.0.1:33317', False), ('127.0.0.1:56003', False)]
-                INFO:root:127.0.0.1:51855 Train set of 4 nodes. ['127.0.0.1:38951', '127.0.0.1:33317', '127.0.0.1:51855', '127.0.0.1:56003']
-                """
-
-                if all([ nc.get_train_set_votes()!=[] for nc in self.neightboors.copy()]):
+                if all([ nc.get_train_set_votes()!=[] for nc in self.neightboors.copy()]) or timeout:
                     # Printea cuando se van a tener problemas de desincronizacion
                     if initial_candidates_len != len(self.neightboors):
                         logging.error("({}) Not all nodes voted. Problem will be resolved on gossip without full connected topology.".format(self.get_name()))
+
+                    if timeout:
+                        logging.info("({}) Timeout for vote agregation.".format(self.get_name()))
 
                     results = dict(votes)
                     for nc in self.neightboors:
@@ -524,7 +526,9 @@ class Node(BaseNode):
 
                     return votes
 
-                self.__wait_votes_ready_lock.acquire(timeout=2) # si se tarda m'as de x continuar 
+                self.__wait_votes_ready_lock.acquire(timeout=2) 
+                begin = time.time()                
+
         else:
             return []
                                 
