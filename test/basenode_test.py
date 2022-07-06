@@ -94,13 +94,11 @@ def test_multimsg(two_nodes):
     n1.connect_to(n2.host,n2.port)
     time.sleep(0.1) 
 
-    n1.broadcast(CommunicationProtocol.build_beat_msg() + CommunicationProtocol.build_beat_msg())
-    time.sleep(0.1) 
-    assert n2.neightboors[0].errors == 0
+    msg = CommunicationProtocol.build_beat_msg(n1.get_name())
 
-    n1.broadcast(CommunicationProtocol.build_beat_msg() + CommunicationProtocol.build_stop_msg())
+    n1.broadcast(msg + msg + msg)
     time.sleep(0.1) 
-    assert len(n2.neightboors) == 0
+    assert len(n2.neightboors) == 1
 
 def test_bad_msg(two_nodes):
     n1, n2 = two_nodes

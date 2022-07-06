@@ -32,8 +32,8 @@ class Beat_cmd(Command):
     """
     Command that should be executed as a response to a **beat** message.
     """
-    def execute(self):
-        pass #logging.debug("Beat {}".format(self.get_addr()))
+    def execute(self, node1):
+        self.node_connection.notify_heartbeat(node1)
 
 class Stop_cmd(Command):
     """

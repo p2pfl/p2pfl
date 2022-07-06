@@ -13,10 +13,10 @@ class CommunicationProtocol:
     """
     Manages the meaning of communication messages. The valid messages are:
         Gossiped messages: 
-            - BEAT <HASH> -----------------------------------------------------------------cambiar (indicar el nodo que lo envio)
+            - BEAT <node> <HASH> 
             - START_LEARNING <rounds> <epoches> <HASH>
             - STOP_LEARNING <HASH>
-            - METRICS <round> <loss> <metric> <HASH> -----------------------------------------------------------------cambiar (indicar el nodo que lo envio)
+            - METRICS <node> <round> <loss> <metric> <HASH> -----------------------------------------------------------------cambiar (indicar el nodo que lo envio)
 
         Non Gossiped messages (communication over only 2 nodes):
             - CONNECT <ip> <port> <broadcast>
@@ -114,17 +114,17 @@ class CommunicationProtocol:
                 message = message.split()
             except:
                 error = True
-
+        
             # Process messages
             while len(message) > 0:
 
                 # Beat
                 if message[0] == CommunicationProtocol.BEAT:
-                    if len(message) > 1:
-                        hash_ = message[1]
-                        cmd_text = (" ".join(message[0:2]) + "\n").encode("utf-8")
-                        if self.__exec(CommunicationProtocol.BEAT,hash_, cmd_text):
-                            message = message[2:]
+                    if len(message) > 2:
+                        hash_ = message[2]
+                        cmd_text = (" ".join(message[0:3]) + "\n").encode("utf-8")
+                        if self.__exec(CommunicationProtocol.BEAT,hash_, cmd_text, message[1]):
+                            message = message[3:]
                         else:
                             error = True
                             break
@@ -396,12 +396,12 @@ class CommunicationProtocol:
         id = hash(msg+str(datetime.now())+str(random.randint(0,100000)))
         return (msg + " " + str(id) + "\n").encode("utf-8")
 
-    def build_beat_msg():
+    def build_beat_msg(node):
         """ 
         Returns:
             A encoded beat message.
         """
-        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.BEAT)
+        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.BEAT + " " + node)
 
     def build_stop_msg():
         """ 

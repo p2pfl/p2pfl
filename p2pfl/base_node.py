@@ -181,8 +181,8 @@ class BaseNode(threading.Thread, Observer):
                     logging.info('{} Conexión aceptada con {}:{}'.format(self.get_name(),h,p))
                     nc = NodeConnection(self.get_name(),node_socket,(h,p),aes_cipher)
                     nc.add_observer(self)
-                    nc.start()
                     self.add_neighbor(nc)
+                    nc.start()
                     
                     if broadcast:
                         self.broadcast(CommunicationProtocol.build_connect_to_msg(h,p),exc=[nc])
@@ -212,11 +212,15 @@ class BaseNode(threading.Thread, Observer):
         if event == Events.END_CONNECTION:
             self.rm_neighbor(obj)
 
+        elif event == Events.NODE_CONNECTED_EVENT:
+            print("Nodo conectado---------------------------------------------------------")
+            obj.send(CommunicationProtocol.build_beat_msg(self.get_name()), is_necesary=True) # todos los mensajes van a ser necesarior
+
         elif event == Events.CONN_TO:
             self.connect_to(obj[0], obj[1], full=False)
 
         elif event == Events.SEND_BEAT_EVENT:
-            self.broadcast(CommunicationProtocol.build_beat_msg(), is_necesary=False)
+            self.broadcast(CommunicationProtocol.build_beat_msg(self.get_name()), is_necesary=True) # todos los mensajes van a ser necesarior
 
         elif event == Events.GOSSIP_BROADCAST_EVENT:
             self.broadcast(obj[0],exc=obj[1]) 
@@ -232,6 +236,10 @@ class BaseNode(threading.Thread, Observer):
 
             # Gossip the new messages
             self.gossiper.add_messages(list(msgs.values()),node)
+
+        elif event == Events.BEAT_RECEIVED_EVENT:
+            print("--------Beat received" + str(obj))
+            self.heartbeater.add_node(obj)
 
             
     def get_neighbor(self, h, p):
@@ -319,8 +327,8 @@ class BaseNode(threading.Thread, Observer):
                 nc = NodeConnection(self.get_name(),s,(h,p),aes_cipher)
 
                 nc.add_observer(self)
-                nc.start()
                 self.add_neighbor(nc)
+                nc.start()
                 self.nei_lock.release()
                 return nc
         
@@ -352,8 +360,8 @@ class BaseNode(threading.Thread, Observer):
     #     Msg management     #
     ##########################
 
-    # FULL_CONNECTED -> 3th iteration |> TTL 
-    def broadcast(self, msg, ttl=1, exc=[], is_necesary=True):
+    # A PARTIR DE AHORA, TODOS LOS MENSAJES VAN A SER NECESARIOS
+    def broadcast(self, msg, exc=[], is_necesary=True):
         """
         Broadcasts a message to all the neightboors.
 

@@ -23,6 +23,8 @@ class Events():
     LEARNING_IS_RUNNING_EVENT       = "LEARNING_IS_RUNNING_EVENT"
     PROCESSED_MESSAGES_EVENT        = "PROCESSED_MESSAGES_EVENT"
     GOSSIP_BROADCAST_EVENT          = "GOSSIP_BROADCAST_EVENT"
+    BEAT_RECEIVED_EVENT             = "BEAT_RECEIVED_EVENT"
+    NODE_DISCONNECTED               = "NODE_DISCONNECTED"
 
 ##################################
 #    Generic Observable class    #

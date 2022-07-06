@@ -37,7 +37,6 @@ class NodeConnection(threading.Thread, Observable):
         self.socket = s
         self.socket_lock = threading.Lock()
         self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        self.errors = 0
         self.addr = addr
         self.train_num_samples = 0
         self.test_num_samples = 0
@@ -244,7 +243,7 @@ class NodeConnection(threading.Thread, Observable):
         """
         NodeConnection loop. Recive and process messages.
         """
-        self.socket.settimeout(Settings.SOCKET_TIMEOUT)
+        self.socket.settimeout(Settings.NODE_TIMEOUT)
         overflow = 0
         buffer = b""
         while not self.terminate_flag.is_set():
@@ -344,7 +343,6 @@ class NodeConnection(threading.Thread, Observable):
                     return False
             except Exception as e:
                 logging.debug("{} (NodeConnection Send) Exception: ".format(self.get_addr()) + str(e))
-                logging.exception(e)
                 self.terminate_flag.set() #exit
                 return False
         else:
@@ -353,6 +351,12 @@ class NodeConnection(threading.Thread, Observable):
     ###########################
     #    Command Callbacks    #
     ###########################
+
+    def notify_heartbeat(self,node):
+        """
+        Notify that a heartbeat was received.
+        """
+        self.notify(Events.BEAT_RECEIVED_EVENT, node)
 
     def notify_conn_to(self, h, p):
         """

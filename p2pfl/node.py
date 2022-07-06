@@ -118,7 +118,12 @@ class Node(BaseNode):
         # Execute BaseNode update
         super().update(event,obj)
 
-        # Execute Node update
+
+        # For non directly connected nodes
+        if event == Events.NODE_DISCONNECTED:
+            print("POR HACER!!!!")
+
+        # For directly connected nodes
         if event == Events.END_CONNECTION:
             # If a training process is running, comunicate the disconnection
             if self.round is not None:

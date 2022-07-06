@@ -28,15 +28,27 @@ def test_node_abrupt_down(four_nodes):
     #   (otros) nuevamente el uso del socket (heartbeat) detectará que la conexión ha sido rechazada por el nodo
     for con in n4.neightboors:
         con.socket.close() #provocamos un bad file descriptor
-    time.sleep(Settings.HEARTBEAT_FREC+0.1) #Esperar por la asincronía
+    time.sleep(Settings.HEARTBEAT_PERIOD+0.5) #Esperar por la asincronía
     assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == 2
     n4.stop()
+    
+    """
+    
+    DE MOMENTO NO SE PUEDE PONER XQ LOS HEARTBEATS SON GOSSIPEADOS
 
+    # Desconexión n3 abruptamente (deja de enviar heartbeat)
+    n3.heartbeater.stop()
+    time.sleep(Settings.NODE_TIMEOUT+0.5) #Esperar por la asincronía
+    assert len(n1.neightboors) == len(n2.neightboors) == 1
+    """
+    n3.stop()
+    
 
     # Desconexión n2 y n1
-    n3.stop()
     n2.stop()
     n1.stop()
+
+    
 
     
 # QUEDA COLGADO ALGÚN THREAD
