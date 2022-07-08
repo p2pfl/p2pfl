@@ -41,7 +41,7 @@ class Settings():
     GOSSIP_MESSAGES_PER_ROUND = 100 # send X messages per round
 
     # GOSSIP Models
-    GOSSIP_EXIT_ON_X_EQUAL_ROUNDS = 3 # If X rounds are equal, exit gossiping
-    GOSSIP_MODELS_FREC = 4  # X times per second | A really high value will make to send duplicated models (send twice before getting a models left update) 
-    GOSSIP_MODELS_PER_ROUND = 100
+    GOSSIP_EXIT_ON_X_EQUAL_ROUNDS = 9 # If X rounds are equal, exit gossiping
+    GOSSIP_MODELS_FREC = 1  # X times per second | A really high value will make to send duplicated models (send twice before getting a models left update) 
+    GOSSIP_MODELS_PER_ROUND = 5
     FRAGMENTS_DELAY = 0.005 # Delay between fragments (to avoid buffer overflow)

@@ -89,7 +89,7 @@ def test_encrypted_convergence(x):
 
     # Node Connection
     for i in range(len(nodes)-1):
-        nodes[i+1].connect_to(nodes[i].host,nodes[i].port)
+        nodes[i+1].connect_to(nodes[i].host,nodes[i].port, full=True)
         time.sleep(0.1)
         
     # Overhead at handshake because of the encryption

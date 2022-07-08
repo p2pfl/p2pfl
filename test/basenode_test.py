@@ -1,3 +1,4 @@
+from numpy import full
 import pytest
 from p2pfl.base_node import BaseNode
 from p2pfl.communication_protocol import CommunicationProtocol
@@ -55,17 +56,17 @@ def test_full_connected(four_nodes):
     n1, n2, n3, n4 = four_nodes
 
     # Conexión n1 n2
-    n1.connect_to(n2.host,n2.port)
+    n1.connect_to(n2.host,n2.port,full=True)
     time.sleep(0.1) #Esperar por la asincronía
     assert len(n1.neightboors) == len(n2.neightboors)==1
 
     # Conexión n3 n1
-    n3.connect_to(n1.host,n1.port)
+    n3.connect_to(n1.host,n1.port,full=True)
     time.sleep(0.1) #Esperar por la asincronía
     assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == 2
 
     # Conexión n4 n1
-    n4.connect_to(n1.host,n1.port)
+    n4.connect_to(n1.host,n1.port,full=True)
     time.sleep(0.1) #Esperar por la asincronía
     assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == len(n4.neightboors) == 3
 

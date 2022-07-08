@@ -27,7 +27,7 @@ class CommunicationProtocol:
             - PARAMS <data> \PARAMS
             - MODELS_READY <round> -----------------------------------------------------------------cambiar con heartbeater 2.0
             - LEARNING_IS_RUNNING <round> <total_rounds>
-            - MODELS_AGREGATED <node>* MODELS_AGREGATED_CLOSE
+            - MODELS_AGREGATED <node>* MODELS_AGREGATED_CLOSE ---- GOSSIPERARLO
             - MODEL_INITIALIZED
 
     The unique non-static method is used to process messages with a connection stablished. 

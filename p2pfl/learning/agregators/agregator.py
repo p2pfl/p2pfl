@@ -54,7 +54,7 @@ class Agregator(threading.Thread, Observable):
         # Start agregation
         n_model_agregated = sum([len(nodes.split()) for nodes in list(self.models.keys())])
         if n_model_agregated != len(self.train_set):
-            logging.info("({}) Agregating models. Timeout reached".format(self.node_name))
+            logging.info("({}) Agregating models, timeout reached. Missing models: {}".format(self.node_name,set(self.train_set)-set(self.models.keys())))
         else:
             logging.info("({}) Agregating models.".format(self.node_name))
 
@@ -87,6 +87,13 @@ class Agregator(threading.Thread, Observable):
 
     def set_node_weights(self,w):
         self.node_weights = w
+
+    def get_node_weight(self,node):
+        try:
+            return self.node_weights[node]
+        except:
+            # If not exist, then return 0 (ponderate by 0)
+            return 0
 
     def add_model(self, model, nodes):
         """
@@ -124,7 +131,7 @@ class Agregator(threading.Thread, Observable):
                         # Check if all nodes are not agregated                    
                         if all([n not in models_added for n in nodes]):
                             # Agregar modelo
-                            self.models[" ".join(nodes)] = ((model, sum(self.node_weights[n] for n in nodes)))
+                            self.models[" ".join(nodes)] = ((model, sum(self.get_node_weight(n) for n in nodes)))
                             logging.info("({}) Model added ({}/{}) from {}".format(self.node_name, str(len(models_added)+len(nodes)), str(len(self.train_set)), str(nodes)))
                             # Check if all models have been added
                             self.check_and_run_agregation()

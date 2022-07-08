@@ -70,8 +70,8 @@ def four_nodes():
     return n1,n2,n3,n4
 
 def test_gossip_heartbeat():
-    n1, n2, n3, n4 = four_nodes()
-
+    nodes = four_nodes()
+    n1, n2, n3, n4 = nodes
     n1.connect_to(n2.host,n2.port, full=False)
     n2.connect_to(n3.host,n3.port, full=False)
     n3.connect_to(n4.host,n4.port, full=False)
@@ -84,17 +84,28 @@ def test_gossip_heartbeat():
     n1.set_start_learning(rounds=2,epochs=0)    
 
 
+    # Wait 4 results
+    while True:
+        time.sleep(1)
+        finish = True
+        print([node.round is None for node in nodes])
+        for f in [node.round is None for node in nodes]:
+            finish = finish and f
+
+        if finish:
+            break
+
+    for node in nodes:
+        node.stop()
 
 
 
 
 if __name__ == '__main__':
-    """
 
-    test_gossip_heartbeat()
-    """
     for _ in range(50):
-        test_node_down_on_learning(5)
+        test_gossip_heartbeat()
+        #test_node_down_on_learning(5)
         print("\n\n\n\n\n")
         #break
 

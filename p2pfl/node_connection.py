@@ -153,34 +153,6 @@ class NodeConnection(threading.Thread, Observable):
         """
         return self.models_agregated
 
-    ###################
-    # Train set votes #
-    ###################
-
-    def set_train_set_votes(self,node,votes):
-        """
-        Set the last ready round of the other node.
-
-        Args:
-            round: The last ready round of the other node.
-        """
-        self.train_set_votes[node] = votes
-        self.notify(Events.TRAIN_SET_VOTE_RECEIVED_EVENT, self)
-
-    def get_train_set_votes(self):
-        """
-        Returns:
-            The votes for the treining set of the other node.
-        """
-        return self.train_set_votes
-
-    def clear_train_set_votes(self):
-        """
-        Clear the votes.
-        """
-        self.train_set_votes = {}
-
-
     def set_sending_model(self,flag):
         """
         Set when the model is being sent in the connection. (high bandwidth)
@@ -396,3 +368,12 @@ class NodeConnection(threading.Thread, Observable):
         Notify to the parent node that `LEARNING_IS_RUNNING` has been received.
         """
         self.notify(Events.LEARNING_IS_RUNNING_EVENT, (round,total_rounds))
+
+    def notify_train_set_votes(self,node,votes):
+        """
+        Set the last ready round of the other node.
+
+        Args:
+            round: The last ready round of the other node.
+        """
+        self.notify(Events.TRAIN_SET_VOTE_RECEIVED_EVENT, (node,votes))

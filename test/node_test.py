@@ -25,7 +25,7 @@ def test_convergence(x):
 
     # Node Connection
     for i in range(len(nodes)-1):
-        nodes[i+1].connect_to(nodes[i].host,nodes[i].port)
+        nodes[i+1].connect_to(nodes[i].host,nodes[i].port, full=True)
         time.sleep(0.1)
 
     # Check if they are connected
@@ -68,7 +68,7 @@ def test_convergence(x):
 def test_interrupt_train(two_nodes):
     if __name__ == '__main__': # To avoid creating new process when current has not finished its bootstrapping phase
         n1, n2 = two_nodes
-        n1.connect_to(n2.host,n2.port)
+        n1.connect_to(n2.host,n2.port, full=True)
 
         time.sleep(1) # Wait because of asincronity
 
@@ -88,8 +88,8 @@ def __test_connect_to_train_running(four_nodes):
     n1,n2,n3,n4 = four_nodes
 
     # Connect Nodes (unless the n4)
-    n1.connect_to(n2.host,n2.port)
-    n3.connect_to(n1.host,n1.port)
+    n1.connect_to(n2.host,n2.port, full=True)
+    n3.connect_to(n1.host,n1.port, full=True)
     time.sleep(0.1) #Esperar por la asincronía
 
     n1.set_start_learning(2,1)

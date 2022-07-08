@@ -1,3 +1,4 @@
+from numpy import full
 from p2pfl.settings import Settings
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
 from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
@@ -11,15 +12,15 @@ def test_node_abrupt_down(four_nodes):
     n1, n2, n3, n4 = four_nodes
 
     # Conexión n1 n2
-    n1.connect_to(n2.host,n2.port)
+    n1.connect_to(n2.host,n2.port, full=True)
 
     # Conexión n3 n1
-    n3.connect_to(n1.host,n1.port)
+    n3.connect_to(n1.host,n1.port, full=True)
     time.sleep(0.1) #Esperar por la asincronía
     assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == 2
 
     # Conexión n4 n1
-    n4.connect_to(n1.host,n1.port)
+    n4.connect_to(n1.host,n1.port, full=True)
     time.sleep(0.1) #Esperar por la asincronía
     assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == len(n4.neightboors) == 3
 
@@ -64,7 +65,7 @@ def test_node_down_on_learning(n):
 
     # Node Connection
     for i in range(len(nodes)-1):
-        nodes[i+1].connect_to(nodes[i].host,nodes[i].port)
+        nodes[i+1].connect_to(nodes[i].host,nodes[i].port, full=True)
         time.sleep(1)
 
     # Check if they are connected
@@ -95,7 +96,7 @@ def __test_abrupt_connection_down_on_learning(two_nodes):
 
 def test_bad_binary_model(two_nodes):
     n1, n2 = two_nodes
-    n1.connect_to(n2.host,n2.port)
+    n1.connect_to(n2.host,n2.port, full=True)
     time.sleep(0.1) 
 
     # Start Learning

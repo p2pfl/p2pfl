@@ -284,7 +284,7 @@ class BaseNode(threading.Thread, Observer):
         except:
             pass
 
-    def connect_to(self, h, p, full=True):
+    def connect_to(self, h, p, full=False):
         """"
         Connects to a node.
         
