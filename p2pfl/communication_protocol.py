@@ -16,6 +16,7 @@ class CommunicationProtocol:
             - BEAT <node> <HASH> 
             - START_LEARNING <rounds> <epoches> <HASH>
             - STOP_LEARNING <HASH>
+            - VOTE_TRAIN_SET <node> (<node> <punct>)* VOTE_TRAIN_SET_CLOSE <HASH> ---------------METERLO EN NODE NO EN EL TRAINSET--------------------------------------------------cambiar con heartbeater 2.0
             - METRICS <node> <round> <loss> <metric> <HASH> -----------------------------------------------------------------cambiar (indicar el nodo que lo envio)
 
         Non Gossiped messages (communication over only 2 nodes):
@@ -25,7 +26,6 @@ class CommunicationProtocol:
             - NUM_SAMPLES <train_num> <test_num>
             - PARAMS <data> \PARAMS
             - MODELS_READY <round> -----------------------------------------------------------------cambiar con heartbeater 2.0
-            - VOTE_TRAIN_SET (<node> <punct>)* VOTE_TRAIN_SET_CLOSE -----------------------------------------------------------------cambiar con heartbeater 2.0
             - LEARNING_IS_RUNNING <round> <total_rounds>
             - MODELS_AGREGATED <node>* MODELS_AGREGATED_CLOSE
             - MODEL_INITIALIZED
@@ -248,21 +248,26 @@ class CommunicationProtocol:
                     try:
                         # Divide messages and check length of message
                         close_pos = message.index(CommunicationProtocol.VOTE_TRAIN_SET_CLOSE)
-                        vote_msg = message[1:close_pos]
+                        node = message[1]
+                        vote_msg = message[2:close_pos]
+                        hash_ = message[close_pos+1]
+                        cmd_text = (" ".join(message[0:close_pos+2]) + "\n").encode("utf-8")
+
                         if len(vote_msg)%2 != 0:
                             raise Exception("Invalid vote message")
-                        message = message[close_pos+1:]
+                        message = message[close_pos+2:]
 
                         # Process vote message
                         votes = []
                         for i in range(0, len(vote_msg), 2):
                             votes.append((vote_msg[i], int(vote_msg[i+1])))
 
-                        if not self.__exec(CommunicationProtocol.VOTE_TRAIN_SET, None, None, dict(votes)):
+                        if not self.__exec(CommunicationProtocol.VOTE_TRAIN_SET, hash_, cmd_text, node,dict(votes)):
                             error = True
                             break
 
                     except Exception as e:
+                        logging.exception(e)
                         error = True
                         break
 
@@ -476,7 +481,7 @@ class CommunicationProtocol:
         return CommunicationProtocol.generate_hased_message(CommunicationProtocol.METRICS + " " + str(round) + " " + str(loss) + " " + str(metric))
 
 
-    def build_vote_train_set_msg(votes):
+    def build_vote_train_set_msg(node,votes):
         """
         Args:
             candidates: The candidates to vote for.
@@ -488,7 +493,7 @@ class CommunicationProtocol:
         aux = ""
         for v in votes:
             aux = aux + " " + v[0]+ " " + str(v[1])
-        return (CommunicationProtocol.VOTE_TRAIN_SET + aux + " " + CommunicationProtocol.VOTE_TRAIN_SET_CLOSE + "\n").encode("utf-8")
+        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.VOTE_TRAIN_SET + " " + node + aux + " " + CommunicationProtocol.VOTE_TRAIN_SET_CLOSE)
         
 
     def build_learning_is_running_msg(round, epoch):

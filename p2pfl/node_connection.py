@@ -13,6 +13,8 @@ from p2pfl.utils.observer import Events, Observable
 
 # organizar algo código
 
+# dividirlo en NC connection base y en nc connection  ???
+
 class NodeConnection(threading.Thread, Observable):
     """
     This class represents a connection to a node. It is a thread, so it's going to process all messages in a background thread using the CommunicationProtocol.
@@ -49,7 +51,7 @@ class NodeConnection(threading.Thread, Observable):
 
         self.model_initialized = False
 
-        self.train_set_votes = []
+        self.train_set_votes = {}
 
         self.models_agregated = []
 
@@ -155,14 +157,14 @@ class NodeConnection(threading.Thread, Observable):
     # Train set votes #
     ###################
 
-    def set_train_set_votes(self,votes):
+    def set_train_set_votes(self,node,votes):
         """
         Set the last ready round of the other node.
 
         Args:
             round: The last ready round of the other node.
         """
-        self.train_set_votes = votes
+        self.train_set_votes[node] = votes
         self.notify(Events.TRAIN_SET_VOTE_RECEIVED_EVENT, self)
 
     def get_train_set_votes(self):
@@ -176,7 +178,7 @@ class NodeConnection(threading.Thread, Observable):
         """
         Clear the votes.
         """
-        self.train_set_votes = []
+        self.train_set_votes = {}
 
 
     def set_sending_model(self,flag):
@@ -380,7 +382,6 @@ class NodeConnection(threading.Thread, Observable):
         """
         Notify to the parent node that `PARAMS` has been received.
         """
-        # ahora
         self.notify(Events.PARAMS_RECEIVED, (params))
 
     def notify_metrics(self,round,loss,metric):

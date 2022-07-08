@@ -100,8 +100,8 @@ class Vote_train_set_cmd(Command):
     """
     Command that should be executed as a response to a **vote** message.
     """
-    def execute(self, votes):
-        self.node_connection.set_train_set_votes(votes)
+    def execute(self, node, votes):
+        self.node_connection.set_train_set_votes(node, votes)
 
 class Learning_is_running_cmd(Command):
     """

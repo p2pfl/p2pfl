@@ -74,7 +74,10 @@ class Agregator(threading.Thread, Observable):
         Args:
             n: Number of nodes to agregate. Empty for no agregation.
         """
+        # Start Timeout            
         self.train_set = l
+        if self.train_set != [] and not self.thread_executed:
+            self.start()
 
     def set_waiting_agregated_model(self):
         """
@@ -123,9 +126,6 @@ class Agregator(threading.Thread, Observable):
                             # Agregar modelo
                             self.models[" ".join(nodes)] = ((model, sum(self.node_weights[n] for n in nodes)))
                             logging.info("({}) Model added ({}/{}) from {}".format(self.node_name, str(len(models_added)+len(nodes)), str(len(self.train_set)), str(nodes)))
-                            # Start Timeout
-                            if not self.thread_executed:
-                                self.start()
                             # Check if all models have been added
                             self.check_and_run_agregation()
                             # Try Unloock
@@ -137,13 +137,14 @@ class Agregator(threading.Thread, Observable):
                             
                             #print(self.models.keys())
                             return models_added + nodes
-                    """
+                    
                         else:
-                            logging.info("({}) Can't add a model that has already been added {}".format(self.node_name, nodes))
+                            logging.debug("({}) Can't add a model that has already been added {}".format(self.node_name, nodes))
                     else:
-                        logging.info("({}) Can't add a model from a node ({}) that is not in the training test.".format(self.node_name, nodes))
-                    """
-
+                        logging.info("nodes: {} | trainset: {}".format(nodes,self.train_set))
+                        logging.debug("({}) Can't add a model from a node ({}) that is not in the training test.".format(self.node_name, nodes))
+                    
+                    
         try:
             self.lock.release()
         except:
@@ -158,7 +159,6 @@ class Agregator(threading.Thread, Observable):
         Args:
             except_nodes: Nodes to exclude.
         """
-
 
         dict_aux = {}
         nodes_agregated = []

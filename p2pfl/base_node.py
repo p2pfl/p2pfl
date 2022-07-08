@@ -213,7 +213,6 @@ class BaseNode(threading.Thread, Observer):
             self.rm_neighbor(obj)
 
         elif event == Events.NODE_CONNECTED_EVENT:
-            print("Nodo conectado---------------------------------------------------------")
             obj.send(CommunicationProtocol.build_beat_msg(self.get_name()), is_necesary=True) # todos los mensajes van a ser necesarior
 
         elif event == Events.CONN_TO:
@@ -238,7 +237,6 @@ class BaseNode(threading.Thread, Observer):
             self.gossiper.add_messages(list(msgs.values()),node)
 
         elif event == Events.BEAT_RECEIVED_EVENT:
-            print("--------Beat received" + str(obj))
             self.heartbeater.add_node(obj)
 
             
@@ -337,8 +335,9 @@ class BaseNode(threading.Thread, Observer):
                 self.nei_lock.release()
                 return None
     
-        except:
+        except Exception as e:
             logging.info("{} Can't connect to the node {}:{}".format(self.get_name(),h,p))
+            logging.exception(e)
             try:
                 self.nei_lock.release()
             except:

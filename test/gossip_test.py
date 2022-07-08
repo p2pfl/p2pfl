@@ -28,3 +28,20 @@ def test_gossip_heartbeat(four_nodes):
     n3.stop()
     n4.stop()
 
+def test_gossip_heartbeat(four_nodes):
+    n1, n2, n3, n4 = four_nodes
+
+    n1.connect_to(n2.host,n2.port, full=False)
+    n2.connect_to(n3.host,n3.port, full=False)
+    n3.connect_to(n4.host,n4.port, full=False)
+
+    time.sleep(2) # Wait for asincronity    
+
+    n1.set_start_learning(rounds=2,epochs=0)    
+
+    while all([n1.round is not None for n in [n1,n2,n3,n4]]):
+        time.sleep(0.1)
+
+    for n in [n1,n2,n3,n4]:
+        n.stop()
+        time.sleep(0.1)

@@ -1,6 +1,7 @@
 from distutils.log import debug
 import math
 import random
+import sys
 import threading
 import logging
 import time
@@ -71,6 +72,8 @@ class Node(BaseNode):
         self.agregator.add_observer(self)
         self.model_initialized = False
 
+        self.__rm_connections = []
+
         # Locks
         self.__wait_votes_ready_lock = threading.Lock()
         self.__finish_agregation_lock = threading.Lock()
@@ -83,15 +86,19 @@ class Node(BaseNode):
     #   Node Management   #
     #######################
 
+    # plantearse bien si se permiten conexiones durante el entrenamiento
     def connect_to(self, h, p, full=True):
-        nc = None
-        if self.round is None:
-            nc = super().connect_to(h, p, full)
-            if nc is not None:
-                # Send number of samples
-                nc.send(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples()))
-        else:
+        nc = super().connect_to(h, p, full)
+        if nc is not None:
+            # Send number of samples
+            nc.send(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples()))
+
+        """
+        if (self.round is not None):
+            print("por hacer")
             logging.info("({}) Cant connect to other nodes when learning is running. (however, other nodes can be connected to the node.)".format(self.get_name()))
+        """
+        
         return nc
 
     def stop(self): 
@@ -115,13 +122,10 @@ class Node(BaseNode):
             event (Events): Event that has occurred.
             obj: Object that has been updated. 
         """
-        # Execute BaseNode update
-        super().update(event,obj)
-
 
         # For non directly connected nodes
-        if event == Events.NODE_DISCONNECTED:
-            print("POR HACER!!!!")
+        #if event == Events.NODE_DISCONNECTED:
+        #    print("POR HACER!!!!") -> para nada
 
         # For directly connected nodes
         if event == Events.END_CONNECTION:
@@ -130,8 +134,9 @@ class Node(BaseNode):
                 # Try to remove from trainset
                 try:
                     self.train_set_lock.acquire()
-                    node = obj.get_name()
-                    self.train_set.remove(node)
+                    # ESTO YA NADA - NO SIRVE PARA P2P -> VENCER'AN TIMEOUTS
+                    #node = obj.get_name()
+                    #self.train_set.remove(node)
                     self.train_set_lock.release()
                     # It cant produce training, if aggregation is running, clients only decrement
                     self.agregator.check_and_run_agregation()
@@ -149,10 +154,13 @@ class Node(BaseNode):
             # Send number of samples
             obj.send(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())) #----ojo tb tiene que hacerlo el que se conecta
             # Comunicate to the new node that a training process is running
-            if self.round is not None:
+            """
+            if self.round is not None and obj.get_name() not in self.train_set:
                 print("TO IMPLEMET WHEN THE TOPOLOGY WAS NOT FULLY CONNECTED")
                 obj.stop()
-                obj.send(CommunicationProtocol.build_learning_is_running_msg(self.round, self.totalrounds))
+                #obj.send(CommunicationProtocol.build_learning_is_running_msg(self.round, self.totalrounds))
+                return
+            """
 
         elif event == Events.AGREGATION_FINISHED:
             # Set parameters and communate it to the training process
@@ -189,6 +197,9 @@ class Node(BaseNode):
 
         elif event == Events.LEARNING_IS_RUNNING_EVENT:
             print("NOT IMPLEMETED YET",obj)
+
+        # Execute BaseNode update
+        super().update(event,obj)
 
     ####################################
     #         Learning Setters         #
@@ -327,6 +338,7 @@ class Node(BaseNode):
             m (Weights): Model to be added.
             w: Number of samples used to train the model.
         """
+
         # Check if Learning is running
         if self.round is not None:
             try:
@@ -384,17 +396,15 @@ class Node(BaseNode):
         if self.round is not None:
             self.train_set = self.__vote_train_set() # stringified to avoid comparing pointers
             self.__validate_train_set()
+
         
         # Train if the node was selected or if no exist candidates (node non-connected) 
         is_train_set = self.get_name() in self.train_set
         if is_train_set:
 
-            # Set Models To Agregate and their weights
-            self.agregator.set_nodes_to_agregate(self.train_set) # reference to self node stringified list of nodes
-            node_w = [(nc.get_name(), nc.get_num_samples()[0]) for nc in self.neightboors if nc.get_name() in self.train_set]
-            node_w.append((self.get_name(),self.learner.get_num_samples()[0]))
-            self.agregator.set_node_weights(dict(node_w))
-            
+            if self.round is not None:
+                self.__connect_and_set_agregator()
+
             # Evaluate and send metrics
             if self.round is not None:
                 self.__evaluate()
@@ -425,7 +435,41 @@ class Node(BaseNode):
         if self.round is not None:
             self.__on_round_finished()
 
-        
+
+    def __connect_and_set_agregator(self):
+        # Connect Train Set Nodes
+        for node in self.train_set :
+            if node != self.get_name():
+                h,p = node.split(":")
+                if p.isdigit():
+                    nc = self.get_neighbor(h,int(p))
+                    if nc is None:
+                        self.connect_to(h,int(p),full=True)
+                        self.__rm_connections.append((h,int(p)))
+                else:
+                    logging.info("({}) Node {} has a valid port".format(self.get_name(),node.split(":")))
+
+        while True:
+            for nc in [nc for nc in self.neightboors if nc.get_name() in self.train_set]:
+                if nc.get_num_samples() == (0,0):
+                    continue
+            time.sleep(1) # podr'ia ponerlo como un lock o asi, no se 
+            break
+        #print("ojo que aun no van a estar seteados los num samples")
+        #
+        # -> lock con un while hasta que se tengan los numsamples y fuera
+        #
+        # PALERISIMO
+        #
+
+        # Set Models To Agregate 
+        self.agregator.set_nodes_to_agregate(self.train_set) # reference to self node stringified list of nodes
+        # Set Number of samples of nodes to agregate
+        node_w = [(nc.get_name(), nc.get_num_samples()[0]) for nc in self.neightboors if nc.get_name() in self.train_set]
+        node_w.append((self.get_name(),self.learner.get_num_samples()[0]))
+        self.agregator.set_node_weights(dict(node_w))
+            
+
     def __train(self):
         logging.info("({}) Training...".format(self.get_name()))
         self.learner.fit()
@@ -450,19 +494,20 @@ class Node(BaseNode):
     def __vote_train_set(self):
 
         # Vote
-        candidates = [candidate.get_name() for candidate in self.neightboors.copy()] # to avoid concurrent modification
-        initial_candidates_len = len(candidates)
+        candidates = self.heartbeater.get_nodes().copy() # to avoid concurrent modification
+        if self.get_name() not in candidates:
+            candidates.append(self.get_name())
         if candidates != []:
             # Send vote
             logging.info("({}) Sending train set vote.".format(self.get_name()))
             samples = min(Settings.TRAIN_SET_SIZE,len(candidates))
-            candidates = random.sample(candidates, samples)
+            nodes_voted = random.sample(candidates, samples)
             weights = [random.randint(0,1000),math.floor(random.randint(0,1000)/2),math.floor(random.randint(0,1000)/4)]
-            votes = list(zip(candidates,weights))
+            votes = list(zip(nodes_voted,weights))
 
             logging.info("({}) Self Vote: {}".format(self.get_name(),votes))
 
-            self.broadcast(CommunicationProtocol.build_vote_train_set_msg(votes))
+            self.broadcast(CommunicationProtocol.build_vote_train_set_msg(self.get_name(),votes))
                     
             # Wait for other votes
             logging.info("({}) Waiting other node votes.".format(self.get_name()))
@@ -472,7 +517,7 @@ class Node(BaseNode):
             begin = time.time()                
 
             while True:
-    
+
                 # If the trainning has been interrupted, stop waiting
                 if self.round is None:
                     logging.info("({}) Stopping on_round_finished process.".format(self.get_name()))
@@ -480,21 +525,40 @@ class Node(BaseNode):
 
                 # Update time counters (timeout)
                 count = count + (time.time() - begin)
+                begin = time.time()                
                 timeout = count > Settings.TIMEOUT_WAIT_VOTE
 
-                if all([ nc.get_train_set_votes()!=[] for nc in self.neightboors.copy()]) or timeout:
-                    # Printea cuando se van a tener problemas de desincronizacion
-                    if initial_candidates_len != len(self.neightboors):
-                        logging.error("({}) Not all nodes voted. Problem will be resolved on gossip without full connected topology.".format(self.get_name()))
+                # meterlo como un atributo y que se agregue en el observador
+                nc_votes = {} 
+                for nc in self.neightboors.copy(): # quiza esto sea mejor agregarlo en node, y no en los direrentes nc, ya que si se desconecta puede perderse informacion
+                    nc_votes = {**nc_votes,**(nc.get_train_set_votes())}
+                nc_votes[self.get_name()] = dict(votes)
 
-                    if timeout:
-                        logging.info("({}) Timeout for vote agregation.".format(self.get_name()))
+                #   if a node didn't vote (disconnect) -> timeout
+                #   if a new node connected -> it won't vote, it will participate in the next round 
 
-                    results = dict(votes)
-                    for nc in self.neightboors:
-                        for i in range(len(nc.get_train_set_votes())):
-                            k = list(nc.get_train_set_votes().keys())[i]
-                            v = list(nc.get_train_set_votes().values())[i]
+                # Clear non candidate votes
+                nc_votes = {k:v for k,v in nc_votes.items() if k in candidates}
+
+                votes_ready = set(candidates) == set(nc_votes.keys())
+
+                if votes_ready or timeout:
+
+                    if timeout and not votes_ready:
+                        if set(candidates) - set(nc_votes.keys()) == set():
+                            logging.info("({}) Timeout for vote agregation. TOO MUCH votes from {}".format(self.get_name(), set(nc_votes.keys() -set(candidates))))
+
+                        else: 
+                            logging.info("({}) Timeout for vote agregation. Missing votes from {}".format(self.get_name(), set(candidates) - set(nc_votes.keys())))
+
+                        
+
+
+                    results = {}
+                    for node_vote in list(nc_votes.values()):
+                        for i in range(len(node_vote)):
+                            k = list(node_vote.keys())[i]
+                            v = list(node_vote.values())[i]
                             if k in results:
                                 results[k] += v
                             else:
@@ -504,7 +568,7 @@ class Node(BaseNode):
                     results = sorted(results.items(), key=lambda x: x[0], reverse=True) # to equal solve of draw
                     results = sorted(results, key=lambda x: x[1], reverse=True)
 
-                    #logging.info("({}) VOTING RESULTS: {}".format(self.get_name(),results))
+                    logging.info("({}) VOTING RESULTS: {}".format(self.get_name(),results))
 
                     top = min(len(results), Settings.TRAIN_SET_SIZE)
                     results = results[0:top]
@@ -512,16 +576,17 @@ class Node(BaseNode):
 
                     votes = list(results.keys())
 
-                    # Clear votes    
+                    logging.info("({}) TOP NODES RESULTS: {}".format(self.get_name(),votes))
+
+                    # Clear votes ---------------------
                     for n in self.neightboors:
                         n.clear_train_set_votes()
 
-                    logging.info("({}) Computed {} votes.".format(self.get_name(),len(self.neightboors)+1))
+                    logging.info("({}) Computed {} votes.".format(self.get_name(),len(candidates)+1))
 
                     return votes
 
                 self.__wait_votes_ready_lock.acquire(timeout=2) 
-                begin = time.time()                
 
         else:
             return []
@@ -530,7 +595,7 @@ class Node(BaseNode):
         # Verify if node set is valid (can happend that a node was down when the votes were being processed)
         #   ----> ESTA PARTE VA A SER TEDIOSA PARA REDES COMPLETAMENTE DESCENTRALIZADAS PUES NO SE TIENE UN DIRECTORIO DE NODOS
         for tsn in self.train_set:
-            if tsn not in [ n.get_name() for n in self.neightboors]:
+            if tsn not in self.heartbeater.get_nodes():
                 if tsn != self.get_name():
                     self.train_set.remove(tsn)
                 
@@ -597,6 +662,8 @@ class Node(BaseNode):
         # Gossip
         self.__gossip_model(candidate_condition,status_function,model_function)       
         
+
+    
     def __gossip_model(self, candidate_condition, status_function, model_function):
 
         # Initialize list with status of nodes in the last X iterations
@@ -640,7 +707,7 @@ class Node(BaseNode):
 
             # Lock Neightboors Communication
             for nc in nei:
-                nc.set_sending_model(True)
+                nc.set_sending_model(True) # MIERDA -> BORRAR
 
             logging.info("({}) Gossiping model to {} train set nodes.".format(self.get_name(), len(nei)))
 
@@ -660,7 +727,7 @@ class Node(BaseNode):
                 
             # Lock Neightboors Communication
             for nc in nei:
-                nc.set_sending_model(False)
+                nc.set_sending_model(False) # MIERDA -> BORRAR
 
             # Wait to guarantee the frequency of gossipping
             time_diff = time.time() - begin
