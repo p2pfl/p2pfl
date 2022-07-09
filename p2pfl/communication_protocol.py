@@ -20,7 +20,7 @@ class CommunicationProtocol:
             - METRICS <node> <round> <loss> <metric> <HASH> -----------------------------------------------------------------cambiar (indicar el nodo que lo envio)
 
         Non Gossiped messages (communication over only 2 nodes):
-            - CONNECT <ip> <port> <broadcast>
+            - CONNECT <ip> <port> <full> <force>
             - CONNECT_TO <ip> <port>
             - STOP 
             - NUM_SAMPLES <train_num> <test_num>
@@ -360,11 +360,12 @@ class CommunicationProtocol:
         
         """
         message = message.split()
-        if len(message) > 3:
+        if len(message) > 4:
             if message[0] == CommunicationProtocol.CONN:
                 try:
-                    broadcast = message[3] == "1"
-                    callback(message[1], int(message[2]), broadcast)
+                    full = message[3] == "1"
+                    force = message[4] == "1"
+                    callback(message[1], int(message[2]), full, force)
                     return True
                 except:
                     return False
@@ -531,7 +532,7 @@ class CommunicationProtocol:
     #     Special Messages    #
     ###########################
 
-    def build_connect_msg(ip, port, broadcast):
+    def build_connect_msg(ip, port, broadcast, force):
         """
         Build Handshake message.
 
@@ -545,7 +546,7 @@ class CommunicationProtocol:
         Returns:
             A encoded connect message.
         """
-        return (CommunicationProtocol.CONN + " " + ip + " " + str(port) + " " + str(broadcast) + "\n").encode("utf-8")
+        return (CommunicationProtocol.CONN + " " + ip + " " + str(port) + " " + str(broadcast) + " " + str(force) + "\n").encode("utf-8")
 
     def build_params_msg(data):
         """

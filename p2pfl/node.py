@@ -14,7 +14,9 @@ from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
 from p2pfl.learning.pytorch.lightninglearner import LightningLearner
 from p2pfl.utils.observer import Events, Observer
 
-
+"""
+QUE SUCEDE CON LAS AGREGACIONES EN CALIENTE?
+"""
 
 # FRACCIONES -> radom o por mecanismos de votación
 
@@ -73,7 +75,7 @@ class Node(BaseNode):
         self.agregator.add_observer(self)
         self.model_initialized = False
 
-        self.__rm_connections = []
+        self.__initial_neighbors = []
 
         # Locks
         self.__wait_votes_ready_lock = threading.Lock()
@@ -94,7 +96,7 @@ class Node(BaseNode):
             return None
 
         # Connect
-        nc = super().connect_to(h, p, full)
+        nc = super().connect_to(h, p, full, force)
         if nc is not None:
             # Send number of samples
             nc.send(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples()))        
@@ -150,15 +152,25 @@ class Node(BaseNode):
                     pass
                 
         elif event == Events.NODE_CONNECTED_EVENT:
+            n = obj[0]
+            force = obj[1]
+
+
+            #logging.debug("training: {} not force {} {}".format(self.round is not None, not force, self.round is not None and not force))
+
+            if self.round is not None and not force:
+                logging.info("({}) Cant connect to other nodes when learning is running. (however, other nodes can be connected to the node.)".format(self.get_name()))
+                n.stop()
+                return
+                
             # Send number of samples
-            obj.send(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())) #----ojo tb tiene que hacerlo el que se conecta
+            n.send(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())) #----ojo tb tiene que hacerlo el que se conecta
             # Comunicate to the new node that a training process is running
             """
             if self.round is not None and obj.get_name() not in self.train_set:
                 print("TO IMPLEMET WHEN THE TOPOLOGY WAS NOT FULLY CONNECTED")
-                obj.stop()
                 #obj.send(CommunicationProtocol.build_learning_is_running_msg(self.round, self.totalrounds))
-                return
+                
             """
 
         elif event == Events.AGREGATION_FINISHED:
@@ -296,6 +308,10 @@ class Node(BaseNode):
 
             # Updates the number of samples by node
             self.broadcast(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())) # si no se manda bien promedia x 0
+
+            # Wait to guarantee new connection heartbeats convergence and fix neighbors
+            time.sleep(Settings.WAIT_HEARTBEATS_CONVERGENCE)
+            self.__initial_neighbors = self.neightboors.copy() # used to restore the original list of neighbors after the learning round
 
             # Train
             self.learner.set_epochs(epochs)
@@ -447,17 +463,19 @@ class Node(BaseNode):
                     # If the node is not connected, connect it (to avoid duplicated connections only a node connects to the other)
                     if nc is None and self.get_name() > node: 
                         self.connect_to(h,int(p),force=True)
-                        self.__rm_connections.append((h,int(p)))
                 else:
                     logging.info("({}) Node {} has a valid port".format(self.get_name(),node.split(":")))
 
 
         # Wait connections
+
+        # METER TIMEOUT
+
         while True:
             if len(self.train_set) == len([nc for nc in self.neightboors if nc.get_name() in self.train_set])+1:
                 break
-
-            time.sleep(0.01) # podr'ia ponerlo como un lock o asi, no se 
+            logging.info("({}) Waiting for connections: {} {} + (self)".format(self.get_name(),self.train_set,[nc for nc in self.neightboors if nc.get_name() in self.train_set]))
+            time.sleep(1) # podr'ia ponerlo como un lock o asi, no se 
 
         
 
@@ -513,7 +531,6 @@ class Node(BaseNode):
 
             # Adding votes
             self.train_set_votes[self.get_name()] = dict(votes)
-
 
             logging.info("({}) Self Vote: {}".format(self.get_name(),votes))
 
@@ -580,7 +597,7 @@ class Node(BaseNode):
                     # Clear votes
                     self.train_set_votes = {}
 
-                    logging.info("({}) Computed {} votes.".format(self.get_name(),len(candidates)+1))
+                    logging.info("({}) Computed {} votes.".format(self.get_name(),len(candidates)))
 
                     return votes
 
@@ -605,6 +622,10 @@ class Node(BaseNode):
 
 
     def __on_round_finished(self):
+        # Remove trainset connections
+        for nc in self.neightboors:
+            if nc not in self.__initial_neighbors:
+                self.rm_neighbor(nc)
         # Set Next Round
         self.agregator.clear()
         self.learner.finalize_round() # revisar x si esto pueiera quedar mejor

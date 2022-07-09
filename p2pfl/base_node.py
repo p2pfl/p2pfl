@@ -133,7 +133,7 @@ class BaseNode(threading.Thread, Observer):
                 # Process new connection
                 if msg:
                     msg = msg.decode("UTF-8")
-                    callback = lambda h,p,b: self.__process_new_connection(node_socket, h, p, b)
+                    callback = lambda h,p,fu,fc: self.__process_new_connection(node_socket, h, p, fu, fc)
                     if not CommunicationProtocol.process_connection(msg,callback):
                         logging.debug('({}) Conexión rechazada con {}:{}'.format(self.get_name(),addr,msg))
                         node_socket.close()         
@@ -153,7 +153,7 @@ class BaseNode(threading.Thread, Observer):
         self.node_socket.close()
 
 
-    def __process_new_connection(self, node_socket, h, p, broadcast):
+    def __process_new_connection(self, node_socket, h, p, full, force):
         try:
             # Check if connection with the node already exist
             self.nei_lock.acquire()
@@ -161,7 +161,7 @@ class BaseNode(threading.Thread, Observer):
 
                 # Check if ip and port are correct
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-                s.settimeout(2)
+                s.settimeout(2) #########################################################################################################################
                 result = s.connect_ex((h,p)) 
                 s.close()
 
@@ -182,9 +182,9 @@ class BaseNode(threading.Thread, Observer):
                     nc = NodeConnection(self.get_name(),node_socket,(h,p),aes_cipher)
                     nc.add_observer(self)
                     self.add_neighbor(nc)
-                    nc.start()
+                    nc.start(force=force)
                     
-                    if broadcast:
+                    if full:
                         self.broadcast(CommunicationProtocol.build_connect_to_msg(h,p),exc=[nc])
             else:
                 node_socket.close()
@@ -213,7 +213,8 @@ class BaseNode(threading.Thread, Observer):
             self.rm_neighbor(obj)
 
         elif event == Events.NODE_CONNECTED_EVENT:
-            obj.send(CommunicationProtocol.build_beat_msg(self.get_name()), is_necesary=True) # todos los mensajes van a ser necesarior
+            n = obj[0]
+            n.send(CommunicationProtocol.build_beat_msg(self.get_name()), is_necesary=True) # todos los mensajes van a ser necesarior
 
         elif event == Events.CONN_TO:
             self.connect_to(obj[0], obj[1], full=False)
@@ -281,10 +282,11 @@ class BaseNode(threading.Thread, Observer):
         """
         try:
             self.neightboors.remove(n)
+            n.stop()
         except:
             pass
 
-    def connect_to(self, h, p, full=False):
+    def connect_to(self, h, p, full=False, force=False):
         """"
         Connects to a node.
         
@@ -301,6 +303,11 @@ class BaseNode(threading.Thread, Observer):
         else:
             full = "0"
         
+        if force:
+            force = "1"
+        else:
+            force = "0"
+
         try:
             # Check if connection with the node already exist
             h = socket.gethostbyname(h)
@@ -308,7 +315,7 @@ class BaseNode(threading.Thread, Observer):
             if self.get_neighbor(h,p) == None:
             
                 # Send connection request
-                msg=CommunicationProtocol.build_connect_msg(self.host,self.port,full)
+                msg=CommunicationProtocol.build_connect_msg(self.host,self.port,full,force)
                 s = self.__send(h,p,msg,persist=True)
 
                 aes_cipher = None
@@ -326,7 +333,7 @@ class BaseNode(threading.Thread, Observer):
 
                 nc.add_observer(self)
                 self.add_neighbor(nc)
-                nc.start()
+                nc.start(force=force)
                 self.nei_lock.release()
                 return nc
         

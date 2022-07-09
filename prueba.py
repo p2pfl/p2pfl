@@ -76,13 +76,18 @@ def test_gossip_heartbeat():
     n2.connect_to(n3.host,n3.port, full=False)
     n3.connect_to(n4.host,n4.port, full=False)
 
-    time.sleep(2) # Wait for asincronity    
-    print(len(n1.heartbeater.get_nodes()) , len(n2.heartbeater.get_nodes()), len(n3.heartbeater.get_nodes()) , len(n4.heartbeater.get_nodes()))
+    acum = 0
+    while len(n1.heartbeater.get_nodes()) != 4 or len(n2.heartbeater.get_nodes()) != 4 or len(n3.heartbeater.get_nodes()) != 4 or len(n4.heartbeater.get_nodes()) != 4:
+        begin = time.time()
+        time.sleep(0.1)
+        acum += time.time() - begin
+        if acum > 6:
+            assert False
 
-    assert len(n1.heartbeater.get_nodes()) == len(n2.heartbeater.get_nodes()) == len(n3.heartbeater.get_nodes()) == len(n4.heartbeater.get_nodes()) == 3
+    for n in nodes:
+        print(n.get_name(), " ->" ,n.heartbeater.get_nodes())
 
     n1.set_start_learning(rounds=2,epochs=0)    
-
 
     # Wait 4 results
     while True:

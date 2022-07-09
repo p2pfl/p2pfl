@@ -208,8 +208,8 @@ class NodeConnection(threading.Thread, Observable):
     #    Main Loop    # 
     ###################
 
-    def start(self):
-        self.notify(Events.NODE_CONNECTED_EVENT, self)
+    def start(self, force=False):
+        self.notify(Events.NODE_CONNECTED_EVENT, (self,force))
         return super().start()
 
 

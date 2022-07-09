@@ -19,6 +19,7 @@ class Heartbeater(threading.Thread, Observable):
     def __init__(self, node_name):
         Observable.__init__(self)
         threading.Thread.__init__(self, name = "heartbeater-" + node_name)
+        self.node_name = node_name
         self.terminate_flag = threading.Event()
 
         # List of neighbors
@@ -65,5 +66,7 @@ class Heartbeater(threading.Thread, Observable):
         Returns:
             list: List of neighbors.
         """
-        return list(self.nodes.keys())
-
+        node_list = list(self.nodes.keys())
+        if self.node_name not in node_list:
+            node_list.append(self.node_name)
+        return node_list
