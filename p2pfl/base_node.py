@@ -18,12 +18,12 @@ class BaseNode(threading.Thread, Observer):
     Args:
         host (str): The host of the node.
         port (int): The port of the node.
+        simulation (bool): If the node is in simulation mode or not.
 
     Attributes:
         host (str): The host of the node.
         port (int): The port of the node.
-        node_socket (socket): The socket of the node.
-        neightboors (list): The neightboors of the node.
+        simulation (bool): If the node is in simulation mode or not.
     """
 
     #####################
@@ -38,18 +38,18 @@ class BaseNode(threading.Thread, Observer):
         self.simulation = simulation
 
         # Setting Up Node Socket (listening)
-        self.node_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #TCP Socket
+        self.__node_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #TCP Socket
         if port==None:
-            self.node_socket.bind((host, 0)) # gets a random free port
-            self.port = self.node_socket.getsockname()[1]
+            self.__node_socket.bind((host, 0)) # gets a random free port
+            self.port = self.__node_socket.getsockname()[1]
         else:
-            self.node_socket.bind((host, port))
-        self.node_socket.listen(50) # no more than 50 connections at queue
+            self.__node_socket.bind((host, port))
+        self.__node_socket.listen(50) # no more than 50 connections at queue
         self.name = "node-" + self.get_name()
         
-        # Neightboors
-        self.neightboors = []
-        self.nei_lock = threading.Lock()
+        # neightbors
+        self.__neightbors = [] # private to avoid concurrency issues
+        self.__nei_lock = threading.Lock()
 
         # Logging
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -84,7 +84,7 @@ class BaseNode(threading.Thread, Observer):
         super().start()
         # Heartbeater and Gossiper
         self.heartbeater = Heartbeater(self.get_name())
-        self.gossiper = Gossiper(self.get_name(),self.neightboors)
+        self.gossiper = Gossiper(self.get_name(),self.__neightbors) # only reads neightbors
         self.heartbeater.add_observer(self)
         self.gossiper.add_observer(self)
         self.heartbeater.start()
@@ -127,16 +127,16 @@ class BaseNode(threading.Thread, Observer):
         logging.info('Nodo listening at {}:{}'.format(self.host, self.port))
         while not self.__terminate_flag.is_set(): 
             try:
-                (node_socket, addr) = self.node_socket.accept()
-                msg = node_socket.recv(Settings.BUFFER_SIZE)
+                (ns, addr) = self.__node_socket.accept()
+                msg = ns.recv(Settings.BLOCK_SIZE)
                 
                 # Process new connection
                 if msg:
                     msg = msg.decode("UTF-8")
-                    callback = lambda h,p,fu,fc: self.__process_new_connection(node_socket, h, p, fu, fc)
+                    callback = lambda h,p,fu,fc: self.__process_new_connection(ns, h, p, fu, fc)
                     if not CommunicationProtocol.process_connection(msg,callback):
                         logging.debug('({}) Conexión rechazada con {}:{}'.format(self.get_name(),addr,msg))
-                        node_socket.close()         
+                        ns.close()         
                         
             except Exception as e:
                 logging.exception(e)
@@ -145,19 +145,19 @@ class BaseNode(threading.Thread, Observer):
         self.heartbeater.stop()
         self.gossiper.stop()
         # Stop Node
-        logging.info('Bajando el nodo, dejando de escuchar en {} {} y desconectándose de {} nodos'.format(self.host, self.port, len(self.neightboors))) 
+        logging.info('Bajando el nodo, dejando de escuchar en {} {} y desconectándose de {} nodos'.format(self.host, self.port, len(self.__neightbors))) 
         # Al realizar esta copia evitamor errores de concurrencia al recorrer la misma, puesto que sabemos que se van a eliminar los nodos de la misma
-        nei_copy_list = self.neightboors.copy()
+        nei_copy_list = self.__neightbors.copy()
         for n in nei_copy_list:
             n.stop()
-        self.node_socket.close()
+        self.__node_socket.close()
 
 
     def __process_new_connection(self, node_socket, h, p, full, force):
         try:
             # Check if connection with the node already exist
-            self.nei_lock.acquire()
-            if self.get_neighbor(h,p) == None:
+            self.__nei_lock.acquire()
+            if self.get_neighbor(h,p,thread_safe=False) == None:
 
                 # Check if ip and port are correct
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
@@ -181,18 +181,20 @@ class BaseNode(threading.Thread, Observer):
                     logging.info('{} Conexión aceptada con {}:{}'.format(self.get_name(),h,p))
                     nc = NodeConnection(self.get_name(),node_socket,(h,p),aes_cipher)
                     nc.add_observer(self)
-                    self.add_neighbor(nc)
+                    self.__neightbors.append(nc)
                     nc.start(force=force)
                     
                     if full:
-                        self.broadcast(CommunicationProtocol.build_connect_to_msg(h,p),exc=[nc])
+                        self.broadcast(CommunicationProtocol.build_connect_to_msg(h,p),exc=[nc],thread_safe=False)
             else:
                 node_socket.close()
-            self.nei_lock.release()
+            
+            self.__nei_lock.release()
             
         except Exception as e:
             logging.exception(e)
             node_socket.close()
+            self.__nei_lock.release()
             self.rm_neighbor(nc)
             raise e
    
@@ -203,7 +205,7 @@ class BaseNode(threading.Thread, Observer):
 
     def update(self,event,obj):
         """
-        Observer update method. Used to handle events that can occur in the agregator or neightboors.
+        Observer update method. Used to handle events that can occur in the agregator or neightbors.
         
         Args:
             event (Events): Event that has occurred.
@@ -231,7 +233,7 @@ class BaseNode(threading.Thread, Observer):
             #print("Processed {} messages ({})".format(len(msgs),msgs))
 
             # Comunicate to nodes the new messages processed
-            for nc in self.neightboors:
+            for nc in self.__neightbors:
                 nc.add_processed_messages(list(msgs.keys()))
 
             # Gossip the new messages
@@ -241,9 +243,9 @@ class BaseNode(threading.Thread, Observer):
             self.heartbeater.add_node(obj)
 
             
-    def get_neighbor(self, h, p):
+    def get_neighbor(self, h, p, thread_safe=True):
         """
-        Get a NodeConnection from the neightboors list.
+        Get a NodeConnection from the neightbors list.
 
         Args:
             h (str): The host of the node.
@@ -252,39 +254,45 @@ class BaseNode(threading.Thread, Observer):
         Returns:
             NodeConnection: The NodeConnection of the node.
         """
-        for n in self.neightboors:
+        if thread_safe:
+            self.__nei_lock.acquire()
+
+        return_node = None    
+        for n in self.__neightbors:
             if n.get_addr() == (h,p):
-                return n
-        return None
+                return_node = n
+                break
+            
+        if thread_safe:
+            self.__nei_lock.release()
+        
+        return return_node
 
     def get_neighbors(self):
         """
         Returns:
-            list: The neightboors of the node.
+            list: The neightbors of the node.
         """
-        return self.neightboors
-
-    def add_neighbor(self, n):
-        """
-        Adds a neightboor to the neightboors list.
-            
-        Args:
-            n (NodeConnection): The neightboor to be added.
-        """
-        self.neightboors.append(n)
+        self.__nei_lock.acquire()
+        n = self.__neightbors.copy()
+        self.__nei_lock.release()
+        return n
 
     def rm_neighbor(self,n):
         """
-        Removes a neightboor from the neightboors list.
+        Removes a neightboor from the neightbors list.
 
         Args:
             n (NodeConnection): The neightboor to be removed.
         """
+        self.__nei_lock.acquire()
         try:
-            self.neightboors.remove(n)
+            self.__neightbors.remove(n)
             n.stop()
         except:
             pass
+        self.__nei_lock.release()
+
 
     def connect_to(self, h, p, full=False, force=False):
         """"
@@ -311,8 +319,8 @@ class BaseNode(threading.Thread, Observer):
         try:
             # Check if connection with the node already exist
             h = socket.gethostbyname(h)
-            self.nei_lock.acquire()
-            if self.get_neighbor(h,p) == None:
+            self.__nei_lock.acquire()
+            if self.get_neighbor(h,p,thread_safe=False) == None:
             
                 # Send connection request
                 msg=CommunicationProtocol.build_connect_msg(self.host,self.port,full,force)
@@ -327,26 +335,26 @@ class BaseNode(threading.Thread, Observer):
                     # Encryption (symetric)
                     aes_cipher = AESCipher(key=s.recv(AESCipher.key_len()))
 
-                # Add socket to neightboors
+                # Add socket to neightbors
                 logging.info("{} Connected to {}:{}".format(self.get_name(),h,p))
                 nc = NodeConnection(self.get_name(),s,(h,p),aes_cipher)
 
                 nc.add_observer(self)
-                self.add_neighbor(nc)
+                self.__neightbors.append(nc)
                 nc.start(force=force)
-                self.nei_lock.release()
+                self.__nei_lock.release()
                 return nc
         
             else:
                 logging.info("{} Already connected to {}:{}".format(self.get_name(),h,p))
-                self.nei_lock.release()
+                self.__nei_lock.release()
                 return None
     
         except Exception as e:
             logging.info("{} Can't connect to the node {}:{}".format(self.get_name(),h,p))
             logging.exception(e)
             try:
-                self.nei_lock.release()
+                self.__nei_lock.release()
             except:
                 pass
             return None
@@ -367,22 +375,31 @@ class BaseNode(threading.Thread, Observer):
     ##########################
 
     # A PARTIR DE AHORA, TODOS LOS MENSAJES VAN A SER NECESARIOS
-    def broadcast(self, msg, exc=[]):
+    def broadcast(self, msg, exc=[], thread_safe=True):
         """
-        Broadcasts a message to all the neightboors.
+        Broadcasts a message to all the neightbors.
 
         Args:
             msg (str): The message to be broadcasted.
             ttl (int): The time to live of the message.
-            exc (list): The neightboors to be excluded.
+            exc (list): The neightbors to be excluded.
 
         Returns:
             bool: If True, the message has been sent.
         """
-        sended=True 
 
-        for n in self.neightboors.copy(): # to avoid concurrent modification
+        # ESTO DE RETURN TRUE YO LO SACABA
+
+        if thread_safe:
+            self.__nei_lock.acquire()
+
+        sended=True 
+        for n in self.__neightbors: # to avoid concurrent modification
             if not (n in exc):
                 sended = sended and n.send(msg)
+
+        if thread_safe:
+            self.__nei_lock.release()
+        
         return sended
 

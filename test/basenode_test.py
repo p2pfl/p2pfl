@@ -39,12 +39,12 @@ def test_node_paring(two_nodes):
     # Conexión
     n1.connect_to(n2.host,n2.port)
     time.sleep(0.1) #Esperar por la asincronía
-    assert len(n1.neightboors) == len(n2.neightboors)==1
+    assert len(n1.get_neighbors()) == len(n2.get_neighbors())==1
 
     # Desconexión
-    n2.disconnect_from(n1.host,n1.port)   # same as n2.neightboors[0].stop()
+    n2.disconnect_from(n1.host,n1.port)   # same as n2.get_neighbors()[0].stop()
     time.sleep(0.1) #Esperar por la asincronía
-    assert len(n1.neightboors) == len(n2.neightboors)== 0
+    assert len(n1.get_neighbors()) == len(n2.get_neighbors())== 0
 
 def test_connect_invalid_node():
     n = BaseNode()
@@ -58,32 +58,32 @@ def test_full_connected(four_nodes):
     # Conexión n1 n2
     n1.connect_to(n2.host,n2.port,full=True)
     time.sleep(0.1) #Esperar por la asincronía
-    assert len(n1.neightboors) == len(n2.neightboors)==1
+    assert len(n1.get_neighbors()) == len(n2.get_neighbors())==1
 
     # Conexión n3 n1
     n3.connect_to(n1.host,n1.port,full=True)
     time.sleep(0.1) #Esperar por la asincronía
-    assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == 2
+    assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == len(n3.get_neighbors()) == 2
 
     # Conexión n4 n1
     n4.connect_to(n1.host,n1.port,full=True)
     time.sleep(0.1) #Esperar por la asincronía
-    assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == len(n4.neightboors) == 3
+    assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == len(n3.get_neighbors()) == len(n4.get_neighbors()) == 3
 
     # Desconexión n1
     n1.stop()
     time.sleep(0.1) #Esperar por la asincronía
-    assert len(n2.neightboors) == len(n3.neightboors) == len(n4.neightboors) == 2
+    assert len(n2.get_neighbors()) == len(n3.get_neighbors()) == len(n4.get_neighbors()) == 2
 
     # Desconexión n2
     n2.stop()
     time.sleep(0.1) #Esperar por la asincronía
-    assert len(n3.neightboors) == len(n4.neightboors) == 1
+    assert len(n3.get_neighbors()) == len(n4.get_neighbors()) == 1
 
     # Desconexión n3
     n3.stop()
     time.sleep(0.1) #Esperar por la asincronía
-    assert len(n4.neightboors) == 0
+    assert len(n4.get_neighbors()) == 0
 
     # Desconexión n4
     n4.stop()
@@ -99,7 +99,7 @@ def test_multimsg(two_nodes):
 
     n1.broadcast(msg + msg + msg)
     time.sleep(0.1) 
-    assert len(n2.neightboors) == 1
+    assert len(n2.get_neighbors()) == 1
 
 def test_bad_msg(two_nodes):
     n1, n2 = two_nodes
@@ -111,5 +111,5 @@ def test_bad_msg(two_nodes):
     # Ante 1 error se detendrá la conexión (actualmente según los parátros 1 error es suficiente)
     n1.broadcast(b"saludos Enrique y Dani")
     time.sleep(0.1) 
-    assert len(n2.neightboors) == 0
+    assert len(n2.get_neighbors()) == 0
 

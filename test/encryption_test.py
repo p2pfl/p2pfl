@@ -98,7 +98,7 @@ def test_encrypted_convergence(x):
     # Check if they are connected
     time.sleep(3)     
     for node in nodes:
-        assert len(node.neightboors) == n-1
+        assert len(node.get_neighbors()) == n-1
 
     # Start Learning
     nodes[0].set_start_learning(rounds=r,epochs=0)

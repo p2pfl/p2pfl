@@ -564,15 +564,15 @@ class CommunicationProtocol:
         end = CommunicationProtocol.PARAMS_CLOSE.encode("utf-8")
 
         # Spliting data
-        size = Settings.BUFFER_SIZE - len(header)
+        size = Settings.BLOCK_SIZE - len(header)
         data_msgs = []
         for i in range(0, len(data), size):
             data_msgs.append(header + (data[i:i+size]))
 
         # Adding closing message
-        if len(data_msgs[-1]) + len(end) <= Settings.BUFFER_SIZE:
+        if len(data_msgs[-1]) + len(end) <= Settings.BLOCK_SIZE:
             data_msgs[-1] += end
-            data_msgs[-1] += b'\0' * (Settings.BUFFER_SIZE - len(data_msgs[-1])) # padding to avoid message fragmentation
+            data_msgs[-1] += b'\0' * (Settings.BLOCK_SIZE - len(data_msgs[-1])) # padding to avoid message fragmentation
         else:
             data_msgs.append(header + end)
 

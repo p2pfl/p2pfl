@@ -208,7 +208,7 @@ class NodeConnection(threading.Thread, Observable):
                 # Recive message
                 og_msg = b""
                 if overflow == 0:
-                    og_msg = self.socket.recv(Settings.BUFFER_SIZE)
+                    og_msg = self.socket.recv(Settings.BLOCK_SIZE)
                 else:
                     og_msg = buffer + self.socket.recv(overflow) #alinear el colapso
                     buffer = b""

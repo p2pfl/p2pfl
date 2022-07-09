@@ -28,12 +28,13 @@ def test_node_down_on_learning(n):
     # Node Connection
     for i in range(len(nodes)-1):
         nodes[i+1].connect_to(nodes[i].host,nodes[i].port, full=True)
+        print("iii")
         time.sleep(1)
 
     # Check if they are connected
 #    time.sleep(1)
     for node in nodes:
-        assert len(node.neightboors) == n-1
+        assert len(node.get_neighbors()) == n-1
 
     # Start Learning
     nodes[0].set_start_learning(rounds=10,epochs=2)

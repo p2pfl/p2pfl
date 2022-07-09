@@ -37,7 +37,7 @@ class Gossiper(threading.Thread, Observable):
             # Send to all the nodes except the ones that the message was already sent to
             if len(self.msgs) > 0:
                 msg_list = list(self.msgs.items()).copy()
-                nei = set(self.neighbors)
+                nei = set(self.neighbors.copy())
 
                 for msg,nodes in msg_list:
                     nodes = set(nodes)

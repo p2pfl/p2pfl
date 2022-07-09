@@ -17,20 +17,20 @@ def test_node_abrupt_down(four_nodes):
     # Conexión n3 n1
     n3.connect_to(n1.host,n1.port, full=True)
     time.sleep(0.1) #Esperar por la asincronía
-    assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == 2
+    assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == len(n3.get_neighbors()) == 2
 
     # Conexión n4 n1
     n4.connect_to(n1.host,n1.port, full=True)
     time.sleep(0.1) #Esperar por la asincronía
-    assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == len(n4.neightboors) == 3
+    assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == len(n3.get_neighbors()) == len(n4.get_neighbors()) == 3
 
     # Desconexión n4 abruptamente (socket closed)
     #    (n4): será consciente de que la comunicación con n1 se ha perdido cuando haga uso del socket (heartbeat)
     #   (otros) nuevamente el uso del socket (heartbeat) detectará que la conexión ha sido rechazada por el nodo
-    for con in n4.neightboors:
+    for con in n4.get_neighbors():
         con.socket.close() #provocamos un bad file descriptor
     time.sleep(Settings.HEARTBEAT_PERIOD+0.5) #Esperar por la asincronía
-    assert len(n1.neightboors) == len(n2.neightboors) == len(n3.neightboors) == 2
+    assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == len(n3.get_neighbors()) == 2
     n4.stop()
     
     """
@@ -40,7 +40,7 @@ def test_node_abrupt_down(four_nodes):
     # Desconexión n3 abruptamente (deja de enviar heartbeat)
     n3.heartbeater.stop()
     time.sleep(Settings.NODE_TIMEOUT+0.5) #Esperar por la asincronía
-    assert len(n1.neightboors) == len(n2.neightboors) == 1
+    assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == 1
     """
     n3.stop()
     
@@ -70,7 +70,7 @@ def test_node_down_on_learning(n):
 
     # Check if they are connected
     for node in nodes:
-        assert len(node.neightboors) == n-1
+        assert len(node.get_neighbors()) == n-1
 
     # Start Learning
     nodes[0].set_start_learning(rounds=2,epochs=0)
@@ -104,7 +104,7 @@ def test_bad_binary_model(two_nodes):
  
     # Adding noise to the buffer
     for _ in range(200):
-        n1.neightboors[0].param_bufffer += "noise".encode("utf-8")
+        n1.get_neighbors()[0].param_bufffer += "noise".encode("utf-8")
     
     while not n1.round is None and not n2.round is None:
         time.sleep(0.1)

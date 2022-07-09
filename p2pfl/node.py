@@ -14,25 +14,11 @@ from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
 from p2pfl.learning.pytorch.lightninglearner import LightningLearner
 from p2pfl.utils.observer import Events, Observer
 
-"""
-QUE SUCEDE CON LAS AGREGACIONES EN CALIENTE?
-"""
-
-# FRACCIONES -> radom o por mecanismos de votación
-
-# revisar test que falla: test_node_down_on_learning
-
 # REVISAR LO DE BLOQUEAR CUANDO SE MANDA EL MODELO
 
 # Cambiar algunos int nones por -1 para preservar el tipo
 
-# Num samples -> meterlo en el handshaking -> puede traer problemas en topoligías no completamente conectadas
-
 # concurrencia .copy() vs locks -> tratar de borrar los copys (sobre todo en nei)
-
-###################################################################################################################
-# FULL CONNECTED HAY QUE IMPLEMENTARLO DE FORMA QUE CUANDO SE INTRODUCE UN NODO EN LA RED, SE HACE UN BROADCAST
-###################################################################################################################
 
 class Node(BaseNode):
 
@@ -117,7 +103,7 @@ class Node(BaseNode):
 
     def update(self,event,obj):
         """
-        Observer update method. Used to handle events that can occur in the agregator or neightboors.
+        Observer update method. Used to handle events that can occur in the agregator or neightbors.
         
         Args:
             event (Events): Event that has occurred.
@@ -311,7 +297,7 @@ class Node(BaseNode):
 
             # Wait to guarantee new connection heartbeats convergence and fix neighbors
             time.sleep(Settings.WAIT_HEARTBEATS_CONVERGENCE)
-            self.__initial_neighbors = self.neightboors.copy() # used to restore the original list of neighbors after the learning round
+            self.__initial_neighbors = self.get_neighbors() # used to restore the original list of neighbors after the learning round
 
             # Train
             self.learner.set_epochs(epochs)
@@ -472,9 +458,9 @@ class Node(BaseNode):
         # METER TIMEOUT
 
         while True:
-            if len(self.train_set) == len([nc for nc in self.neightboors if nc.get_name() in self.train_set])+1:
+            if len(self.train_set) == len([nc for nc in self.get_neighbors() if nc.get_name() in self.train_set])+1:
                 break
-            logging.info("({}) Waiting for connections: {} {} + (self)".format(self.get_name(),self.train_set,[nc for nc in self.neightboors if nc.get_name() in self.train_set]))
+            logging.info("({}) Waiting for connections: {} {} + (self)".format(self.get_name(),self.train_set,[nc for nc in self.get_neighbors() if nc.get_name() in self.train_set]))
             time.sleep(1) # podr'ia ponerlo como un lock o asi, no se 
 
         
@@ -489,7 +475,7 @@ class Node(BaseNode):
         # Set Models To Agregate 
         self.agregator.set_nodes_to_agregate(self.train_set) # reference to self node stringified list of nodes
         # Set Number of samples of nodes to agregate
-        node_w = [(nc.get_name(), nc.get_num_samples()[0]) for nc in self.neightboors if nc.get_name() in self.train_set]
+        node_w = [(nc.get_name(), nc.get_num_samples()[0]) for nc in self.get_neighbors() if nc.get_name() in self.train_set]
         node_w.append((self.get_name(),self.learner.get_num_samples()[0]))
         self.agregator.set_node_weights(dict(node_w))
             
@@ -510,7 +496,7 @@ class Node(BaseNode):
 
     # SI ESTAMOS EN SIMULACION NO PERMITIR BROADCASTEAERLAS -> tonter'ia
     def __bc_metrics(self,metrics): 
-        logging.info("({}) Broadcasting metrics to {} clients.".format(self.get_name(),len(self.neightboors)))
+        logging.info("({}) Broadcasting metrics to {} clients.".format(self.get_name(),len(self.get_neighbors())))
         encoded_msgs = CommunicationProtocol.build_metrics_msg(self.round,metrics[0],metrics[1])
         self.broadcast(encoded_msgs)
 
@@ -553,7 +539,7 @@ class Node(BaseNode):
                 # Update time counters (timeout)
                 count = count + (time.time() - begin)
                 begin = time.time()                
-                timeout = count > Settings.TIMEOUT_WAIT_VOTE
+                timeout = count > Settings.VOTE_TIMEOUT
 
                 # Clear non candidate votes
                 nc_votes = {k:v for k,v in self.train_set_votes.items() if k in candidates}
@@ -623,7 +609,7 @@ class Node(BaseNode):
 
     def __on_round_finished(self):
         # Remove trainset connections
-        for nc in self.neightboors:
+        for nc in self.get_neighbors():
             if nc not in self.__initial_neighbors:
                 self.rm_neighbor(nc)
         # Set Next Round
@@ -631,7 +617,7 @@ class Node(BaseNode):
         self.learner.finalize_round() # revisar x si esto pueiera quedar mejor
         self.round = self.round + 1
         # Clear node agregation
-        for nc in [nc for nc in self.neightboors if nc.get_name() in self.train_set]:
+        for nc in [nc for nc in self.get_neighbors() if nc.get_name() in self.train_set]:
             nc.set_models_agregated([])
 
         logging.info("({}) Round {} of {} finished.".format(self.get_name(),self.round,self.totalrounds))
@@ -666,12 +652,12 @@ class Node(BaseNode):
         if initialization:
             logging.info("({}) Waiting initialization.".format(self.get_name()))
             self.__wait_init_model_lock.acquire()
-            logging.info("({}) Gossiping model initialization.".format(self.get_name(), len(self.neightboors)))
+            logging.info("({}) Gossiping model initialization.".format(self.get_name(), len(self.get_neighbors())))
             candidate_condition = lambda nc: not nc.get_model_initialized()
         else:
             logging.info("({}) Waiting aregation.".format(self.get_name()))
             self.__finish_agregation_lock.acquire()
-            logging.info("({}) Gossiping agregated model.".format(self.get_name(), len(self.neightboors)))
+            logging.info("({}) Gossiping agregated model.".format(self.get_name(), len(self.get_neighbors())))
 
             #candidate_condition = lambda nc: nc.get_ready_model_status()<=self.round
             def candidate_condition(nc):
@@ -703,14 +689,14 @@ class Node(BaseNode):
                 return
 
             # Get nodes wich need models
-            nei = [nc for nc in self.neightboors if candidate_condition(nc)]
+            nei = [nc for nc in self.get_neighbors() if candidate_condition(nc)]
 
             # Determine end of gossip
             if nei == []:
                 logging.info("({}) Gossip finished.".format(self.get_name()))
                 return
 
-            # Save state of neightboors. If nodes are not responding gossip will stop
+            # Save state of neightbors. If nodes are not responding gossip will stop
             if len(last_x_status) != Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS:
                 last_x_status.append([status_function(nc) for nc in nei])
             else:
@@ -723,7 +709,7 @@ class Node(BaseNode):
                         break
                     return
 
-            # Select a random subset of neightboors
+            # Select a random subset of neightbors
             samples = min(Settings.GOSSIP_MODELS_PER_ROUND,len(nei))
             nei = random.sample(nei, samples)
 
