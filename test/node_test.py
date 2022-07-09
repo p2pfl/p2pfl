@@ -84,29 +84,25 @@ def test_interrupt_train(two_nodes):
         
 
 # TO IMPLEMET WHEN THE TOPOLOGY WAS NOT FULLY CONNECTED
-def __test_connect_to_train_running(four_nodes):
+def test_connect_while_training(four_nodes):
     n1,n2,n3,n4 = four_nodes
-
+    
     # Connect Nodes (unless the n4)
     n1.connect_to(n2.host,n2.port, full=True)
     n3.connect_to(n1.host,n1.port, full=True)
     time.sleep(0.1) #Esperar por la asincronía
 
+    # Start Learning
     n1.set_start_learning(2,1)
+    time.sleep(4)
 
-    time.sleep(1)
-    
+    # Try to connect
+    assert n1.connect_to(n4.host,n4.port, full=True) == None    
     n4.connect_to(n1.host,n1.port,full=False)
-
     time.sleep(1)
+    assert n4.get_neighbors() == [] 
 
-    assert n4.round is not None
-
-    # If the new node doesent know that learning is running, it will cause inanition in the other nodes (that are waiting for him to finish)
-
-    while all([n1.round is not None for n in [n1,n2,n3,n4]]):
-        time.sleep(0.1)
-
-    for n in [n1,n2,n3,n4]:
+    for n in four_nodes:
         n.stop()
         time.sleep(0.1)
+    

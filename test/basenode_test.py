@@ -42,7 +42,7 @@ def test_node_paring(two_nodes):
     assert len(n1.neightboors) == len(n2.neightboors)==1
 
     # Desconexión
-    n2.neightboors[0].stop()
+    n2.disconnect_from(n1.host,n1.port)   # same as n2.neightboors[0].stop()
     time.sleep(0.1) #Esperar por la asincronía
     assert len(n1.neightboors) == len(n2.neightboors)== 0
 

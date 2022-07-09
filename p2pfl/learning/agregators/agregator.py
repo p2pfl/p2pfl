@@ -144,12 +144,13 @@ class Agregator(threading.Thread, Observable):
                             
                             #print(self.models.keys())
                             return models_added + nodes
-                    
+                    """
                         else:
                             logging.debug("({}) Can't add a model that has already been added {}".format(self.node_name, nodes))
                     else:
                         logging.info("nodes: {} | trainset: {}".format(nodes,self.train_set))
                         logging.debug("({}) Can't add a model from a node ({}) that is not in the training test.".format(self.node_name, nodes))
+                    """
                     
                     
         try:

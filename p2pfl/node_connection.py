@@ -43,7 +43,6 @@ class NodeConnection(threading.Thread, Observable):
         self.train_num_samples = 0
         self.test_num_samples = 0
         self.param_bufffer = b""
-        self.sending_model = False
         
         self.model_ready = -1
 
@@ -152,22 +151,6 @@ class NodeConnection(threading.Thread, Observable):
             The models agregated.
         """
         return self.models_agregated
-
-    def set_sending_model(self,flag):
-        """
-        Set when the model is being sent in the connection. (high bandwidth)
-        
-        Args:
-            flag: True if the model is being sent, false otherwise.
-        """
-        self.sending_model = flag
-
-    def is_sending_model(self):
-        """
-        Returns:    
-            True if the model is being sent, False otherwise.
-        """
-        return self.sending_model
 
     def set_num_samples(self,train,test):
         """
@@ -287,13 +270,12 @@ class NodeConnection(threading.Thread, Observable):
     ##################
 
     # Send a message to the other node. Message sending isnt guaranteed
-    def send(self, data, is_necesary=True): 
+    def send(self, data): 
         """
         Send a message to the other node.
 
         Args:
             data: The message to send.
-            is_necesary: If true, the message is guaranteed to be sent.
 
         Returns:
             True if the message was sent, False otherwise.
@@ -302,21 +284,18 @@ class NodeConnection(threading.Thread, Observable):
         # Check if the connection is still alive
         if not self.terminate_flag.is_set():
             try:
-                # If model is sending, we cant send a message
-                if not self.is_sending_model() or is_necesary:
-                    # Encrypt message
-                    if self.aes_cipher is not None:
-                        data = self.aes_cipher.add_padding(data) # -> It cant broke the model because it fills all the block space
-                        data = self.aes_cipher.encrypt(data)
-                    # Send message
-                    self.socket_lock.acquire()
-                    self.socket.sendall(data)
-                    self.socket_lock.release()
-                    return True
-                else:
-                    return False
+                # Encrypt message
+                if self.aes_cipher is not None:
+                    data = self.aes_cipher.add_padding(data) # -> It cant broke the model because it fills all the block space
+                    data = self.aes_cipher.encrypt(data)
+                # Send message
+                self.socket_lock.acquire()
+                self.socket.sendall(data)
+                self.socket_lock.release()
+                return True
+            
             except Exception as e:
-                logging.debug("{} (NodeConnection Send) Exception: ".format(self.get_addr()) + str(e))
+                # If some error happened, the connection is closed
                 self.terminate_flag.set() #exit
                 return False
         else:

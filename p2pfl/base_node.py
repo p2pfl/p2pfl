@@ -214,13 +214,13 @@ class BaseNode(threading.Thread, Observer):
 
         elif event == Events.NODE_CONNECTED_EVENT:
             n = obj[0]
-            n.send(CommunicationProtocol.build_beat_msg(self.get_name()), is_necesary=True) # todos los mensajes van a ser necesarior
+            n.send(CommunicationProtocol.build_beat_msg(self.get_name())) # todos los mensajes van a ser necesarior
 
         elif event == Events.CONN_TO:
             self.connect_to(obj[0], obj[1], full=False)
 
         elif event == Events.SEND_BEAT_EVENT:
-            self.broadcast(CommunicationProtocol.build_beat_msg(self.get_name()), is_necesary=True) # todos los mensajes van a ser necesarior
+            self.broadcast(CommunicationProtocol.build_beat_msg(self.get_name())) # todos los mensajes van a ser necesarior
 
         elif event == Events.GOSSIP_BROADCAST_EVENT:
             self.broadcast(obj[0],exc=obj[1]) 
@@ -367,7 +367,7 @@ class BaseNode(threading.Thread, Observer):
     ##########################
 
     # A PARTIR DE AHORA, TODOS LOS MENSAJES VAN A SER NECESARIOS
-    def broadcast(self, msg, exc=[], is_necesary=True):
+    def broadcast(self, msg, exc=[]):
         """
         Broadcasts a message to all the neightboors.
 
@@ -375,7 +375,6 @@ class BaseNode(threading.Thread, Observer):
             msg (str): The message to be broadcasted.
             ttl (int): The time to live of the message.
             exc (list): The neightboors to be excluded.
-            is_necesary (bool): If False, the message will be sent only if its posible.
 
         Returns:
             bool: If True, the message has been sent.
@@ -384,6 +383,6 @@ class BaseNode(threading.Thread, Observer):
 
         for n in self.neightboors.copy(): # to avoid concurrent modification
             if not (n in exc):
-                sended = sended and n.send(msg, is_necesary)
+                sended = sended and n.send(msg)
         return sended
 

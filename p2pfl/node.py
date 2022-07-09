@@ -568,7 +568,7 @@ class Node(BaseNode):
                         logging.info("({}) Timeout for vote agregation. Missing votes from {}".format(self.get_name(), set(candidates) - set(nc_votes.keys())))
 
                         # Emit a disconnect event for the nodes that didn't vote
-                        print("FUNCTION NOT IMPLEMETED")
+                        #print("FUNCTION NOT IMPLEMETED")
 
                     results = {}
                     for node_vote in list(nc_votes.values()):
@@ -584,7 +584,7 @@ class Node(BaseNode):
                     results = sorted(results.items(), key=lambda x: x[0], reverse=True) # to equal solve of draw
                     results = sorted(results, key=lambda x: x[1], reverse=True)
 
-                    logging.info("({}) VOTING RESULTS: {}".format(self.get_name(),results))
+                    #logging.info("({}) VOTING RESULTS: {}".format(self.get_name(),results))
 
                     top = min(len(results), Settings.TRAIN_SET_SIZE)
                     results = results[0:top]
@@ -592,7 +592,7 @@ class Node(BaseNode):
 
                     votes = list(results.keys())
 
-                    logging.info("({}) TOP NODES RESULTS: {}".format(self.get_name(),votes))
+                    #logging.info("({}) TOP NODES RESULTS: {}".format(self.get_name(),votes))
 
                     # Clear votes
                     self.train_set_votes = {}
@@ -675,7 +675,7 @@ class Node(BaseNode):
 
             #candidate_condition = lambda nc: nc.get_ready_model_status()<=self.round
             def candidate_condition(nc):
-                logging.info("NC STAT: {} NODE ROUND: {}".format(nc.get_ready_model_status(), self.round))
+                #logging.info("NC STAT: {} NODE ROUND: {}".format(nc.get_ready_model_status(), self.round))
                 return nc.get_ready_model_status()<self.round
         # Anonymous function 
         status_function = lambda nc: nc.get_name()
@@ -727,10 +727,6 @@ class Node(BaseNode):
             samples = min(Settings.GOSSIP_MODELS_PER_ROUND,len(nei))
             nei = random.sample(nei, samples)
 
-            # Lock Neightboors Communication
-            for nc in nei:
-                nc.set_sending_model(True) # MIERDA -> BORRAR
-
             logging.info("({}) Gossiping model to {} nodes set nodes.".format(self.get_name(), len(nei)))
 
             # Generate and Send Model Partial Agregations (model, node_contributors)
@@ -743,14 +739,10 @@ class Node(BaseNode):
                     encoded_msgs = CommunicationProtocol.build_params_msg(encoded_model)
                     # Send Fragments
                     for msg in encoded_msgs:
-                        nc.send(msg, True)
+                        nc.send(msg)
                         if Settings.FRAGMENTS_DELAY > 0:
                             time.sleep(Settings.FRAGMENTS_DELAY)
                 
-            # Lock Neightboors Communication
-            for nc in nei:
-                nc.set_sending_model(False) # MIERDA -> BORRAR
-
             # Wait to guarantee the frequency of gossipping
             time_diff = time.time() - begin
             time_sleep = 1/Settings.GOSSIP_MODELS_FREC-time_diff

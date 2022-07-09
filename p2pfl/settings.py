@@ -34,7 +34,7 @@ class Settings():
     WAIT_HEARTBEATS_CONVERGENCE = 5
 
     # FEDERATED 
-    TRAIN_SET_SIZE = 10
+    TRAIN_SET_SIZE = 5
 
     # GOSSIP Messages
     AMOUNT_LAST_MESSAGES_SAVED = 100 # Used to control gossip messages
@@ -43,6 +43,6 @@ class Settings():
 
     # GOSSIP Models
     GOSSIP_EXIT_ON_X_EQUAL_ROUNDS = 9 # If X rounds are equal, exit gossiping
-    GOSSIP_MODELS_FREC = 1  # X times per second | A really high value will make to send duplicated models (send twice before getting a models left update) 
-    GOSSIP_MODELS_PER_ROUND = 5
-    FRAGMENTS_DELAY = 0.005 # Delay between fragments (to avoid buffer overflow)
+    GOSSIP_MODELS_FREC = 2  # X times per second | A really high value will make to send duplicated models (send twice before getting a models left update) 
+    GOSSIP_MODELS_PER_ROUND = 2
+    FRAGMENTS_DELAY = 0.01 # Delay between fragments (to avoid buffer overflow)
