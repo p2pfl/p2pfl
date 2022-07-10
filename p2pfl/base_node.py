@@ -157,8 +157,8 @@ class BaseNode(threading.Thread, Observer):
                 if not self.simulation:
                     # Asymmetric
                     rsa = RSACipher()
-                    node_socket.sendall(rsa.serialize_key())
-                    rsa.load_pair_public_key(node_socket.recv(len(rsa.serialize_key())))
+                    node_socket.sendall(rsa.get_key())
+                    rsa.load_pair_public_key(node_socket.recv(len(rsa.get_key())))
 
                     # Symmetric
                     aes_cipher = AESCipher()
@@ -238,8 +238,8 @@ class BaseNode(threading.Thread, Observer):
                 if not self.simulation:
                     # Asymetric
                     rsa = RSACipher()
-                    rsa.load_pair_public_key(s.recv(len(rsa.serialize_key())))
-                    s.sendall(rsa.serialize_key())
+                    rsa.load_pair_public_key(s.recv(len(rsa.get_key())))
+                    s.sendall(rsa.get_key())
                     # Symetric
                     aes_cipher = AESCipher(key=s.recv(AESCipher.key_len()))
 

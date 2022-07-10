@@ -3,41 +3,58 @@ import threading
 from p2pfl.settings import Settings
 from p2pfl.utils.observer import Events, Observable
 
-class Gossiper(threading.Thread, Observable):
-    
-    # Meterlo como un observer -> Hacer del mismo modo el heartbeater
+##################
+#    Gossiper    #
+##################
 
+class Gossiper(threading.Thread, Observable):
+    """
+    Thread based gossiper. It gossip messages from list of pending messages. ``Settings.GOSSIP_MESSAGES_PER_ROUND`` are sended per iteration (`Settings.GOSSIP_FREC` times per second).
+
+    Communicates with node via observer pattern.
+    
+    Args:
+        nodo_padre (str): Name of the parent node.
+        neighbors (list): List of neighbors.
+
+    """
     def __init__(self, node_name, neighbors):
         Observable.__init__(self)
         threading.Thread.__init__(self, name=("gossiper-" + node_name ))
-        self.neighbors = neighbors # list as reference of the original neighbors list
-        self.msgs = {}
-        self.add_lock = threading.Lock()
-        self.terminate_flag = threading.Event()
+        self.__neighbors = neighbors # list as reference of the original neighbors list
+        self.__msgs = {}
+        self.__add_lock = threading.Lock()
+        self.__terminate_flag = threading.Event()
 
     def add_messages(self, msgs, node):
-        self.add_lock.acquire()
+        """
+        Add messages to the list of pending messages.
+
+        Args:
+            msgs (list): List of messages to add.
+            node (Node): Node that sent the messages.
+        """
+        self.__add_lock.acquire()
         for msg in msgs:
-            self.msgs[msg] = [node]
-        self.add_lock.release()
+            self.__msgs[msg] = [node]
+        self.__add_lock.release()
 
     def run(self):
         """
-        Gossiper Main Loop.
-        Sends `Settings.GOSSIP_MODEL_SENDS_BY_ROUND` messages `Settings.GOSSIP_FREC` times per second.        
+        Gossiper Main Loop. Sends `Settings.GOSSIP_MODEL_SENDS_BY_ROUND` messages `Settings.GOSSIP_FREC` times per second.        
         """
-        while not self.terminate_flag.is_set():
+        while not self.__terminate_flag.is_set():
 
             messages_left = Settings.GOSSIP_MESSAGES_PER_ROUND
             
             # Lock
-            self.add_lock.acquire()
+            self.__add_lock.acquire()
             begin = time.time()
             
             # Send to all the nodes except the ones that the message was already sent to
-            if len(self.msgs) > 0:
-                msg_list = list(self.msgs.items()).copy()
-                nei = set(self.neighbors.copy())
+            if len(self.__msgs) > 0:
+                msg_list = list(self.__msgs.items()).copy()
+                nei = set(self.__neighbors.copy()) # copy to avoid concurrent problems
 
                 for msg,nodes in msg_list:
                     nodes = set(nodes)
@@ -45,18 +62,18 @@ class Gossiper(threading.Thread, Observable):
 
                     if messages_left - sended >= 0:
                         self.notify(Events.GOSSIP_BROADCAST_EVENT, (msg,list(nodes)))
-                        del self.msgs[msg]
+                        del self.__msgs[msg]
                         if messages_left == 0:
                             break
                     else:
                         # Lists to concatenate / Sets to difference
                         excluded = (list(nei - nodes))[:abs(messages_left - sended)]
                         self.notify(Events.GOSSIP_BROADCAST_EVENT, (msg,list(nodes)+excluded))
-                        self.msgs[msg] = list(nodes) + list(nei - set(excluded))
+                        self.__msgs[msg] = list(nodes) + list(nei - set(excluded))
                         break
 
             # Unlock
-            self.add_lock.release()
+            self.__add_lock.release()
             
             # Wait to guarantee the frequency of gossipping
             time_diff = time.time() - begin
@@ -65,4 +82,7 @@ class Gossiper(threading.Thread, Observable):
                 time.sleep(time_sleep)
 
     def stop(self):
-        self.terminate_flag.set()
+        """
+        Stop the gossiper.
+        """
+        self.__terminate_flag.set()

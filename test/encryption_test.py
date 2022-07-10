@@ -16,7 +16,7 @@ from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 
 def test_rsa_encryption_decription1():
     rsa = RSACipher()
-    rsa.load_pair_public_key(rsa.serialize_key())
+    rsa.load_pair_public_key(rsa.get_key())
     message = "Hello World!".encode("utf-8")
     encrypted_message = rsa.encrypt(message)
     decrypted_message = rsa.decrypt(encrypted_message)
@@ -25,8 +25,8 @@ def test_rsa_encryption_decription1():
 def test_rsa_encryption_decription2():
     cipher1 = RSACipher()
     cipher2 = RSACipher()
-    cipher1.load_pair_public_key(cipher2.serialize_key())
-    cipher2.load_pair_public_key(cipher1.serialize_key())
+    cipher1.load_pair_public_key(cipher2.get_key())
+    cipher2.load_pair_public_key(cipher1.get_key())
     # Exchange messages and check if they are the same
     message = "Buenas tardes Dani y Enrique!".encode("utf-8")
     encrypted_message1 = cipher1.encrypt(message)

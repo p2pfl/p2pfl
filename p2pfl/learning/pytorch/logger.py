@@ -117,4 +117,7 @@ class FederatedTensorboardLogger(LightningLoggerBase):
     
 
     def close(self):
-        self.writer.close()
+        try:
+            self.writer.close()
+        except:
+            pass
