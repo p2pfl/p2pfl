@@ -159,7 +159,9 @@ class Node(BaseNode):
                 self.learner.set_parameters(obj)
                 # Share that agregation is done
                 self.broadcast(CommunicationProtocol.build_models_ready_msg(self.round))
-
+            else:
+                logging.error("({}) Agregation finished with no parameters".format(self.get_name()))
+                self.stop()
             try:
                 self.__finish_agregation_lock.release()
             except:
@@ -488,7 +490,7 @@ class Node(BaseNode):
     # SI ESTAMOS EN SIMULACION NO PERMITIR BROADCASTEAERLAS -> tonter'ia
     def __bc_metrics(self,metrics): 
         logging.info("({}) Broadcasting metrics to {} clients.".format(self.get_name(),len(self.get_neighbors())))
-        encoded_msgs = CommunicationProtocol.build_metrics_msg(self.round,metrics[0],metrics[1])
+        encoded_msgs = CommunicationProtocol.build_metrics_msg(self.get_name(),self.round,metrics[0],metrics[1])
         self.broadcast(encoded_msgs)
 
     # Returns participants in the training round. (stringified list of nodes)
@@ -650,9 +652,10 @@ class Node(BaseNode):
             self.__finish_agregation_lock.acquire()
             logging.info("({}) Gossiping agregated model.".format(self.get_name(), len(self.get_neighbors())))
 
-            #candidate_condition = lambda nc: nc.get_ready_model_status()<=self.round
+            #candidate_condition = lambda nc: nc.get_ready_model_status()<self.round
             def candidate_condition(nc):
-                #logging.info("NC STAT: {} NODE ROUND: {}".format(nc.get_ready_model_status(), self.round))
+                logging.info("{}  -- {} --> NC STAT: {} NODE ROUND: {}".format(self.get_name(),nc.get_name(),nc.get_ready_model_status(), self.round))
+                print("mirar donde se manda un nodereadyround")
                 return nc.get_ready_model_status()<self.round
         # Anonymous function 
         status_function = lambda nc: nc.get_name()
@@ -691,20 +694,20 @@ class Node(BaseNode):
             if len(last_x_status) != Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS:
                 last_x_status.append([status_function(nc) for nc in nei])
             else:
-                last_x_status[j] = str([status_function for nc in nei])
+                last_x_status[j] = str([status_function(nc) for nc in nei])
                 j = (j+1)%Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS
 
                 # Check if las messages are the same
                 for i in range(len(last_x_status)-1):
                     if last_x_status[i] != last_x_status[i+1]:
                         break
+                    logging.info("({}) Gossiping exited for {} equal reounds.".format(self.get_name(), Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS))
                     return
 
             # Select a random subset of neightbors
             samples = min(Settings.GOSSIP_MODELS_PER_ROUND,len(nei))
             nei = random.sample(nei, samples)
 
-            logging.info("({}) Gossiping model to {} nodes set nodes.".format(self.get_name(), len(nei)))
 
             # Generate and Send Model Partial Agregations (model, node_contributors)
             for nc in nei:
@@ -712,6 +715,7 @@ class Node(BaseNode):
 
                 # Send Partial Agregation
                 if model is not None:
+                    logging.info("({}) Gossiping model to {}.".format(self.get_name(), nc.get_name()))
                     encoded_model = self.learner.encode_parameters(params=model, contributors=contributors)
                     encoded_msgs = CommunicationProtocol.build_params_msg(encoded_model)
                     # Send Fragments

@@ -76,8 +76,6 @@ class Agregator(threading.Thread, Observable):
         """
         # Start Timeout            
         self.train_set = l
-        if self.train_set != [] and not self.thread_executed:
-            self.start()
 
     def set_waiting_agregated_model(self):
         """
@@ -118,6 +116,10 @@ class Agregator(threading.Thread, Observable):
             if nodes is not None:
                 self.lock.acquire()
 
+                # Start agregation timeout
+                if self.train_set != [] and not self.thread_executed:
+                    self.start()  
+
                 # Get a list of nodes added
                 models_added = [nodes.split() for nodes in list(self.models.keys())] 
                 models_added = [element for sublist in models_added for element in sublist] # Flatten list
@@ -151,7 +153,8 @@ class Agregator(threading.Thread, Observable):
                         logging.info("nodes: {} | trainset: {}".format(nodes,self.train_set))
                         logging.debug("({}) Can't add a model from a node ({}) that is not in the training test.".format(self.node_name, nodes))
                     """
-                    
+
+                  
                     
         try:
             self.lock.release()

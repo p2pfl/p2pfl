@@ -8,7 +8,6 @@ from p2pfl.settings import Settings
 #    CommunicationProtocol    # --> Invoker of Command Patern
 ###############################
 
-
 class CommunicationProtocol:
     """
     Manages the meaning of communication messages. The valid messages are:
@@ -16,7 +15,7 @@ class CommunicationProtocol:
             - BEAT <node> <HASH> 
             - START_LEARNING <rounds> <epoches> <HASH>
             - STOP_LEARNING <HASH>
-            - VOTE_TRAIN_SET <node> (<node> <punct>)* VOTE_TRAIN_SET_CLOSE <HASH> ---------------METERLO EN NODE NO EN EL TRAINSET--------------------------------------------------cambiar con heartbeater 2.0
+            - VOTE_TRAIN_SET <node> (<node> <punct>)* VOTE_TRAIN_SET_CLOSE <HASH> 
             - METRICS <node> <round> <loss> <metric> <HASH> -----------------------------------------------------------------cambiar (indicar el nodo que lo envio)
 
         Non Gossiped messages (communication over only 2 nodes):
@@ -225,12 +224,12 @@ class CommunicationProtocol:
 
                 # Metrics
                 elif message[0] == CommunicationProtocol.METRICS:
-                    if len(message) > 4:
+                    if len(message) > 5:
                         try:
-                            hash_ = message[4]
-                            cmd_text = (" ".join(message[0:5]) + "\n").encode("utf-8")
-                            if self.__exec(CommunicationProtocol.METRICS, hash_, cmd_text, int(message[1]), float(message[2]), float(message[3])):
-                                message = message[5:]
+                            hash_ = message[5]
+                            cmd_text = (" ".join(message[0:6]) + "\n").encode("utf-8")
+                            if self.__exec(CommunicationProtocol.METRICS, hash_, cmd_text, message[1], int(message[2]), float(message[3]), float(message[4])):
+                                message = message[6:]
                             else:
                                 error = True
                                 break
@@ -451,9 +450,10 @@ class CommunicationProtocol:
         return (CommunicationProtocol.MODELS_READY + " " + str(round) + "\n").encode("utf-8")
 
 
-    def build_metrics_msg(round, loss, metric):
+    def build_metrics_msg(node, round, loss, metric):
         """
         Args:
+            node: The node that sent the message.
             round: The round when the metrics was calculated.
             loss: The loss of the last round.
             metric: The metric of the last round.
@@ -461,7 +461,7 @@ class CommunicationProtocol:
         Returns:
             A encoded metrics message.
         """
-        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.METRICS + " " + str(round) + " " + str(loss) + " " + str(metric))
+        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.METRICS + " " + node + " " + str(round) + " " + str(loss) + " " + str(metric))
 
 
     def build_vote_train_set_msg(node,votes):

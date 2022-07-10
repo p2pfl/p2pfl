@@ -334,12 +334,11 @@ class NodeConnection(threading.Thread, Observable):
         """
         self.notify(Events.PARAMS_RECEIVED, (params))
 
-    def notify_metrics(self,round,loss,metric):
+    def notify_metrics(self,node,round,loss,metric):
         """
         Notify to the parent node that `METRICS` has been received.
         """
-        name = str(self.get_addr()[0]) + ":" + str(self.get_addr()[1])
-        self.notify(Events.METRICS_RECEIVED, (name, round, loss, metric))
+        self.notify(Events.METRICS_RECEIVED, (node, round, loss, metric))
 
     def notify_train_set_votes(self,node,votes):
         """

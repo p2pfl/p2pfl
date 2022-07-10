@@ -18,7 +18,7 @@ class Settings():
         
         NODE_TIMEOUT (int): Timeout (seconds) for a node to be considered dead.
         VOTE_TIMEOUT (int): Timeout (seconds) for a node to wait for a vote.
-        AGREGATION_TIMEOUT (int): Timeout (seconds) for a node to wait for other models.
+        AGREGATION_TIMEOUT (int): Timeout (seconds) for a node to wait for other models. Timeout stars when the first model is added.
         
         HEARTBEAT_PERIOD (int): Period (seconds) for the node to send a heartbeat.
         HEARTBEATER_REFRESH_NEIGHBORS_BY_PERIOD (int): Times by period to refresh the neighbors list.

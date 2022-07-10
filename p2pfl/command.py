@@ -86,8 +86,8 @@ class Metrics_cmd(Command):
     """
     Command that should be executed as a response to a **metrics** message.
     """
-    def execute(self, round, loss, metric):
-        self.node_connection.notify_metrics(round,loss,metric)
+    def execute(self, node, round, loss, metric):
+        self.node_connection.notify_metrics(node,round,loss,metric)
 
 
 class Vote_train_set_cmd(Command):
