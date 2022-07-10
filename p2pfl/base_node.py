@@ -383,7 +383,8 @@ class BaseNode(threading.Thread, Observer):
             node, msgs = obj
             # Comunicate to connections the new messages processed
             for nc in self.__neightbors:
-                nc.add_processed_messages(list(msgs.keys()))
+                if nc != node:
+                    nc.add_processed_messages(list(msgs.keys()))
             # Gossip the new messages
             self.gossiper.add_messages(list(msgs.values()),node)
 

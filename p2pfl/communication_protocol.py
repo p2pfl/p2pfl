@@ -10,13 +10,16 @@ from p2pfl.settings import Settings
 
 class CommunicationProtocol:
     """
-    Manages the meaning of communication messages. The valid messages are:
+    Manages the meaning of node communication messages. Some messages contains a hash at end, it is used as a unique identifier for the message, 
+    this kind of messages are gossiped to the entire network.
+    
+    The valid messages can be classified into gossiped and non-gossiped:
         Gossiped messages: 
             - BEAT <node> <HASH> 
             - START_LEARNING <rounds> <epoches> <HASH>
             - STOP_LEARNING <HASH>
             - VOTE_TRAIN_SET <node> (<node> <punct>)* VOTE_TRAIN_SET_CLOSE <HASH> 
-            - METRICS <node> <round> <loss> <metric> <HASH> -----------------------------------------------------------------cambiar (indicar el nodo que lo envio)
+            - METRICS <node> <round> <loss> <metric> <HASH> 
 
         Non Gossiped messages (communication over only 2 nodes):
             - CONNECT <ip> <port> <full> <force>
@@ -24,74 +27,93 @@ class CommunicationProtocol:
             - STOP 
             - NUM_SAMPLES <train_num> <test_num>
             - PARAMS <data> \PARAMS
-            - MODELS_READY <round> -----------------------------------------------------------------cambiar con heartbeater 2.0
-            - MODELS_AGREGATED <node>* MODELS_AGREGATED_CLOSE ---- GOSSIPERARLO
+            - MODELS_READY <round> 
+            - MODELS_AGREGATED <node>* MODELS_AGREGATED_CLOSE
             - MODEL_INITIALIZED
 
-    The unique non-static method is used to process messages with a connection stablished. 
-    
-    XXXXXXXXXXXXXXXXXXXXXX EXPLAIN GOSSIP
+    Furthermore, all messages consists of encoded text (utf-8), with the exception of the `PARAMS` message, which contains serialized binaries.
 
+    Non-static methods are used to process the different messages. Static methods are used to build messages and process only the `CONNECT` message (handshake). 
+    
     Args:
         command_dict: Dictionary with the callbacks to execute at `process_message`.
 
     Attributes:
         command_dict: Dictionary with the callbacks to execute at `process_message`.
+        last_messages: List of the last messages received.
+        BEAT: Beat message header.
+        STOP: Stop message header.
+        CONN: Connection message header.
+        CONN_TO: Connection to message header.
+        START_LEARNING: Start learning message header.
+        STOP_LEARNING: Stop learning message header.
+        NUM_SAMPLES: Number of samples message header.
+        PARAMS: Parameters message header.
+        PARAMS_CLOSE: Parameters message closing.
+        MODELS_READY: Models ready message header.
+        METRICS: Metrics message header.
+        VOTE_TRAIN_SET: Vote train set message header.
+        VOTE_TRAIN_SET_CLOSE: Vote train set message closing.
+        MODELS_AGREGATED: Models agregated message header.
+        MODELS_AGREGATED_CLOSE: Models agregated message closing.
+        MODEL_INITIALIZED: Model initialized message header.
     """
 
     BEAT                    = "BEAT"
-    STOP                    = "STOP"            # Non Gossiped
-    CONN                    = "CONNECT"         # Non Gossiped
+    STOP                    = "STOP"           
+    CONN                    = "CONNECT"         
     CONN_TO                 = "CONNECT_TO"
     START_LEARNING          = "START_LEARNING"
     STOP_LEARNING           = "STOP_LEARNING"
-    NUM_SAMPLES             = "NUM_SAMPLES"     # Non Gossiped
+    NUM_SAMPLES             = "NUM_SAMPLES"     
     PARAMS                  = "PARAMS"          # special case (binary) 
     PARAMS_CLOSE            = "\PARAMS"         # special case (binary)
     MODELS_READY            = "MODELS_READY"    
     METRICS                 = "METRICS"
-    VOTE_TRAIN_SET          = "VOTE_TRAIN_SET" # ---------- cambiarlo por node (h:p) en vez de h p
+    VOTE_TRAIN_SET          = "VOTE_TRAIN_SET" 
     VOTE_TRAIN_SET_CLOSE    = "\VOTE_TRAIN_SET"
-    MODELS_AGREGATED        = "MODELS_AGREGATED"    # Non Gossiped
-    MODELS_AGREGATED_CLOSE  = "\MODELS_AGREGATED"    # Non Gossiped
-    MODEL_INITIALIZED       = "MODEL_INITIALIZED" # Non Gossiped
+    MODELS_AGREGATED        = "MODELS_AGREGATED"    
+    MODELS_AGREGATED_CLOSE  = "\MODELS_AGREGATED" 
+    MODEL_INITIALIZED       = "MODEL_INITIALIZED" 
 
     ############################################
     #    MSG PROCESSING (Non Static Methods)   #
     ############################################
 
-
     def __init__(self, command_dict):
         self.command_dict = command_dict
         self.last_messages = []
-        self.last_messages_lock = threading.Lock()
+        self.__last_messages_lock = threading.Lock()
 
     def add_processed_messages(self,messages):
         """
-        Add messages to the last messages. If ammount is higher than `Settings.AMOUNT_LAST_MESSAGES_SAVED` remove the oldest to keep the size.
+        Add messages to the last messages list. If ammount is higher than `Settings.AMOUNT_LAST_MESSAGES_SAVED` remove the oldest to keep the size.
+
         Args:
             hash_messages: List of hashes of the messages.
         """
-        self.last_messages_lock.acquire()
+        self.__last_messages_lock.acquire()
         self.last_messages = self.last_messages + messages
         # Remove oldest messages
         if len(self.last_messages)>Settings.AMOUNT_LAST_MESSAGES_SAVED:
             self.last_messages = self.last_messages[len(self.last_messages)-Settings.AMOUNT_LAST_MESSAGES_SAVED:]
-        self.last_messages_lock.release()
+        self.__last_messages_lock.release()
 
     def process_message(self, msg):
         """
-        Processes a message and executes the callback associated with it.        
+        Processes messages and executes the callback associated with it (from ``command_dict``).        
         
         Args:
             msg: The message to process.
 
         Returns:
-            True if the message was processed and no errors occurred, False otherwise.
+            tuple: (messages_executed, error) messages_executed is a list of the messages executed, error true if there was an error.
 
         """
         self.tmp_exec_msgs = {}
         error = False
+
+        # Determine if is a binary message or not
         header = CommunicationProtocol.PARAMS.encode("utf-8")
         if msg[0:len(header)] == header:
             end = CommunicationProtocol.PARAMS_CLOSE.encode("utf-8")
@@ -316,7 +338,7 @@ class CommunicationProtocol:
                 # Save to gossip
                 if hash_ is not None:
                     self.tmp_exec_msgs[hash_] = cmd_text
-                    self.add_processed_messages([hash_]) # si es una única instancia llegaría con esto
+                    self.add_processed_messages([hash_])
                 return True
             return True
         except Exception as e:
@@ -329,16 +351,16 @@ class CommunicationProtocol:
     #    MSG PROCESSING (Static Methods)   #
     ########################################
 
-
-    # Check if connection is correct and execute the callback (static)
     def process_connection(message, callback):
         """"
-        Static method that checks if the message is a valid connection message and executes the callback (do the connection).
+        Static method that checks if the message is a valid connection message and executes the callback (accept connection).
 
         Args:
             message: The message to check.
             callback: What do if the connection message is legit.
         
+        Returns:
+            True if connection was accepted, False otherwise.
         """
         message = message.split()
         if len(message) > 4:
@@ -359,6 +381,8 @@ class CommunicationProtocol:
         """"
         Static method that checks if in the message there is a collapse (a binary message (it should fill all the buffer) and a non-binary message before it).
 
+        Actually, collapses can only happen with ``PARAMS`` binary message.
+
         Args:
             msg: The message to check.
 
@@ -377,8 +401,16 @@ class CommunicationProtocol:
     #     MSG BUILDERS (Static Methods)   #
     #######################################
 
-
     def generate_hased_message(msg):
+        """
+        Static method that given a non-encoded message generates a hashed and encoded message.
+
+        Args:
+            msg: Non encoded message.
+
+        Returns:
+            Hashed and encoded message.
+        """
         # random number to avoid generating the same hash for a different message (at she same time)
         id = hash(msg+str(datetime.now())+str(random.randint(0,100000)))
         return (msg + " " + str(id) + "\n").encode("utf-8")
@@ -419,14 +451,12 @@ class CommunicationProtocol:
         """
         return CommunicationProtocol.generate_hased_message(CommunicationProtocol.START_LEARNING + " " + str(rounds) + " " + str(epochs))
 
-
     def build_stop_learning_msg():
         """
         Returns:
             A encoded stop learning message.
         """
         return CommunicationProtocol.generate_hased_message(CommunicationProtocol.STOP_LEARNING)
-
 
     def build_num_samples_msg(num):
         """
@@ -438,7 +468,6 @@ class CommunicationProtocol:
         """
         return (CommunicationProtocol.NUM_SAMPLES + " " + str(num[0]) + " " + str(num[1]) + "\n").encode("utf-8")
 
-
     def build_models_ready_msg(round):
         """
         Args:
@@ -448,7 +477,6 @@ class CommunicationProtocol:
             A encoded ready message.
         """
         return (CommunicationProtocol.MODELS_READY + " " + str(round) + "\n").encode("utf-8")
-
 
     def build_metrics_msg(node, round, loss, metric):
         """
@@ -463,12 +491,11 @@ class CommunicationProtocol:
         """
         return CommunicationProtocol.generate_hased_message(CommunicationProtocol.METRICS + " " + node + " " + str(round) + " " + str(loss) + " " + str(metric))
 
-
     def build_vote_train_set_msg(node,votes):
         """
         Args:
-            candidates: The candidates to vote for.
-            weights: The weights of the candidates.
+            node: The node that sent the message.
+            votes: Votes of the node.
         
         Returns:
             A encoded vote train set message.
@@ -498,20 +525,16 @@ class CommunicationProtocol:
         """
         return (CommunicationProtocol.MODEL_INITIALIZED + "\n").encode("utf-8")
 
-    ###########################
-    #     Special Messages    #
-    ###########################
-
     def build_connect_msg(ip, port, broadcast, force):
         """
         Build Handshake message.
-
         Not Hashed. Special case of message.
 
         Args:
             ip: The ip address of the node that tries to connect.
             port: The port of the node that tries to connect.
             broadcast: Whether or not to broadcast the message.
+            force: Whether or not to force connection.
 
         Returns:
             A encoded connect message.
