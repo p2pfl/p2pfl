@@ -9,6 +9,9 @@ Module that implements the observer pattern.
 class Events():
     """
     Class that represents the events that can be observed.
+
+    Attributes:
+        EXPLICAR EVENTOS Y SUS ARGUMENTOS CUANDO SE NOTIFICAM
     """
     SEND_BEAT_EVENT                 = "SEND_BEAT_EVENT"
     END_CONNECTION                  = "END_CONNECTION"
@@ -20,7 +23,6 @@ class Events():
     METRICS_RECEIVED                = "METRICS_RECEIVED"
     TRAIN_SET_VOTE_RECEIVED_EVENT   = "TRAIN_SET_VOTE_RECEIVED_EVENT"
     NODE_CONNECTED_EVENT            = "NODE_CONNECTED_EVENT"
-    LEARNING_IS_RUNNING_EVENT       = "LEARNING_IS_RUNNING_EVENT"
     PROCESSED_MESSAGES_EVENT        = "PROCESSED_MESSAGES_EVENT"
     GOSSIP_BROADCAST_EVENT          = "GOSSIP_BROADCAST_EVENT"
     BEAT_RECEIVED_EVENT             = "BEAT_RECEIVED_EVENT"

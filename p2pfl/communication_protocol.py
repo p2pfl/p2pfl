@@ -26,7 +26,6 @@ class CommunicationProtocol:
             - NUM_SAMPLES <train_num> <test_num>
             - PARAMS <data> \PARAMS
             - MODELS_READY <round> -----------------------------------------------------------------cambiar con heartbeater 2.0
-            - LEARNING_IS_RUNNING <round> <total_rounds>
             - MODELS_AGREGATED <node>* MODELS_AGREGATED_CLOSE ---- GOSSIPERARLO
             - MODEL_INITIALIZED
 
@@ -54,7 +53,6 @@ class CommunicationProtocol:
     METRICS                 = "METRICS"
     VOTE_TRAIN_SET          = "VOTE_TRAIN_SET" # ---------- cambiarlo por node (h:p) en vez de h p
     VOTE_TRAIN_SET_CLOSE    = "\VOTE_TRAIN_SET"
-    LEARNING_IS_RUNNING     = "LEARNING_IS_RUNNING" # Non Gossiped
     MODELS_AGREGATED        = "MODELS_AGREGATED"    # Non Gossiped
     MODELS_AGREGATED_CLOSE  = "\MODELS_AGREGATED"    # Non Gossiped
     MODEL_INITIALIZED       = "MODEL_INITIALIZED" # Non Gossiped
@@ -270,22 +268,6 @@ class CommunicationProtocol:
                         logging.exception(e)
                         error = True
                         break
-
-                # Learning is running
-                elif message[0] == CommunicationProtocol.LEARNING_IS_RUNNING:
-                    if len(message) > 2:
-                        if message[1].isdigit() and message[2].isdigit() and message[3].isdigit():
-                            if self.__exec(hash_,CommunicationProtocol.LEARNING_IS_RUNNING, None, None, int(message[1])):
-                                message = message[3:]
-                            else:
-                                error = True
-                                break
-                        else:
-                            error = True
-                            break
-                    else:
-                        error = True
-                        break
                     
                 # Models Agregated
                 elif message[0] == CommunicationProtocol.MODELS_AGREGATED:
@@ -496,18 +478,6 @@ class CommunicationProtocol:
             aux = aux + " " + v[0]+ " " + str(v[1])
         return CommunicationProtocol.generate_hased_message(CommunicationProtocol.VOTE_TRAIN_SET + " " + node + aux + " " + CommunicationProtocol.VOTE_TRAIN_SET_CLOSE)
         
-
-    def build_learning_is_running_msg(round, epoch):
-        """
-        Args:
-            round: The round that is running.
-            epoch: The epoch that is running.
-        
-        Returns:
-            A encoded learning is running message.
-        """
-        return (CommunicationProtocol.LEARNING_IS_RUNNING + " " + str(round) + " " + str(epoch) + "\n").encode("utf-8")
-
     def build_models_agregated_msg(nodes):
         """
         Args:

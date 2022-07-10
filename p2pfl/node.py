@@ -151,13 +151,7 @@ class Node(BaseNode):
                 
             # Send number of samples
             n.send(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())) #----ojo tb tiene que hacerlo el que se conecta
-            # Comunicate to the new node that a training process is running
-            """
-            if self.round is not None and obj.get_name() not in self.train_set:
-                print("TO IMPLEMET WHEN THE TOPOLOGY WAS NOT FULLY CONNECTED")
-                #obj.send(CommunicationProtocol.build_learning_is_running_msg(self.round, self.totalrounds))
-                
-            """
+       
 
         elif event == Events.AGREGATION_FINISHED:
             # Set parameters and communate it to the training process
@@ -193,9 +187,6 @@ class Node(BaseNode):
                 self.__wait_votes_ready_lock.release()
             except:
                 pass
-
-        elif event == Events.LEARNING_IS_RUNNING_EVENT:
-            print("NOT IMPLEMETED YET",obj)
 
         # Execute BaseNode update
         super().update(event,obj)

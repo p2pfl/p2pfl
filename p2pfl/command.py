@@ -1,16 +1,10 @@
 """
-Module that implements the command pattern.
+Module that implements commands of the command pattern.
 """
-
-import threading
 
 #################
 #    Command    #
 #################
-
-#
-# REVISAR BIEN ESTA CONEXIÓN, SEGURAMENTE PUEDA SER MEJORADA USANDO EL PATRON OBSERVER
-#
 
 class Command:
     """
@@ -102,13 +96,6 @@ class Vote_train_set_cmd(Command):
     """
     def execute(self, node, votes):
         self.node_connection.notify_train_set_votes(node, votes)
-
-class Learning_is_running_cmd(Command):
-    """
-    Command that should be executed as a response to a **learning_is_running** message.
-    """
-    def execute(self,round,total_rounds):
-        self.node_connection.notify_learning_is_running(round,total_rounds)
 
 class Models_agregated_cmd(Command):
     """
