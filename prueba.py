@@ -261,8 +261,8 @@ def __test_learning(nodes):
 if __name__ == '__main__':
 
     for _ in range(50):
-        test_gossip_heartbeat()
-        #test_node_down_on_learning(5)
+        #test_gossip_heartbeat()
+        test_node_down_on_learning(10)
         #test_encrypted_convergence((2,1))
         #print("\n\n\n\n\n")
         break

@@ -25,7 +25,6 @@ class CommunicationProtocol:
             - CONNECT <ip> <port> <full> <force>
             - CONNECT_TO <ip> <port>
             - STOP 
-            - NUM_SAMPLES <train_num> <test_num>
             - PARAMS <data> \PARAMS
             - MODELS_READY <round> 
             - MODELS_AGREGATED <node>* MODELS_AGREGATED_CLOSE
@@ -47,7 +46,6 @@ class CommunicationProtocol:
         CONN_TO: Connection to message header.
         START_LEARNING: Start learning message header.
         STOP_LEARNING: Stop learning message header.
-        NUM_SAMPLES: Number of samples message header.
         PARAMS: Parameters message header.
         PARAMS_CLOSE: Parameters message closing.
         MODELS_READY: Models ready message header.
@@ -65,7 +63,6 @@ class CommunicationProtocol:
     CONN_TO                 = "CONNECT_TO"
     START_LEARNING          = "START_LEARNING"
     STOP_LEARNING           = "STOP_LEARNING"
-    NUM_SAMPLES             = "NUM_SAMPLES"     
     PARAMS                  = "PARAMS"          # special case (binary) 
     PARAMS_CLOSE            = "\PARAMS"         # special case (binary)
     MODELS_READY            = "MODELS_READY"    
@@ -212,22 +209,6 @@ class CommunicationProtocol:
                         error = True
                         break
         
-                # Number of samples (non gossiped)
-                elif message[0] == CommunicationProtocol.NUM_SAMPLES:
-                    if len(message) > 2:
-                        if message[1].isdigit() and message[2].isdigit():
-                            if self.__exec(CommunicationProtocol.NUM_SAMPLES, None, None, int(message[1]), int(message[2])):
-                                message = message[3:]
-                            else:
-                                error = True
-                                break                        
-                        else:
-                            error = True
-                            break
-                    else:
-                        error = True
-                        break
-
                 # Models Ready
                 elif message[0] == CommunicationProtocol.MODELS_READY:
                     if len(message) > 1:
@@ -457,16 +438,6 @@ class CommunicationProtocol:
             A encoded stop learning message.
         """
         return CommunicationProtocol.generate_hased_message(CommunicationProtocol.STOP_LEARNING)
-
-    def build_num_samples_msg(num):
-        """
-        Args:
-            num: (Tuple) The number of samples to train and test.
-
-        Returns:
-            A encoded number of samples message.
-        """
-        return (CommunicationProtocol.NUM_SAMPLES + " " + str(num[0]) + " " + str(num[1]) + "\n").encode("utf-8")
 
     def build_models_ready_msg(round):
         """

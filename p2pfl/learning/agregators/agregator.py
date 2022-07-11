@@ -17,6 +17,14 @@ class Agregator(threading.Thread, Observable):
 
     Args:
         node_name: (str): String with the name of the node.
+    
+    
+    EXPLICAR BIEN QUE ES NODES
+    
+
+    EXPLICAR DE DONDE PUEDEN SALIR LOS PESOS: CONEXIONES DIRECTAS / AGREGACIONES
+
+
     """
 
     def __init__(self, node_name="unknown"):
@@ -24,7 +32,6 @@ class Agregator(threading.Thread, Observable):
         self.daemon = True
         Observable.__init__(self)
         self.train_set = []
-        self.node_weights = {}
         self.waiting_agregated_model = False
         self.__agregated_waited_model = False
         self.node_name = node_name
@@ -83,17 +90,7 @@ class Agregator(threading.Thread, Observable):
         """
         self.waiting_agregated_model = True
 
-    def set_node_weights(self,w):
-        self.node_weights = w
-
-    def get_node_weight(self,node):
-        try:
-            return self.node_weights[node]
-        except:
-            # If not exist, then return 0 (ponderate by 0)
-            return 0
-
-    def add_model(self, model, nodes):
+    def add_model(self, model, nodes, weight):
         """
         Add a model. The first model to be added starts the `run` method (timeout).
 
@@ -105,7 +102,7 @@ class Agregator(threading.Thread, Observable):
         """
 
         #
-        # Weights should be in a list
+        # Weights should be in a list -> cambiamos a lista
         #
 
         if self.waiting_agregated_model and not self.__agregated_waited_model:
@@ -133,7 +130,7 @@ class Agregator(threading.Thread, Observable):
                         # Check if all nodes are not agregated                    
                         if all([n not in models_added for n in nodes]):
                             # Agregar modelo
-                            self.models[" ".join(nodes)] = ((model, sum(self.get_node_weight(n) for n in nodes)))
+                            self.models[" ".join(nodes)] = ((model, weight))
                             logging.info("({}) Model added ({}/{}) from {}".format(self.node_name, str(len(models_added)+len(nodes)), str(len(self.train_set)), str(nodes)))
                             # Check if all models have been added
                             self.check_and_run_agregation()
@@ -143,8 +140,6 @@ class Agregator(threading.Thread, Observable):
                             except:
                                 pass 
                             
-                            
-                            #print(self.models.keys())
                             return models_added + nodes
                     """
                         else:
@@ -173,17 +168,20 @@ class Agregator(threading.Thread, Observable):
 
         dict_aux = {}
         nodes_agregated = []
+        agregation_weight = 0
         models = self.models.copy()
-        for n,m in list(models.items()):
+        for n,(m,s) in list(models.items()):
             splited_nodes = n.split() 
             if all([n not in except_nodes for n in splited_nodes]):
-                dict_aux[n] = m
+                dict_aux[n] = (m,s)
                 nodes_agregated += splited_nodes
-
+                agregation_weight += s
+        
+        # If there are no models to agregate
         if len(dict_aux) == 0:
-            return None,None
+            return None,None,None
 
-        return (self.agregate(dict_aux),nodes_agregated)
+        return (self.agregate(dict_aux), nodes_agregated, agregation_weight)
             
     def check_and_run_agregation(self,force=False):
         """

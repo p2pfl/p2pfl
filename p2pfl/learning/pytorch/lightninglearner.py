@@ -37,17 +37,17 @@ class LightningLearner(NodeLearner):
         self.data = data
         
     # Encoded to numpy serialized
-    def encode_parameters(self, params=None, contributors=None):
+    def encode_parameters(self, params=None, contributors=None, weight=None):
         if params is None:
             params = self.model.state_dict()
         array = [val.cpu().numpy() for _, val in params.items()]
-        return pickle.dumps((array,contributors))
+        return pickle.dumps((array,contributors,weight))
 
     def decode_parameters(self, data):
         try:
-            params, contributors = pickle.loads(data)
+            params, contributors, weight = pickle.loads(data)
             params_dict = zip(self.model.state_dict().keys(), params)
-            return (OrderedDict({k: torch.tensor(v) for k, v in params_dict}), contributors)
+            return (OrderedDict({k: torch.tensor(v) for k, v in params_dict}), contributors, weight)
         except:
             raise DecodingParamsError("Error decoding parameters")
 

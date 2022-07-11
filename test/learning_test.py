@@ -15,7 +15,7 @@ def test_encoding():
     encoded_params = nl1.encode_parameters()
 
     nl2 = LightningLearner(MLP(), None)
-    decoded_params,_ = nl2.decode_parameters(encoded_params)
+    decoded_params,_,_ = nl2.decode_parameters(encoded_params)
     nl2.set_parameters(decoded_params)
 
     encoded_params == nl2.encode_parameters()

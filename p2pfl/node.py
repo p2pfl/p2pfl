@@ -16,6 +16,8 @@ from p2pfl.utils.observer import Events, Observer
 
 # concurrencia .copy() vs locks -> tratar de borrar los copys (sobre todo en nei)
 
+# NUM SAMPLES DEJA DE SER NECESARIO
+
 class Node(BaseNode):
     """
     Class based on a base node that allows **p2p Federated Learning**. 
@@ -82,8 +84,6 @@ class Node(BaseNode):
         Connects a node to other. If learning is running connections are not allowed (it should be forced).
         Carefull, if connection is forced with a new node, it will produce timeouts in the network.
     
-        Number of samples are sent inmediately after the connection.
-
         Args:
             h (str): The host of the node.
             p (int): The port of the node.
@@ -99,11 +99,7 @@ class Node(BaseNode):
             return None
 
         # Connect
-        nc = super().connect_to(h, p, full, force)
-        if nc is not None:
-            # Send number of samples
-            nc.send(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples()))        
-        return nc
+        return super().connect_to(h, p, full, force)
 
     def stop(self): 
         """
@@ -191,9 +187,6 @@ class Node(BaseNode):
             # Wait and gossip model inicialization            
             self.__gossip_model_difusion(initialization=True)
 
-            # Updates the number of samples by node
-            self.broadcast(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples()))
-
             # Wait to guarantee new connection heartbeats convergence and fix neighbors
             time.sleep(Settings.WAIT_HEARTBEATS_CONVERGENCE)
             self.__initial_neighbors = self.get_neighbors() # used to restore the original list of neighbors after the learning round
@@ -238,9 +231,9 @@ class Node(BaseNode):
             try:
                 if self.__model_initialized:
                     # Add model to agregator
-                    decoded_model, contributors = self.learner.decode_parameters(m)
+                    decoded_model, contributors, weight = self.learner.decode_parameters(m)
                     if self.learner.check_parameters(decoded_model):
-                        models_added = self.agregator.add_model(decoded_model,contributors)
+                        models_added = self.agregator.add_model(decoded_model,contributors,weight)
                         if models_added is not None:
                             self.broadcast(CommunicationProtocol.build_models_agregated_msg(models_added))
                     else:
@@ -251,7 +244,7 @@ class Node(BaseNode):
                     logging.info("({}) Initialicing Model Weights".format(self.get_name()))
                     self.__wait_init_model_lock.release()    
                     self.broadcast(CommunicationProtocol.build_model_initialized_msg())
-                    model, _ = self.learner.decode_parameters(m)
+                    model, _, _ = self.learner.decode_parameters(m)
                     self.learner.set_parameters(model)
             
             except DecodingParamsError as e:
@@ -297,7 +290,7 @@ class Node(BaseNode):
             
             # Agregate Model
             if self.round is not None:
-                self.agregator.add_model(self.learner.get_parameters(),[self.get_name()])
+                self.agregator.add_model(self.learner.get_parameters(),[self.get_name()],self.learner.get_num_samples()[0])
                 self.broadcast(CommunicationProtocol.build_models_agregated_msg([self.get_name()])) # Notify agregation
                 self.__gossip_model_agregation()
         else: 
@@ -434,11 +427,7 @@ class Node(BaseNode):
 
         # Set Models To Agregate 
         self.agregator.set_nodes_to_agregate(self.__train_set) # reference to self node stringified list of nodes
-        # Set Number of samples of nodes to agregate
-        node_w = [(nc.get_name(), nc.get_num_samples()[0]) for nc in self.get_neighbors() if nc.get_name() in self.__train_set]
-        node_w.append((self.get_name(),self.learner.get_num_samples()[0]))
-        self.agregator.set_node_weights(dict(node_w))
-            
+
     ############################
     #    Train and Evaluate    #
     ############################
@@ -519,7 +508,7 @@ class Node(BaseNode):
 
         # Anonymous functions
         status_function = lambda nc: nc.get_name()
-        model_function = lambda _: (self.learner.get_parameters(),None) # At diffusion, contributors are not relevant
+        model_function = lambda _: (self.learner.get_parameters(),None, None) # At diffusion, contributors are not relevant
         # Gossip
         self.__gossip_model(candidate_condition,status_function,model_function)       
         
@@ -578,12 +567,12 @@ class Node(BaseNode):
 
             # Generate and Send Model Partial Agregations (model, node_contributors)
             for nc in nei:
-                model,contributors = model_function(nc)
+                model,contributors,weights = model_function(nc)
 
                 # Send Partial Agregation
                 if model is not None:
                     logging.info("({}) Gossiping model to {}.".format(self.get_name(), nc.get_name()))
-                    encoded_model = self.learner.encode_parameters(params=model, contributors=contributors)
+                    encoded_model = self.learner.encode_parameters(params=model, contributors=contributors, weight=weights)
                     encoded_msgs = CommunicationProtocol.build_params_msg(encoded_model)
                     # Send Fragments
                     for msg in encoded_msgs:
@@ -651,10 +640,6 @@ class Node(BaseNode):
                 n.stop()
                 return
                 
-            # Send number of samples
-            n.send(CommunicationProtocol.build_num_samples_msg(self.learner.get_num_samples())) #----ojo tb tiene que hacerlo el que se conecta
-       
-
         elif event == Events.AGREGATION_FINISHED:
             # Set parameters and communate it to the training process
             if obj is not None:

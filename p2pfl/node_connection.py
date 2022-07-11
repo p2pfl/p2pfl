@@ -46,8 +46,6 @@ class NodeConnection(threading.Thread, Observable):
         self.__socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         # Atributes
         self.__addr = addr
-        self.__train_num_samples = 0
-        self.__test_num_samples = 0
         self.__param_bufffer = b""
         self.__model_ready = -1
         self.__aes_cipher = aes_cipher
@@ -60,7 +58,6 @@ class NodeConnection(threading.Thread, Observable):
             CommunicationProtocol.CONN_TO: Conn_to_cmd(self),
             CommunicationProtocol.START_LEARNING: Start_learning_cmd(self),
             CommunicationProtocol.STOP_LEARNING: Stop_learning_cmd(self),
-            CommunicationProtocol.NUM_SAMPLES: Num_samples_cmd(self),
             CommunicationProtocol.PARAMS: Params_cmd(self),
             CommunicationProtocol.MODELS_READY: Models_Ready_cmd(self),
             CommunicationProtocol.METRICS: Metrics_cmd(self),
@@ -246,33 +243,6 @@ class NodeConnection(threading.Thread, Observable):
         """
         return self.__models_agregated
     
-    #####################
-    #    Num Samples    #
-    #####################
-
-    def set_num_samples(self,train,test):
-        """
-        Indicates the number of samples of the otrh node.
-         
-        Args:
-            train: The number of samples of the train set.
-            test: The number of samples of the test set. (NOT USED IN THIS VERSION)
-        """
-        self.__train_num_samples = train
-        self.__test_num_samples = test
-
-    def get_num_samples(self):
-        """
-        Get the number of samples of the other node.
-        Default values are 0, so if the number of samples is not set, it will return 0, and results of the node will be depreciated.
-
-        Aniway, if the value is the default, maybe something went wrong.
-
-        Returns:
-            (train,test): The number of samples of the other node.
-        """
-        return self.__train_num_samples, self.__test_num_samples
-
     #######################
     #    Params Buffer    #
     #######################

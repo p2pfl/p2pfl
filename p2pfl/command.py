@@ -57,13 +57,6 @@ class Stop_learning_cmd(Command):
     def execute(self):
         self.node_connection.notify_stop_learning()
 
-class Num_samples_cmd(Command):
-    """
-    Command that should be executed as a response to a **num_samples** message.
-    """
-    def execute(self, train_num, test_num):
-        self.node_connection.set_num_samples(train_num, test_num)
-
 class Params_cmd(Command):
     """
     Command that should be executed as a response to a **params** message.

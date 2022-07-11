@@ -55,7 +55,7 @@ class Settings():
     WAIT_HEARTBEATS_CONVERGENCE = 2
 
     # TRAIN SET 
-    TRAIN_SET_SIZE = 2
+    TRAIN_SET_SIZE = 5
     TRAIN_SET_CONNECT_TIMEOUT = 5
 
     # GOSSIP Messages
