@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="p2pfl.learning.pytorch package" href="p2pfl.learning.pytorch.html" /><link rel="prev" title="p2pfl.learning.agregators package" href="p2pfl.learning.agregators.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="p2pfl.learning.pytorch.mnist_examples.models package" href="p2pfl.learning.pytorch.mnist_examples.models.html" />
 
     <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
         <title>p2pfl.utils package - P2P FL</title>
@@ -160,13 +160,20 @@
 <li class="toctree-l2 current has-children"><a class="reference internal" href="p2pfl.html">p2pfl package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">p2pfl.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
 </ul>
 </li>
@@ -221,19 +228,137 @@
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class that represents the events that can be observed.</p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.AGREGATION_FINISHED">
-<span class="sig-name descname"><span class="pre">AGREGATION_FINISHED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'AGREGATION_FINISHED'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.AGREGATION_FINISHED" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.AGREGATION_FINISHED_EVENT">
+<span class="sig-name descname"><span class="pre">AGREGATION_FINISHED_EVENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'AGREGATION_FINISHED_EVENT'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.AGREGATION_FINISHED_EVENT" title="Permalink to this definition">#</a></dt>
+<dd><p>model or None)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Used to notify that the agregation was done. (arg</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.END_CONNECTION">
-<span class="sig-name descname"><span class="pre">END_CONNECTION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'END_CONNECTION'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.END_CONNECTION" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.BEAT_RECEIVED_EVENT">
+<span class="sig-name descname"><span class="pre">BEAT_RECEIVED_EVENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'BEAT_RECEIVED_EVENT'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.BEAT_RECEIVED_EVENT" title="Permalink to this definition">#</a></dt>
+<dd><p>node)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Used to notify when a node receive a beat. (arg</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.NODE_READY_EVENT">
-<span class="sig-name descname"><span class="pre">NODE_READY_EVENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'NODE_READY_EVENT'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.NODE_READY_EVENT" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.CONN_TO_EVENT">
+<span class="sig-name descname"><span class="pre">CONN_TO_EVENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'CONN_TO_EVENT'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.CONN_TO_EVENT" title="Permalink to this definition">#</a></dt>
+<dd><p>(host,port))</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Used to notify when a node must connect to other. (arg</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.END_CONNECTION_EVENT">
+<span class="sig-name descname"><span class="pre">END_CONNECTION_EVENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'END_CONNECTION_EVENT'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.END_CONNECTION_EVENT" title="Permalink to this definition">#</a></dt>
+<dd><p>NodeConnection)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Used to notify that a connection has been closed. (arg</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.GOSSIP_BROADCAST_EVENT">
+<span class="sig-name descname"><span class="pre">GOSSIP_BROADCAST_EVENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'GOSSIP_BROADCAST_EVENT'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.GOSSIP_BROADCAST_EVENT" title="Permalink to this definition">#</a></dt>
+<dd><p>(msg,nodes))</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Used to notify when a node must send gossiped messages. (arg</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.METRICS_RECEIVED_EVENT">
+<span class="sig-name descname"><span class="pre">METRICS_RECEIVED_EVENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'METRICS_RECEIVED_EVENT'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.METRICS_RECEIVED_EVENT" title="Permalink to this definition">#</a></dt>
+<dd><p>(node, round, loss, metric))</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Used to notify when the metrics are received. (arg</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.NODE_CONNECTED_EVENT">
+<span class="sig-name descname"><span class="pre">NODE_CONNECTED_EVENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'NODE_CONNECTED_EVENT'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.NODE_CONNECTED_EVENT" title="Permalink to this definition">#</a></dt>
+<dd><p>(n, force))</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Used to notify when a node is connected. (arg</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.PARAMS_RECEIVED_EVENT">
+<span class="sig-name descname"><span class="pre">PARAMS_RECEIVED_EVENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'PARAMS_RECEIVED_EVENT'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.PARAMS_RECEIVED_EVENT" title="Permalink to this definition">#</a></dt>
+<dd><p>params (encoded))</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Used to notify when the parameters are received. (arg</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.PROCESSED_MESSAGES_EVENT">
+<span class="sig-name descname"><span class="pre">PROCESSED_MESSAGES_EVENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'PROCESSED_MESSAGES_EVENT'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.PROCESSED_MESSAGES_EVENT" title="Permalink to this definition">#</a></dt>
+<dd><p>(node, messages))</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Used to notify when a node process messages. (arg</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.SEND_BEAT_EVENT">
+<span class="sig-name descname"><span class="pre">SEND_BEAT_EVENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SEND_BEAT_EVENT'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.SEND_BEAT_EVENT" title="Permalink to this definition">#</a></dt>
+<dd><p>Used to notify that beats must be sent.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.START_LEARNING_EVENT">
+<span class="sig-name descname"><span class="pre">START_LEARNING_EVENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'START_LEARNING_EVENT'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.START_LEARNING_EVENT" title="Permalink to this definition">#</a></dt>
+<dd><p>(rounds,epochs))</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Used to notify when the learning process starts. (arg</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.STOP_LEARNING_EVENT">
+<span class="sig-name descname"><span class="pre">STOP_LEARNING_EVENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'STOP_LEARNING_EVENT'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.STOP_LEARNING_EVENT" title="Permalink to this definition">#</a></dt>
+<dd><p>Used to notify when the learning process stops.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.TRAIN_SET_VOTE_RECEIVED_EVENT">
+<span class="sig-name descname"><span class="pre">TRAIN_SET_VOTE_RECEIVED_EVENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'TRAIN_SET_VOTE_RECEIVED_EVENT'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.TRAIN_SET_VOTE_RECEIVED_EVENT" title="Permalink to this definition">#</a></dt>
+<dd><p>(node,votes))</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Used to notify when a vote is received. (arg</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -245,17 +370,38 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.utils.observer.Observable.add_observer">
 <span class="sig-name descname"><span class="pre">add_observer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">observer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/utils/observer.html#Observable.add_observer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.utils.observer.Observable.add_observer" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Adds an observer to the list of observers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>observer</strong> – The observer to add.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.utils.observer.Observable.get_observers">
 <span class="sig-name descname"><span class="pre">get_observers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/utils/observer.html#Observable.get_observers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.utils.observer.Observable.get_observers" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Returns the list of observers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The list of observers.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.utils.observer.Observable.notify">
-<span class="sig-name descname"><span class="pre">notify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/p2pfl/utils/observer.html#Observable.notify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.utils.observer.Observable.notify" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">notify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/utils/observer.html#Observable.notify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.utils.observer.Observable.notify" title="Permalink to this definition">#</a></dt>
+<dd><p>Notifies to all the observers an event.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> – The event to notify.</p></li>
+<li><p><strong>obj</strong> – The object to pass to the observer. For each event, the object is different (check it at the <code class="docutils literal notranslate"><span class="pre">Event</span></code> class).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -264,6 +410,14 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.utils.observer.</span></span><span class="sig-name descname"><span class="pre">Observer</span></span><a class="reference internal" href="_modules/p2pfl/utils/observer.html#Observer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.utils.observer.Observer" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class for the <strong>Observer</strong> at the observer pattern.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> – The event that is notified.</p></li>
+<li><p><strong>obj</strong> – The object that is passed by the observable.</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.utils.observer.Observer.update">
 <span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/utils/observer.html#Observer.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.utils.observer.Observer.update" title="Permalink to this definition">#</a></dt>
@@ -282,23 +436,15 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="p2pfl.learning.pytorch.html">
-              <div class="page-info">
-                <div class="context">
-                  <span>Next</span>
-                </div>
-                <div class="title">p2pfl.learning.pytorch package</div>
-              </div>
-              <svg><use href="#svg-arrow-right"></use></svg>
-            </a>
-          <a class="prev-page" href="p2pfl.learning.agregators.html">
+          
+          <a class="prev-page" href="p2pfl.learning.pytorch.mnist_examples.models.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">p2pfl.learning.agregators package</div>
+                <div class="title">p2pfl.learning.pytorch.mnist_examples.models package</div>
                 
               </div>
             </a>

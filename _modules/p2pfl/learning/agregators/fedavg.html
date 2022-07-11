@@ -164,28 +164,13 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../../p2pfl.utils.html">p2pfl.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../p2pfl.utils.html">p2pfl.utils package</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../p2pfl.learning.pytorch.learners.html">p2pfl.learning.pytorch.learners package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../p2pfl.learning.pytorch.utils.html">p2pfl.learning.pytorch.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../p2pfl.learning.pytorch.utils.html">p2pfl.learning.pytorch.utils package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../p2pfl.learning.pytorch.learners.html">p2pfl.learning.pytorch.learners package</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
 </ul>
 </li>
 </ul>
@@ -222,30 +207,31 @@
         </div>
         <article role="main">
           <h1>Source code for p2pfl.learning.agregators.fedavg</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">p2pfl.learning.agregators.agregator</span> <span class="kn">import</span> <span class="n">Agregator</span>
    
-<span class="c1">#-----------------------------------------------------</span>
-<span class="c1"># Implementar un observador en condiciones -&gt; notificar cuando acabe agregación -&gt; algo acoplado pero ns como haría</span>
-<span class="c1">#-----------------------------------------------------</span>
-
-<span class="c1">#-----------------------------------------------------</span>
-<span class="c1"># </span>
-<span class="c1"># FALTA LA EVALUACIÓN DEL MODELO</span>
-<span class="c1">#</span>
-<span class="c1"># Mencionar que num de epoches locales va en el nodo mas que en el agregador</span>
-<span class="c1">#-----------------------------------------------------</span>
-
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Federated Averaging (FedAvg) [McMahan et al., 2016]</span>
-<span class="sd">Paper: https://arxiv.org/abs/1602.05629</span>
-<span class="sd">&quot;&quot;&quot;</span>
-
 <div class="viewcode-block" id="FedAvg"><a class="viewcode-back" href="../../../../p2pfl.learning.agregators.html#p2pfl.learning.agregators.fedavg.FedAvg">[docs]</a><span class="k">class</span> <span class="nc">FedAvg</span><span class="p">(</span><span class="n">Agregator</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Federated Averaging (FedAvg) [McMahan et al., 2016]</span>
+<span class="sd">    Paper: https://arxiv.org/abs/1602.05629</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="FedAvg.agregate"><a class="viewcode-back" href="../../../../p2pfl.learning.agregators.html#p2pfl.learning.agregators.fedavg.FedAvg.agregate">[docs]</a>    <span class="k">def</span> <span class="nf">agregate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">models</span><span class="p">):</span> <span class="c1"># (PONDERATED MEAN)</span>
+<div class="viewcode-block" id="FedAvg.agregate"><a class="viewcode-back" href="../../../../p2pfl.learning.agregators.html#p2pfl.learning.agregators.fedavg.FedAvg.agregate">[docs]</a>    <span class="k">def</span> <span class="nf">agregate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">models</span><span class="p">):</span> 
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Ponderated average of the models.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            models: Dictionary with the models (node: model,num_samples).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Check if there are models to agregate</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Trying to agregate models when there is no models&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_name</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
         <span class="n">models</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
         
         <span class="c1"># Total Samples</span>

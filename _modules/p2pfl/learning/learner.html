@@ -164,28 +164,13 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../p2pfl.utils.html">p2pfl.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../p2pfl.utils.html">p2pfl.utils package</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../p2pfl.learning.pytorch.learners.html">p2pfl.learning.pytorch.learners package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="../../../p2pfl.learning.pytorch.utils.html">p2pfl.learning.pytorch.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../p2pfl.learning.pytorch.utils.html">p2pfl.learning.pytorch.utils package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../p2pfl.learning.pytorch.learners.html">p2pfl.learning.pytorch.learners package</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
 </ul>
 </li>
 </ul>
@@ -229,7 +214,7 @@
 
 <div class="viewcode-block" id="NodeLearner"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner">[docs]</a><span class="k">class</span> <span class="nc">NodeLearner</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Template to implement learning processes.</span>
+<span class="sd">    Template to implement learning processes, iincluding metric monitoring during training.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="NodeLearner.set_model"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.set_model">[docs]</a>    <span class="k">def</span> <span class="nf">set_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span> 
@@ -238,6 +223,9 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            model: The model of the learner.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ModelNotMatchingError: If the model is not matching the learner.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
@@ -250,12 +238,18 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="NodeLearner.encode_parameters"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.encode_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">encode_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+<div class="viewcode-block" id="NodeLearner.encode_parameters"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.encode_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">encode_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">contributors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Encode the parameters of the model. (binary)</span>
-
+<span class="sd">        If params are not provided, self parameters are encoded.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            params: The parameters of the model. (non-binary)</span>
+<span class="sd">            contributors: The contributors of the model.</span>
+<span class="sd">            weight: The weight of the model. </span>
+<span class="sd">            </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            The encoded parameters of the model.</span>
+<span class="sd">            The encoded parameters of the model (params, contributors, weight).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
@@ -265,6 +259,12 @@
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
 <span class="sd">            data: The encoded parameters of the model.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The decoded parameters of the model. (params, contributors, weight)</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            DecodingParamsError: If the decoding of the parameters fails.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
@@ -274,6 +274,9 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            params: The parameters to check. (non-binary)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if the parameters are compatible with the model.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
     
@@ -283,6 +286,9 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            params: The parameters of the model. (non-binary)</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ModelNotMatchingError: If the model is not matching the learner.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
@@ -319,9 +325,12 @@
 <div class="viewcode-block" id="NodeLearner.evaluate"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Evaluate the model. With a given parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
 
-<span class="sd">        Args:</span>
-<span class="sd">            params: The parameters of the model. (non-binary)</span>
+<div class="viewcode-block" id="NodeLearner.log_validation_metrics"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.log_validation_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">log_validation_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="nb">round</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log the validation metrics. It also can be used to log the othe node metrics.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
@@ -332,8 +341,25 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            The number of samples of the model.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div></div>
+        <span class="k">pass</span></div>
 
+<div class="viewcode-block" id="NodeLearner.init"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.init">[docs]</a>    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Init the learner.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="NodeLearner.close"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Close the learner.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="NodeLearner.finalize_round"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.finalize_round">[docs]</a>    <span class="k">def</span> <span class="nf">finalize_round</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determine the end of the round.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
 </pre></div>
         </article>
       </div>

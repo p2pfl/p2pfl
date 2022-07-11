@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 4
 
    p2pfl.learning.agregators
+   p2pfl.learning.pytorch
 
 Submodules
 ----------

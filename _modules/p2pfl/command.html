@@ -164,28 +164,13 @@
 <li class="toctree-l3"><a class="reference internal" href="../../p2pfl.utils.html">p2pfl.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../p2pfl.utils.html">p2pfl.utils package</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../p2pfl.learning.pytorch.learners.html">p2pfl.learning.pytorch.learners package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="../../p2pfl.learning.pytorch.utils.html">p2pfl.learning.pytorch.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../p2pfl.learning.pytorch.utils.html">p2pfl.learning.pytorch.utils package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../p2pfl.learning.pytorch.learners.html">p2pfl.learning.pytorch.learners package</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
 </ul>
 </li>
 </ul>
@@ -223,29 +208,21 @@
         <article role="main">
           <h1>Source code for p2pfl.command</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Module that implements the command pattern.</span>
+<span class="sd">Module that implements commands of the command pattern.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="kn">import</span> <span class="nn">threading</span>
 
 <span class="c1">#################</span>
 <span class="c1">#    Command    #</span>
 <span class="c1">#################</span>
-
-<span class="c1">#</span>
-<span class="c1"># REVISAR BIEN ESTA CONEXIÓN, SEGURAMENTE PUEDA SER MEJORADA USANDO EL PATRON OBSERVER</span>
-<span class="c1">#</span>
 
 <div class="viewcode-block" id="Command"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Command">[docs]</a><span class="k">class</span> <span class="nc">Command</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class that represents a command.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        parent_node: ------------------------</span>
-<span class="sd">        node_connection: ------------------------</span>
+<span class="sd">        node_connection: The node connection that is going to execute the command.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_node</span><span class="p">,</span> <span class="n">node_connection</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parent_node</span> <span class="o">=</span> <span class="n">parent_node</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_connection</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span> <span class="o">=</span> <span class="n">node_connection</span>
 
 <div class="viewcode-block" id="Command.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Command.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">):</span> <span class="k">pass</span></div></div>
@@ -258,8 +235,8 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Command that should be executed as a response to a **beat** message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Beat_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Beat_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span> <span class="c1">#logging.debug(&quot;Beat {}&quot;.format(self.get_addr()))</span></div></div>
+<div class="viewcode-block" id="Beat_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Beat_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">notify_heartbeat</span><span class="p">(</span><span class="n">node1</span><span class="p">)</span></div></div>
 
 <div class="viewcode-block" id="Stop_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Stop_cmd">[docs]</a><span class="k">class</span> <span class="nc">Stop_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -273,39 +250,21 @@
 <span class="sd">    Command that should be executed as a response to a **conn_to** message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="Conn_to_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Conn_to_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parent_node</span><span class="o">.</span><span class="n">connect_to</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">notify_conn_to</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">)</span></div></div>
 
 <div class="viewcode-block" id="Start_learning_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Start_learning_cmd">[docs]</a><span class="k">class</span> <span class="nc">Start_learning_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Command that should be executed as a response to a **start_learning** message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="Start_learning_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Start_learning_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rounds</span><span class="p">,</span> <span class="n">epochs</span><span class="p">):</span>
-        <span class="c1"># Thread process to avoid blocking the message receiving</span>
-        <span class="n">learning_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_node</span><span class="o">.</span><span class="n">start_learning</span><span class="p">,</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">rounds</span><span class="p">,</span><span class="n">epochs</span><span class="p">))</span>
-        <span class="n">learning_thread</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;learning_thread-&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent_node</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_node</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="n">learning_thread</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">learning_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">notify_start_learning</span><span class="p">(</span><span class="n">rounds</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span></div></div>
 
 <div class="viewcode-block" id="Stop_learning_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Stop_learning_cmd">[docs]</a><span class="k">class</span> <span class="nc">Stop_learning_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Command that should be executed as a response to a **stop_learning** message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="Stop_learning_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Stop_learning_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parent_node</span><span class="o">.</span><span class="n">stop_learning</span><span class="p">()</span></div></div>
-
-<div class="viewcode-block" id="Num_samples_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Num_samples_cmd">[docs]</a><span class="k">class</span> <span class="nc">Num_samples_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Command that should be executed as a response to a **num_samples** message.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Num_samples_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Num_samples_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">num</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">set_num_samples</span><span class="p">(</span><span class="n">num</span><span class="p">)</span></div></div>
-
-<div class="viewcode-block" id="Ready_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Ready_cmd">[docs]</a><span class="k">class</span> <span class="nc">Ready_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Command that should be executed as a response to a **ready** message.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Ready_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Ready_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="nb">round</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">set_ready_status</span><span class="p">(</span><span class="nb">round</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">notify_stop_learning</span><span class="p">()</span></div></div>
 
 <div class="viewcode-block" id="Params_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Params_cmd">[docs]</a><span class="k">class</span> <span class="nc">Params_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -314,11 +273,45 @@
 <div class="viewcode-block" id="Params_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Params_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">msg</span><span class="p">,</span><span class="n">done</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">add_param_segment</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">tmp</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">get_params</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">clear_buffer</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">parent_node</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()),</span><span class="n">params</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">num_samples</span><span class="p">)</span></div></div>
-        
+            <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">notify_params</span><span class="p">(</span><span class="n">params</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="Models_Ready_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Models_Ready_cmd">[docs]</a><span class="k">class</span> <span class="nc">Models_Ready_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Command that should be executed as a response to a **ready** message.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Models_Ready_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Models_Ready_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="nb">round</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">set_model_ready_status</span><span class="p">(</span><span class="nb">round</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="Metrics_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Metrics_cmd">[docs]</a><span class="k">class</span> <span class="nc">Metrics_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Command that should be executed as a response to a **metrics** message.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Metrics_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Metrics_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="nb">round</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">metric</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">notify_metrics</span><span class="p">(</span><span class="n">node</span><span class="p">,</span><span class="nb">round</span><span class="p">,</span><span class="n">loss</span><span class="p">,</span><span class="n">metric</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Vote_train_set_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Vote_train_set_cmd">[docs]</a><span class="k">class</span> <span class="nc">Vote_train_set_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Command that should be executed as a response to a **vote** message.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Vote_train_set_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Vote_train_set_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">votes</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">notify_train_set_votes</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">votes</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="Models_agregated_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Models_agregated_cmd">[docs]</a><span class="k">class</span> <span class="nc">Models_agregated_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Command that should be executed as a response to a **models_agregated** message.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Models_agregated_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Models_agregated_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">node_list</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">set_models_agregated</span><span class="p">(</span><span class="n">node_list</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="Model_initialized_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Model_initialized_cmd">[docs]</a><span class="k">class</span> <span class="nc">Model_initialized_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Command that should be executed as a response to a **model_initialized** message.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Model_initialized_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Model_initialized_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">set_model_initialized</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span></div></div>
 </pre></div>
         </article>
       </div>

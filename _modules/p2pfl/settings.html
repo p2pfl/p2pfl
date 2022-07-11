@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
     <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
-        <title>p2pfl.heartbeater - P2P FL</title>
+        <title>p2pfl.settings - P2P FL</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -159,13 +159,20 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../p2pfl.utils.html">p2pfl.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
 </ul>
 </li>
@@ -206,87 +213,103 @@
           </label>
         </div>
         <article role="main">
-          <h1>Source code for p2pfl.heartbeater</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">threading</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">p2pfl.settings</span> <span class="kn">import</span> <span class="n">Settings</span>
-<span class="kn">from</span> <span class="nn">p2pfl.utils.observer</span> <span class="kn">import</span> <span class="n">Events</span><span class="p">,</span> <span class="n">Observable</span>
+          <h1>Source code for p2pfl.settings</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module to define constants for the p2pfl system.</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
-<span class="c1">#####################</span>
-<span class="c1">#    Heartbeater    #</span>
-<span class="c1">#####################</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">p2pfl.encrypter</span> <span class="kn">import</span> <span class="n">AESCipher</span>
 
-<div class="viewcode-block" id="Heartbeater"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.heartbeater.Heartbeater">[docs]</a><span class="k">class</span> <span class="nc">Heartbeater</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">,</span> <span class="n">Observable</span><span class="p">):</span>
+<span class="c1">###################</span>
+<span class="c1"># Global Settings #</span>
+<span class="c1">###################</span>
+
+<div class="viewcode-block" id="Settings"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.settings.Settings">[docs]</a><span class="k">class</span> <span class="nc">Settings</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Thread based heartbeater that sends a beat message to all the neighbors of a node every `HEARTBEAT_PERIOD` seconds.</span>
-
-<span class="sd">    It also maintains a list of active neighbors, which is created by receiving different heartbear messages. </span>
-<span class="sd">    Neighbors from which a heartbeat is not received in ``Settings.NODE_TIMEOUT`` will be eliminated</span>
-
-<span class="sd">    Communicates with node via observer pattern.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        nodo_padre (Node): Node that use the heartbeater.</span>
+<span class="sd">    Class to define global settings for the p2pfl system.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_name</span><span class="p">):</span>
-        <span class="n">Observable</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;heartbeater-&quot;</span> <span class="o">+</span> <span class="n">node_name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__node_name</span> <span class="o">=</span> <span class="n">node_name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__terminate_flag</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
 
-        <span class="c1"># List of neighbors</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__nodes</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c1"># TCP Block Size</span>
+    <span class="n">BLOCK_SIZE</span> <span class="o">=</span> <span class="mi">8192</span> <span class="c1"># Try to avoid model sobresegmentation</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Max ammount of bytes to read from the buffer at a time. If ```BLOCK_SIZE`` is not divisible by the block size used for symetric encryption it will be rounded to the next closest value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rest</span> <span class="o">=</span> <span class="n">BLOCK_SIZE</span> <span class="o">%</span> <span class="n">AESCipher</span><span class="o">.</span><span class="n">get_block_size</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">rest</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">new_value</span> <span class="o">=</span> <span class="n">BLOCK_SIZE</span> <span class="o">+</span> <span class="n">AESCipher</span><span class="o">.</span><span class="n">get_block_size</span><span class="p">()</span> <span class="o">-</span> <span class="n">rest</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Changing buffer size to </span><span class="si">%d</span><span class="s2">. </span><span class="si">%d</span><span class="s2"> is incompatible with the AES block size.&quot;</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)</span>
+        <span class="n">BLOCK_SIZE</span> <span class="o">=</span> <span class="n">new_value</span>
 
-<div class="viewcode-block" id="Heartbeater.run"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.heartbeater.Heartbeater.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Send a beat every HEARTBEAT_PERIOD seconds to all the neighbors of the node. </span>
-<span class="sd">        Also, it will clear from the neighbors list the nodes that haven&#39;t sent a heartbeat in NODE_TIMEOUT seconds. </span>
-<span class="sd">        It happend ``HEARTBEATER_REFRESH_NEIGHBORS_BY_PERIOD`` per HEARTBEAT_PERIOD </span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__terminate_flag</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
-            <span class="c1"># We do not check if the message was sent</span>
-            <span class="c1">#   - If the model is sending, a beat is not necessary</span>
-            <span class="c1">#   - If the connection its down timeouts will destroy connections</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">Events</span><span class="o">.</span><span class="n">SEND_BEAT_EVENT</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="c1"># Wait and refresh node list</span>
-            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">HEARTBEATER_REFRESH_NEIGHBORS_BY_PERIOD</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">clear_nodes</span><span class="p">()</span>
-                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">HEARTBEAT_PERIOD</span><span class="o">/</span><span class="n">Settings</span><span class="o">.</span><span class="n">HEARTBEATER_REFRESH_NEIGHBORS_BY_PERIOD</span><span class="p">)</span></div>
+    <span class="c1"># TIMEOUT&#39;S</span>
+    <span class="n">NODE_TIMEOUT</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Timeout (seconds) for a node to be considered dead.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">VOTE_TIMEOUT</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Timeout (seconds) for a node to wait for a vote.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">AGREGATION_TIMEOUT</span> <span class="o">=</span> <span class="mi">15</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Timeout (seconds) for a node to wait for other models. Timeout stars when the first model is added.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="c1"># HEARTBEATER</span>
+    <span class="n">HEARTBEAT_PERIOD</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Period (seconds) for the node to send a heartbeat.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">HEARTBEATER_REFRESH_NEIGHBORS_BY_PERIOD</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Times by period to refresh the neighbors list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">WAIT_HEARTBEATS_CONVERGENCE</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Time (seconds) to wait for the heartbeats to converge.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># TRAIN SET </span>
+    <span class="n">TRAIN_SET_SIZE</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Size of the training set.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">TRAIN_SET_CONNECT_TIMEOUT</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Timeout (seconds) to wait for a node to connect to the training set.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Heartbeater.clear_nodes"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.heartbeater.Heartbeater.clear_nodes">[docs]</a>    <span class="k">def</span> <span class="nf">clear_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Clear the list of neighbors.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span><span class="n">node</span> <span class="k">for</span> <span class="n">node</span><span class="p">,</span><span class="n">t</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nodes</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="n">Settings</span><span class="o">.</span><span class="n">NODE_TIMEOUT</span><span class="p">]:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__nodes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">n</span><span class="p">)</span></div>
+    <span class="c1"># GOSSIP Messages</span>
+    <span class="n">AMOUNT_LAST_MESSAGES_SAVED</span> <span class="o">=</span> <span class="mi">100</span> 
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Amount of last messages saved. Used to avoid gossiping cycles.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">GOSSIP_MESSAGES_FREC</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Frequency of gossiping messages (times by second).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">GOSSIP_MESSAGES_PER_ROUND</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Amount of gossip messages per round.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Heartbeater.add_node"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.heartbeater.Heartbeater.add_node">[docs]</a>    <span class="k">def</span> <span class="nf">add_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Add a node to the list of neighbors.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            node (Node): Node to add to the list of neighbors.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__nodes</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span></div>
-
-<div class="viewcode-block" id="Heartbeater.get_nodes"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.heartbeater.Heartbeater.get_nodes">[docs]</a>    <span class="k">def</span> <span class="nf">get_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get the list of actual neighbors.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            list: List of neighbors.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">node_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__nodes</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_list</span><span class="p">:</span>
-            <span class="n">node_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__node_name</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">node_list</span></div>
-
-<div class="viewcode-block" id="Heartbeater.stop"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.heartbeater.Heartbeater.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Stop the heartbeater.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__terminate_flag</span><span class="o">.</span><span class="n">set</span><span class="p">()</span></div></div>
+    <span class="c1"># GOSSIP Models</span>
+    <span class="n">GOSSIP_EXIT_ON_X_EQUAL_ROUNDS</span> <span class="o">=</span> <span class="mi">9</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Amount of equal rounds to exit gossiping. Careful, a low value can cause an early stop of gossiping.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">GOSSIP_MODELS_FREC</span> <span class="o">=</span> <span class="mi">2</span>  
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Frequency of gossiping models (times by second).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">GOSSIP_MODELS_PER_ROUND</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Amount of gossip models per round.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">FRAGMENTS_DELAY</span> <span class="o">=</span> <span class="mf">0.01</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Delay (seconds) to wait before sending a fragment. This is a very important value, if the node is too slow and the buffer isn&#39;t big enough, the node will send fragments too fast and the other node will not receive them.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
 </pre></div>
         </article>
       </div>

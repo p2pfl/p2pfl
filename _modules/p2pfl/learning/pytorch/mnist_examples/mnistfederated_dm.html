@@ -164,28 +164,13 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../../../p2pfl.utils.html">p2pfl.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../../p2pfl.utils.html">p2pfl.utils package</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../../../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../../p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../../p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../../../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../../p2pfl.learning.pytorch.learners.html">p2pfl.learning.pytorch.learners package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../../../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../../../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="../../../../../p2pfl.learning.pytorch.utils.html">p2pfl.learning.pytorch.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../../p2pfl.learning.pytorch.utils.html">p2pfl.learning.pytorch.utils package</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../../p2pfl.learning.pytorch.learners.html">p2pfl.learning.pytorch.learners package</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../../../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../../../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../../../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
 </ul>
 </li>
 </ul>
@@ -227,6 +212,9 @@
 <span class="kn">from</span> <span class="nn">torchvision.datasets</span> <span class="kn">import</span> <span class="n">MNIST</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">floor</span>
 <span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">LightningDataModule</span>
+<span class="c1"># To Avoid Crashes with a lot of nodes</span>
+<span class="kn">import</span> <span class="nn">torch.multiprocessing</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">set_sharing_strategy</span><span class="p">(</span><span class="s1">&#39;file_system&#39;</span><span class="p">)</span>
 
 <span class="c1">#######################################</span>
 <span class="c1">#    FederatedDataModule for MNIST    #</span>
@@ -243,6 +231,11 @@
 <span class="sd">        num_workers: The number of workers of the data.</span>
 <span class="sd">        val_percent: The percentage of the validation set.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Singleton</span>
+    <span class="n">mnist_train</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">mnist_val</span> <span class="o">=</span> <span class="kc">None</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_id</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">number_sub</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">val_percent</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span><span class="o">=</span><span class="n">sub_id</span>
@@ -251,19 +244,23 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">val_percent</span><span class="o">=</span><span class="n">val_percent</span>
         
-        <span class="c1"># recordar añadir que no se pueda dividir m&#39;as de len test</span>
+        <span class="c1"># Singletons of MNIST train and test datasets</span>
+        <span class="k">if</span> <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_train</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_train</span> <span class="o">=</span> <span class="n">MNIST</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_val</span> <span class="o">=</span> <span class="n">MNIST</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span><span class="o">+</span><span class="mi">1</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_sub</span><span class="p">:</span>
             <span class="k">raise</span><span class="p">(</span><span class="s2">&quot;Not exist the subset </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span><span class="p">))</span>
 
         <span class="c1"># Training / validation set</span>
-        <span class="n">trainset</span> <span class="o">=</span> <span class="n">MNIST</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
+        <span class="n">trainset</span> <span class="o">=</span> <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_train</span>
         <span class="n">rows_by_sub</span> <span class="o">=</span> <span class="n">floor</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trainset</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">number_sub</span><span class="p">)</span>
         <span class="n">tr_subset</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">trainset</span><span class="p">,</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span><span class="o">*</span><span class="n">rows_by_sub</span><span class="p">,(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">rows_by_sub</span><span class="p">))</span>
         <span class="n">mnist_train</span><span class="p">,</span> <span class="n">mnist_val</span> <span class="o">=</span> <span class="n">random_split</span><span class="p">(</span><span class="n">tr_subset</span><span class="p">,</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr_subset</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">val_percent</span><span class="p">)),</span> <span class="nb">round</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr_subset</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">val_percent</span><span class="p">)])</span>
         
         <span class="c1"># Test set</span>
-        <span class="n">testset</span> <span class="o">=</span> <span class="n">MNIST</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
+        <span class="n">testset</span> <span class="o">=</span> <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_val</span>
         <span class="n">rows_by_sub</span> <span class="o">=</span> <span class="n">floor</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">testset</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">number_sub</span><span class="p">)</span>
         <span class="n">te_subset</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">testset</span><span class="p">,</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span><span class="o">*</span><span class="n">rows_by_sub</span><span class="p">,(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">rows_by_sub</span><span class="p">))</span>
 

@@ -207,29 +207,41 @@
         </div>
         <article role="main">
           <h1>Source code for p2pfl.learning.pytorch.lightninglearner</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">Trainer</span>
 <span class="kn">from</span> <span class="nn">p2pfl.learning.learner</span> <span class="kn">import</span> <span class="n">NodeLearner</span>
 <span class="kn">from</span> <span class="nn">p2pfl.learning.exceptions</span> <span class="kn">import</span> <span class="n">DecodingParamsError</span><span class="p">,</span> <span class="n">ModelNotMatchingError</span>
 <span class="kn">from</span> <span class="nn">p2pfl.learning.pytorch.logger</span> <span class="kn">import</span> <span class="n">FederatedTensorboardLogger</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
-<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="c1">###########################</span>
-<span class="c1">#    LightningLearner    #</span>
+<span class="c1">#    LightningLearner     #</span>
 <span class="c1">###########################</span>
+
+<span class="c1"># Agregue metodo close() para cerrar el logger y reset() para resetear el logger</span>
 
 <div class="viewcode-block" id="LightningLearner"><a class="viewcode-back" href="../../../../p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner">[docs]</a><span class="k">class</span> <span class="nc">LightningLearner</span><span class="p">(</span><span class="n">NodeLearner</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Learner with PyTorch Lightning.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 
+<span class="sd">    Atributes:</span>
+<span class="sd">        model: Model to train.</span>
+<span class="sd">        data: Data to train the model.</span>
+<span class="sd">        log_name: Name of the log.</span>
+<span class="sd">        epochs: Number of epochs to train.</span>
+<span class="sd">        logger: Logger.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">log_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>            
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1">#FederatedTensorboardLogger(&quot;training_logs&quot;, name=log_name)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_name</span> <span class="o">=</span> <span class="n">log_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__trainer</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="c1"># To avoid GPU/TPU printings</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;pytorch_lightning&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LightningLearner.set_model"><a class="viewcode-back" href="../../../../p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.set_model">[docs]</a>    <span class="k">def</span> <span class="nf">set_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span></div>
@@ -237,16 +249,17 @@
 <div class="viewcode-block" id="LightningLearner.set_data"><a class="viewcode-back" href="../../../../p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.set_data">[docs]</a>    <span class="k">def</span> <span class="nf">set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span></div>
         
-    <span class="c1"># Encoded to numpy serialized</span>
-<div class="viewcode-block" id="LightningLearner.encode_parameters"><a class="viewcode-back" href="../../../../p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.encode_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">encode_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">array</span> <span class="o">=</span> <span class="p">[</span><span class="n">val</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
-        <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">array</span><span class="p">)</span></div>
+<div class="viewcode-block" id="LightningLearner.encode_parameters"><a class="viewcode-back" href="../../../../p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.encode_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">encode_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">contributors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="p">[</span><span class="n">val</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">((</span><span class="n">array</span><span class="p">,</span><span class="n">contributors</span><span class="p">,</span><span class="n">weight</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="LightningLearner.decode_parameters"><a class="viewcode-back" href="../../../../p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.decode_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">decode_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">params</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">params</span><span class="p">,</span> <span class="n">contributors</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
             <span class="n">params_dict</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">params</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params_dict</span><span class="p">})</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">OrderedDict</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params_dict</span><span class="p">}),</span> <span class="n">contributors</span><span class="p">,</span> <span class="n">weight</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">DecodingParamsError</span><span class="p">(</span><span class="s2">&quot;Error decoding parameters&quot;</span><span class="p">)</span></div>
 
@@ -254,12 +267,10 @@
         <span class="c1"># Check ordered dict keys</span>
         <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
             <span class="k">return</span> <span class="kc">False</span>
-
         <span class="c1"># Check tensor shapes</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">False</span>
-
         <span class="k">return</span> <span class="kc">True</span></div>
 
 <div class="viewcode-block" id="LightningLearner.set_parameters"><a class="viewcode-back" href="../../../../p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.set_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
@@ -275,32 +286,52 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="n">epochs</span></div>
 
 <div class="viewcode-block" id="LightningLearner.fit"><a class="viewcode-back" href="../../../../p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">max_epochs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="n">enable_checkpointing</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> 
-            <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span> <span class="o">=</span> <span class="kc">None</span></div>
-        
-        <span class="c1">#data_ammount = len(self.data.train_dataloader().dataset) #revisarlo</span>
-        <span class="c1">#return self.get_parameters(), data_ammount, {}</span>
-
-<div class="viewcode-block" id="LightningLearner.evaluate"><a class="viewcode-back" href="../../../../p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
-
-        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;test_loss&quot;</span><span class="p">]</span>
-        <span class="n">acc</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;test_acc&quot;</span><span class="p">]</span>
-
-        <span class="n">data_ammount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">test_dataloader</span><span class="p">()</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">data_ammount</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;test_acc&quot;</span><span class="p">:</span> <span class="n">acc</span><span class="p">}</span></div>
-
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">max_epochs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="n">enable_checkpointing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">enable_model_summary</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">__trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__trainer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Something went wrong with pytorch lightning. </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="LightningLearner.interrupt_fit"><a class="viewcode-back" href="../../../../p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.interrupt_fit">[docs]</a>    <span class="k">def</span> <span class="nf">interrupt_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">should_stop</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span> <span class="o">=</span> <span class="kc">None</span></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__trainer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__trainer</span><span class="o">.</span><span class="n">should_stop</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__trainer</span> <span class="o">=</span> <span class="kc">None</span></div>
+            
+<div class="viewcode-block" id="LightningLearner.evaluate"><a class="viewcode-back" href="../../../../p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">max_epochs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">enable_checkpointing</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__trainer</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="n">loss</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;test_loss&quot;</span><span class="p">]</span>
+                <span class="n">metric</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;test_metric&quot;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__trainer</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_validation_metrics</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">metric</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">loss</span><span class="p">,</span><span class="n">metric</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Something went wrong with pytorch lightning. </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="LightningLearner.log_validation_metrics"><a class="viewcode-back" href="../../../../p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.log_validation_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">log_validation_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="nb">round</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_scalar</span><span class="p">(</span><span class="s2">&quot;test_loss&quot;</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="nb">round</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_scalar</span><span class="p">(</span><span class="s2">&quot;test_metric&quot;</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="nb">round</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LightningLearner.get_num_samples"><a class="viewcode-back" href="../../../../p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.get_num_samples">[docs]</a>    <span class="k">def</span> <span class="nf">get_num_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">train_dataloader</span><span class="p">()</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">train_dataloader</span><span class="p">()</span><span class="o">.</span><span class="n">dataset</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">test_dataloader</span><span class="p">()</span><span class="o">.</span><span class="n">dataset</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="LightningLearner.init"><a class="viewcode-back" href="../../../../p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.init">[docs]</a>    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">FederatedTensorboardLogger</span><span class="p">(</span><span class="s2">&quot;training_logs&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_name</span><span class="p">)</span></div>
+   
+<div class="viewcode-block" id="LightningLearner.close"><a class="viewcode-back" href="../../../../p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="LightningLearner.finalize_round"><a class="viewcode-back" href="../../../../p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.finalize_round">[docs]</a>    <span class="k">def</span> <span class="nf">finalize_round</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">finalize_round</span><span class="p">()</span></div></div>
 </pre></div>
         </article>
       </div>

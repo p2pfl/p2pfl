@@ -207,135 +207,121 @@
         </div>
         <article role="main">
           <h1>Source code for p2pfl.node</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">thread</span>
-<span class="kn">from</span> <span class="nn">distutils.log</span> <span class="kn">import</span> <span class="n">debug</span>
-<span class="kn">import</span> <span class="nn">socket</span>
+<span></span><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">count</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">p2pfl.base_node</span> <span class="kn">import</span> <span class="n">BaseNode</span>
+<span class="kn">from</span> <span class="nn">p2pfl.command</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">p2pfl.communication_protocol</span> <span class="kn">import</span> <span class="n">CommunicationProtocol</span>
-<span class="kn">from</span> <span class="nn">p2pfl.const</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">p2pfl.settings</span> <span class="kn">import</span> <span class="n">Settings</span>
 <span class="kn">from</span> <span class="nn">p2pfl.learning.agregators.fedavg</span> <span class="kn">import</span> <span class="n">FedAvg</span>
 <span class="kn">from</span> <span class="nn">p2pfl.learning.exceptions</span> <span class="kn">import</span> <span class="n">DecodingParamsError</span><span class="p">,</span> <span class="n">ModelNotMatchingError</span>
 <span class="kn">from</span> <span class="nn">p2pfl.learning.pytorch.lightninglearner</span> <span class="kn">import</span> <span class="n">LightningLearner</span>
-<span class="kn">from</span> <span class="nn">p2pfl.node_connection</span> <span class="kn">import</span> <span class="n">NodeConnection</span>
-<span class="kn">from</span> <span class="nn">p2pfl.heartbeater</span> <span class="kn">import</span> <span class="n">Heartbeater</span>
 <span class="kn">from</span> <span class="nn">p2pfl.utils.observer</span> <span class="kn">import</span> <span class="n">Events</span><span class="p">,</span> <span class="n">Observer</span>
 
 
+<span class="c1"># concurrencia .copy() vs locks -&gt; tratar de borrar los copys (sobre todo en nei)</span>
 
-<span class="c1"># FRACCIONES -&gt; radom o por mecanismos de votación</span>
+<span class="c1"># NUM SAMPLES DEJA DE SER NECESARIO</span>
 
-<span class="c1"># revisar test que falla: test_node_down_on_learning</span>
+<div class="viewcode-block" id="Node"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node">[docs]</a><span class="k">class</span> <span class="nc">Node</span><span class="p">(</span><span class="n">BaseNode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class based on a base node that allows **p2p Federated Learning**. </span>
+<span class="sd">    </span>
+<span class="sd">    Metrics will be saved under a folder with the name of the node.</span>
+<span class="sd">            </span>
+<span class="sd">    Args:</span>
+<span class="sd">        model: Model to be learned. Carefull, model should be compatible with data and the learner.</span>
+<span class="sd">        data: Dataset to be used in the learning process. Carefull, model should be compatible with data and the learner.</span>
+<span class="sd">        host (str): Host where the node will be listening.</span>
+<span class="sd">        port (int): Port where the node will be listening.</span>
+<span class="sd">        learner: Learner to be used in the learning process. Default: LightningLearner.</span>
+<span class="sd">        agregator (Agregator): Agregator to be used in the learning process. Default: FedAvg.</span>
+<span class="sd">        simulation (bool): If False, node will share metrics and communication will be encrypted. Default: True.</span>
 
-<span class="c1"># REVISAR LO DE BLOQUEAR CUANDO SE MANDA EL MODELO</span>
-
-<span class="c1"># Cambiar algunos int nones por -1 para preservar el tipo</span>
-
-<span class="c1">#Desacoplar el lerarner</span>
-
-<span class="c1">###################################################################################################################</span>
-<span class="c1"># FULL CONNECTED HAY QUE IMPLEMENTARLO DE FORMA QUE CUANDO SE INTRODUCE UN NODO EN LA RED, SE HACE UN BROADCAST</span>
-<span class="c1">###################################################################################################################</span>
-
-<div class="viewcode-block" id="Node"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node">[docs]</a><span class="k">class</span> <span class="nc">Node</span><span class="p">(</span><span class="n">BaseNode</span><span class="p">,</span> <span class="n">Observer</span><span class="p">):</span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        round (int): Round of the learning process.</span>
+<span class="sd">        totalrounds (int): Total number of rounds of the learning process.</span>
+<span class="sd">        learner (Learner): Learner to be used in the learning process.</span>
+<span class="sd">        agregator (Agregator): Agregator to be used in the learning process.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1">#####################</span>
     <span class="c1">#     Node Init     #</span>
     <span class="c1">#####################</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">agregator</span><span class="o">=</span><span class="n">FedAvg</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Class based on a base node that allows ***p2p Federated Learning**. </span>
-<span class="sd">            </span>
-<span class="sd">        Args:</span>
-<span class="sd">            model (torch.nn.Module): Model to be learned.</span>
-<span class="sd">            data (torch.utils.data.Dataset): Dataset to be used in the learning process.</span>
-<span class="sd">            host (str): Host where the node will be listening.</span>
-<span class="sd">            port (int): Port where the node will be listening.</span>
-<span class="sd">            agregator (Agregator): Agregator to be used in the learning process.</span>
-
-<span class="sd">        Attributes:</span>
-<span class="sd">            log_dir (str): Directory where the logs will be saved.</span>
-<span class="sd">            learner (Learner): Learner to be used in the learning process.</span>
-<span class="sd">            round (int): Round of the learning process.</span>
-<span class="sd">            totalrounds (int): Total number of rounds of the learning process.</span>
-<span class="sd">            agredator (Agregator): Agregator to be used in the learning process.</span>
-<span class="sd">            is_model_init (bool): Flag to indicate if the model has been initialized.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">BaseNode</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">host</span><span class="p">,</span><span class="n">port</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">learner</span><span class="o">=</span><span class="n">LightningLearner</span><span class="p">,</span> <span class="n">agregator</span><span class="o">=</span><span class="n">FedAvg</span><span class="p">,</span> <span class="n">simulation</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="c1"># Super init</span>
+        <span class="n">BaseNode</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">host</span><span class="p">,</span><span class="n">port</span><span class="p">,</span> <span class="n">simulation</span><span class="p">)</span>
         <span class="n">Observer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="c1"># Learning</span>
-        <span class="n">log_dir</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">learner</span> <span class="o">=</span> <span class="n">LightningLearner</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">log_name</span><span class="o">=</span><span class="n">log_dir</span><span class="p">)</span> 
-        <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">totalrounds</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">agredator</span> <span class="o">=</span> <span class="n">agregator</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">agredator</span><span class="o">.</span><span class="n">add_observer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">is_model_init</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">=</span> <span class="kc">None</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">totalrounds</span> <span class="o">=</span> <span class="kc">None</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">__model_initialized</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__initial_neighbors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__start_thread_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+
+        <span class="c1"># Learner</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">learner</span> <span class="o">=</span> <span class="n">learner</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">log_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span> 
+
+        <span class="c1"># Agregator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span> <span class="o">=</span> <span class="n">agregator</span><span class="p">(</span> <span class="n">node_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">add_observer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># Train Set Votes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__train_set_votes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__train_set_votes_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
 
         <span class="c1"># Locks</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__finish_wait_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__wait_votes_ready_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__finish_agregation_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__finish_agregation_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
-        
-    <span class="c1">#######################</span>
-    <span class="c1">#   Node Management   #</span>
-    <span class="c1">#######################</span>
-    
+        <span class="bp">self</span><span class="o">.</span><span class="n">__wait_init_model_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__wait_init_model_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+
+    <span class="c1">#########################</span>
+    <span class="c1">#    Node Management    #</span>
+    <span class="c1">#########################</span>
+
+<div class="viewcode-block" id="Node.connect_to"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.connect_to">[docs]</a>    <span class="k">def</span> <span class="nf">connect_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;&quot;</span>
+<span class="sd">        Connects a node to other. If learning is running connections are not allowed (it should be forced).</span>
+<span class="sd">        Carefull, if connection is forced with a new node, it will produce timeouts in the network.</span>
+<span class="sd">    </span>
+<span class="sd">        Args:</span>
+<span class="sd">            h (str): The host of the node.</span>
+<span class="sd">            p (int): The port of the node.</span>
+<span class="sd">            full (bool): If True, the node will be connected to the entire network.</span>
+<span class="sd">            force (bool): If True, the the node will be connected even though it should not be.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            node: The node that has been connected to.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if learning is running</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Cant connect to other nodes when learning is running.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># Connect</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">connect_to</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">full</span><span class="p">,</span> <span class="n">force</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="Node.stop"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Stop the node and the learning if it is running.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stop_learning</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">agredator</span><span class="o">.</span><span class="n">check_and_run_agregation</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__stop_learning</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
 
-    <span class="c1">################</span>
-    <span class="c1">#   Observer   #</span>
-    <span class="c1">################</span>
-
-<div class="viewcode-block" id="Node.update"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">event</span><span class="p">,</span><span class="n">obj</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Observer update method. Used to handle events that can occur in the agregator or neightboors.</span>
-<span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">            event (Events): Event that has occurred.</span>
-<span class="sd">            obj (object): Object that has been updated. ??????? REVISARLO</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">END_CONNECTION</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">rm_neighbor</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">agredator</span><span class="o">.</span><span class="n">check_and_run_agregation</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">NODE_READY_EVENT</span><span class="p">:</span>
-            <span class="c1"># Try to unlock to check if all nodes are ready (on_finish_round (agregator_thread))</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__finish_wait_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
-            <span class="k">except</span><span class="p">:</span>
-                <span class="k">pass</span>
-        <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">AGREGATION_FINISHED</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__finish_agregation_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
-            <span class="k">except</span><span class="p">:</span>
-                <span class="k">pass</span></div>
-
-    <span class="c1">####################################</span>
-    <span class="c1">#         Learning Setters         #</span>
-    <span class="c1">####################################</span>
-
-<div class="viewcode-block" id="Node.set_model"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.set_model">[docs]</a>    <span class="k">def</span> <span class="nf">set_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;&quot;</span>
-<span class="sd">        Set the model to be learned (learner). </span>
-
-<span class="sd">        Carefully, model, not weights.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            model: Model to be learned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">set_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span></div>
+    <span class="c1">##########################</span>
+    <span class="c1">#    Learning Setters    #</span>
+    <span class="c1">##########################</span>
 
 <div class="viewcode-block" id="Node.set_data"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.set_data">[docs]</a>    <span class="k">def</span> <span class="nf">set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -344,9 +330,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            data: Dataset to be used in the learning process.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
-
 
     <span class="c1">###############################################</span>
     <span class="c1">#         Network Learning Management         #</span>
@@ -362,20 +346,16 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Start Learning</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Broadcasting start learning...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Broadcasting start learning...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_start_learning_msg</span><span class="p">(</span><span class="n">rounds</span><span class="p">,</span><span class="n">epochs</span><span class="p">))</span>
             <span class="c1"># Initialize model</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Sending Initial Model Weights&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">is_model_init</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__bc_model</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_model_initialized_msg</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__wait_init_model_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__model_initialized</span> <span class="o">=</span> <span class="kc">True</span> <span class="c1"># esto seguramente sobre, con locks es suficiente</span>
             <span class="c1"># Learning Thread</span>
-            <span class="n">learning_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start_learning</span><span class="p">,</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">rounds</span><span class="p">,</span><span class="n">epochs</span><span class="p">))</span>
-            <span class="n">learning_thread</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;learning_thread-&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
-            <span class="n">learning_thread</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">learning_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__start_learning_thread</span><span class="p">(</span><span class="n">rounds</span><span class="p">,</span><span class="n">epochs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Learning already started&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span></div>
-
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Learning already started&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span></div>
 
 <div class="viewcode-block" id="Node.set_stop_learning"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.set_stop_learning">[docs]</a>    <span class="k">def</span> <span class="nf">set_stop_learning</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -383,16 +363,22 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_stop_learning_msg</span><span class="p">())</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stop_learning</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__stop_learning</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Learning already stopped&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span></div>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Learning already stopped&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span></div>
 
 
     <span class="c1">##################################</span>
     <span class="c1">#         Local Learning         #</span>
     <span class="c1">##################################</span>
 
-<div class="viewcode-block" id="Node.start_learning"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.start_learning">[docs]</a>    <span class="k">def</span> <span class="nf">start_learning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">rounds</span><span class="p">,</span><span class="n">epochs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__start_learning_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">rounds</span><span class="p">,</span><span class="n">epochs</span><span class="p">):</span>
+        <span class="n">learning_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__start_learning</span><span class="p">,</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">rounds</span><span class="p">,</span><span class="n">epochs</span><span class="p">))</span>
+        <span class="n">learning_thread</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;learning_thread-&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+        <span class="n">learning_thread</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">learning_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__start_learning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">rounds</span><span class="p">,</span><span class="n">epochs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Start the learning process in the local node.</span>
 <span class="sd">        </span>
@@ -400,169 +386,464 @@
 <span class="sd">            rounds: Number of rounds of the learning process.</span>
 <span class="sd">            epochs: Number of epochs of the learning process.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">totalrounds</span> <span class="o">=</span> <span class="n">rounds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__start_thread_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span> <span class="c1"># Used to avoid create duplicated training threads</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">totalrounds</span> <span class="o">=</span> <span class="n">rounds</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__start_thread_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
 
-        <span class="c1">#esto de aqui es una apaño de los malos</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_model_init</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Initialicing Model Weights&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span>
-            <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_model_init</span><span class="p">:</span>
-               <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+            <span class="c1"># Wait and gossip model inicialization            </span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__gossip_model_difusion</span><span class="p">(</span><span class="n">initialization</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="c1"># Indicates samples that be used in the learning process</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Broadcasting Number of Samples...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span>
-        <span class="c1">#esto ya no hará falta -&gt; ahora multilee -&gt; tb nos perjudica porque si ya se está mandado el modelo, va a promediarlo x 0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_num_samples_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">get_num_samples</span><span class="p">()))</span>
-            
-        
-        <span class="c1"># Train</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">set_epochs</span><span class="p">(</span><span class="n">epochs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__train_step</span><span class="p">()</span></div>
+            <span class="c1"># Wait to guarantee new connection heartbeats convergence and fix neighbors</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">WAIT_HEARTBEATS_CONVERGENCE</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__initial_neighbors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">()</span> <span class="c1"># used to restore the original list of neighbors after the learning round</span>
 
-<div class="viewcode-block" id="Node.stop_learning"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.stop_learning">[docs]</a>    <span class="k">def</span> <span class="nf">stop_learning</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+            <span class="c1"># Train</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">set_epochs</span><span class="p">(</span><span class="n">epochs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__train_step</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__stop_learning</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Stop the learning process in the local node. Interrupts learning process if its running.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Stopping learning&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">interrupt_fit</span><span class="p">()</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Stopping learning&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+        <span class="c1"># Rounds</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">totalrounds</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">agredator</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+        <span class="c1"># Leraner</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">interrupt_fit</span><span class="p">()</span>
+        <span class="c1"># Agregator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">check_and_run_agregation</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">set_nodes_to_agregate</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="c1"># Try to free wait locks</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__wait_votes_ready_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
 
     <span class="c1">####################################</span>
     <span class="c1">#         Model Agregation         #</span>
     <span class="c1">####################################</span>
 
-    <span class="c1">#-------------------------------------------------------</span>
-    <span class="c1"># FUTURO -&gt; validar quien introduce moedelos (llevar cuenta) |&gt; (2 aprox)</span>
-    <span class="c1">#-------------------------------------------------------</span>
-    
-    
-<div class="viewcode-block" id="Node.add_model"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.add_model">[docs]</a>    <span class="k">def</span> <span class="nf">add_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">node</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">w</span><span class="p">):</span> 
+<div class="viewcode-block" id="Node.add_model"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.add_model">[docs]</a>    <span class="k">def</span> <span class="nf">add_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">m</span><span class="p">):</span> 
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Add a model. The model isn&#39;t inicializated, the recieved model is used for it. Otherwise, the model is agregated using the **agregator**.</span>
+<span class="sd">        Add a model. If the model isn&#39;t inicializated, the recieved model is used for it. Otherwise, the model is agregated using the **agregator**.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            node (str): Node that has sent the model.</span>
-<span class="sd">            m (Weights): Model to be added.</span>
-<span class="sd">            w: Number of samples used to train the model.</span>
+<span class="sd">            m: Encoded model. Contains model and their contributors</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Check if Learning is running</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_model_init</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__model_initialized</span><span class="p">:</span>
                     <span class="c1"># Add model to agregator</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">agredator</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="n">node</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">decode_parameters</span><span class="p">(</span><span class="n">m</span><span class="p">),</span><span class="n">w</span><span class="p">)</span> 
+                    <span class="n">decoded_model</span><span class="p">,</span> <span class="n">contributors</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">decode_parameters</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">check_parameters</span><span class="p">(</span><span class="n">decoded_model</span><span class="p">):</span>
+                        <span class="n">models_added</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="n">decoded_model</span><span class="p">,</span><span class="n">contributors</span><span class="p">,</span><span class="n">weight</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">models_added</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_models_agregated_msg</span><span class="p">(</span><span class="n">models_added</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">ModelNotMatchingError</span><span class="p">(</span><span class="s2">&quot;Not matching models&quot;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># Initialize model</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">is_model_init</span> <span class="o">=</span> <span class="kc">True</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Model initialized&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">decode_parameters</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__model_initialized</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Initialicing Model Weights&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__wait_init_model_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>    
+                    <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_model_initialized_msg</span><span class="p">())</span>
+                    <span class="n">model</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">decode_parameters</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
             
             <span class="k">except</span> <span class="n">DecodingParamsError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="c1"># Bajamos el nodo</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Error decoding parameters&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Error decoding parameters&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
-                <span class="c1"># ----------------------- temporal -----------------------</span>
-                <span class="c1"># ------------------ used to debug errors -------------------</span>
-                <span class="c1"># append m in a file</span>
-                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;paramserror.log&#39;</span><span class="p">,</span><span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
-                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
-
             <span class="k">except</span> <span class="n">ModelNotMatchingError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="c1"># Bajamos el nodo</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Models not matching.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Models not matching.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
                     
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="c1"># Bajamos el nodo</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
                 <span class="k">raise</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span> 
-            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Tried to add a model while learning is not running&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span></div>
-
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Tried to add a model while learning is not running&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span></div>
     
-    <span class="c1">################################</span>
-    <span class="c1">#         Trainig step         #</span>
-    <span class="c1">################################</span>
+    <span class="c1">#######################</span>
+    <span class="c1">#    Trainig Steps    #</span>
+    <span class="c1">#######################</span>
 
     <span class="k">def</span> <span class="nf">__train_step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># Check if Learning has been interrupted</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__train</span><span class="p">()</span>
-        
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">agredator</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()),</span><span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">get_parameters</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">get_num_samples</span><span class="p">())</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__bc_model</span><span class="p">()</span>
 
+        <span class="c1"># Set train set</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__vote_train_set</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__validate_train_set</span><span class="p">()</span>
+
+        <span class="c1"># Determine if node is in the train set</span>
+        <span class="n">is_train_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span>
+        <span class="k">if</span> <span class="n">is_train_set</span><span class="p">:</span>
+
+            <span class="c1"># Full connect train set</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__connect_and_set_agregator</span><span class="p">()</span>
+
+            <span class="c1"># Evaluate and send metrics</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__evaluate</span><span class="p">()</span>
+
+            <span class="c1"># Train</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__train</span><span class="p">()</span>
+            
+            <span class="c1"># Agregate Model</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">get_parameters</span><span class="p">(),[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()],</span><span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">get_num_samples</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_models_agregated_msg</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()]))</span> <span class="c1"># Notify agregation</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__gossip_model_agregation</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span> 
+
+            <span class="c1"># Set Models To Agregate </span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">set_waiting_agregated_model</span><span class="p">()</span>
+
+        <span class="c1"># Gossip agregated model (also syncrhonizes nodes)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__gossip_model_difusion</span><span class="p">()</span>
+
+        <span class="c1"># Finish round</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__on_round_finished</span><span class="p">()</span>
-       
+
+    <span class="c1">################</span>
+    <span class="c1">#    Voting    #</span>
+    <span class="c1">################</span>
+
+    <span class="k">def</span> <span class="nf">__vote_train_set</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Vote</span>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_network_nodes</span><span class="p">()</span> <span class="c1"># al least himself</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
+            <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+
+        <span class="c1"># Send vote</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Sending train set vote.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">TRAIN_SET_SIZE</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">))</span>
+        <span class="n">nodes_voted</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">candidates</span><span class="p">,</span> <span class="n">samples</span><span class="p">)</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1000</span><span class="p">),</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1000</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1000</span><span class="p">)</span><span class="o">/</span><span class="mi">4</span><span class="p">)]</span>
+        <span class="n">votes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">nodes_voted</span><span class="p">,</span><span class="n">weights</span><span class="p">))</span>
+
+        <span class="c1"># Adding votes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__train_set_votes_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__train_set_votes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">votes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__train_set_votes_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+        <span class="c1"># Send and wait for votes</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Self Vote: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="n">votes</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_vote_train_set_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="n">votes</span><span class="p">))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Waiting other node votes.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+
+        <span class="c1"># Get time</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">begin</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>                
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># If the trainning has been interrupted, stop waiting</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Stopping on_round_finished process.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+                <span class="k">return</span> <span class="p">[]</span>
+
+            <span class="c1"># Update time counters (timeout)</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">begin</span><span class="p">)</span>
+            <span class="n">begin</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>                
+            <span class="n">timeout</span> <span class="o">=</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="n">Settings</span><span class="o">.</span><span class="n">VOTE_TIMEOUT</span>
+
+            <span class="c1"># Clear non candidate votes</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__train_set_votes_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="n">nc_votes</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_set_votes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__train_set_votes_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+                
+            <span class="c1"># Determine if all votes are received</span>
+            <span class="n">votes_ready</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">nc_votes</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">votes_ready</span> <span class="ow">or</span> <span class="n">timeout</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="n">timeout</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">votes_ready</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Timeout for vote agregation. Missing votes from </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="nb">set</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">nc_votes</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+
+                <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">node_vote</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">nc_votes</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">node_vote</span><span class="p">)):</span>
+                        <span class="n">k</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">node_vote</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="n">v</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">node_vote</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+                            <span class="n">results</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="n">v</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">results</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+                <span class="c1"># Order by votes and get TOP X</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># to equal solve of draw</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">top</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">),</span> <span class="n">Settings</span><span class="o">.</span><span class="n">TRAIN_SET_SIZE</span><span class="p">)</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">top</span><span class="p">]</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">results</span><span class="p">}</span>
+                <span class="n">votes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+                <span class="c1"># Clear votes</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__train_set_votes</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Computed </span><span class="si">{}</span><span class="s2"> votes.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="nb">len</span><span class="p">(</span><span class="n">nc_votes</span><span class="p">)))</span>
+                <span class="k">return</span> <span class="n">votes</span>
+                
+            <span class="c1"># Wait for votes or refresh every 2 seconds</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__wait_votes_ready_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> 
         
+                                
+    <span class="k">def</span> <span class="nf">__validate_train_set</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Verify if node set is valid (can happend that a node was down when the votes were being processed)</span>
+        <span class="k">for</span> <span class="n">tsn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tsn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_network_nodes</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">tsn</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">tsn</span><span class="p">)</span>
+                
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Train set of </span><span class="si">{}</span><span class="s2"> nodes: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span><span class="p">))</span>
+
+    <span class="c1">##########################</span>
+    <span class="c1">#    Connect Trainset    #</span>
+    <span class="c1">##########################</span>
+
+    <span class="k">def</span> <span class="nf">__connect_and_set_agregator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Set Models To Agregate </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">set_nodes_to_agregate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span><span class="p">)</span>
+
+        <span class="c1"># Connect Train Set Nodes</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span> <span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">():</span>
+                <span class="n">h</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                    <span class="n">nc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbor</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
+                    <span class="c1"># If the node is not connected, connect it (to avoid duplicated connections only a node connects to the other)</span>
+                    <span class="k">if</span> <span class="n">nc</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">node</span><span class="p">:</span> 
+                        <span class="bp">self</span><span class="o">.</span><span class="n">connect_to</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">p</span><span class="p">),</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Node </span><span class="si">{}</span><span class="s2"> has a valid port&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="n">node</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)))</span>
+
+        <span class="c1"># Wait connections</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">begin</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">begin</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="n">Settings</span><span class="o">.</span><span class="n">TRAIN_SET_CONNECT_TIMEOUT</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Timeout for train set connections.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">([</span><span class="n">nc</span> <span class="k">for</span> <span class="n">nc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">()</span> <span class="k">if</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span><span class="p">])</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span> 
+
+
+    <span class="c1">############################</span>
+    <span class="c1">#    Train and Evaluate    #</span>
+    <span class="c1">############################</span>
+
     <span class="k">def</span> <span class="nf">__train</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Training...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Training...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">__bc_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">encoded_msgs</span> <span class="o">=</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_params_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">encode_parameters</span><span class="p">())</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Broadcasting model to </span><span class="si">{}</span><span class="s2"> clients. (size: </span><span class="si">{}</span><span class="s2"> bytes)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">(),</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neightboors</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="n">encoded_msgs</span><span class="p">)</span><span class="o">*</span><span class="n">BUFFER_SIZE</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">__evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Evaluating...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">results</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Evaluated. Losss: </span><span class="si">{}</span><span class="s2">, Metric: </span><span class="si">{}</span><span class="s2">. (Check tensorboard for more info)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">results</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="c1"># Send metrics</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__bc_metrics</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
 
-        <span class="c1"># Lock Neightboors Communication</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__set_sending_model</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-        <span class="c1"># Send Fragments</span>
-        <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">encoded_msgs</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-        <span class="c1"># UnLock Neightboors Communication</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__set_sending_model</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__bc_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">metrics</span><span class="p">):</span> 
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Broadcasting metrics.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">())))</span>
+        <span class="n">encoded_msgs</span> <span class="o">=</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_metrics_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">round</span><span class="p">,</span><span class="n">metrics</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">metrics</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">encoded_msgs</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__set_sending_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flag</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neightboors</span><span class="p">:</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">set_sending_model</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span>
-    
+    <span class="c1">######################</span>
+    <span class="c1">#    Round finish    #</span>
+    <span class="c1">######################</span>
+
     <span class="k">def</span> <span class="nf">__on_round_finished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                
-                <span class="c1"># Wait to finish self agregation</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__finish_agregation_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
-                
-                <span class="c1"># Send ready message --&gt; quizá ya no haga falta bloquear el socket</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_ready_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">round</span><span class="p">))</span>
-                    
-                
-                <span class="c1"># Wait for ready messages</span>
-                <span class="c1">#</span>
-                <span class="c1"># -&gt; plantearse timeout x si nodos no responden -&gt; meter en memoria y preguntar profesores</span>
-                <span class="c1">#</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Waiting other nodes.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span>
-                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-                    <span class="c1"># If the trainning has been interrupted, stop waiting</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Stopping on_round_finished process.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span>
-                        <span class="k">return</span>
-                        
-                    <span class="k">if</span> <span class="nb">all</span><span class="p">([</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_ready_status</span><span class="p">()</span><span class="o">&gt;=</span><span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="k">for</span> <span class="n">nc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neightboors</span><span class="p">]):</span>
-                        <span class="k">break</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__finish_wait_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-                        
-                <span class="c1"># Set Next Round</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">+</span> <span class="mi">1</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Round </span><span class="si">{}</span><span class="s2"> of </span><span class="si">{}</span><span class="s2"> finished.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">round</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">totalrounds</span><span class="p">))</span>
+        <span class="c1"># Remove trainset connections</span>
+        <span class="k">for</span> <span class="n">nc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">nc</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__initial_neighbors</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rm_neighbor</span><span class="p">(</span><span class="n">nc</span><span class="p">)</span>
+        <span class="c1"># Set Next Round</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">finalize_round</span><span class="p">()</span> <span class="c1"># revisar x si esto pueiera quedar mejor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="c1"># Clear node agregation</span>
+        <span class="k">for</span> <span class="n">nc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">():</span>
+            <span class="n">nc</span><span class="o">.</span><span class="n">set_models_agregated</span><span class="p">([])</span>
 
-                <span class="c1"># Next Step or Finish</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">totalrounds</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__train_step</span><span class="p">()</span>  
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">=</span> <span class="kc">None</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">is_model_init</span> <span class="o">=</span> <span class="kc">False</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Finish!!.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span>          
+        <span class="c1"># Next Step or Finish</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Round </span><span class="si">{}</span><span class="s2"> of </span><span class="si">{}</span><span class="s2"> finished.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">round</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">totalrounds</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">totalrounds</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__train_step</span><span class="p">()</span>  
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># At end, all nodes compute metrics</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__evaluate</span><span class="p">()</span>
+            <span class="c1"># Finish</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">totalrounds</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__model_initialized</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Training finished!!.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">round</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">totalrounds</span><span class="p">))</span>
+
+    <span class="c1">#########################</span>
+    <span class="c1">#    Model Gossiping    #</span>
+    <span class="c1">#########################</span>
+
+    <span class="k">def</span> <span class="nf">__gossip_model_agregation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Anonymous functions</span>
+        <span class="n">candidate_condition</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">nc</span><span class="p">:</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">get_models_agregated</span><span class="p">())</span><span class="o">&lt;</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span><span class="p">)</span>
+        <span class="n">status_function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">nc</span><span class="p">:</span> <span class="p">(</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="nb">len</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">get_models_agregated</span><span class="p">())</span> <span class="p">)</span>
+        <span class="n">model_function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">nc</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">get_partial_agregation</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">get_models_agregated</span><span class="p">())</span>
+
+        <span class="c1"># Gossip</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__gossip_model</span><span class="p">(</span><span class="n">candidate_condition</span><span class="p">,</span><span class="n">status_function</span><span class="p">,</span><span class="n">model_function</span><span class="p">)</span>
          
+    <span class="k">def</span> <span class="nf">__gossip_model_difusion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">initialization</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># Wait a model (init or agregated)</span>
+        <span class="k">if</span> <span class="n">initialization</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Waiting initialization.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__wait_init_model_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Gossiping model initialization.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">())))</span>
+            <span class="n">candidate_condition</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">nc</span><span class="p">:</span> <span class="ow">not</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_model_initialized</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Waiting aregation.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__finish_agregation_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Gossiping agregated model.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">())))</span>
+            <span class="n">candidate_condition</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">nc</span><span class="p">:</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_model_ready_status</span><span class="p">()</span><span class="o">&lt;</span><span class="bp">self</span><span class="o">.</span><span class="n">round</span>
+
+        <span class="c1"># Anonymous functions</span>
+        <span class="n">status_function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">nc</span><span class="p">:</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+        <span class="n">model_function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">get_parameters</span><span class="p">(),</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="c1"># At diffusion, contributors are not relevant</span>
+        
+        <span class="c1"># Gossip</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__gossip_model</span><span class="p">(</span><span class="n">candidate_condition</span><span class="p">,</span><span class="n">status_function</span><span class="p">,</span><span class="n">model_function</span><span class="p">)</span>       
+
+    <span class="k">def</span> <span class="nf">__gossip_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">candidate_condition</span><span class="p">,</span> <span class="n">status_function</span><span class="p">,</span> <span class="n">model_function</span><span class="p">):</span>
+        <span class="c1"># Initialize list with status of nodes in the last X iterations</span>
+        <span class="n">last_x_status</span> <span class="o">=</span> <span class="p">[]</span> 
+        <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># Get time to calculate frequency</span>
+            <span class="n">begin</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+            <span class="c1"># If the trainning has been interrupted, stop waiting</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Stopping model gossip process.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+                <span class="k">return</span>
+
+            <span class="c1"># Get nodes wich need models</span>
+            <span class="n">nei</span> <span class="o">=</span> <span class="p">[</span><span class="n">nc</span> <span class="k">for</span> <span class="n">nc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">()</span> <span class="k">if</span> <span class="n">candidate_condition</span><span class="p">(</span><span class="n">nc</span><span class="p">)]</span>
+
+            <span class="c1"># Determine end of gossip</span>
+            <span class="k">if</span> <span class="n">nei</span> <span class="o">==</span> <span class="p">[]:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Gossip finished.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+                <span class="k">return</span>
+
+            <span class="c1"># Save state of neightbors. If nodes are not responding gossip will stop</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">last_x_status</span><span class="p">)</span> <span class="o">!=</span> <span class="n">Settings</span><span class="o">.</span><span class="n">GOSSIP_EXIT_ON_X_EQUAL_ROUNDS</span><span class="p">:</span>
+                <span class="n">last_x_status</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">status_function</span><span class="p">(</span><span class="n">nc</span><span class="p">)</span> <span class="k">for</span> <span class="n">nc</span> <span class="ow">in</span> <span class="n">nei</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) FL not running but models received&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()))</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Concurrence Error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">(),</span><span class="n">e</span><span class="p">))</span></div>
+                <span class="n">last_x_status</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">([</span><span class="n">status_function</span><span class="p">(</span><span class="n">nc</span><span class="p">)</span> <span class="k">for</span> <span class="n">nc</span> <span class="ow">in</span> <span class="n">nei</span><span class="p">])</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="n">Settings</span><span class="o">.</span><span class="n">GOSSIP_EXIT_ON_X_EQUAL_ROUNDS</span>
+
+                <span class="c1"># Check if las messages are the same</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">last_x_status</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">last_x_status</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">last_x_status</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]:</span>
+                        <span class="k">break</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Gossiping exited for </span><span class="si">{}</span><span class="s2"> equal reounds.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">Settings</span><span class="o">.</span><span class="n">GOSSIP_EXIT_ON_X_EQUAL_ROUNDS</span><span class="p">))</span>
+                    <span class="k">return</span>
+
+            <span class="c1"># Select a random subset of neightbors</span>
+            <span class="n">samples</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">GOSSIP_MODELS_PER_ROUND</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">nei</span><span class="p">))</span>
+            <span class="n">nei</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">nei</span><span class="p">,</span> <span class="n">samples</span><span class="p">)</span>
+
+            <span class="c1"># Generate and Send Model Partial Agregations (model, node_contributors)</span>
+            <span class="k">for</span> <span class="n">nc</span> <span class="ow">in</span> <span class="n">nei</span><span class="p">:</span>
+                <span class="n">model</span><span class="p">,</span><span class="n">contributors</span><span class="p">,</span><span class="n">weights</span> <span class="o">=</span> <span class="n">model_function</span><span class="p">(</span><span class="n">nc</span><span class="p">)</span>
+
+                <span class="c1"># Send Partial Agregation</span>
+                <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Gossiping model to </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+                    <span class="n">encoded_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">encode_parameters</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">contributors</span><span class="o">=</span><span class="n">contributors</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">weights</span><span class="p">)</span>
+                    <span class="n">encoded_msgs</span> <span class="o">=</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_params_msg</span><span class="p">(</span><span class="n">encoded_model</span><span class="p">)</span>
+                    <span class="c1"># Send Fragments</span>
+                    <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">encoded_msgs</span><span class="p">:</span>
+                        <span class="n">nc</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">Settings</span><span class="o">.</span><span class="n">FRAGMENTS_DELAY</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">FRAGMENTS_DELAY</span><span class="p">)</span>
+                
+            <span class="c1"># Wait to guarantee the frequency of gossipping</span>
+            <span class="n">time_diff</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">begin</span>
+            <span class="n">time_sleep</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">Settings</span><span class="o">.</span><span class="n">GOSSIP_MODELS_FREC</span><span class="o">-</span><span class="n">time_diff</span>
+            <span class="k">if</span> <span class="n">time_sleep</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">time_sleep</span><span class="p">)</span>
+
+
+    <span class="c1">###########################</span>
+    <span class="c1">#     Observer Events     #</span>
+    <span class="c1">###########################</span>
+
+<div class="viewcode-block" id="Node.update"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">event</span><span class="p">,</span><span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Observer update method. Used to handle events that can occur in the different components and connections of the node.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            event (Events): Event that has occurred.</span>
+<span class="sd">            obj: Object that has been updated. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">NODE_CONNECTED_EVENT</span><span class="p">:</span>
+            <span class="n">n</span><span class="p">,</span> <span class="n">force</span> <span class="o">=</span> <span class="n">obj</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Cant connect to other nodes when learning is running. (however, other nodes can be connected to the node.)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+                <span class="n">n</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+                <span class="k">return</span>
+                
+        <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">AGREGATION_FINISHED_EVENT</span><span class="p">:</span>
+            <span class="c1"># Set parameters and communate it to the training process</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+                <span class="c1"># Share that agregation is done</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_models_ready_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">round</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Agregation finished with no parameters&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__finish_agregation_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">START_LEARNING_EVENT</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__start_learning_thread</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">obj</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">STOP_LEARNING_EVENT</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__stop_learning</span><span class="p">()</span>
+    
+        <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">PARAMS_RECEIVED_EVENT</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        
+        <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">METRICS_RECEIVED_EVENT</span><span class="p">:</span>
+            <span class="n">name</span><span class="p">,</span> <span class="nb">round</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">metric</span> <span class="o">=</span> <span class="n">obj</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">log_validation_metrics</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span><span class="n">metric</span><span class="p">,</span><span class="nb">round</span><span class="o">=</span><span class="nb">round</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">TRAIN_SET_VOTE_RECEIVED_EVENT</span><span class="p">:</span>
+            <span class="n">node</span><span class="p">,</span><span class="n">votes</span> <span class="o">=</span> <span class="n">obj</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__train_set_votes_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__train_set_votes</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="n">votes</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__train_set_votes_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="c1"># Communicate to the training process that a vote has been received</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__wait_votes_ready_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="c1"># Execute BaseNode update</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">event</span><span class="p">,</span><span class="n">obj</span><span class="p">)</span></div></div>
 </pre></div>
         </article>
       </div>
