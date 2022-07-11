@@ -80,7 +80,7 @@ def test_line_network_learning(four_nodes):
 def __wait_connection(nodes):
     n1, n2, n3, n4 = nodes
     acum = 0
-    while len(n1.heartbeater.get_nodes()) != 4 or len(n2.heartbeater.get_nodes()) != 4 or len(n3.heartbeater.get_nodes()) !=  4 or len(n4.heartbeater.get_nodes()) != 4:
+    while len(n1.get_network_nodes()) != 4 or len(n2.get_network_nodes()) != 4 or len(n3.get_network_nodes()) !=  4 or len(n4.get_network_nodes()) != 4:
         begin = time.time()
         time.sleep(0.1)
         acum += time.time() - begin
@@ -95,4 +95,4 @@ def __test_learning(nodes):
         time.sleep(0.1)
 
     # Verify network nodes
-    assert len(n1.heartbeater.get_nodes()) == len(n2.heartbeater.get_nodes()) == len(n3.heartbeater.get_nodes()) == len(n4.heartbeater.get_nodes()) == 4
+    assert len(n1.get_network_nodes()) == len(n2.get_network_nodes()) == len(n3.get_network_nodes()) == len(n4.get_network_nodes()) == 4

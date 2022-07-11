@@ -13,13 +13,11 @@ if __name__ == '__main__':
         node = Node(MLP(),MnistFederatedDM())
         node.start()
 
-        node.connect_to("localhost",6666)
+        #node.connect_to("localhost",6666)
         time.sleep(0.1)
+        
+        node.set_start_learning(rounds=2,epochs=1)
 
-        break
-        #node.set_start_learning(rounds=2,epochs=1)
-
-        """
         # Wait 4 results
         
         while True:
@@ -30,5 +28,3 @@ if __name__ == '__main__':
 
         node.stop()
 
-        break
-        """

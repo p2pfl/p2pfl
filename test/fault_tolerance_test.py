@@ -28,7 +28,7 @@ def test_node_abrupt_down(four_nodes):
     #    (n4): será consciente de que la comunicación con n1 se ha perdido cuando haga uso del socket (heartbeat)
     #   (otros) nuevamente el uso del socket (heartbeat) detectará que la conexión ha sido rechazada por el nodo
     for con in n4.get_neighbors():
-        con.socket.close() #provocamos un bad file descriptor
+        con._NodeConnection__socket.close() #provocamos un bad file descriptor
     time.sleep(Settings.HEARTBEAT_PERIOD+0.5) #Esperar por la asincronía
     assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == len(n3.get_neighbors()) == 2
     n4.stop()
@@ -38,7 +38,7 @@ def test_node_abrupt_down(four_nodes):
     DE MOMENTO NO SE PUEDE PONER XQ LOS HEARTBEATS SON GOSSIPEADOS
 
     # Desconexión n3 abruptamente (deja de enviar heartbeat)
-    n3.heartbeater.stop()
+    n3._Node__heartbeater.stop()
     time.sleep(Settings.NODE_TIMEOUT+0.5) #Esperar por la asincronía
     assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == 1
     """
@@ -104,7 +104,7 @@ def test_bad_binary_model(two_nodes):
  
     # Adding noise to the buffer
     for _ in range(200):
-        n1.get_neighbors()[0].param_bufffer += "noise".encode("utf-8")
+        n1.get_neighbors()[0]._NodeConnection__param_bufffer += "noise".encode("utf-8")
     
     while not n1.round is None and not n2.round is None:
         time.sleep(0.1)

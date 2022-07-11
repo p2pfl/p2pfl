@@ -77,7 +77,7 @@ def test_gossip_heartbeat():
     n3.connect_to(n4.host,n4.port, full=False)
 
     acum = 0
-    while len(n1.heartbeater.get_nodes()) != 4 or len(n2.heartbeater.get_nodes()) != 4 or len(n3.heartbeater.get_nodes()) != 4 or len(n4.heartbeater.get_nodes()) != 4:
+    while len(n1.get_network_nodes()) != 4 or len(n2.get_network_nodes()) != 4 or len(n3.get_network_nodes()) != 4 or len(n4.get_network_nodes()) != 4:
         begin = time.time()
         time.sleep(0.1)
         acum += time.time() - begin
@@ -85,7 +85,7 @@ def test_gossip_heartbeat():
             assert False
 
     for n in nodes:
-        print(n.get_name(), " ->" ,n.heartbeater.get_nodes())
+        print(n.get_name(), " ->" ,n.get_network_nodes())
 
     n1.set_start_learning(rounds=10,epochs=2)    
 
@@ -239,7 +239,7 @@ def test_line_network_learning(four_nodes):
 def __wait_connection(nodes):
     n1, n2, n3, n4 = nodes
     acum = 0
-    while len(n1.heartbeater.get_nodes()) != 4 or len(n2.heartbeater.get_nodes()) != 4 or len(n3.heartbeater.get_nodes()) !=  4 or len(n4.heartbeater.get_nodes()) != 4:
+    while len(n1.get_network_nodes()) != 4 or len(n2.get_network_nodes()) != 4 or len(n3.get_network_nodes()) !=  4 or len(n4.get_network_nodes()) != 4:
         begin = time.time()
         time.sleep(0.1)
         acum += time.time() - begin
@@ -254,15 +254,15 @@ def __test_learning(nodes):
         time.sleep(0.1)
 
     # Verify network nodes
-    assert len(n1.heartbeater.get_nodes()) == len(n2.heartbeater.get_nodes()) == len(n3.heartbeater.get_nodes()) == len(n4.heartbeater.get_nodes()) == 4
+    assert len(n1.get_network_nodes()) == len(n2.get_network_nodes()) == len(n3.get_network_nodes()) == len(n4.get_network_nodes()) == 4
 
 ########################################################################################################################################################################################################
 
 if __name__ == '__main__':
 
     for _ in range(50):
-        #test_gossip_heartbeat()
-        test_node_down_on_learning(5)
+        test_gossip_heartbeat()
+        #test_node_down_on_learning(5)
         #test_encrypted_convergence((2,1))
         #print("\n\n\n\n\n")
         break

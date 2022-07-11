@@ -18,12 +18,14 @@ class BaseNode(threading.Thread, Observer):
     Args:
         host (str): The host of the node.
         port (int): The port of the node.
-        simulation (bool): If the node is in simulation mode or not.
+        simulation (bool): If False, communication will be encrypted.
 
     Attributes:
         host (str): The host of the node.
         port (int): The port of the node.
         simulation (bool): If the node is in simulation mode or not. Basically a simulation nodes don't have encryption and metrics aren't sended to network nodes.
+        heartbeater (Heartbeater): The heartbeater of the node.
+        gossiper (Gossiper): The gossiper of the node.
     """
 
     #####################
@@ -31,11 +33,14 @@ class BaseNode(threading.Thread, Observer):
     #####################
 
     def __init__(self, host="127.0.0.1", port=None, simulation=True):
-        threading.Thread.__init__(self)
-        self.__terminate_flag = threading.Event()
+        # Node Atributes
         self.host = socket.gethostbyname(host)
         self.port = port
         self.simulation = simulation
+
+        # Super init
+        threading.Thread.__init__(self, name = "node-" + self.get_name())
+        self.__terminate_flag = threading.Event()
 
         # Setting Up Node Socket (listening)
         self.__node_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #TCP Socket
@@ -45,7 +50,6 @@ class BaseNode(threading.Thread, Observer):
         else:
             self.__node_socket.bind((host, port))
         self.__node_socket.listen(50) # no more than 50 connections at queue
-        self.name = "node-" + self.get_name()
         
         # Neightbors
         self.__neightbors = [] # private to avoid concurrency issues
@@ -55,8 +59,8 @@ class BaseNode(threading.Thread, Observer):
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
         # Heartbeater and Gossiper
-        self.gossiper = None
-        self.heartbeater = None
+        self.gossiper = None 
+        self.heartbeater = None 
         
     def get_addr(self):
         """
@@ -71,7 +75,6 @@ class BaseNode(threading.Thread, Observer):
             str: The name of the node.
         """
         return str(self.get_addr()[0]) + ":" + str(self.get_addr()[1]) 
-
 
     #######################
     #   Node Management   #
@@ -326,6 +329,12 @@ class BaseNode(threading.Thread, Observer):
             pass
         self.__nei_lock.release()
 
+    def get_network_nodes(self):
+        """
+        Returns:
+            list: The nodes of the network.
+        """
+        return self.heartbeater.get_nodes()
       
     ##########################
     #     Msg management     #

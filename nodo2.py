@@ -9,5 +9,5 @@ if __name__ == '__main__':
             
     node = Node(MLP(),MnistFederatedDM(),port=6666)
     node.start()
-    node.set_start_learning(rounds=2,epochs=1)
+    #node.set_start_learning(rounds=2,epochs=1)
     

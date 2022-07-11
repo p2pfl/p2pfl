@@ -31,30 +31,29 @@ class NodeConnection(threading.Thread, Observable):
         addr: The address of the node that is connected to.
     """
 
+    ############## 
+    #    Init    # 
+    ##############
+
     def __init__(self, parent_node_name, s, addr, aes_cipher):
-        threading.Thread.__init__(self)
-        self.name = "node_connection-" + parent_node_name + "-" + str(addr[0]) + ":" + str(addr[1])
+        # Init supers
+        threading.Thread.__init__(self, name = ("node_connection-" + parent_node_name + "-" + str(addr[0]) + ":" + str(addr[1])))
         Observable.__init__(self)
-        self.terminate_flag = threading.Event()
-        self.socket = s
-        self.socket_lock = threading.Lock()
-        self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        self.addr = addr
-        self.train_num_samples = 0
-        self.test_num_samples = 0
-        self.param_bufffer = b""
-        
-        self.model_ready = -1
-
-        self.aes_cipher = aes_cipher
-
-        self.model_initialized = False
-
-        self.train_set_votes = {}
-
-        self.models_agregated = []
-
-
+        # Connection Loop
+        self.__terminate_flag = threading.Event()
+        self.__socket = s
+        self.__socket_lock = threading.Lock()
+        self.__socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        # Atributes
+        self.__addr = addr
+        self.__train_num_samples = 0
+        self.__test_num_samples = 0
+        self.__param_bufffer = b""
+        self.__model_ready = -1
+        self.__aes_cipher = aes_cipher
+        self.__model_initialized = False
+        self.__models_agregated = []
+        # Communication Protocol
         self.comm_protocol = CommunicationProtocol({
             CommunicationProtocol.BEAT: Beat_cmd(self),
             CommunicationProtocol.STOP: Stop_cmd(self),
@@ -70,152 +69,59 @@ class NodeConnection(threading.Thread, Observable):
             CommunicationProtocol.MODEL_INITIALIZED: Model_initialized_cmd(self),
         })
 
-    def add_processed_messages(self,msgs):
-        """
-        Add to a list of messages that have been processed. (By other nodes)
-
-        Args:
-            msgs: The list of messages that have been processed.
-
-        """
-        self.comm_protocol.add_processed_messages(msgs)
+    ############## 
+    #    Name    # 
+    ##############
 
     def get_addr(self):
         """
         Returns:
-            The address of the node that is connected to.   
+            (ip, port) The address of the node that is connected to. 
         """
-        return self.addr
+        return self.__addr
 
     def get_name(self):
         """
         Returns:
-            The name of the connection.
+            The name of the node connected to.
         """
-        return self.addr[0] + ":" + str(self.addr[1])
-
-    ###############
-    # Model Ready #
-    ###############
-
-    def set_model_ready_status(self,round):
-        """
-        Set the last ready round of the other node.
-
-        Args:
-            round: The last ready round of the other node.
-        """
-        self.model_ready = round
-
-    def get_ready_model_status(self):
-        """
-        Returns:
-            The last ready round of the other node.
-        """
-        return self.model_ready
-    
-    #####################
-    # Model Initialized #
-    #####################
-
-    def set_model_initialized(self, value):
-        """
-        Set the model initialized.
-        """
-        self.model_initialized = value
-
-    def get_model_initialized(self):
-        """
-        Returns:
-            The model initialized.
-        """
-        return self.model_initialized
-
-    ####################
-    # Models Agregated #
-    ####################
-
-    def set_models_agregated(self,models):
-        """
-        Set the models agregated.
-        
-        Args:
-            models: The models agregated.
-        """
-        self.models_agregated = models
-
-    def get_models_agregated(self):
-        """
-        Returns:
-            The models agregated.
-        """
-        return self.models_agregated
-
-    def set_num_samples(self,train,test):
-        """
-        Indicates the number of samples of the otrh node.
-         
-        Args:
-            num: The number of samples of the other node.
-        """
-        self.train_num_samples = train
-        self.test_num_samples = test
-
-    def get_num_samples(self):
-        return self.train_num_samples, self.test_num_samples
-
-    def add_param_segment(self,data):
-        """
-        Add a segment of parameters to the buffer.
-        
-        Args:
-            data: The segment of parameters.
-        """
-        self.param_bufffer = self.param_bufffer + data
-
-    def get_params(self):
-        """
-        Returns:
-            The parameters buffer content.
-        """
-        return self.param_bufffer
-
-    def clear_buffer(self):
-        """
-        Clear the params buffer.
-        """
-        self.param_bufffer = b""
+        return self.__addr[0] + ":" + str(self.__addr[1])
 
     ################### 
     #    Main Loop    # 
     ###################
 
     def start(self, force=False):
+        """
+        Start the connection. It will start the connection thread, this thread is receiving messages and processing them.
+        
+        Args:
+            force: Determine if connection is going to keep alive even if it should not.
+        """
         self.notify(Events.NODE_CONNECTED_EVENT, (self,force))
         return super().start()
-
 
     def run(self):
         """
         NodeConnection loop. Recive and process messages.
         """
-        self.socket.settimeout(Settings.NODE_TIMEOUT)
+        self.__socket.settimeout(Settings.NODE_TIMEOUT)
         overflow = 0
         buffer = b""
-        while not self.terminate_flag.is_set():
+        while not self.__terminate_flag.is_set():
             try:
                 # Recive message
                 og_msg = b""
                 if overflow == 0:
-                    og_msg = self.socket.recv(Settings.BLOCK_SIZE)
+                    og_msg = self.__socket.recv(Settings.BLOCK_SIZE)
                 else:
-                    og_msg = buffer + self.socket.recv(overflow) #alinear el colapso
+                    og_msg = buffer + self.__socket.recv(overflow) #alinear el colapso
                     buffer = b""
                     overflow = 0
 
                 # Decrypt message
-                if self.aes_cipher is not None:
-                    msg = self.aes_cipher.decrypt(og_msg)
+                if self.__aes_cipher is not None:
+                    msg = self.__aes_cipher.decrypt(og_msg)
                 else:
                     msg = og_msg
             
@@ -235,43 +141,171 @@ class NodeConnection(threading.Thread, Observable):
 
                     # Error happened
                     if error:
-                        self.terminate_flag.set()
+                        self.__terminate_flag.set()
                         logging.debug("({}) An error happened. Last error: {}".format(self.get_name(),msg))       
 
             except socket.timeout:
                 logging.debug("({}) (NodeConnection Loop) Timeout".format(self.get_name()))
-                self.terminate_flag.set()
+                self.__terminate_flag.set()
                 break
 
             except Exception as e:
                 logging.debug("({}) (NodeConnection Loop) Exception: ".format(self.get_name()) + str(e))
-                self.terminate_flag.set()
+                self.__terminate_flag.set()
                 break
         
         #Down Connection
         logging.debug("Closed connection: {}".format(self.get_name()))
-        self.notify(Events.END_CONNECTION, self) # Notify the parent node
-        self.socket.close()
+        self.notify(Events.END_CONNECTION, self) 
+        self.__socket.close()
 
     def stop(self,local=False):
         """
-        Stop the connection.
+        Stop the connection. Stops the main loop and closes the socket.
         
         Args:
             local: If true, the connection will be closed without notifying the other node.
         """
         if not local:
             self.send(CommunicationProtocol.build_stop_msg())
-        self.terminate_flag.set()
+        self.__terminate_flag.set()
+
+    ############################
+    #    Processed Messages    #
+    ############################
+
+    def add_processed_messages(self,msgs):
+        """
+        Add to a list of communication protocol messages that have been processed. (By other nodes)
+        Messages are added to avoid multiple processing of the same messages, also the non-processing
+        of these messges avoid cycles in the network.
+ 
+        Args:
+            msgs: The list of messages that have been processed.
+
+        """
+        self.comm_protocol.add_processed_messages(msgs)
+
+    ############################
+    #    Model Ready Rounds    #
+    ############################
+
+    def set_model_ready_status(self,round):
+        """
+        Set the last ready round of the other node.
+
+        Args:
+            round: The last ready round of the other node.
+        """
+        self.__model_ready = round
+
+    def get_model_ready_status(self):
+        """
+        Returns:
+            The last ready round of the other node.
+        """
+        return self.__model_ready
+    
+    ###########################
+    #    Model Initialized    #
+    ###########################
+
+    def set_model_initialized(self, value):
+        """
+        Set the model initialized.
+
+        Args:
+            value: True if the model is initialized, false otherwise.
+        """
+        self.__model_initialized = value
+
+    def get_model_initialized(self):
+        """
+        Returns:
+            The model initialized.
+        """
+        return self.__model_initialized
+
+    ##########################
+    #    Models Agregated    #
+    ##########################
+
+    def set_models_agregated(self,models):
+        """
+        Set the models agregated.
+        
+        Args:
+            models: Models agregated.
+        """
+        self.__models_agregated = models
+
+    def get_models_agregated(self):
+        """
+        Returns:
+            The models agregated.
+        """
+        return self.__models_agregated
+    
+    #####################
+    #    Num Samples    #
+    #####################
+
+    def set_num_samples(self,train,test):
+        """
+        Indicates the number of samples of the otrh node.
+         
+        Args:
+            train: The number of samples of the train set.
+            test: The number of samples of the test set. (NOT USED IN THIS VERSION)
+        """
+        self.__train_num_samples = train
+        self.__test_num_samples = test
+
+    def get_num_samples(self):
+        """
+        Get the number of samples of the other node.
+        Default values are 0, so if the number of samples is not set, it will return 0, and results of the node will be depreciated.
+
+        Aniway, if the value is the default, maybe something went wrong.
+
+        Returns:
+            (train,test): The number of samples of the other node.
+        """
+        return self.__train_num_samples, self.__test_num_samples
+
+    #######################
+    #    Params Buffer    #
+    #######################
+
+    def add_param_segment(self,data):
+        """
+        Add a segment of parameters to the buffer.
+        
+        Args:
+            data: The segment of parameters.
+        """
+        self.__param_bufffer = self.__param_bufffer + data
+
+    def get_params(self):
+        """
+        Returns:
+            The parameters buffer content.
+        """
+        return self.__param_bufffer
+
+    def clear_buffer(self):
+        """
+        Clear the params buffer.
+        """
+        self.__param_bufffer = b""
 
     ##################
     #    Messages    # 
     ##################
 
-    # Send a message to the other node. Message sending isnt guaranteed
     def send(self, data): 
         """
-        Send a message to the other node.
+        Tries to send a message to the other node.
 
         Args:
             data: The message to send.
@@ -281,21 +315,21 @@ class NodeConnection(threading.Thread, Observable):
 
         """    
         # Check if the connection is still alive
-        if not self.terminate_flag.is_set():
+        if not self.__terminate_flag.is_set():
             try:
                 # Encrypt message
-                if self.aes_cipher is not None:
-                    data = self.aes_cipher.add_padding(data) # -> It cant broke the model because it fills all the block space
-                    data = self.aes_cipher.encrypt(data)
+                if self.__aes_cipher is not None:
+                    data = self.__aes_cipher.add_padding(data) # -> It cant broke the model because it fills all the block space
+                    data = self.__aes_cipher.encrypt(data)
                 # Send message
-                self.socket_lock.acquire()
-                self.socket.sendall(data)
-                self.socket_lock.release()
+                self.__socket_lock.acquire()
+                self.__socket.sendall(data)
+                self.__socket_lock.release()
                 return True
             
             except Exception as e:
                 # If some error happened, the connection is closed
-                self.terminate_flag.set() #exit
+                self.__terminate_flag.set() 
                 return False
         else:
             return False
