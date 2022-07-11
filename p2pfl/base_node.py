@@ -56,7 +56,7 @@ class BaseNode(threading.Thread, Observer):
         self.__nei_lock = threading.Lock()
 
         # Logging
-        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+        logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
         # Heartbeater and Gossiper
         self.gossiper = None 
@@ -372,14 +372,14 @@ class BaseNode(threading.Thread, Observer):
             event (Events): Event that has occurred.
             obj: Information about the change or event.
         """
-        if event == Events.END_CONNECTION:
+        if event == Events.END_CONNECTION_EVENT:
             self.rm_neighbor(obj)
 
         elif event == Events.NODE_CONNECTED_EVENT:
             n,_ = obj
             n.send(CommunicationProtocol.build_beat_msg(self.get_name())) 
 
-        elif event == Events.CONN_TO:
+        elif event == Events.CONN_TO_EVENT:
             self.connect_to(obj[0], obj[1], full=False)
 
         elif event == Events.SEND_BEAT_EVENT:

@@ -2,17 +2,6 @@ import logging
 import torch
 from p2pfl.learning.agregators.agregator import Agregator
    
-#-----------------------------------------------------
-# Implementar un observador en condiciones -> notificar cuando acabe agregación -> algo acoplado pero ns como haría
-#-----------------------------------------------------
-
-#-----------------------------------------------------
-# 
-# FALTA LA EVALUACIÓN DEL MODELO
-#
-# Mencionar que num de epoches locales va en el nodo mas que en el agregador
-#-----------------------------------------------------
-
 class FedAvg(Agregator):
     """
     Federated Averaging (FedAvg) [McMahan et al., 2016]
@@ -26,7 +15,7 @@ class FedAvg(Agregator):
         Ponderated average of the models.
 
         Args:
-            models: Dictionary with the models.
+            models: Dictionary with the models (node: model,num_samples).
         """
 
         # Check if there are models to agregate

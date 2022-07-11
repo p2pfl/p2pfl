@@ -146,7 +146,7 @@ class Node(BaseNode):
             # Learning Thread
             self.__start_learning_thread(rounds,epochs)
         else:
-            logging.debug("({}) Learning already started".format(self.get_name()))
+            logging.info("({}) Learning already started".format(self.get_name()))
 
     def set_stop_learning(self):
         """
@@ -156,7 +156,7 @@ class Node(BaseNode):
             self.broadcast(CommunicationProtocol.build_stop_learning_msg())
             self.__stop_learning()
         else:
-            logging.debug("({}) Learning already stopped".format(self.get_name()))
+            logging.info("({}) Learning already stopped".format(self.get_name()))
 
 
     ##################################
@@ -401,6 +401,9 @@ class Node(BaseNode):
     ##########################
 
     def __connect_and_set_agregator(self):
+        # Set Models To Agregate 
+        self.agregator.set_nodes_to_agregate(self.__train_set)
+
         # Connect Train Set Nodes
         for node in self.__train_set :
             if node != self.get_name():
@@ -425,8 +428,6 @@ class Node(BaseNode):
                 break
             time.sleep(0.1) 
 
-        # Set Models To Agregate 
-        self.agregator.set_nodes_to_agregate(self.__train_set) # reference to self node stringified list of nodes
 
     ############################
     #    Train and Evaluate    #
@@ -464,7 +465,7 @@ class Node(BaseNode):
         self.learner.finalize_round() # revisar x si esto pueiera quedar mejor
         self.round = self.round + 1
         # Clear node agregation
-        for nc in [nc for nc in self.get_neighbors() if nc.get_name() in self.__train_set]:
+        for nc in self.get_neighbors():
             nc.set_models_agregated([])
 
         # Next Step or Finish
@@ -509,27 +510,16 @@ class Node(BaseNode):
         # Anonymous functions
         status_function = lambda nc: nc.get_name()
         model_function = lambda _: (self.learner.get_parameters(),None, None) # At diffusion, contributors are not relevant
+        
         # Gossip
         self.__gossip_model(candidate_condition,status_function,model_function)       
-        
 
-    #########################3
-    #######################
-    ############################
-    ###########################
-    #######################
-    ############################
-    ###########################
-
-    # this is going to produce duplicated models -> buut its fault tolerent
     def __gossip_model(self, candidate_condition, status_function, model_function):
-
         # Initialize list with status of nodes in the last X iterations
         last_x_status = [] 
         j = 0
 
         while True:
-            
             # Get time to calculate frequency
             begin = time.time()
 
@@ -564,7 +554,6 @@ class Node(BaseNode):
             samples = min(Settings.GOSSIP_MODELS_PER_ROUND,len(nei))
             nei = random.sample(nei, samples)
 
-
             # Generate and Send Model Partial Agregations (model, node_contributors)
             for nc in nei:
                 model,contributors,weights = model_function(nc)
@@ -593,54 +582,20 @@ class Node(BaseNode):
 
     def update(self,event,obj):
         """
-        Observer update method. Used to handle events that can occur in the agregator or neightbors.
+        Observer update method. Used to handle events that can occur in the different components and connections of the node.
         
         Args:
             event (Events): Event that has occurred.
             obj: Object that has been updated. 
         """
-
-        # For non directly connected nodes
-        #if event == Events.NODE_DISCONNECTED:
-        #    print("POR HACER!!!!") -> para nada
-
-        # For directly connected nodes
-        if event == Events.END_CONNECTION:
-            # If a training process is running, comunicate the disconnection
-            if self.round is not None:
-                # Try to remove from trainset
-                try:
-                    #self.__train_set_lock.acquire()
-                    # ESTO YA NADA - NO SIRVE PARA P2P -> VENCER'AN TIMEOUTS
-                    #node = obj.get_name()
-                    #self.train_set.remove(node)
-                    #self.__train_set_lock.release()
-                    # It cant produce training, if aggregation is running, clients only decrement
-                    self.agregator.check_and_run_agregation()
-                    
-                except:
-                    pass
-                    #self.__train_set_lock.release()
-
-                # Refresh vote process waiters            
-                try:
-                    self.__wait_votes_ready_lock.release()
-                except:
-                    pass
-                
-        elif event == Events.NODE_CONNECTED_EVENT:
-            n = obj[0]
-            force = obj[1]
-
-
-            #logging.debug("training: {} not force {} {}".format(self.round is not None, not force, self.round is not None and not force))
-
+        if event == Events.NODE_CONNECTED_EVENT:
+            n, force = obj
             if self.round is not None and not force:
                 logging.info("({}) Cant connect to other nodes when learning is running. (however, other nodes can be connected to the node.)".format(self.get_name()))
                 n.stop()
                 return
                 
-        elif event == Events.AGREGATION_FINISHED:
+        elif event == Events.AGREGATION_FINISHED_EVENT:
             # Set parameters and communate it to the training process
             if obj is not None:
                 self.learner.set_parameters(obj)
@@ -654,17 +609,16 @@ class Node(BaseNode):
             except:
                 pass
 
-        elif event == Events.START_LEARNING:
+        elif event == Events.START_LEARNING_EVENT:
             self.__start_learning_thread(obj[0],obj[1])
 
-        elif event == Events.STOP_LEARNING:
+        elif event == Events.STOP_LEARNING_EVENT:
             self.__stop_learning()
     
-        elif event == Events.PARAMS_RECEIVED:
+        elif event == Events.PARAMS_RECEIVED_EVENT:
             self.add_model(obj)
         
-        elif event == Events.METRICS_RECEIVED:
-            # Log Metrics
+        elif event == Events.METRICS_RECEIVED_EVENT:
             name, round, loss, metric = obj
             self.learner.log_validation_metrics(loss,metric,round=round,name=name)
 

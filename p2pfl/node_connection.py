@@ -55,9 +55,9 @@ class NodeConnection(threading.Thread, Observable):
         self.comm_protocol = CommunicationProtocol({
             CommunicationProtocol.BEAT: Beat_cmd(self),
             CommunicationProtocol.STOP: Stop_cmd(self),
-            CommunicationProtocol.CONN_TO: Conn_to_cmd(self),
-            CommunicationProtocol.START_LEARNING: Start_learning_cmd(self),
-            CommunicationProtocol.STOP_LEARNING: Stop_learning_cmd(self),
+            CommunicationProtocol.CONN_TO_EVENT: Conn_to_cmd(self),
+            CommunicationProtocol.START_LEARNING_EVENT: Start_learning_cmd(self),
+            CommunicationProtocol.STOP_LEARNING_EVENT: Stop_learning_cmd(self),
             CommunicationProtocol.PARAMS: Params_cmd(self),
             CommunicationProtocol.MODELS_READY: Models_Ready_cmd(self),
             CommunicationProtocol.METRICS: Metrics_cmd(self),
@@ -139,21 +139,21 @@ class NodeConnection(threading.Thread, Observable):
                     # Error happened
                     if error:
                         self.__terminate_flag.set()
-                        logging.debug("({}) An error happened. Last error: {}".format(self.get_name(),msg))       
+                        logging.info("({}) An error happened. Last error: {}".format(self.get_name(),msg))       
 
             except socket.timeout:
-                logging.debug("({}) (NodeConnection Loop) Timeout".format(self.get_name()))
+                logging.info("({}) (NodeConnection Loop) Timeout".format(self.get_name()))
                 self.__terminate_flag.set()
                 break
 
             except Exception as e:
-                logging.debug("({}) (NodeConnection Loop) Exception: ".format(self.get_name()) + str(e))
+                logging.info("({}) (NodeConnection Loop) Exception: ".format(self.get_name()) + str(e))
                 self.__terminate_flag.set()
                 break
         
         #Down Connection
-        logging.debug("Closed connection: {}".format(self.get_name()))
-        self.notify(Events.END_CONNECTION, self) 
+        logging.info("Closed connection: {}".format(self.get_name()))
+        self.notify(Events.END_CONNECTION_EVENT, self) 
         self.__socket.close()
 
     def stop(self,local=False):
@@ -316,33 +316,33 @@ class NodeConnection(threading.Thread, Observable):
 
     def notify_conn_to(self, h, p):
         """
-        Notify to the parent node that `CONN_TO` has been received.
+        Notify to the parent node that `CONN_TO_EVENT` has been received.
         """
-        self.notify(Events.CONN_TO, (h,p))
+        self.notify(Events.CONN_TO_EVENT, (h,p))
 
     def notify_start_learning(self, r, e):
         """
-        Notify to the parent node that `START_LEARNING` has been received.
+        Notify to the parent node that `START_LEARNING_EVENT` has been received.
         """
-        self.notify(Events.START_LEARNING, (r,e))
+        self.notify(Events.START_LEARNING_EVENT, (r,e))
 
     def notify_stop_learning(self,cmd):
         """
-        Notify to the parent node that `START_LEARNING` has been received.
+        Notify to the parent node that `START_LEARNING_EVENT` has been received.
         """
-        self.notify(Events.STOP_LEARNING, None)
+        self.notify(Events.STOP_LEARNING_EVENT, None)
 
     def notify_params(self,params):
         """
         Notify to the parent node that `PARAMS` has been received.
         """
-        self.notify(Events.PARAMS_RECEIVED, (params))
+        self.notify(Events.PARAMS_RECEIVED_EVENT, (params))
 
     def notify_metrics(self,node,round,loss,metric):
         """
         Notify to the parent node that `METRICS` has been received.
         """
-        self.notify(Events.METRICS_RECEIVED, (node, round, loss, metric))
+        self.notify(Events.METRICS_RECEIVED_EVENT, (node, round, loss, metric))
 
     def notify_train_set_votes(self,node,votes):
         """

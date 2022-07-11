@@ -5,7 +5,7 @@
 
 class NodeLearner:
     """
-    Template to implement learning processes.
+    Template to implement learning processes, iincluding metric monitoring during training.
     """
 
     def set_model(self, model): 
@@ -29,12 +29,18 @@ class NodeLearner:
         """
         pass
 
-    def encode_parameters(self): 
+    def encode_parameters(self, params=None, contributors=None, weight=None):
         """
         Encode the parameters of the model. (binary)
-
+        If params are not provided, self parameters are encoded.
+        
+        Args:
+            params: The parameters of the model. (non-binary)
+            contributors: The contributors of the model.
+            weight: The weight of the model. 
+            
         Returns:
-            The encoded parameters of the model.
+            The encoded parameters of the model (params, contributors, weight).
         """
         pass
 
@@ -44,6 +50,9 @@ class NodeLearner:
         
         Args:
             data: The encoded parameters of the model.
+
+        Returns:
+            The decoded parameters of the model. (params, contributors, weight)
 
         Raises:
             DecodingParamsError: If the decoding of the parameters fails.
@@ -56,6 +65,9 @@ class NodeLearner:
 
         Args:
             params: The parameters to check. (non-binary)
+
+        Returns:
+            True if the parameters are compatible with the model.
         """
         pass
     
@@ -65,6 +77,9 @@ class NodeLearner:
 
         Args:
             params: The parameters of the model. (non-binary)
+
+        Raises:
+            ModelNotMatchingError: If the model is not matching the learner.
         """
         pass
 
@@ -101,9 +116,12 @@ class NodeLearner:
     def evaluate(self): 
         """
         Evaluate the model. With a given parameters.
+        """
+        pass
 
-        Args:
-            params: The parameters of the model. (non-binary)
+    def log_validation_metrics(self, loss, metric, round=None, name=None):
+        """
+        Log the validation metrics. It also can be used to log the othe node metrics.
         """
         pass
 
@@ -116,14 +134,20 @@ class NodeLearner:
         """
         pass
 
+    def init(self): 
+        """
+        Init the learner.
+        """
+        pass
+
     def close(self): 
         """
         Close the learner.
         """
         pass
 
-    def init(self): 
+    def finalize_round(self):
         """
-        Init the learner.
+        Determine the end of the round.
         """
         pass

@@ -51,7 +51,6 @@ class Heartbeater(threading.Thread, Observable):
         """
         for n in [node for node,t in list(self.__nodes.items()) if time.time() - t > Settings.NODE_TIMEOUT]:
             self.__nodes.pop(n)
-            self.notify(Events.NODE_DISCONNECTED, None)
 
     def add_node(self, node):
         """

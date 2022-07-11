@@ -6,9 +6,11 @@ import torch
 
 class FederatedTensorboardLogger(LightningLoggerBase):
     """
-    Logger for PyTorch Lightning in federated learning. Training information persists in a local directory the diferent train rounds.
+    Logger for PyTorch Lightning in federated learning. 
+    It is made to save the information of the different trainings (in the different rounds) in the same graph.
 
-    
+    End of round determined with `finalize_round`
+
     Args:
         dir (str): Directory where the logs will be saved.
         name (str): Name of the node.
@@ -113,8 +115,6 @@ class FederatedTensorboardLogger(LightningLoggerBase):
         self.global_step = self.global_step + self.local_step
         self.local_step = 0
         self.round = self.round + 1
-
-    
 
     def close(self):
         try:
