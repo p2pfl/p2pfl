@@ -37,10 +37,18 @@ p2pfl.communication\_protocol module
    :undoc-members:
    :show-inheritance:
 
-p2pfl.const module
-------------------
+p2pfl.encrypter module
+----------------------
 
-.. automodule:: p2pfl.const
+.. automodule:: p2pfl.encrypter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+p2pfl.gossiper module
+---------------------
+
+.. automodule:: p2pfl.gossiper
    :members:
    :undoc-members:
    :show-inheritance:
@@ -65,6 +73,14 @@ p2pfl.node\_connection module
 -----------------------------
 
 .. automodule:: p2pfl.node_connection
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+p2pfl.settings module
+---------------------
+
+.. automodule:: p2pfl.settings
    :members:
    :undoc-members:
    :show-inheritance:

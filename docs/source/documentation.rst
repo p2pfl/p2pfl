@@ -6,4 +6,3 @@ Documentation
 
    p2pfl
    p2pfl.learning.pytorch
-   

@@ -15,6 +15,7 @@ sphinx-apidoc -F -o tmp ../p2pfl
    :maxdepth: 4
 
    installation
+   quickstart
    documentation
 
 ```
