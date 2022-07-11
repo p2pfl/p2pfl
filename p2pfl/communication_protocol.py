@@ -40,39 +40,69 @@ class CommunicationProtocol:
     Attributes:
         command_dict: Dictionary with the callbacks to execute at `process_message`.
         last_messages: List of the last messages received.
-        BEAT: Beat message header.
-        STOP: Stop message header.
-        CONN: Connection message header.
-        CONN_TO_EVENT: Connection to message header.
-        START_LEARNING_EVENT: Start learning message header.
-        STOP_LEARNING_EVENT: Stop learning message header.
-        PARAMS: Parameters message header.
-        PARAMS_CLOSE: Parameters message closing.
-        MODELS_READY: Models ready message header.
-        METRICS: Metrics message header.
-        VOTE_TRAIN_SET: Vote train set message header.
-        VOTE_TRAIN_SET_CLOSE: Vote train set message closing.
-        MODELS_AGREGATED: Models agregated message header.
-        MODELS_AGREGATED_CLOSE: Models agregated message closing.
-        MODEL_INITIALIZED: Model initialized message header.
     """
 
-    BEAT                    = "BEAT"
-    STOP                    = "STOP"           
-    CONN                    = "CONNECT"         
-    CONN_TO_EVENT                 = "CONNECT_TO"
-    START_LEARNING_EVENT          = "START_LEARNING_EVENT"
-    STOP_LEARNING_EVENT           = "STOP_LEARNING_EVENT"
-    PARAMS                  = "PARAMS"          # special case (binary) 
-    PARAMS_CLOSE            = "\PARAMS"         # special case (binary)
-    MODELS_READY            = "MODELS_READY"    
-    METRICS                 = "METRICS"
-    VOTE_TRAIN_SET          = "VOTE_TRAIN_SET" 
-    VOTE_TRAIN_SET_CLOSE    = "\VOTE_TRAIN_SET"
-    MODELS_AGREGATED        = "MODELS_AGREGATED"    
-    MODELS_AGREGATED_CLOSE  = "\MODELS_AGREGATED" 
-    MODEL_INITIALIZED       = "MODEL_INITIALIZED" 
-
+    BEAT = "BEAT"
+    """
+    Beat message header.
+    """
+    STOP = "STOP"           
+    """
+    Stop message header.
+    """
+    CONN = "CONNECT" 
+    """
+    Connection message header.
+    """        
+    CONN_TO_EVENT = "CONNECT_TO"
+    """
+    Connection to message header.
+    """
+    START_LEARNING_EVENT = "START_LEARNING_EVENT"
+    """
+    Start learning message header.
+    """
+    STOP_LEARNING_EVENT = "STOP_LEARNING_EVENT"
+    """
+    Stop learning message header.
+    """
+    PARAMS = "PARAMS" # special case (binary) 
+    """
+    Parameters message header.
+    """
+    PARAMS_CLOSE = "\PARAMS" # special case (binary)
+    """
+    Parameters message closing.
+    """
+    MODELS_READY = "MODELS_READY"    
+    """
+    Models ready message header.
+    """ 
+    METRICS = "METRICS"
+    """
+    Metrics message header.
+    """
+    VOTE_TRAIN_SET = "VOTE_TRAIN_SET" 
+    """
+    Vote train set message header.
+    """
+    VOTE_TRAIN_SET_CLOSE = "\VOTE_TRAIN_SET"
+    """
+    Vote train set message closing.
+    """
+    MODELS_AGREGATED = "MODELS_AGREGATED"    
+    """
+    Models agregated message header.
+    """
+    MODELS_AGREGATED_CLOSE = "\MODELS_AGREGATED" 
+    """
+    Models agregated message closing.
+    """
+    MODEL_INITIALIZED = "MODEL_INITIALIZED" 
+    """
+    Model initialized message header.
+    """
+    
     ############################################
     #    MSG PROCESSING (Non Static Methods)   #
     ############################################
