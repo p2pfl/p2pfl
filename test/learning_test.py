@@ -5,10 +5,9 @@ from p2pfl.learning.pytorch.lightninglearner import LightningLearner
 from collections import OrderedDict
 import torch
 
-
-#####################################################
-#    Test things related to the learning process    #
-#####################################################
+###############################################################################
+#    Test things related to the learning process (not the learning process)   #
+###############################################################################
 
 def test_encoding():
     nl1 = LightningLearner(MLP(), None)
@@ -43,9 +42,6 @@ def test_avg_simple():
     n.stop()
 
 def test_avg_complex():
-    n = Node(None,None)
-    n.start()
-
     agregator = FedAvg()
     nl1 = LightningLearner(MLP(), None)
     params = nl1.get_parameters()
@@ -68,5 +64,3 @@ def test_avg_complex():
         a = torch.trunc(params[layer]*10)
         b = torch.trunc(result[layer]*10)
         assert torch.eq(a, b).all()
-
-    n.stop()

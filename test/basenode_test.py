@@ -3,6 +3,7 @@ from p2pfl.base_node import BaseNode
 from p2pfl.communication_protocol import CommunicationProtocol
 import time
 from p2pfl.settings import Settings
+from test.utils import wait_network_nodes
 
 @pytest.fixture
 def two_nodes():
@@ -29,16 +30,6 @@ def four_nodes():
 
     return n1,n2,n3,n4
 
-def __wait_network_nodes(nodes):
-    acum = 0
-    while True:
-        begin = time.time()
-        if all([ len(n.get_network_nodes()) == len(nodes) for n in nodes]):
-            break
-        time.sleep(0.1)
-        acum += time.time() - begin
-        if acum > 6:
-            assert False
 
 ###########################
 #  Tests Infraestructure  #
@@ -49,7 +40,7 @@ def test_node_paring(two_nodes):
 
     # Connect
     n1.connect_to(n2.host,n2.port)
-    __wait_network_nodes(two_nodes)
+    wait_network_nodes(two_nodes)
     assert len(n1.get_neighbors()) == len(n2.get_neighbors())==1    
     assert len(n1.get_network_nodes()) == len(n2.get_network_nodes())== 2
 
@@ -80,7 +71,7 @@ def test_full_connected(four_nodes):
 
     # Connect n4 n1
     n4.connect_to(n1.host,n1.port,full=True)
-    __wait_network_nodes(four_nodes)
+    wait_network_nodes(four_nodes)
     assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == len(n3.get_neighbors()) == len(n4.get_neighbors()) == 3
     assert len(n1.get_network_nodes()) == len(n2.get_network_nodes()) == len(n3.get_network_nodes()) == len(n4.get_network_nodes()) == 4
 
@@ -112,7 +103,7 @@ def test_non_full_connected(four_nodes):
     n4.connect_to(n1.host,n1.port, full=False)
 
     # Wait
-    __wait_network_nodes(four_nodes)
+    wait_network_nodes(four_nodes)
 
     # Verify topology 
     assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == len(n3.get_neighbors()) == len(n4.get_neighbors()) == 2
