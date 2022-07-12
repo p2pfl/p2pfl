@@ -90,7 +90,7 @@ def test_connect_while_training(four_nodes):
     # Connect Nodes (unless the n4)
     n1.connect_to(n2.host,n2.port, full=True)
     n3.connect_to(n1.host,n1.port, full=True)
-    time.sleep(0.1) #Esperar por la asincronía
+    time.sleep(0.1)  
 
     # Start Learning
     n1.set_start_learning(2,1)

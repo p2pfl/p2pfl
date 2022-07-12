@@ -8,46 +8,7 @@ import pytest
 import time
 from test.fixtures import two_nodes, four_nodes
     
-def test_node_abrupt_down(four_nodes):
-    n1, n2, n3, n4 = four_nodes
 
-    # Conexión n1 n2
-    n1.connect_to(n2.host,n2.port, full=True)
-
-    # Conexión n3 n1
-    n3.connect_to(n1.host,n1.port, full=True)
-    time.sleep(0.1) #Esperar por la asincronía
-    assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == len(n3.get_neighbors()) == 2
-
-    # Conexión n4 n1
-    n4.connect_to(n1.host,n1.port, full=True)
-    time.sleep(0.1) #Esperar por la asincronía
-    assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == len(n3.get_neighbors()) == len(n4.get_neighbors()) == 3
-
-    # Desconexión n4 abruptamente (socket closed)
-    #    (n4): será consciente de que la comunicación con n1 se ha perdido cuando haga uso del socket (heartbeat)
-    #   (otros) nuevamente el uso del socket (heartbeat) detectará que la conexión ha sido rechazada por el nodo
-    for con in n4.get_neighbors():
-        con._NodeConnection__socket.close() #provocamos un bad file descriptor
-    time.sleep(Settings.HEARTBEAT_PERIOD+0.5) #Esperar por la asincronía
-    assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == len(n3.get_neighbors()) == 2
-    n4.stop()
-    
-    """
-    
-    DE MOMENTO NO SE PUEDE PONER XQ LOS HEARTBEATS SON GOSSIPEADOS
-
-    # Desconexión n3 abruptamente (deja de enviar heartbeat)
-    n3._Node__heartbeater.stop()
-    time.sleep(Settings.NODE_TIMEOUT+0.5) #Esperar por la asincronía
-    assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == 1
-    """
-    n3.stop()
-    
-
-    # Desconexión n2 y n1
-    n2.stop()
-    n1.stop()
 
     
 

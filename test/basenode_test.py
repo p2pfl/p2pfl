@@ -1,9 +1,8 @@
-from numpy import full
 import pytest
 from p2pfl.base_node import BaseNode
 from p2pfl.communication_protocol import CommunicationProtocol
 import time
-
+from p2pfl.settings import Settings
 
 @pytest.fixture
 def two_nodes():
@@ -29,6 +28,18 @@ def four_nodes():
     n4.start()
 
     return n1,n2,n3,n4
+
+def __wait_network_nodes(nodes):
+    acum = 0
+    while True:
+        begin = time.time()
+        if all([ len(n.get_network_nodes()) == len(nodes) for n in nodes]):
+            break
+        time.sleep(0.1)
+        acum += time.time() - begin
+        if acum > 6:
+            assert False
+
 ###########################
 #  Tests Infraestructure  #
 ###########################
@@ -36,15 +47,17 @@ def four_nodes():
 def test_node_paring(two_nodes):
     n1, n2 = two_nodes
 
-    # Conexión
+    # Connect
     n1.connect_to(n2.host,n2.port)
-    time.sleep(0.1) #Esperar por la asincronía
-    assert len(n1.get_neighbors()) == len(n2.get_neighbors())==1
+    __wait_network_nodes(two_nodes)
+    assert len(n1.get_neighbors()) == len(n2.get_neighbors())==1    
+    assert len(n1.get_network_nodes()) == len(n2.get_network_nodes())== 2
 
-    # Desconexión
-    n2.disconnect_from(n1.host,n1.port)   # same as n2.get_neighbors()[0].stop()
-    time.sleep(0.1) #Esperar por la asincronía
-    assert len(n1.get_neighbors()) == len(n2.get_neighbors())== 0
+    # Disconnect
+    n2.disconnect_from(n1.host,n1.port) # Direct disconnection are practically instantaneous, network nodes needs to wait timeout.
+    time.sleep(Settings.NODE_TIMEOUT+1)
+    assert len(n1.get_neighbors()) == len(n2.get_neighbors())== 0 
+    assert len(n1.get_network_nodes()) == 1
 
 def test_connect_invalid_node():
     n = BaseNode()
@@ -55,38 +68,57 @@ def test_connect_invalid_node():
 def test_full_connected(four_nodes):
     n1, n2, n3, n4 = four_nodes
 
-    # Conexión n1 n2
+    # Connect n1 n2
     n1.connect_to(n2.host,n2.port,full=True)
-    time.sleep(0.1) #Esperar por la asincronía
+    time.sleep(0.1)
     assert len(n1.get_neighbors()) == len(n2.get_neighbors())==1
 
-    # Conexión n3 n1
+    # Connect n3 n1
     n3.connect_to(n1.host,n1.port,full=True)
-    time.sleep(0.1) #Esperar por la asincronía
+    time.sleep(0.1)
     assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == len(n3.get_neighbors()) == 2
 
-    # Conexión n4 n1
+    # Connect n4 n1
     n4.connect_to(n1.host,n1.port,full=True)
-    time.sleep(0.1) #Esperar por la asincronía
+    __wait_network_nodes(four_nodes)
     assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == len(n3.get_neighbors()) == len(n4.get_neighbors()) == 3
+    assert len(n1.get_network_nodes()) == len(n2.get_network_nodes()) == len(n3.get_network_nodes()) == len(n4.get_network_nodes()) == 4
 
-    # Desconexión n1
+    # Disconnect n1
     n1.stop()
-    time.sleep(0.1) #Esperar por la asincronía
+    time.sleep(0.1)
     assert len(n2.get_neighbors()) == len(n3.get_neighbors()) == len(n4.get_neighbors()) == 2
 
-    # Desconexión n2
+    # Disconnect n2
     n2.stop()
-    time.sleep(0.1) #Esperar por la asincronía
+    time.sleep(0.1)
     assert len(n3.get_neighbors()) == len(n4.get_neighbors()) == 1
 
-    # Desconexión n3
+    # Disconnect n3
     n3.stop()
-    time.sleep(0.1) #Esperar por la asincronía
+    time.sleep(0.1)
     assert len(n4.get_neighbors()) == 0
 
-    # Desconexión n4
+    # Disconnect n4
     n4.stop()
+
+def test_non_full_connected(four_nodes):
+    n1, n2, n3, n4 = four_nodes
+
+    # Ring network
+    n1.connect_to(n2.host,n2.port, full=False)
+    n2.connect_to(n3.host,n3.port, full=False)
+    n3.connect_to(n4.host,n4.port, full=False)
+    n4.connect_to(n1.host,n1.port, full=False)
+
+    # Wait
+    __wait_network_nodes(four_nodes)
+
+    # Verify topology 
+    assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == len(n3.get_neighbors()) == len(n4.get_neighbors()) == 2
+
+    # Stop Nodes
+    [n.stop() for n in four_nodes]
 
 def test_multimsg(two_nodes):
     n1, n2 = two_nodes
@@ -108,8 +140,46 @@ def test_bad_msg(two_nodes):
     n1.connect_to(n2.host,n2.port)
     time.sleep(0.1) 
 
-    # Ante 1 error se detendrá la conexión (actualmente según los parátros 1 error es suficiente)
+    # Create an error message
     n1.broadcast(b"saludos Enrique y Dani")
     time.sleep(0.1) 
     assert len(n2.get_neighbors()) == 0
 
+##############################
+#    Test Fault Tolerance    #
+##############################
+
+def test_node_abrupt_down(four_nodes):
+    n1, n2, n3, n4 = four_nodes
+
+    # Connect n1 n2
+    n1.connect_to(n2.host,n2.port, full=True)
+
+    # Connect n3 n1
+    n3.connect_to(n1.host,n1.port, full=True)
+    time.sleep(0.1) 
+    assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == len(n3.get_neighbors()) == 2
+
+    # Connect n4 n1
+    n4.connect_to(n1.host,n1.port, full=True)
+    time.sleep(0.1)  
+    assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == len(n3.get_neighbors()) == len(n4.get_neighbors()) == 3
+
+    # n4 (socket closed)
+    for con in n4.get_neighbors():
+        con._NodeConnection__socket.close()
+    time.sleep(Settings.HEARTBEAT_PERIOD+0.5)  
+    assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == len(n3.get_neighbors()) == 2
+    n4.stop()
+    
+    # n3 stops heartbeater
+    n3.heartbeater.stop()
+    n3.gossiper.stop() # to avoid resending messages and refreshing socket timeout
+    time.sleep(Settings.NODE_TIMEOUT+1)
+    assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == 1
+    assert len(n1.get_network_nodes()) == len(n2.get_network_nodes()) == 2
+    n3.stop()
+
+    # Disconnect n2 and n1
+    n2.stop()
+    n1.stop()
