@@ -93,7 +93,7 @@ class LightningLearner(NodeLearner):
     def evaluate(self):
         try:
             if self.epochs > 0:
-                self.__trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=None, enable_checkpointing=False)
+                self.__trainer = Trainer(max_epochs=self.epochs, accelerator="auto", logger=None, log_every_n_steps=0, enable_checkpointing=False)
                 results = self.__trainer.test(self.model, self.data, verbose=False)
                 loss = results[0]["test_loss"]
                 metric = results[0]["test_metric"]

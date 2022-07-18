@@ -63,6 +63,7 @@ class Gossiper(threading.Thread, Observable):
                     if messages_left - sended >= 0:
                         self.notify(Events.GOSSIP_BROADCAST_EVENT, (msg,list(nodes)))
                         del self.__msgs[msg]
+                        messages_left = messages_left - sended
                         if messages_left == 0:
                             break
                     else:

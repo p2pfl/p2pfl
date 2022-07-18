@@ -43,7 +43,15 @@ class NodeConnection(threading.Thread, Observable):
         self.__terminate_flag = threading.Event()
         self.__socket = s
         self.__socket_lock = threading.Lock()
-        self.__socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+
+        bufsize = self.__socket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF) 
+    
+        print ("Buffer size:%d" %bufsize) 
+        self.__socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, bufsize*40) 
+        bufsize = self.__socket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF) 
+        print ("Buffer size2: {} (intentado a {})".format(bufsize,bufsize*40)) 
+        
+
         # Atributes
         self.__addr = addr
         self.__param_bufffer = b""

@@ -1,4 +1,3 @@
-from itertools import count
 import math
 import random
 import threading
@@ -15,8 +14,6 @@ from p2pfl.utils.observer import Events, Observer
 
 
 # concurrencia .copy() vs locks -> tratar de borrar los copys (sobre todo en nei)
-
-# NUM SAMPLES DEJA DE SER NECESARIO
 
 class Node(BaseNode):
     """
@@ -184,11 +181,15 @@ class Node(BaseNode):
             self.learner.init()
             self.__start_thread_lock.release()
 
+            begin = time.time()
+
             # Wait and gossip model inicialization            
             self.__gossip_model_difusion(initialization=True)
 
             # Wait to guarantee new connection heartbeats convergence and fix neighbors
-            time.sleep(Settings.WAIT_HEARTBEATS_CONVERGENCE)
+            wait_time = Settings.WAIT_HEARTBEATS_CONVERGENCE - (time.time() - begin)
+            if wait_time > 0:
+                time.sleep(wait_time)
             self.__initial_neighbors = self.get_neighbors() # used to restore the original list of neighbors after the learning round
 
             # Train

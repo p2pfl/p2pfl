@@ -14,7 +14,7 @@ class MLP(pl.LightningModule):
     Multilayer Perceptron (MLP) to solve MNIST with PyTorch Lightning.
     """
 
-    def __init__(self, metric = Accuracy, lr_rate=0.001): # low lr to avoid overfitting
+    def __init__(self, metric = Accuracy, out_channels=10, lr_rate=0.001): # low lr to avoid overfitting
         
         # Set seed for reproducibility iniciialization
         seed = 666
@@ -24,10 +24,9 @@ class MLP(pl.LightningModule):
         self.lr_rate = lr_rate
         self.metric = metric()
 
-        # 10 clases
         self.l1 = torch.nn.Linear(28 * 28, 128)
         self.l2 = torch.nn.Linear(128, 256)
-        self.l3 = torch.nn.Linear(256, 10)
+        self.l3 = torch.nn.Linear(256, out_channels)
 
     def forward(self, x):
         """

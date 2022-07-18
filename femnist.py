@@ -1,11 +1,20 @@
 from collections import defaultdict
+import random
+from p2pfl.node import Node
 import os
 import json
+import time
 from torch.utils.data import Dataset
 from pytorch_lightning import LightningDataModule
-import numpy
 import torch
 from torch.utils.data import DataLoader, Subset, random_split
+from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
+from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
+from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
+
+##################################
+#    Datamodules and Datasets    #
+##################################
 
 class JSON_MNISTDataModule(LightningDataModule):
     def __init__(self, train_dataset, test_dataset, batch_size=32, num_workers=4, val_percent=0.1):
@@ -47,23 +56,12 @@ class JSON_MNIST(Dataset):
         return len(self.samples)
 
     def __getitem__(self, idx): 
-        # adding a channel (b/w) 
         return self.samples[idx],self.labels[idx]
         
-
+#############################
+#    Load data functions    #
+#############################
     
-def get_samples(data_dir):
-    train_data_dir = os.path.join(data_dir, 'data', 'train')
-    test_data_dir = os.path.join(data_dir, 'data', 'test')
-
-    # recordar cargarse groups
-    users, groups, train_data, test_data = read_data(train_data_dir, test_data_dir)
-    
-    result = []
-    for u in users:
-        return train_data[u]["x"]
-    
-
 def build_datamodules(data_dir):
     train_data_dir = os.path.join(data_dir, 'data', 'train')
     test_data_dir = os.path.join(data_dir, 'data', 'test')
@@ -79,20 +77,54 @@ def build_datamodules(data_dir):
                 JSON_MNIST(test_data[u]["x"],test_data[u]["y"])
             )
         )
-    
     return result
-    
-    
-    
-def setup_clients(data_dir, model=None, use_val_set=False):
-    eval_set = 'test' if not use_val_set else 'val'
+
+def build_half_datamodules(data_dir):
     train_data_dir = os.path.join(data_dir, 'data', 'train')
-    test_data_dir = os.path.join(data_dir, 'data', eval_set)
+    test_data_dir = os.path.join(data_dir, 'data', 'test')
 
+    # recordar cargarse groups
     users, groups, train_data, test_data = read_data(train_data_dir, test_data_dir)
+    
+    result = []
+    i=0
+    while i < len(users):
+        train_samples = []
+        train_labels = []
+        test_samples = []
+        test_labels = []
+        train_samples.extend(train_data[users[i]]["x"])
+        train_labels.extend(train_data[users[i]]["y"])
+        test_samples.extend(test_data[users[i]]["x"])
+        test_labels.extend(test_data[users[i]]["y"])
+        train_samples.extend(train_data[users[i+1]]["x"])
+        train_labels.extend(train_data[users[i+1]]["y"])
+        test_samples.extend(test_data[users[i+1]]["x"])
+        test_labels.extend(test_data[users[i+1]]["y"])
+        result.append( 
+            JSON_MNISTDataModule(JSON_MNIST(train_samples,train_labels), JSON_MNIST(test_samples,test_labels))
+        )
+        i=i+2
+    return result
 
-    return users, groups, train_data, test_data
+def build_big_dataset(data_dir):
+    train_data_dir = os.path.join(data_dir, 'data', 'train')
+    test_data_dir = os.path.join(data_dir, 'data', 'test')
 
+    # recordar cargarse groups
+    users, groups, train_data, test_data = read_data(train_data_dir, test_data_dir)
+    
+    train_samples = []
+    train_labels = []
+    test_samples = []
+    test_labels = []
+    for u in random.sample(users,80):
+        train_samples.extend(train_data[u]["x"])
+        train_labels.extend(train_data[u]["y"])
+        test_samples.extend(test_data[u]["x"])
+        test_labels.extend(test_data[u]["y"])
+    return JSON_MNISTDataModule(JSON_MNIST(train_samples,train_labels), JSON_MNIST(test_samples,test_labels))
+    
 
 def read_data(train_data_dir, test_data_dir):
     '''parses data in given train and test data directories
@@ -116,7 +148,6 @@ def read_data(train_data_dir, test_data_dir):
     return train_clients, train_groups, train_data, test_data
 
 
-
 def read_dir(data_dir):
     clients = []
     data = defaultdict(lambda : None)
@@ -135,86 +166,55 @@ def read_dir(data_dir):
     return clients, [], data
 
 
-from pytorch_lightning import Trainer, LightningModule
-import torch
-from torch import nn
-from torch.nn import functional as F
-import pytorch_lightning as pl
-from torchmetrics import Accuracy
 
-class MLP(LightningModule):
-    """
-    Multilayer Perceptron (MLP) to solve MNIST with PyTorch Lightning.
+if __name__ == '__main__':
     """
 
-    def __init__(self, metric = Accuracy, lr_rate=0.001): # low lr to avoid overfitting
+    print("Loading data...")
+    datamodules = build_half_datamodules("/home/pedro/Downloads/leaf/data/femnist")
+    print("Data Loaded ({} clients)".format(len(datamodules)))
+
+    nodes = [Node(CNN(out_channels=62),dm) for dm in random.sample(datamodules,40)]
+    [n.start() for n in nodes]
+   
+    # Connect in a ring
+    for i in range(len(nodes)):
+        h,p = nodes[(i+1)%len(nodes)].get_addr()
+        nodes[i].connect_to(h,p)
         
-        # Set seed for reproducibility iniciialization
-        seed = 666
-        torch.manual_seed(seed)
+    # Connect random nodes -> si no se hace muy lento el gossiping
+    for n in random.sample(nodes,round(len(nodes)/2)):
+        # pick a random node from nodes
+        random_dirs = [ n.get_addr() for n in random.sample(nodes,1)]
+        for h,p in random_dirs:
+            n.connect_to(h,p)
+    
+    # Compute train dataloader num samples mean
+    train_num_samples = [len(dm.train_dataset) for dm in datamodules]
+    train_num_samples_mean = sum(train_num_samples)/len(train_num_samples)
 
-        super().__init__()
-        self.lr_rate = lr_rate
-        self.metric = metric()
+    print("Creados {} nodos con una media de {} muestras en el conjunto de entrenamiento.".format(len(nodes),train_num_samples_mean))
 
-        # 10 clases
-        self.l1 = torch.nn.Linear(28 * 28, 128)
-        self.l2 = torch.nn.Linear(128, 256)
-        self.l3 = torch.nn.Linear(256, 62)
-
-    def forward(self, x):
-        """
-        """
-        batch_size, channels, width, height = x.size()
+    nodes[0].set_start_learning(rounds=60,epochs=2)
+    time.sleep(1)
         
-        # (b, 1, 28, 28) -> (b, 1*28*28)
-        x = x.view(batch_size, -1)
-        x = self.l1(x)
-        x = torch.relu(x)
-        x = self.l2(x)
-        x = torch.relu(x)
-        x = self.l3(x)
-        x = torch.log_softmax(x, dim=1)
-        return x
+    nodes[0].join()
 
-    def configure_optimizers(self):
-        """
-        """
-        return torch.optim.Adam(self.parameters(), lr=self.lr_rate)
+    """
 
-    def training_step(self, batch, batch_id):
-        """
-        """
-        x, y = batch
-        loss = F.cross_entropy(self(x), y)
-        self.log("train_loss", loss, prog_bar=True)
-        return loss 
+    data = build_big_dataset("/home/pedro/Downloads/leaf/data/femnist")
+    print("{} muestras en el conjunto de entrenamiento.".format(len(data.train_dataset)))
 
-    def validation_step(self, batch, batch_idx):
-        """
-        """
-        x, y = batch
-        logits = self(x)
-        loss = F.cross_entropy(self(x), y)
-        out = torch.argmax(logits, dim=1)
-        metric = self.metric(out, y) 
-        self.log("val_loss", loss, prog_bar=True)
-        self.log("val_metric", metric, prog_bar=True)    
-        return loss
+    n = Node(CNN(out_channels=62),data)
+    n.start()
+    n.set_start_learning(rounds=20,epochs=1)
 
-    def test_step(self, batch, batch_idx):
-        """
-        """
-        x, y = batch
-        logits = self(x)
-        loss = F.cross_entropy(self(x), y)
-        out = torch.argmax(logits, dim=1)
-        metric = self.metric(out, y) 
-        self.log("test_loss", loss, prog_bar=True)
-        self.log("test_metric", metric, prog_bar=True)
-        return loss
-        
+    while True:
+        time.sleep(1)
+        finish = True
+        for f in [node.round is None for node in [n]]:
+            finish = finish and f
 
-datamodules = build_datamodules("/home/pedro/Downloads/leaf/data/femnist")
-tr = Trainer(max_epochs=10, accelerator="auto", logger=None, enable_checkpointing=False, enable_model_summary=False) 
-tr.fit(MLP(), datamodules[55])
+        if finish:
+            break
+    
