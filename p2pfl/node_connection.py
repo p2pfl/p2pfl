@@ -44,13 +44,14 @@ class NodeConnection(threading.Thread, Observable):
         self.__socket = s
         self.__socket_lock = threading.Lock()
 
-        bufsize = self.__socket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF) 
     
+        """
+        bufsize = self.__socket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF) 
         print ("Buffer size:%d" %bufsize) 
         self.__socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, bufsize*40) 
         bufsize = self.__socket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF) 
         print ("Buffer size2: {} (intentado a {})".format(bufsize,bufsize*40)) 
-        
+        """
 
         # Atributes
         self.__addr = addr
@@ -63,9 +64,9 @@ class NodeConnection(threading.Thread, Observable):
         self.comm_protocol = CommunicationProtocol({
             CommunicationProtocol.BEAT: Beat_cmd(self),
             CommunicationProtocol.STOP: Stop_cmd(self),
-            CommunicationProtocol.CONN_TO_EVENT: Conn_to_cmd(self),
-            CommunicationProtocol.START_LEARNING_EVENT: Start_learning_cmd(self),
-            CommunicationProtocol.STOP_LEARNING_EVENT: Stop_learning_cmd(self),
+            CommunicationProtocol.CONN_TO: Conn_to_cmd(self),
+            CommunicationProtocol.START_LEARNING: Start_learning_cmd(self),
+            CommunicationProtocol.STOP_LEARNING: Stop_learning_cmd(self),
             CommunicationProtocol.PARAMS: Params_cmd(self),
             CommunicationProtocol.MODELS_READY: Models_Ready_cmd(self),
             CommunicationProtocol.METRICS: Metrics_cmd(self),
@@ -235,15 +236,20 @@ class NodeConnection(threading.Thread, Observable):
     #    Models Agregated    #
     ##########################
 
-    def set_models_agregated(self,models):
+    def add_models_agregated(self,models):
         """
-        Set the models agregated.
+        Add the models agregated.
         
         Args:
             models: Models agregated.
         """
-        self.__models_agregated = models
+        self.__models_agregated = list(set(models+self.__models_agregated))
 
+    def clear_models_agregated(self):
+        """
+        Clear models agregated.
+        """
+        self.__models_agregated = []
     def get_models_agregated(self):
         """
         Returns:
@@ -324,7 +330,7 @@ class NodeConnection(threading.Thread, Observable):
 
     def notify_conn_to(self, h, p):
         """
-        Notify to the parent node that `CONN_TO_EVENT` has been received.
+        Notify to the parent node that `CONN_TO` has been received.
         """
         self.notify(Events.CONN_TO_EVENT, (h,p))
 

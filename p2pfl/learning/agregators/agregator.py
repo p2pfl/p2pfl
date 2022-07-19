@@ -93,7 +93,7 @@ class Agregator(threading.Thread, Observable):
                     self.start()  
 
                 # Get a list of nodes added
-                models_added = [nodes.split() for nodes in list(self.__models.keys())] 
+                models_added = [n.split() for n in list(self.__models.keys())] 
                 models_added = [element for sublist in models_added for element in sublist] # Flatten list
                 
                 # Check if agregation is needed
@@ -107,22 +107,21 @@ class Agregator(threading.Thread, Observable):
                             logging.info("({}) Model added ({}/{}) from {}".format(self.node_name, str(len(models_added)+len(nodes)), str(len(self.__train_set)), str(nodes)))
                             # Check if all models have been added
                             self.check_and_run_agregation()
-                            # Try Unloock
-                            try:
-                                self.__lock.release()
-                            except:
-                                pass 
+                            # Build response 
+                            response = models_added + nodes
+                            # Unloock
+                            self.__lock.release()
                             
-                            return models_added + nodes
+                            return response
                         else:
+                            self.__lock.release()
                             logging.debug("({}) Can't add a model that has already been added {}".format(self.node_name, nodes))
                     else:
+                        self.__lock.release()
                         logging.debug("({}) Can't add a model from a node ({}) that is not in the training test.".format(self.node_name, nodes))                
-        try:
-            self.__lock.release()
-        except:
-            pass 
-                        
+                else:
+                    self.__lock.release()
+
         return None
                 
     def get_partial_agregation(self,except_nodes):

@@ -6,6 +6,9 @@ Module that implements commands of the command pattern.
 #    Command    #
 #################
 
+import logging
+
+
 class Command:
     """
     Class that represents a command.
@@ -95,7 +98,7 @@ class Models_agregated_cmd(Command):
     Command that should be executed as a response to a **models_agregated** message.
     """
     def execute(self,node_list):
-        self.node_connection.set_models_agregated(node_list)
+        self.node_connection.add_models_agregated(node_list)
 
 class Model_initialized_cmd(Command):
     """

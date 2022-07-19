@@ -26,7 +26,7 @@ class Settings():
         BLOCK_SIZE = new_value
 
     # TIMEOUT'S
-    NODE_TIMEOUT = 5
+    NODE_TIMEOUT = 15
     """
     Timeout (seconds) for a node to be considered dead.
     """
@@ -40,15 +40,15 @@ class Settings():
     """
 
     # HEARTBEATER
-    HEARTBEAT_PERIOD = 2
+    HEARTBEAT_PERIOD = 7
     """
     Period (seconds) for the node to send a heartbeat.
     """
-    HEARTBEATER_REFRESH_NEIGHBORS_BY_PERIOD = 1
+    HEARTBEATER_REFRESH_NEIGHBORS_BY_PERIOD = 2
     """
     Times by period to refresh the neighbors list.
     """
-    WAIT_HEARTBEATS_CONVERGENCE = 2
+    WAIT_HEARTBEATS_CONVERGENCE = 4
     """
     Time (seconds) to wait for the heartbeats to converge.
     """
@@ -82,7 +82,7 @@ class Settings():
     """
     Amount of equal rounds to exit gossiping. Careful, a low value can cause an early stop of gossiping.
     """
-    GOSSIP_MODELS_FREC = 2  
+    GOSSIP_MODELS_FREC = .5
     """
     Frequency of gossiping models (times by second).
     """

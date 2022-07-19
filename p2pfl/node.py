@@ -236,6 +236,7 @@ class Node(BaseNode):
                     if self.learner.check_parameters(decoded_model):
                         models_added = self.agregator.add_model(decoded_model,contributors,weight)
                         if models_added is not None:
+                            # CAREFULL RARE BUG at MACBOOCK: When CPU is high, only new nodes will be sent.
                             self.broadcast(CommunicationProtocol.build_models_agregated_msg(models_added))
                     else:
                         raise ModelNotMatchingError("Not matching models")
@@ -467,7 +468,7 @@ class Node(BaseNode):
         self.round = self.round + 1
         # Clear node agregation
         for nc in self.get_neighbors():
-            nc.set_models_agregated([])
+            nc.clear_models_agregated()
 
         # Next Step or Finish
         logging.info("({}) Round {} of {} finished.".format(self.get_name(),self.round,self.totalrounds))
