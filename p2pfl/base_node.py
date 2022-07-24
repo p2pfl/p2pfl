@@ -40,7 +40,7 @@ class BaseNode(threading.Thread, Observer):
 
         # Super init
         threading.Thread.__init__(self, name = "node-" + self.get_name())
-        self.__terminate_flag = threading.Event()
+        self._terminate_flag = threading.Event()
 
         # Setting Up Node Socket (listening)
         self.__node_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #TCP Socket
@@ -100,7 +100,7 @@ class BaseNode(threading.Thread, Observer):
         """
         Stops the node. Heartbeater and Gossiper will be stopped too.
         """
-        self.__terminate_flag.set()
+        self._terminate_flag.set()
         try:
             # Send a self message to the loop to avoid the wait of the next recv
             self.__send(self.host,self.port,b"")
@@ -117,7 +117,7 @@ class BaseNode(threading.Thread, Observer):
         """
         # Process new connections loop
         logging.info('({}) Node started'.format(self.get_name()))
-        while not self.__terminate_flag.is_set(): 
+        while not self._terminate_flag.is_set(): 
             try:
                 (ns, _) = self.__node_socket.accept()
                 msg = ns.recv(Settings.BLOCK_SIZE)

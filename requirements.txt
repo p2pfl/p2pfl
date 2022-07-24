@@ -7,4 +7,3 @@ sphinx
 myst-parser
 furo
 pycryptodome
-pycryptoplus

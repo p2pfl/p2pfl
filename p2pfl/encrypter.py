@@ -11,12 +11,15 @@ class Encrypter:
     Class with methods to encrypt and decrypt messages.
     """
 
-    def encrypt(message, key):
+    def encrypt(self, message):
         pass
 
-    def decrypt(message, key):      
+    def decrypt(self, message):      
         pass
 
+    def get_key(self):
+        pass
+    
 ###############################
 #    Asymmetric Encryption    #
 ###############################
@@ -37,10 +40,10 @@ class RSACipher(Encrypter):
         Encrypts a message using RSA. Message is encrypted using the public key of the pair (the other node key).
         
         Args:
-            message: (str) The message to encrypt.
+            message: (bytes) The message to encrypt.
 
         Returns:
-            message: (str) The encrypted message.
+            message: (bytes) The encrypted message.
         """
         cipher = PKCS1_OAEP.new(self.__pair_public_key)
         return base64.b64encode(cipher.encrypt(message))
@@ -50,10 +53,10 @@ class RSACipher(Encrypter):
         Decrypts a message using RSA. Message is decripted using the private key. 
 
         Args:
-            message: (str) The message to decrypt.
+            message: (bytes) The message to decrypt.
 
         Returns:
-            message: (str) The decrypted message.
+            message: (bytes) The decrypted message.
         """
         cipher = PKCS1_OAEP.new(self.__private_key)
         return cipher.decrypt(base64.b64decode(message))
@@ -111,10 +114,10 @@ class AESCipher(Encrypter):
         Keep in mind that AES uses a block cipher, so the message can be a filled message with padding.
 
         Args:
-            message: (str) The message to decrypt.
+            message: (bytes) The message to decrypt.
 
         Returns:
-            message: (str) The decrypted message.
+            message: (bytes) The decrypted message.
         """
         return self.cipher.decrypt(message)
     
@@ -124,10 +127,10 @@ class AESCipher(Encrypter):
         Careful: for this case the filling content don't affect to the meaning of messages.
 
         Args:
-            msg: (str) The encoded text.
+            msg: (bytes) The encoded text.
         
         Returns:
-            msg: (str) The encoded text with padding.
+            msg: (bytes) The encoded text with padding.
         """
         # Calculate the number of bytes needed to fill the block
         bytes_left = self.bs - len(msg) % self.bs

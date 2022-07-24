@@ -120,6 +120,16 @@ class Node(BaseNode):
         """
         self.learner.set_data(data)
 
+    def set_model(self, model):
+        """"
+        Set the model to use. 
+        Carefully, model, not only weights.
+
+        Args:
+            model: Model to be learned.
+        """
+        self.learner.set_model(model)
+
     ###############################################
     #         Network Learning Management         #
     ###############################################
@@ -132,6 +142,9 @@ class Node(BaseNode):
             rounds: Number of rounds of the learning process.
             epochs: Number of epochs of the learning process.
         """
+        if self._terminate_flag.is_set():
+            logging.info("({}) Node must be running to start learning".format(self.get_name()))
+            return
         if self.round is None:
             # Start Learning
             logging.info("({}) Broadcasting start learning...".format(self.get_name()))
