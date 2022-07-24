@@ -1,3 +1,4 @@
+import logging
 import threading
 import time
 from p2pfl.settings import Settings
@@ -50,6 +51,7 @@ class Heartbeater(threading.Thread, Observable):
         Clear the list of neighbors.
         """
         for n in [node for node,t in list(self.__nodes.items()) if time.time() - t > Settings.NODE_TIMEOUT]:
+            logging.debug("({}) Removed {} from the network ".format(self.__node_name, n))
             self.__nodes.pop(n)
 
     def add_node(self, node):

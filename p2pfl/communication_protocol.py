@@ -16,8 +16,8 @@ class CommunicationProtocol:
     The valid messages can be classified into gossiped and non-gossiped:
         Gossiped messages: 
             - BEAT <node> <HASH> 
-            - START_LEARNING_EVENT <rounds> <epoches> <HASH>
-            - STOP_LEARNING_EVENT <HASH>
+            - START_LEARNING <rounds> <epoches> <HASH>
+            - STOP_LEARNING <HASH>
             - VOTE_TRAIN_SET <node> (<node> <punct>)* VOTE_TRAIN_SET_CLOSE <HASH> 
             - METRICS <node> <round> <loss> <metric> <HASH> 
 
@@ -54,15 +54,15 @@ class CommunicationProtocol:
     """
     Connection message header.
     """        
-    CONN_TO_EVENT = "CONNECT_TO"
+    CONN_TO = "CONNECT_TO"
     """
     Connection to message header.
     """
-    START_LEARNING_EVENT = "START_LEARNING_EVENT"
+    START_LEARNING = "START_LEARNING"
     """
     Start learning message header.
     """
-    STOP_LEARNING_EVENT = "STOP_LEARNING_EVENT"
+    STOP_LEARNING = "STOP_LEARNING"
     """
     Stop learning message header.
     """
@@ -188,10 +188,10 @@ class CommunicationProtocol:
                    
 
                 # Connect to
-                elif message[0] == CommunicationProtocol.CONN_TO_EVENT:
+                elif message[0] == CommunicationProtocol.CONN_TO:
                     if len(message) > 2:
                         if message[2].isdigit():
-                            if self.__exec(CommunicationProtocol.CONN_TO_EVENT, None, None, message[1], int(message[2])):
+                            if self.__exec(CommunicationProtocol.CONN_TO, None, None, message[1], int(message[2])):
                                 message = message[3:]
                             else:
                                 error = True
@@ -204,12 +204,12 @@ class CommunicationProtocol:
                         break
 
                 # Start learning
-                elif message[0] == CommunicationProtocol.START_LEARNING_EVENT:
+                elif message[0] == CommunicationProtocol.START_LEARNING:
                     if len(message) > 3:
                         if message[1].isdigit() and message[2].isdigit():
                             hash_ = message[3]
                             cmd_text = (" ".join(message[0:4]) + "\n").encode("utf-8")
-                            if self.__exec(CommunicationProtocol.START_LEARNING_EVENT, hash_, cmd_text, int(message[1]), int(message[2])):
+                            if self.__exec(CommunicationProtocol.START_LEARNING, hash_, cmd_text, int(message[1]), int(message[2])):
                                 message = message[4:]
                             else:
                                 error = True
@@ -222,12 +222,12 @@ class CommunicationProtocol:
                         break
 
                 # Stop learning
-                elif message[0] == CommunicationProtocol.STOP_LEARNING_EVENT:
+                elif message[0] == CommunicationProtocol.STOP_LEARNING:
                     if len(message) > 1:            
                         if message[1].isdigit():
                             hash_ = message[1]
                             cmd_text = (" ".join(message[0:2]) + "\n").encode("utf-8")
-                            if self.__exec(CommunicationProtocol.STOP_LEARNING_EVENT, hash_, cmd_text):
+                            if self.__exec(CommunicationProtocol.STOP_LEARNING, hash_, cmd_text):
                                 message = message[2:]
                             else:
                                 error = True
@@ -449,7 +449,7 @@ class CommunicationProtocol:
         Returns:
             A encoded connect to message.
         """
-        return (CommunicationProtocol.CONN_TO_EVENT + " " + ip + " " + str(port) + "\n").encode("utf-8")
+        return (CommunicationProtocol.CONN_TO + " " + ip + " " + str(port) + "\n").encode("utf-8")
 
     def build_start_learning_msg(rounds, epochs):
         """
@@ -460,14 +460,14 @@ class CommunicationProtocol:
         Returns:
             A encoded start learning message.
         """
-        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.START_LEARNING_EVENT + " " + str(rounds) + " " + str(epochs))
+        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.START_LEARNING + " " + str(rounds) + " " + str(epochs))
 
     def build_stop_learning_msg():
         """
         Returns:
             A encoded stop learning message.
         """
-        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.STOP_LEARNING_EVENT)
+        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.STOP_LEARNING)
 
     def build_models_ready_msg(round):
         """

@@ -5,6 +5,17 @@ import time
 from p2pfl.settings import Settings
 from test.utils import wait_network_nodes
 
+Settings.NODE_TIMEOUT = 5
+Settings.HEARTBEAT_PERIOD = 2
+
+
+#
+#
+# RECORDAR FIJAR TODOS LOS PARÁMETROS DE CONFIGURACIÓN PARA QUE SI EL USUARIO LOS CAMBIA NO FALLEN LOS TESTS 
+# (sobre todo importante para assert timeouts x ej en test conexiones)
+# 
+#
+
 @pytest.fixture
 def two_nodes():
     n1 = BaseNode()

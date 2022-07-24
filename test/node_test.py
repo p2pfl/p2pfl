@@ -5,7 +5,11 @@ from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.node import Node
 import pytest
 import time
+from p2pfl.settings import Settings
 from test.utils import check_equal_models, wait_4_results, wait_network_nodes
+
+Settings.NODE_TIMEOUT = 5
+Settings.HEARTBEAT_PERIOD = 2
 
 @pytest.fixture
 def two_nodes():

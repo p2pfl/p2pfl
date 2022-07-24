@@ -1,5 +1,4 @@
 import time
-
 import torch
 
 def wait_network_nodes(nodes):

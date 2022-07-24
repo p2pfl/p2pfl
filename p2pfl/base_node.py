@@ -136,7 +136,7 @@ class BaseNode(threading.Thread, Observer):
         self.gossiper.stop()
 
         # Stop Node
-        logging.info('({}) Stopping node. Disconnecting from {} nodos'.format(self.host, self.port, len(self.__neightbors))) 
+        logging.info('({}) Stopping node. Disconnecting from {} nodos'.format(self.get_name(), len(self.__neightbors))) 
         nei_copy_list = self.get_neighbors()
         for n in nei_copy_list:
             n.stop()
