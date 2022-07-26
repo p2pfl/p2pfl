@@ -3,6 +3,8 @@ from p2pfl.encrypter import RSACipher
 from p2pfl.encrypter import AESCipher
 from p2pfl.learning.pytorch.lightninglearner import LightningLearner
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
+from test.utils import set_test_settings
+set_test_settings()
 
 #############################
 #    RSA Encryption Test    #

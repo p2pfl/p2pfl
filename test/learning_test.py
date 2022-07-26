@@ -4,6 +4,8 @@ from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.learning.pytorch.lightninglearner import LightningLearner
 from collections import OrderedDict
 import torch
+from test.utils import set_test_settings
+set_test_settings()
 
 ###############################################################################
 #    Test things related to the learning process (not the learning process)   #
