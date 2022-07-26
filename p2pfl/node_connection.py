@@ -35,7 +35,7 @@ class NodeConnection(threading.Thread, Observable):
     #    Init    # 
     ##############
 
-    def __init__(self, parent_node_name, s, addr, aes_cipher):
+    def __init__(self, parent_node_name, s, addr, aes_cipher, tcp_buffer_size=(None,None)):
         # Init supers
         threading.Thread.__init__(self, name = ("node_connection-" + parent_node_name + "-" + str(addr[0]) + ":" + str(addr[1])))
         Observable.__init__(self)
@@ -44,14 +44,11 @@ class NodeConnection(threading.Thread, Observable):
         self.__socket = s
         self.__socket_lock = threading.Lock()
 
-    
-        """
-        bufsize = self.__socket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF) 
-        print ("Buffer size:%d" %bufsize) 
-        self.__socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, bufsize*40) 
-        bufsize = self.__socket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF) 
-        print ("Buffer size2: {} (intentado a {})".format(bufsize,bufsize*40)) 
-        """
+        if tcp_buffer_size[0] is not None:
+            self.__socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, tcp_buffer_size[0])
+
+        if tcp_buffer_size[1] is not None:
+            self.__socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, tcp_buffer_size[1])
 
         # Atributes
         self.__addr = addr
