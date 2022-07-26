@@ -12,9 +12,6 @@ from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
 from p2pfl.learning.pytorch.lightninglearner import LightningLearner
 from p2pfl.utils.observer import Events, Observer
 
-
-# concurrencia .copy() vs locks -> tratar de borrar los copys (sobre todo en nei)
-
 class Node(BaseNode):
     """
     Class based on a base node that allows **p2p Federated Learning**. 
@@ -459,12 +456,9 @@ class Node(BaseNode):
             logging.info("({}) Evaluated. Losss: {}, Metric: {}. (Check tensorboard for more info)".format(self.get_name(),results[0],results[1]))
             # Send metrics
             if not self.simulation:
-                self.__bc_metrics(results)
-
-    def __bc_metrics(self,metrics): 
-        logging.info("({}) Broadcasting metrics.".format(self.get_name(),len(self.get_neighbors())))
-        encoded_msgs = CommunicationProtocol.build_metrics_msg(self.get_name(),self.round,metrics[0],metrics[1])
-        self.broadcast(encoded_msgs)
+                logging.info("({}) Broadcasting metrics.".format(self.get_name(),len(self.get_neighbors())))
+                encoded_msgs = CommunicationProtocol.build_metrics_msg(self.get_name(),self.round,results[0],results[1])
+                self.broadcast(encoded_msgs)
 
     ######################
     #    Round finish    #
