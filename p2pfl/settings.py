@@ -54,7 +54,7 @@ class Settings():
     """
     
     # TRAIN SET 
-    TRAIN_SET_SIZE = 5
+    TRAIN_SET_SIZE = 4
     """
     Size of the training set.
     """

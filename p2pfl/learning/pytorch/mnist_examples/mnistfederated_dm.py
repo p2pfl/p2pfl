@@ -27,7 +27,7 @@ class MnistFederatedDM(LightningDataModule):
     mnist_train = None
     mnist_val = None
 
-    def __init__(self, sub_id=0, number_sub=1, batch_size=32, num_workers=4, val_percent=0.1):
+    def __init__(self, sub_id=0, number_sub=1, batch_size=32, num_workers=4, val_percent=0.1, iid=True):
         super().__init__()
         self.sub_id=sub_id
         self.number_sub=number_sub
@@ -38,9 +38,16 @@ class MnistFederatedDM(LightningDataModule):
         # Singletons of MNIST train and test datasets
         if MnistFederatedDM.mnist_train is None:
             MnistFederatedDM.mnist_train = MNIST("", train=True, download=True, transform=transforms.ToTensor())
+            if not iid:
+                sorted_indexes = MnistFederatedDM.mnist_train.targets.sort()[1]
+                MnistFederatedDM.mnist_train.targets = MnistFederatedDM.mnist_train.targets[sorted_indexes]
+                MnistFederatedDM.mnist_train.data = MnistFederatedDM.mnist_train.data[sorted_indexes]
         if MnistFederatedDM.mnist_val is None:
             MnistFederatedDM.mnist_val = MNIST("", train=False, download=True, transform=transforms.ToTensor())
-
+            if not iid:
+                sorted_indexes = MnistFederatedDM.mnist_val.targets.sort()[1]
+                MnistFederatedDM.mnist_val.targets = MnistFederatedDM.mnist_val.targets[sorted_indexes]
+                MnistFederatedDM.mnist_val.data = MnistFederatedDM.mnist_val.data[sorted_indexes]
         if self.sub_id+1 > self.number_sub:
             raise("Not exist the subset {}".format(self.sub_id))
 
