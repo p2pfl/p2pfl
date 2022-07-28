@@ -4,8 +4,7 @@ from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.node import Node
 import time
 
-def mnist_execution(n,start,conntect_to=None):
-    simulation = conntect_to is None
+def mnist_execution(n,start,simulation,conntect_to=None):
 
     # Node Creation
     nodes = []
@@ -31,7 +30,7 @@ def mnist_execution(n,start,conntect_to=None):
     if start:
         nodes[0].set_start_learning(rounds=100,epochs=1)
     else:
-        time.sleep(5)
+        time.sleep(10)
 
     # Wait 4 results
     while True:
@@ -63,6 +62,6 @@ def four_nodes():
 if __name__ == '__main__':
 
     for _ in range(50):
-        mnist_execution(6)
+        mnist_execution(4,True,True,conntect_to=("192.168.1.54",6666))
         break
  
