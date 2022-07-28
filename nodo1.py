@@ -10,11 +10,11 @@ if __name__ == '__main__':
         
     while True:
 
-        node = Node(MLP(),MnistFederatedDM())
+        node = Node(MLP(),MnistFederatedDM(),host="192.168.1.62")
         node.start()
 
-        #node.connect_to("localhost",6666)
-        time.sleep(0.1)
+        node.connect_to("192.168.1.54",6666)
+        time.sleep(4)
         
         node.set_start_learning(rounds=2,epochs=1)
 

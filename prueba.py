@@ -9,7 +9,7 @@ def mnist_execution(n,start,simulation,conntect_to=None):
     # Node Creation
     nodes = []
     for i in range(n):
-        node = Node(MLP(),MnistFederatedDM(sub_id=i, number_sub=n, iid=False),simulation=simulation)
+        node = Node(MLP(),MnistFederatedDM(sub_id=i, number_sub=n, iid=False),host="0.0.0.0",simulation=simulation)
         node.start()
         nodes.append(node)
     
@@ -21,10 +21,6 @@ def mnist_execution(n,start,simulation,conntect_to=None):
     for i in range(len(nodes)-1):
         nodes[i+1].connect_to(nodes[i].host,nodes[i].port, full=False)
         time.sleep(1)
-
-    # Check if they are connected
-    for node in nodes:
-        assert len(node.get_neighbors()) == n-1
 
     # Start Learning
     if start:
@@ -62,6 +58,6 @@ def four_nodes():
 if __name__ == '__main__':
 
     for _ in range(50):
-        mnist_execution(4,True,True,conntect_to=("192.168.1.54",6666))
+        mnist_execution(4,True,True,conntect_to=("192.168.1.54",55507))
         break
  

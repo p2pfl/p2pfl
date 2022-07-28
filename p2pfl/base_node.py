@@ -126,8 +126,8 @@ class BaseNode(threading.Thread, Observer):
                 if msg:
                     msg = msg.decode("UTF-8")
                     callback = lambda h,p,fu,fc: self.__process_new_connection(ns, h, p, fu, fc)
-                    CommunicationProtocol.process_connection(msg,callback)
-                        
+                    if not CommunicationProtocol.process_connection(msg,callback):
+                        ns.close()
             except Exception as e:
                 logging.exception(e)
        
