@@ -113,52 +113,51 @@ class NodeConnection(threading.Thread, Observable):
         NodeConnection loop. Recive and process messages.
         """
         self.__socket.settimeout(Settings.NODE_TIMEOUT)
-        pending_params = 0
+        amount_pending_params = 0
         param_buffer = b""
         while not self.__terminate_flag.is_set():
             try:
                 # Recive message
                 og_msg = b""
-                if pending_params == 0:
+                if amount_pending_params == 0:
                     og_msg = self.__socket.recv(Settings.BLOCK_SIZE)
 
-                    # log message in a file
-                    with open(self.get_name()+".log", "a") as f:
-                        f.write(str(og_msg) + "\n\n\n")
-
                 else:
-                    pending_fragment = self.__socket.recv(pending_params)
+                    pending_fragment = self.__socket.recv(amount_pending_params)
                     og_msg = param_buffer + pending_fragment #alinear el colapso
                     param_buffer = b""
-                    pending_params = 0
-
-                    # log message in a file
-                    with open(self.get_name()+".log", "a") as f:
-                        f.write("RESTO-" + str(pending_fragment) + "\n\n\n")
+                    amount_pending_params = 0
 
                 # Decrypt message
                 if self.__aes_cipher is not None:
-                    msg = self.__aes_cipher.decrypt(og_msg)
+                    # Guarantee block size (if TCP sctream is slow)
+                    bytes_to_block_size = len(og_msg)%self.__aes_cipher.bs
+                    # Decrypt
+                    if bytes_to_block_size != 0:
+                        msg = self.__aes_cipher.decrypt(og_msg + self.__socket.recv(bytes_to_block_size))
+                    else:
+                        msg = self.__aes_cipher.decrypt(og_msg)
                 else:
                     msg = og_msg
             
                 # Process messages
                 if msg!=b"":
-                    #Check if colapse is happening
+                    # Check if fragments are incomplete (collapse / TCP stream slow)
                     overflow = CommunicationProtocol.check_collapse(msg)
                     if overflow>0:
                         param_buffer = og_msg[overflow:]
-                        pending_params = Settings.BLOCK_SIZE-len(param_buffer)
+                        amount_pending_params = Settings.BLOCK_SIZE-len(param_buffer)
                         msg = msg[:overflow]
                         logging.debug("({}) (NodeConnection Run) Collapse detected: {}".format(self.get_name(), msg))
 
-                    # Check if all bytes of param_buffer are received
-                    pending_params = CommunicationProtocol.check_params_incomplete(msg) 
-                    if pending_params != 0:
-                        param_buffer = msg
-                        continue
+                    else:
+                        # Check if all bytes of param_buffer are received
+                        amount_pending_params = CommunicationProtocol.check_params_incomplete(msg) 
+                        if amount_pending_params != 0:
+                            param_buffer = msg
+                            continue
 
-                    # Process message and count errors
+                    # Process message
                     exec_msgs,error = self.comm_protocol.process_message(msg)
                     if len(exec_msgs) > 0:
                         self.notify(Events.PROCESSED_MESSAGES_EVENT, (self,exec_msgs)) # Notify the parent node

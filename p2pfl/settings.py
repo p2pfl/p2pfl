@@ -15,9 +15,11 @@ class Settings():
     """
 
     # TCP Block Size
-    BLOCK_SIZE = 8192 # Try to avoid model sobresegmentation
+    BLOCK_SIZE = 2048
     """
     Max ammount of bytes to read from the buffer at a time. If ```BLOCK_SIZE`` is not divisible by the block size used for symetric encryption it will be rounded to the next closest value.
+
+    Try to strike a balance between hyper-segmentation and excessively large block size.
     """
     rest = BLOCK_SIZE % AESCipher.get_block_size()
     if rest != 0:
@@ -90,7 +92,7 @@ class Settings():
     """
     Amount of gossip models per round.
     """
-    FRAGMENTS_DELAY = 666
+    FRAGMENTS_DELAY = 0.02
     """
     Delay (seconds) to wait before sending a fragment. This is a very important value, if the node is too slow and the buffer isn't big enough, the node will send fragments too fast and the other node will not receive them.
     """
