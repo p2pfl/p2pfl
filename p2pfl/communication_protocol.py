@@ -406,6 +406,20 @@ class CommunicationProtocol:
             return header_pos
    
         return 0
+
+    def check_params_incomplete(msg):
+        """
+        Checks if a params message is incomplete. If the message is complete or is not a params message, it returns 0.
+        
+        Returns:
+            Number of bytes that needs to be complete
+        """
+        header = CommunicationProtocol.PARAMS.encode("utf-8")
+        if msg[0:len(header)] == header:
+            if len(msg)<Settings.BLOCK_SIZE:
+                return Settings.BLOCK_SIZE-len(msg)
+
+        return 0
     
 
     #######################################

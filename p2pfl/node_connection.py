@@ -1,3 +1,4 @@
+from re import S
 import socket
 import threading
 import logging
@@ -50,6 +51,9 @@ class NodeConnection(threading.Thread, Observable):
         if tcp_buffer_size[1] is not None:
             self.__socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, tcp_buffer_size[1])
 
+        print(self.__socket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))
+        print(self.__socket.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF))
+        
         # Atributes
         self.__addr = addr
         self.__param_bufffer = b""
@@ -109,18 +113,28 @@ class NodeConnection(threading.Thread, Observable):
         NodeConnection loop. Recive and process messages.
         """
         self.__socket.settimeout(Settings.NODE_TIMEOUT)
-        overflow = 0
-        buffer = b""
+        pending_params = 0
+        param_buffer = b""
         while not self.__terminate_flag.is_set():
             try:
                 # Recive message
                 og_msg = b""
-                if overflow == 0:
+                if pending_params == 0:
                     og_msg = self.__socket.recv(Settings.BLOCK_SIZE)
+
+                    # log message in a file
+                    with open(self.get_name()+".log", "a") as f:
+                        f.write(str(og_msg) + "\n\n\n")
+
                 else:
-                    og_msg = buffer + self.__socket.recv(overflow) #alinear el colapso
-                    buffer = b""
-                    overflow = 0
+                    pending_fragment = self.__socket.recv(pending_params)
+                    og_msg = param_buffer + pending_fragment #alinear el colapso
+                    param_buffer = b""
+                    pending_params = 0
+
+                    # log message in a file
+                    with open(self.get_name()+".log", "a") as f:
+                        f.write("RESTO-" + str(pending_fragment) + "\n\n\n")
 
                 # Decrypt message
                 if self.__aes_cipher is not None:
@@ -133,9 +147,16 @@ class NodeConnection(threading.Thread, Observable):
                     #Check if colapse is happening
                     overflow = CommunicationProtocol.check_collapse(msg)
                     if overflow>0:
-                        buffer = og_msg[overflow:]
+                        param_buffer = og_msg[overflow:]
+                        pending_params = Settings.BLOCK_SIZE-len(param_buffer)
                         msg = msg[:overflow]
                         logging.debug("({}) (NodeConnection Run) Collapse detected: {}".format(self.get_name(), msg))
+
+                    # Check if all bytes of param_buffer are received
+                    pending_params = CommunicationProtocol.check_params_incomplete(msg) 
+                    if pending_params != 0:
+                        param_buffer = msg
+                        continue
 
                     # Process message and count errors
                     exec_msgs,error = self.comm_protocol.process_message(msg)
