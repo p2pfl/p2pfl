@@ -11,6 +11,26 @@ from torch.utils.data import DataLoader, Subset, random_split
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
 from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
+from p2pfl.settings import Settings
+
+def set_settings():
+    Settings.BLOCK_SIZE = 2048
+    Settings.NODE_TIMEOUT = 300
+    Settings.VOTE_TIMEOUT = 600
+    Settings.AGREGATION_TIMEOUT = 600
+    Settings.HEARTBEAT_PERIOD = 60
+    Settings.HEARTBEATER_REFRESH_NEIGHBORS_BY_PERIOD = 2
+    Settings.WAIT_HEARTBEATS_CONVERGENCE = 10
+    Settings.TRAIN_SET_SIZE = 10
+    Settings.TRAIN_SET_CONNECT_TIMEOUT = 5
+    Settings.AMOUNT_LAST_MESSAGES_SAVED = 500 
+    Settings.GOSSIP_MESSAGES_FREC = 10
+    Settings.GOSSIP_MESSAGES_PER_ROUND = 100
+    Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS = 100
+    Settings.GOSSIP_MODELS_FREC = 1
+    Settings.GOSSIP_MODELS_PER_ROUND = 2
+    Settings.FRAGMENTS_DELAY = 0.0
+
 
 ##################################
 #    Datamodules and Datasets    #
@@ -168,10 +188,9 @@ def read_dir(data_dir):
 
 
 if __name__ == '__main__':
-    """
-
+    set_settings()
     print("Loading data...")
-    datamodules = build_half_datamodules("/home/pedro/Downloads/leaf/data/femnist")
+    datamodules = build_half_datamodules("/home/pedro/Desktop/femnist")
     print("Data Loaded ({} clients)".format(len(datamodules)))
 
     nodes = [Node(CNN(out_channels=62),dm) for dm in random.sample(datamodules,40)]
@@ -217,4 +236,5 @@ if __name__ == '__main__':
 
         if finish:
             break
+    """
     

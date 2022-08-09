@@ -257,7 +257,7 @@ class Node(BaseNode):
                     self.__model_initialized = True
                     logging.info("({}) Initialicing Model Weights".format(self.get_name()))
                     self.__wait_init_model_lock.release()    
-                    self.broadcast(CommunicationProtocol.build_model_initialized_msg())     
+                    self.broadcast(CommunicationProtocol.build_model_initialized_msg())
             
             except DecodingParamsError as e:
                 logging.error("({}) Error decoding parameters".format(self.get_name()))
@@ -323,16 +323,17 @@ class Node(BaseNode):
     ################
 
     def __vote_train_set(self):
+
         # Vote
         candidates = self.get_network_nodes() # al least himself
+        logging.debug("({}) {} candidates to train set".format(self.get_name(),len(candidates)))
         if self.get_name() not in candidates:
             candidates.append(self.get_name())
 
         # Send vote
-        logging.info("({}) Sending train set vote.".format(self.get_name()))
         samples = min(Settings.TRAIN_SET_SIZE,len(candidates))
         nodes_voted = random.sample(candidates, samples)
-        weights = [random.randint(0,1000),math.floor(random.randint(0,1000)/2),math.floor(random.randint(0,1000)/4)]
+        weights = [math.floor(random.randint(0,1000)/(i+1)) for i in range(samples)]
         votes = list(zip(nodes_voted,weights))
 
         # Adding votes
@@ -341,6 +342,7 @@ class Node(BaseNode):
         self.__train_set_votes_lock.release()
 
         # Send and wait for votes
+        logging.info("({}) Sending train set vote.".format(self.get_name()))
         logging.debug("({}) Self Vote: {}".format(self.get_name(),votes))
         self.broadcast(CommunicationProtocol.build_vote_train_set_msg(self.get_name(),votes))
         logging.debug("({}) Waiting other node votes.".format(self.get_name()))

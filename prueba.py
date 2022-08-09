@@ -4,12 +4,12 @@ from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.node import Node
 import time
 
-def mnist_execution(n,start,simulation,conntect_to=None):
+def mnist_execution(n,start,simulation,conntect_to=None, iid=True):
 
     # Node Creation
     nodes = []
     for i in range(n):
-        node = Node(MLP(),MnistFederatedDM(sub_id=i, number_sub=n, iid=False),host="192.168.1.52",simulation=simulation)
+        node = Node(MLP(),MnistFederatedDM(sub_id=i, number_sub=n, iid=iid),host="192.168.1.62",simulation=simulation)
         node.start()
         nodes.append(node)
     
@@ -19,12 +19,19 @@ def mnist_execution(n,start,simulation,conntect_to=None):
 
     # Node Connection
     for i in range(len(nodes)-1):
-        nodes[i+1].connect_to(nodes[i].host,nodes[i].port, full=False)
+        nodes[i+1].connect_to(nodes[i].host,nodes[i].port, full=True)
         time.sleep(1)
+
+    print("Esperamos")
+    time.sleep(5)
+    print("Empezamos")
+    for n in nodes:
+        print(len(n.get_neighbors()))
+        print(len(n.get_network_nodes()))
 
     # Start Learning
     if start:
-        nodes[0].set_start_learning(rounds=100,epochs=1)
+        nodes[0].set_start_learning(rounds=10,epochs=2)
     else:
         time.sleep(20)
 
@@ -58,6 +65,6 @@ def four_nodes():
 if __name__ == '__main__':
 
     for _ in range(50):
-        mnist_execution(2,True,False)
+        mnist_execution(1,True,True)
         break
  

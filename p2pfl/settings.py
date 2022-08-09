@@ -28,35 +28,35 @@ class Settings():
         BLOCK_SIZE = new_value
 
     # TIMEOUT'S
-    NODE_TIMEOUT = 15
+    NODE_TIMEOUT = 20
     """
     Timeout (seconds) for a node to be considered dead.
     """
-    VOTE_TIMEOUT = 10
+    VOTE_TIMEOUT = 60
     """
     Timeout (seconds) for a node to wait for a vote.
     """
-    AGREGATION_TIMEOUT = 15
+    AGREGATION_TIMEOUT = 60
     """
     Timeout (seconds) for a node to wait for other models. Timeout stars when the first model is added.
     """
 
     # HEARTBEATER
-    HEARTBEAT_PERIOD = 7
+    HEARTBEAT_PERIOD = 4
     """
     Period (seconds) for the node to send a heartbeat.
     """
-    HEARTBEATER_REFRESH_NEIGHBORS_BY_PERIOD = 2
+    HEARTBEATER_REFRESH_NEIGHBORS_BY_PERIOD = 4
     """
     Times by period to refresh the neighbors list.
     """
-    WAIT_HEARTBEATS_CONVERGENCE = 4
+    WAIT_HEARTBEATS_CONVERGENCE = 10
     """
     Time (seconds) to wait for the heartbeats to converge.
     """
     
     # TRAIN SET 
-    TRAIN_SET_SIZE = 4
+    TRAIN_SET_SIZE = 10
     """
     Size of the training set.
     """
@@ -80,11 +80,11 @@ class Settings():
     """
 
     # GOSSIP Models
-    GOSSIP_EXIT_ON_X_EQUAL_ROUNDS = 9
+    GOSSIP_EXIT_ON_X_EQUAL_ROUNDS = 20
     """
     Amount of equal rounds to exit gossiping. Careful, a low value can cause an early stop of gossiping.
     """
-    GOSSIP_MODELS_FREC = .5
+    GOSSIP_MODELS_FREC = 1
     """
     Frequency of gossiping models (times by second).
     """
@@ -92,7 +92,7 @@ class Settings():
     """
     Amount of gossip models per round.
     """
-    FRAGMENTS_DELAY = 0.02
+    FRAGMENTS_DELAY = 0.0
     """
     Delay (seconds) to wait before sending a fragment. This is a very important value, if the node is too slow and the buffer isn't big enough, the node will send fragments too fast and the other node will not receive them.
     """

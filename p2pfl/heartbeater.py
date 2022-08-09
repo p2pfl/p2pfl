@@ -61,7 +61,8 @@ class Heartbeater(threading.Thread, Observable):
         Args:
             node (Node): Node to add to the list of neighbors.
         """
-        self.__nodes[node] = time.time()
+        if node != self.__node_name:
+            self.__nodes[node] = time.time()
 
     def get_nodes(self):
         """

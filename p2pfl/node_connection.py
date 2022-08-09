@@ -51,9 +51,6 @@ class NodeConnection(threading.Thread, Observable):
         if tcp_buffer_size[1] is not None:
             self.__socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, tcp_buffer_size[1])
 
-        print(self.__socket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF))
-        print(self.__socket.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF))
-        
         # Atributes
         self.__addr = addr
         self.__param_bufffer = b""

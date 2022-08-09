@@ -56,7 +56,7 @@ class BaseNode(threading.Thread, Observer):
         self.__nei_lock = threading.Lock()
 
         # Logging
-        logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
         # Heartbeater and Gossiper
         self.gossiper = None 
