@@ -7,28 +7,26 @@ import time
 from torch.utils.data import Dataset
 from pytorch_lightning import LightningDataModule
 import torch
-from torch.utils.data import DataLoader, Subset, random_split
-from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
+from torch.utils.data import DataLoader, random_split
 from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
-from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.settings import Settings
 
 def set_settings():
-    Settings.BLOCK_SIZE = 2048
+    Settings.BLOCK_SIZE = 10240
     Settings.NODE_TIMEOUT = 300
-    Settings.VOTE_TIMEOUT = 600
-    Settings.AGREGATION_TIMEOUT = 600
+    Settings.VOTE_TIMEOUT = 1200
+    Settings.AGREGATION_TIMEOUT = 300
     Settings.HEARTBEAT_PERIOD = 60
     Settings.HEARTBEATER_REFRESH_NEIGHBORS_BY_PERIOD = 2
     Settings.WAIT_HEARTBEATS_CONVERGENCE = 10
-    Settings.TRAIN_SET_SIZE = 10
+    Settings.TRAIN_SET_SIZE = 4
     Settings.TRAIN_SET_CONNECT_TIMEOUT = 5
     Settings.AMOUNT_LAST_MESSAGES_SAVED = 500 
-    Settings.GOSSIP_MESSAGES_FREC = 10
-    Settings.GOSSIP_MESSAGES_PER_ROUND = 100
-    Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS = 100
-    Settings.GOSSIP_MODELS_FREC = 1
-    Settings.GOSSIP_MODELS_PER_ROUND = 2
+    Settings.GOSSIP_MESSAGES_FREC = 1
+    Settings.GOSSIP_MESSAGES_PER_ROUND = 10
+    Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS = 30
+    Settings.GOSSIP_MODELS_FREC = 10
+    Settings.GOSSIP_MODELS_PER_ROUND = 10
     Settings.FRAGMENTS_DELAY = 0.0
 
 
@@ -185,10 +183,7 @@ def read_dir(data_dir):
     clients = list(sorted(data.keys()))
     return clients, [], data
 
-
-
-if __name__ == '__main__':
-    set_settings()
+def federated_train():
     print("Loading data...")
     datamodules = build_half_datamodules("/home/pedro/Desktop/femnist")
     print("Data Loaded ({} clients)".format(len(datamodules)))
@@ -214,19 +209,25 @@ if __name__ == '__main__':
 
     print("Creados {} nodos con una media de {} muestras en el conjunto de entrenamiento.".format(len(nodes),train_num_samples_mean))
 
-    nodes[0].set_start_learning(rounds=60,epochs=2)
+    nodes[0].set_start_learning(rounds=120,epochs=2)
     time.sleep(1)
-        
-    nodes[0].join()
 
-    """
+    while True:
+        time.sleep(10)
+        finish = True
+        for f in [node.round is None for node in [n]]:
+            finish = finish and f
 
-    data = build_big_dataset("/home/pedro/Downloads/leaf/data/femnist")
+        if finish:
+            break
+
+def centralized_train():
+    data = build_big_dataset("/home/pedro/Desktop/femnist")
     print("{} muestras en el conjunto de entrenamiento.".format(len(data.train_dataset)))
 
     n = Node(CNN(out_channels=62),data)
     n.start()
-    n.set_start_learning(rounds=20,epochs=1)
+    n.set_start_learning(rounds=1,epochs=1)
 
     while True:
         time.sleep(1)
@@ -236,5 +237,12 @@ if __name__ == '__main__':
 
         if finish:
             break
-    """
-    
+
+    for node in [n]:
+        node.stop()
+
+if __name__ == '__main__':
+    set_settings()
+    #federated_train()
+    centralized_train()
+

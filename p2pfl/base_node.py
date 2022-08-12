@@ -2,7 +2,6 @@ import socket
 import threading
 import logging
 import sys
-
 from p2pfl.communication_protocol import CommunicationProtocol
 from p2pfl.encrypter import AESCipher, RSACipher
 from p2pfl.gossiper import Gossiper
@@ -56,7 +55,7 @@ class BaseNode(threading.Thread, Observer):
         self.__nei_lock = threading.Lock()
 
         # Logging
-        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+        logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
         # Heartbeater and Gossiper
         self.gossiper = None 
