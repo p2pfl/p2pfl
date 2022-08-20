@@ -215,7 +215,7 @@ def federated_train():
     while True:
         time.sleep(10)
         finish = True
-        for f in [node.round is None for node in [n]]:
+        for f in [node.round is None for node in nodes]:
             finish = finish and f
 
         if finish:
