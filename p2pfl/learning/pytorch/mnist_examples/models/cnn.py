@@ -15,11 +15,12 @@ class CNN(pl.LightningModule):
     Convolutional Neural Network (CNN) to solve MNIST with PyTorch Lightning.
     """
 
-    def __init__(self, in_channels=1, out_channels=10, metric=Accuracy(), lr_rate=0.001):
+    def __init__(self, in_channels=1, out_channels=10, metric=Accuracy(), lr_rate=0.001, seed=None):
 
         # Set seed for reproducibility iniciialization
-        seed = 666
-        torch.manual_seed(seed)
+        if seed is not None:
+            torch.manual_seed(seed)
+            torch.cuda.manual_seed_all(seed)
 
         super().__init__()
         self.metric = metric
