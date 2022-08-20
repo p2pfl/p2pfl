@@ -1,20 +1,14 @@
-from re import S
 import socket
 import threading
 import logging
 from p2pfl.command import *
 from p2pfl.communication_protocol import CommunicationProtocol
-from p2pfl.encrypter import Encrypter
 from p2pfl.settings import Settings
 from p2pfl.utils.observer import Events, Observable
 
 ########################
 #    NodeConnection    #
 ########################
-
-# organizar algo código
-
-# dividirlo en NC connection base y en nc connection  ???
 
 class NodeConnection(threading.Thread, Observable):
     """

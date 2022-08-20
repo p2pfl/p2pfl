@@ -10,6 +10,7 @@ import torch
 from torch.utils.data import DataLoader, random_split
 from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
 from p2pfl.settings import Settings
+import sys
 
 def set_settings():
     Settings.BLOCK_SIZE = 10240
@@ -54,16 +55,8 @@ class JSON_MNISTDataModule(LightningDataModule):
         return DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers)
     
 class JSON_MNIST(Dataset):
-    """Face Landmarks dataset."""
 
     def __init__(self, samples, labels):
-        """
-        Args:
-            samples (string): Path to the csv file with annotations.
-            root_dir (string): Directory with all the images.
-            transform (callable, optional): Optional transform to be applied
-                on a sample.
-        """
         self.samples = torch.tensor(samples) 
         self.samples = torch.reshape(self.samples, (-1, 1, 28, 28)) # channels, width, height
 
@@ -85,7 +78,7 @@ def build_datamodules(data_dir):
     test_data_dir = os.path.join(data_dir, 'data', 'test')
 
     # recordar cargarse groups
-    users, groups, train_data, test_data = read_data(train_data_dir, test_data_dir)
+    users, _, train_data, test_data = read_data(train_data_dir, test_data_dir)
     
     result = []
     for u in users:
@@ -97,40 +90,11 @@ def build_datamodules(data_dir):
         )
     return result
 
-def build_half_datamodules(data_dir):
-    train_data_dir = os.path.join(data_dir, 'data', 'train')
-    test_data_dir = os.path.join(data_dir, 'data', 'test')
-
-    # recordar cargarse groups
-    users, groups, train_data, test_data = read_data(train_data_dir, test_data_dir)
-    
-    result = []
-    i=0
-    while i < len(users):
-        train_samples = []
-        train_labels = []
-        test_samples = []
-        test_labels = []
-        train_samples.extend(train_data[users[i]]["x"])
-        train_labels.extend(train_data[users[i]]["y"])
-        test_samples.extend(test_data[users[i]]["x"])
-        test_labels.extend(test_data[users[i]]["y"])
-        train_samples.extend(train_data[users[i+1]]["x"])
-        train_labels.extend(train_data[users[i+1]]["y"])
-        test_samples.extend(test_data[users[i+1]]["x"])
-        test_labels.extend(test_data[users[i+1]]["y"])
-        result.append( 
-            JSON_MNISTDataModule(JSON_MNIST(train_samples,train_labels), JSON_MNIST(test_samples,test_labels))
-        )
-        i=i+2
-    return result
-
 def build_big_dataset(data_dir):
     train_data_dir = os.path.join(data_dir, 'data', 'train')
     test_data_dir = os.path.join(data_dir, 'data', 'test')
 
-    # recordar cargarse groups
-    users, groups, train_data, test_data = read_data(train_data_dir, test_data_dir)
+    users, _, train_data, test_data = read_data(train_data_dir, test_data_dir)
     
     train_samples = []
     train_labels = []
@@ -145,18 +109,6 @@ def build_big_dataset(data_dir):
     
 
 def read_data(train_data_dir, test_data_dir):
-    '''parses data in given train and test data directories
-    assumes:
-    - the data in the input directories are .json files with 
-        keys 'users' and 'user_data'
-    - the set of train set users is the same as the set of test set users
-    
-    Return:
-        clients: list of client ids
-        groups: list of group ids; empty list if none found
-        train_data: dictionary of train data
-        test_data: dictionary of test data
-    '''
     train_clients, train_groups, train_data = read_dir(train_data_dir)
     test_clients, test_groups, test_data = read_dir(test_data_dir)
 
@@ -183,9 +135,9 @@ def read_dir(data_dir):
     clients = list(sorted(data.keys()))
     return clients, [], data
 
-def federated_train():
+def federated_train(femnist_path):
     print("Loading data...")
-    datamodules = build_half_datamodules("/home/pedro/Desktop/femnist")
+    datamodules = build_datamodules(femnist_path)
     print("Data Loaded ({} clients)".format(len(datamodules)))
 
     nodes = [Node(CNN(out_channels=62),dm) for dm in random.sample(datamodules,40)]
@@ -196,7 +148,7 @@ def federated_train():
         h,p = nodes[(i+1)%len(nodes)].get_addr()
         nodes[i].connect_to(h,p)
         
-    # Connect random nodes -> si no se hace muy lento el gossiping
+    # Connect random nodes -> increase gossip convergence
     for n in random.sample(nodes,round(len(nodes)/2)):
         # pick a random node from nodes
         random_dirs = [ n.get_addr() for n in random.sample(nodes,1)]
@@ -221,8 +173,8 @@ def federated_train():
         if finish:
             break
 
-def centralized_train():
-    data = build_big_dataset("/home/pedro/Desktop/femnist")
+def centralized_train(femnist_path):
+    data = build_big_dataset(femnist_path)
     print("{} muestras en el conjunto de entrenamiento.".format(len(data.train_dataset)))
 
     n = Node(CNN(out_channels=62),data)
@@ -242,7 +194,12 @@ def centralized_train():
         node.stop()
 
 if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print("Usage: {} <femnist_path>".format(sys.argv[0]))
+        sys.exit(1)
+
     set_settings()
-    #federated_train()
-    centralized_train()
+    femnist_path = sys.argv[1]
+    federated_train(femnist_path)
+    centralized_train(femnist_path)
 

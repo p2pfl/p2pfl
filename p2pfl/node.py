@@ -577,8 +577,6 @@ class Node(BaseNode):
                     # Send Fragments
                     for msg in encoded_msgs:
                         nc.send(msg)
-                        if Settings.FRAGMENTS_DELAY > 0:
-                            time.sleep(Settings.FRAGMENTS_DELAY)
                 
             # Wait to guarantee the frequency of gossipping
             time_diff = time.time() - begin

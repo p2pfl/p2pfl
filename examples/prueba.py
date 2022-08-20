@@ -6,10 +6,19 @@ import time
 
 def mnist_execution(n,start,simulation,conntect_to=None, iid=True):
 
+    n1 = Node(MLP(),MnistFederatedDM())
+    n2 = Node(MLP(),MnistFederatedDM())
+    n3 = Node(MLP(),MnistFederatedDM())
+    n4 = Node(MLP(),MnistFederatedDM())
+    n1.start()
+    n2.start()
+    n3.start()
+    n4.start()
+
     # Node Creation
     nodes = []
     for i in range(n):
-        node = Node(MLP(),MnistFederatedDM(sub_id=i, number_sub=n, iid=iid),host="192.168.1.62",simulation=simulation)
+        node = Node(MLP(),MnistFederatedDM(sub_id=i, number_sub=n, iid=iid),simulation=simulation)
         node.start()
         nodes.append(node)
     
@@ -22,9 +31,9 @@ def mnist_execution(n,start,simulation,conntect_to=None, iid=True):
         nodes[i+1].connect_to(nodes[i].host,nodes[i].port, full=True)
         time.sleep(1)
 
-    print("Esperamos")
     time.sleep(5)
-    print("Empezamos")
+    print("Starting...")
+    
     for n in nodes:
         print(len(n.get_neighbors()))
         print(len(n.get_network_nodes()))
@@ -49,21 +58,7 @@ def mnist_execution(n,start,simulation,conntect_to=None, iid=True):
         node.stop()
 
 
-
-def four_nodes():
-    n1 = Node(MLP(),MnistFederatedDM())
-    n2 = Node(MLP(),MnistFederatedDM())
-    n3 = Node(MLP(),MnistFederatedDM())
-    n4 = Node(MLP(),MnistFederatedDM())
-    n1.start()
-    n2.start()
-    n3.start()
-    n4.start()
-
-    return n1,n2,n3,n4
-
 if __name__ == '__main__':
-
     for _ in range(50):
         mnist_execution(1,True,True)
         break

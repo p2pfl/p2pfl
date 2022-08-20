@@ -5,7 +5,6 @@ from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.node import Node
 import pytest
 import time
-from p2pfl.settings import Settings
 from test.utils import check_equal_models, set_test_settings, wait_4_results, wait_network_nodes
 set_test_settings()
 

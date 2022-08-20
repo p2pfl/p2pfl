@@ -18,7 +18,6 @@ def set_test_settings():
     Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS = 9
     Settings.GOSSIP_MODELS_FREC = 1
     Settings.GOSSIP_MODELS_PER_ROUND = 2
-    Settings.FRAGMENTS_DELAY = 0.01
 
 def wait_network_nodes(nodes):
     acum = 0

@@ -6,9 +6,6 @@ Module that implements commands of the command pattern.
 #    Command    #
 #################
 
-import logging
-
-
 class Command:
     """
     Class that represents a command.

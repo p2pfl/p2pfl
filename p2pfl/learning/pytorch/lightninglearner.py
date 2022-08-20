@@ -11,8 +11,6 @@ import logging
 #    LightningLearner     #
 ###########################
 
-# Agregue metodo close() para cerrar el logger y reset() para resetear el logger
-
 class LightningLearner(NodeLearner):
     """
     Learner with PyTorch Lightning.

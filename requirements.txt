@@ -1,5 +1,4 @@
 pytorch-lightning
-jupyter
 pytest
 pytest-cov
 torchvision
