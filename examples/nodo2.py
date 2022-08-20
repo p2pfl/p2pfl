@@ -9,5 +9,5 @@ if __name__ == '__main__':
         print("Usage: python3 nodo2.py <self_host> <self_port>")
         sys.exit(1)
 
-    node = Node(MLP(),MnistFederatedDM(),host=sys.argv[1],port=sys.argv[2])
+    node = Node(MLP(),MnistFederatedDM(),host=sys.argv[1],port=int(sys.argv[2]))
     node.start()    

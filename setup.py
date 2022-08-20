@@ -4,16 +4,22 @@ from pathlib import Path
 HERE = Path(__file__).parent
 
 PACKAGE_NAME = 'p2pfl' 
-VERSION = '0.1.0' 
+VERSION = '0.1.6' 
 AUTHOR = 'Pedro Guijas' 
 AUTHOR_EMAIL = 'pguijas@gmail.com' 
-URL = 'https://github.com/pguijas/federated_learning_p2p' 
+URL = 'https://pguijas.github.io/federated_learning_p2p/' 
 DESCRIPTION = 'p2p Federated Learning framework' 
 LONG_DESCRIPTION = (HERE / "README.md").read_text(encoding='utf-8')
 LONG_DESC_TYPE = "text/markdown"
 LICENSE = 'MIT' 
 
-INSTALL_REQUIRES = [] # dependencias
+INSTALL_REQUIRES = [
+    "torch==1.11.0",
+    "tensorboard",
+    "pytorch-lightning",
+    "torchvision",
+    "pycryptodome"
+] # dependencias
 
 
 setup(
@@ -27,7 +33,6 @@ setup(
     long_description_content_type=LONG_DESC_TYPE,
     license=LICENSE,
     install_requires=INSTALL_REQUIRES,
-
     package_dir={"p2pfl": "p2pfl"},
     packages=find_packages(
         where=".",
@@ -38,7 +43,10 @@ setup(
             "test",
         ],
     ),
-    include_package_data=True
+    include_package_data=True,
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
+    test_suite='test'
 )
 
 
