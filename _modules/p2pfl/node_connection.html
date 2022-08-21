@@ -155,17 +155,25 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../p2pfl.utils.html">p2pfl.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
 </ul>
 </li>
@@ -212,17 +220,12 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">p2pfl.command</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">p2pfl.communication_protocol</span> <span class="kn">import</span> <span class="n">CommunicationProtocol</span>
-<span class="kn">from</span> <span class="nn">p2pfl.encrypter</span> <span class="kn">import</span> <span class="n">Encrypter</span>
 <span class="kn">from</span> <span class="nn">p2pfl.settings</span> <span class="kn">import</span> <span class="n">Settings</span>
 <span class="kn">from</span> <span class="nn">p2pfl.utils.observer</span> <span class="kn">import</span> <span class="n">Events</span><span class="p">,</span> <span class="n">Observable</span>
 
 <span class="c1">########################</span>
 <span class="c1">#    NodeConnection    #</span>
 <span class="c1">########################</span>
-
-<span class="c1"># organizar algo código</span>
-
-<span class="c1"># dividirlo en NC connection base y en nc connection  ???</span>
 
 <div class="viewcode-block" id="NodeConnection"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node_connection.NodeConnection">[docs]</a><span class="k">class</span> <span class="nc">NodeConnection</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">,</span> <span class="n">Observable</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -244,7 +247,7 @@
     <span class="c1">#    Init    # </span>
     <span class="c1">##############</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_node_name</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">aes_cipher</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_node_name</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">aes_cipher</span><span class="p">,</span> <span class="n">tcp_buffer_size</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">)):</span>
         <span class="c1"># Init supers</span>
         <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;node_connection-&quot;</span> <span class="o">+</span> <span class="n">parent_node_name</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">addr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">addr</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
         <span class="n">Observable</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -252,7 +255,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__terminate_flag</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__socket</span> <span class="o">=</span> <span class="n">s</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__socket_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__socket</span><span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">IPPROTO_TCP</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">TCP_NODELAY</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">tcp_buffer_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__socket</span><span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SO_RCVBUF</span><span class="p">,</span> <span class="n">tcp_buffer_size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">tcp_buffer_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__socket</span><span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SO_SNDBUF</span><span class="p">,</span> <span class="n">tcp_buffer_size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
         <span class="c1"># Atributes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__addr</span> <span class="o">=</span> <span class="n">addr</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__param_bufffer</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
@@ -264,9 +273,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">comm_protocol</span> <span class="o">=</span> <span class="n">CommunicationProtocol</span><span class="p">({</span>
             <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">BEAT</span><span class="p">:</span> <span class="n">Beat_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
             <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP</span><span class="p">:</span> <span class="n">Stop_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
-            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">CONN_TO_EVENT</span><span class="p">:</span> <span class="n">Conn_to_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
-            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">START_LEARNING_EVENT</span><span class="p">:</span> <span class="n">Start_learning_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
-            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP_LEARNING_EVENT</span><span class="p">:</span> <span class="n">Stop_learning_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
+            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">CONN_TO</span><span class="p">:</span> <span class="n">Conn_to_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
+            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">START_LEARNING</span><span class="p">:</span> <span class="n">Start_learning_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
+            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP_LEARNING</span><span class="p">:</span> <span class="n">Stop_learning_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
             <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">PARAMS</span><span class="p">:</span> <span class="n">Params_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
             <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_READY</span><span class="p">:</span> <span class="n">Models_Ready_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
             <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">METRICS</span><span class="p">:</span> <span class="n">Metrics_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
@@ -312,35 +321,51 @@
 <span class="sd">        NodeConnection loop. Recive and process messages.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__socket</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">NODE_TIMEOUT</span><span class="p">)</span>
-        <span class="n">overflow</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">buffer</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
+        <span class="n">amount_pending_params</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">param_buffer</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
         <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__terminate_flag</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="c1"># Recive message</span>
                 <span class="n">og_msg</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
-                <span class="k">if</span> <span class="n">overflow</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">amount_pending_params</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">og_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">BLOCK_SIZE</span><span class="p">)</span>
+
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">og_msg</span> <span class="o">=</span> <span class="n">buffer</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">overflow</span><span class="p">)</span> <span class="c1">#alinear el colapso</span>
-                    <span class="n">buffer</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
-                    <span class="n">overflow</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">pending_fragment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">amount_pending_params</span><span class="p">)</span>
+                    <span class="n">og_msg</span> <span class="o">=</span> <span class="n">param_buffer</span> <span class="o">+</span> <span class="n">pending_fragment</span> <span class="c1">#alinear el colapso</span>
+                    <span class="n">param_buffer</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
+                    <span class="n">amount_pending_params</span> <span class="o">=</span> <span class="mi">0</span>
 
                 <span class="c1"># Decrypt message</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__aes_cipher</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__aes_cipher</span><span class="o">.</span><span class="n">decrypt</span><span class="p">(</span><span class="n">og_msg</span><span class="p">)</span>
+                    <span class="c1"># Guarantee block size (if TCP sctream is slow)</span>
+                    <span class="n">bytes_to_block_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">og_msg</span><span class="p">)</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">__aes_cipher</span><span class="o">.</span><span class="n">bs</span>
+                    <span class="c1"># Decrypt</span>
+                    <span class="k">if</span> <span class="n">bytes_to_block_size</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__aes_cipher</span><span class="o">.</span><span class="n">decrypt</span><span class="p">(</span><span class="n">og_msg</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">__socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">bytes_to_block_size</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__aes_cipher</span><span class="o">.</span><span class="n">decrypt</span><span class="p">(</span><span class="n">og_msg</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">msg</span> <span class="o">=</span> <span class="n">og_msg</span>
             
                 <span class="c1"># Process messages</span>
                 <span class="k">if</span> <span class="n">msg</span><span class="o">!=</span><span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">:</span>
-                    <span class="c1">#Check if colapse is happening</span>
+                    <span class="c1"># Check if fragments are incomplete (collapse / TCP stream slow)</span>
                     <span class="n">overflow</span> <span class="o">=</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">check_collapse</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">overflow</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
-                        <span class="n">buffer</span> <span class="o">=</span> <span class="n">og_msg</span><span class="p">[</span><span class="n">overflow</span><span class="p">:]</span>
+                        <span class="n">param_buffer</span> <span class="o">=</span> <span class="n">og_msg</span><span class="p">[</span><span class="n">overflow</span><span class="p">:]</span>
+                        <span class="n">amount_pending_params</span> <span class="o">=</span> <span class="n">Settings</span><span class="o">.</span><span class="n">BLOCK_SIZE</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">param_buffer</span><span class="p">)</span>
                         <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[:</span><span class="n">overflow</span><span class="p">]</span>
                         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) (NodeConnection Run) Collapse detected: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">msg</span><span class="p">))</span>
 
-                    <span class="c1"># Process message and count errors</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Check if all bytes of param_buffer are received</span>
+                        <span class="n">amount_pending_params</span> <span class="o">=</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">check_params_incomplete</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> 
+                        <span class="k">if</span> <span class="n">amount_pending_params</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="n">param_buffer</span> <span class="o">=</span> <span class="n">msg</span>
+                            <span class="k">continue</span>
+
+                    <span class="c1"># Process message</span>
                     <span class="n">exec_msgs</span><span class="p">,</span><span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm_protocol</span><span class="o">.</span><span class="n">process_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exec_msgs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">Events</span><span class="o">.</span><span class="n">PROCESSED_MESSAGES_EVENT</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">exec_msgs</span><span class="p">))</span> <span class="c1"># Notify the parent node</span>
@@ -436,15 +461,20 @@
     <span class="c1">#    Models Agregated    #</span>
     <span class="c1">##########################</span>
 
-<div class="viewcode-block" id="NodeConnection.set_models_agregated"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node_connection.NodeConnection.set_models_agregated">[docs]</a>    <span class="k">def</span> <span class="nf">set_models_agregated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">models</span><span class="p">):</span>
+<div class="viewcode-block" id="NodeConnection.add_models_agregated"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node_connection.NodeConnection.add_models_agregated">[docs]</a>    <span class="k">def</span> <span class="nf">add_models_agregated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">models</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Set the models agregated.</span>
+<span class="sd">        Add the models agregated.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
 <span class="sd">            models: Models agregated.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__models_agregated</span> <span class="o">=</span> <span class="n">models</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__models_agregated</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">models</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">__models_agregated</span><span class="p">))</span></div>
 
+<div class="viewcode-block" id="NodeConnection.clear_models_agregated"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node_connection.NodeConnection.clear_models_agregated">[docs]</a>    <span class="k">def</span> <span class="nf">clear_models_agregated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clear models agregated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__models_agregated</span> <span class="o">=</span> <span class="p">[]</span></div>
 <div class="viewcode-block" id="NodeConnection.get_models_agregated"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node_connection.NodeConnection.get_models_agregated">[docs]</a>    <span class="k">def</span> <span class="nf">get_models_agregated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
@@ -525,7 +555,7 @@
 
 <div class="viewcode-block" id="NodeConnection.notify_conn_to"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node_connection.NodeConnection.notify_conn_to">[docs]</a>    <span class="k">def</span> <span class="nf">notify_conn_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Notify to the parent node that `CONN_TO_EVENT` has been received.</span>
+<span class="sd">        Notify to the parent node that `CONN_TO` has been received.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">Events</span><span class="o">.</span><span class="n">CONN_TO_EVENT</span><span class="p">,</span> <span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">))</span></div>
 

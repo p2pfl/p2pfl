@@ -155,6 +155,7 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -169,13 +170,6 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../p2pfl.utils.html">p2pfl.utils package</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -231,9 +225,11 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># TCP Block Size</span>
-    <span class="n">BLOCK_SIZE</span> <span class="o">=</span> <span class="mi">8192</span> <span class="c1"># Try to avoid model sobresegmentation</span>
+    <span class="n">BLOCK_SIZE</span> <span class="o">=</span> <span class="mi">2048</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Max ammount of bytes to read from the buffer at a time. If ```BLOCK_SIZE`` is not divisible by the block size used for symetric encryption it will be rounded to the next closest value.</span>
+
+<span class="sd">    Try to strike a balance between hyper-segmentation and excessively large block size.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">rest</span> <span class="o">=</span> <span class="n">BLOCK_SIZE</span> <span class="o">%</span> <span class="n">AESCipher</span><span class="o">.</span><span class="n">get_block_size</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">rest</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
@@ -242,35 +238,35 @@
         <span class="n">BLOCK_SIZE</span> <span class="o">=</span> <span class="n">new_value</span>
 
     <span class="c1"># TIMEOUT&#39;S</span>
-    <span class="n">NODE_TIMEOUT</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">NODE_TIMEOUT</span> <span class="o">=</span> <span class="mi">20</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Timeout (seconds) for a node to be considered dead.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">VOTE_TIMEOUT</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">VOTE_TIMEOUT</span> <span class="o">=</span> <span class="mi">60</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Timeout (seconds) for a node to wait for a vote.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">AGREGATION_TIMEOUT</span> <span class="o">=</span> <span class="mi">15</span>
+    <span class="n">AGREGATION_TIMEOUT</span> <span class="o">=</span> <span class="mi">60</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Timeout (seconds) for a node to wait for other models. Timeout stars when the first model is added.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># HEARTBEATER</span>
-    <span class="n">HEARTBEAT_PERIOD</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">HEARTBEAT_PERIOD</span> <span class="o">=</span> <span class="mi">4</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Period (seconds) for the node to send a heartbeat.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">HEARTBEATER_REFRESH_NEIGHBORS_BY_PERIOD</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">HEARTBEATER_REFRESH_NEIGHBORS_BY_PERIOD</span> <span class="o">=</span> <span class="mi">4</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Times by period to refresh the neighbors list.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">WAIT_HEARTBEATS_CONVERGENCE</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">WAIT_HEARTBEATS_CONVERGENCE</span> <span class="o">=</span> <span class="mi">10</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Time (seconds) to wait for the heartbeats to converge.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="c1"># TRAIN SET </span>
-    <span class="n">TRAIN_SET_SIZE</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">TRAIN_SET_SIZE</span> <span class="o">=</span> <span class="mi">10</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Size of the training set.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -294,21 +290,17 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># GOSSIP Models</span>
-    <span class="n">GOSSIP_EXIT_ON_X_EQUAL_ROUNDS</span> <span class="o">=</span> <span class="mi">9</span>
+    <span class="n">GOSSIP_EXIT_ON_X_EQUAL_ROUNDS</span> <span class="o">=</span> <span class="mi">20</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Amount of equal rounds to exit gossiping. Careful, a low value can cause an early stop of gossiping.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">GOSSIP_MODELS_FREC</span> <span class="o">=</span> <span class="mi">2</span>  
+    <span class="n">GOSSIP_MODELS_FREC</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Frequency of gossiping models (times by second).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">GOSSIP_MODELS_PER_ROUND</span> <span class="o">=</span> <span class="mi">2</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Amount of gossip models per round.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">FRAGMENTS_DELAY</span> <span class="o">=</span> <span class="mf">0.01</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Delay (seconds) to wait before sending a fragment. This is a very important value, if the node is too slow and the buffer isn&#39;t big enough, the node will send fragments too fast and the other node will not receive them.</span>
 <span class="sd">    &quot;&quot;&quot;</span></div>
 </pre></div>
         </article>

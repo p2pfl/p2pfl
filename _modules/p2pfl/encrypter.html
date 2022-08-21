@@ -155,6 +155,7 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -227,12 +228,15 @@
 <span class="sd">    Class with methods to encrypt and decrypt messages.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Encrypter.encrypt"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.Encrypter.encrypt">[docs]</a>    <span class="k">def</span> <span class="nf">encrypt</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+<div class="viewcode-block" id="Encrypter.encrypt"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.Encrypter.encrypt">[docs]</a>    <span class="k">def</span> <span class="nf">encrypt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="Encrypter.decrypt"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.Encrypter.decrypt">[docs]</a>    <span class="k">def</span> <span class="nf">decrypt</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>      
-        <span class="k">pass</span></div></div>
+<div class="viewcode-block" id="Encrypter.decrypt"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.Encrypter.decrypt">[docs]</a>    <span class="k">def</span> <span class="nf">decrypt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>      
+        <span class="k">pass</span></div>
 
+<div class="viewcode-block" id="Encrypter.get_key"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.Encrypter.get_key">[docs]</a>    <span class="k">def</span> <span class="nf">get_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div></div>
+    
 <span class="c1">###############################</span>
 <span class="c1">#    Asymmetric Encryption    #</span>
 <span class="c1">###############################</span>
@@ -253,10 +257,10 @@
 <span class="sd">        Encrypts a message using RSA. Message is encrypted using the public key of the pair (the other node key).</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            message: (str) The message to encrypt.</span>
+<span class="sd">            message: (bytes) The message to encrypt.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            message: (str) The encrypted message.</span>
+<span class="sd">            message: (bytes) The encrypted message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cipher</span> <span class="o">=</span> <span class="n">PKCS1_OAEP</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pair_public_key</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">cipher</span><span class="o">.</span><span class="n">encrypt</span><span class="p">(</span><span class="n">message</span><span class="p">))</span></div>
@@ -266,10 +270,10 @@
 <span class="sd">        Decrypts a message using RSA. Message is decripted using the private key. </span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            message: (str) The message to decrypt.</span>
+<span class="sd">            message: (bytes) The message to decrypt.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            message: (str) The decrypted message.</span>
+<span class="sd">            message: (bytes) The decrypted message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cipher</span> <span class="o">=</span> <span class="n">PKCS1_OAEP</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__private_key</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">cipher</span><span class="o">.</span><span class="n">decrypt</span><span class="p">(</span><span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">message</span><span class="p">))</span></div>
@@ -327,10 +331,10 @@
 <span class="sd">        Keep in mind that AES uses a block cipher, so the message can be a filled message with padding.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            message: (str) The message to decrypt.</span>
+<span class="sd">            message: (bytes) The message to decrypt.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            message: (str) The decrypted message.</span>
+<span class="sd">            message: (bytes) The decrypted message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cipher</span><span class="o">.</span><span class="n">decrypt</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
     
@@ -340,10 +344,10 @@
 <span class="sd">        Careful: for this case the filling content don&#39;t affect to the meaning of messages.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            msg: (str) The encoded text.</span>
+<span class="sd">            msg: (bytes) The encoded text.</span>
 <span class="sd">        </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            msg: (str) The encoded text with padding.</span>
+<span class="sd">            msg: (bytes) The encoded text with padding.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Calculate the number of bytes needed to fill the block</span>
         <span class="n">bytes_left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bs</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">bs</span>

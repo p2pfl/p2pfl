@@ -1,14 +1,28 @@
 # P2P Federated Learning
 
-P2P Federated Learning is a library for Federated Learning using a **p2p** architecture.
+**P2P Federated Learning (p2pfl)** is a decentralized federated learning library, it allows creating basic federated learning systems on p2p networks using gossip protocols.
 
-bla
-bla
-bla
-
-``` 
+<!---``` 
 sphinx-apidoc -F -o tmp ../p2pfl
 ```
+-->
+
+## Future work
+
+- [ ] Add new agregation algoritms
+- [ ] Secure Agregation
+- [ ] Iterative terminal for node gestion
+- [ ] Connect nodes during training process
+- [ ] Gossip loop optimization for sending models (too much sendings when a node fails)
+- [ ] Tolerance to incomplete reception of messages
+- [ ] Tests with a high number of nodes in deploy
+- [ ] Comparison of node settings when learning starts
+- [ ] Associate votes to rounds
+- [ ] Network Login Authentication
+- [ ] Study about attacks that could be done in the network
+- [ ] Add support for dockerized installation
+
+## Index
 
 ```{eval-rst}
 .. toctree::

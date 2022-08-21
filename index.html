@@ -134,7 +134,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -173,13 +173,6 @@
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.utils.html">p2pfl.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
-</ul>
-</li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -209,7 +202,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -217,17 +210,46 @@
         <article role="main">
           <section id="p2p-federated-learning">
 <h1>P2P Federated Learning<a class="headerlink" href="#p2p-federated-learning" title="Permalink to this heading">#</a></h1>
-<p>P2P Federated Learning is a library for Federated Learning using a <strong>p2p</strong> architecture.</p>
-<p>bla
-bla
-bla</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sphinx</span><span class="o">-</span><span class="n">apidoc</span> <span class="o">-</span><span class="n">F</span> <span class="o">-</span><span class="n">o</span> <span class="n">tmp</span> <span class="o">../</span><span class="n">p2pfl</span>
-</pre></div>
-</div>
+<p><strong>P2P Federated Learning (p2pfl)</strong> is a decentralized federated learning library, it allows creating basic federated learning systems on p2p networks using gossip protocols.</p>
+<!---``` 
+sphinx-apidoc -F -o tmp ../p2pfl
+```
+-->
+<section id="future-work">
+<h2>Future work<a class="headerlink" href="#future-work" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>[ ] Add new agregation algoritms</p></li>
+<li><p>[ ] Secure Agregation</p></li>
+<li><p>[ ] Iterative terminal for node gestion</p></li>
+<li><p>[ ] Connect nodes during training process</p></li>
+<li><p>[ ] Gossip loop optimization for sending models (too much sendings when a node fails)</p></li>
+<li><p>[ ] Tolerance to incomplete reception of messages</p></li>
+<li><p>[ ] Tests with a high number of nodes in deploy</p></li>
+<li><p>[ ] Comparison of node settings when learning starts</p></li>
+<li><p>[ ] Associate votes to rounds</p></li>
+<li><p>[ ] Network Login Authentication</p></li>
+<li><p>[ ] Study about attacks that could be done in the network</p></li>
+<li><p>[ ] Add support for dockerized installation</p></li>
+</ul>
+</section>
+<section id="index">
+<h2>Index<a class="headerlink" href="#index" title="Permalink to this heading">#</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#install-using-pip">Install using pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#create-a-virtual-environment">Create a virtual environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#dockerized-installation">Dockerized installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#pytorch-quickstart">PyTorch Quickstart</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#other-examples">Other examples</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#tensorflow-quickstart">TensorFlow Quickstart</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="documentation.html">Documentation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.html">p2pfl package</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.html#subpackages">Subpackages</a><ul>
@@ -248,21 +270,11 @@ bla</p>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl">Module contents</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.pytorch.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.pytorch.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.pytorch.html#module-p2pfl.learning.pytorch.lightninglearner">p2pfl.learning.pytorch.lightninglearner module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.pytorch.html#module-p2pfl.learning.pytorch.logger">p2pfl.learning.pytorch.logger module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.pytorch.html#module-p2pfl.learning.pytorch">Module contents</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
 </div>
+</section>
 </section>
 
         </article>
@@ -300,8 +312,28 @@ bla</p>
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">P2P Federated Learning</a><ul>
+<li><a class="reference internal" href="#future-work">Future work</a></li>
+<li><a class="reference internal" href="#index">Index</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

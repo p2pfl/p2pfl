@@ -155,6 +155,7 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -279,6 +280,7 @@
                     <span class="k">if</span> <span class="n">messages_left</span> <span class="o">-</span> <span class="n">sended</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">Events</span><span class="o">.</span><span class="n">GOSSIP_BROADCAST_EVENT</span><span class="p">,</span> <span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="nb">list</span><span class="p">(</span><span class="n">nodes</span><span class="p">)))</span>
                         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">__msgs</span><span class="p">[</span><span class="n">msg</span><span class="p">]</span>
+                        <span class="n">messages_left</span> <span class="o">=</span> <span class="n">messages_left</span> <span class="o">-</span> <span class="n">sended</span>
                         <span class="k">if</span> <span class="n">messages_left</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                             <span class="k">break</span>
                     <span class="k">else</span><span class="p">:</span>

@@ -155,20 +155,21 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../p2pfl.utils.html">p2pfl.utils package</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -207,8 +208,7 @@
         </div>
         <article role="main">
           <h1>Source code for p2pfl.node</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">count</span>
-<span class="kn">import</span> <span class="nn">math</span>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">logging</span>
@@ -222,11 +222,6 @@
 <span class="kn">from</span> <span class="nn">p2pfl.learning.pytorch.lightninglearner</span> <span class="kn">import</span> <span class="n">LightningLearner</span>
 <span class="kn">from</span> <span class="nn">p2pfl.utils.observer</span> <span class="kn">import</span> <span class="n">Events</span><span class="p">,</span> <span class="n">Observer</span>
 
-
-<span class="c1"># concurrencia .copy() vs locks -&gt; tratar de borrar los copys (sobre todo en nei)</span>
-
-<span class="c1"># NUM SAMPLES DEJA DE SER NECESARIO</span>
-
 <div class="viewcode-block" id="Node"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node">[docs]</a><span class="k">class</span> <span class="nc">Node</span><span class="p">(</span><span class="n">BaseNode</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class based on a base node that allows **p2p Federated Learning**. </span>
@@ -238,14 +233,14 @@
 <span class="sd">        data: Dataset to be used in the learning process. Carefull, model should be compatible with data and the learner.</span>
 <span class="sd">        host (str): Host where the node will be listening.</span>
 <span class="sd">        port (int): Port where the node will be listening.</span>
-<span class="sd">        learner: Learner to be used in the learning process. Default: LightningLearner.</span>
+<span class="sd">        learner (NodeLearner): Learner to be used in the learning process. Default: LightningLearner.</span>
 <span class="sd">        agregator (Agregator): Agregator to be used in the learning process. Default: FedAvg.</span>
 <span class="sd">        simulation (bool): If False, node will share metrics and communication will be encrypted. Default: True.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        round (int): Round of the learning process.</span>
 <span class="sd">        totalrounds (int): Total number of rounds of the learning process.</span>
-<span class="sd">        learner (Learner): Learner to be used in the learning process.</span>
+<span class="sd">        learner (NodeLearner): Learner to be used in the learning process.</span>
 <span class="sd">        agregator (Agregator): Agregator to be used in the learning process.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -332,6 +327,16 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="Node.set_model"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.set_model">[docs]</a>    <span class="k">def</span> <span class="nf">set_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;&quot;</span>
+<span class="sd">        Set the model to use. </span>
+<span class="sd">        Carefully, model, not only weights.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model: Model to be learned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">set_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span></div>
+
     <span class="c1">###############################################</span>
     <span class="c1">#         Network Learning Management         #</span>
     <span class="c1">###############################################</span>
@@ -344,6 +349,9 @@
 <span class="sd">            rounds: Number of rounds of the learning process.</span>
 <span class="sd">            epochs: Number of epochs of the learning process.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_terminate_flag</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Node must be running to start learning&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+            <span class="k">return</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Start Learning</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Broadcasting start learning...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
@@ -393,11 +401,15 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__start_thread_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
 
+            <span class="n">begin</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
             <span class="c1"># Wait and gossip model inicialization            </span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__gossip_model_difusion</span><span class="p">(</span><span class="n">initialization</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
             <span class="c1"># Wait to guarantee new connection heartbeats convergence and fix neighbors</span>
-            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">WAIT_HEARTBEATS_CONVERGENCE</span><span class="p">)</span>
+            <span class="n">wait_time</span> <span class="o">=</span> <span class="n">Settings</span><span class="o">.</span><span class="n">WAIT_HEARTBEATS_CONVERGENCE</span> <span class="o">-</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">begin</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">wait_time</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">wait_time</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__initial_neighbors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">()</span> <span class="c1"># used to restore the original list of neighbors after the learning round</span>
 
             <span class="c1"># Train</span>
@@ -444,17 +456,18 @@
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">check_parameters</span><span class="p">(</span><span class="n">decoded_model</span><span class="p">):</span>
                         <span class="n">models_added</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="n">decoded_model</span><span class="p">,</span><span class="n">contributors</span><span class="p">,</span><span class="n">weight</span><span class="p">)</span>
                         <span class="k">if</span> <span class="n">models_added</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="c1"># CAREFULL RARE BUG at MACBOOCK: When CPU is high, only new nodes will be sent.</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_models_agregated_msg</span><span class="p">(</span><span class="n">models_added</span><span class="p">))</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">raise</span> <span class="n">ModelNotMatchingError</span><span class="p">(</span><span class="s2">&quot;Not matching models&quot;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># Initialize model</span>
+                    <span class="n">model</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">decode_parameters</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">__model_initialized</span> <span class="o">=</span> <span class="kc">True</span>
                     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Initialicing Model Weights&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">__wait_init_model_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>    
                     <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_model_initialized_msg</span><span class="p">())</span>
-                    <span class="n">model</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">decode_parameters</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
             
             <span class="k">except</span> <span class="n">DecodingParamsError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Error decoding parameters&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
@@ -520,16 +533,17 @@
     <span class="c1">################</span>
 
     <span class="k">def</span> <span class="nf">__vote_train_set</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
         <span class="c1"># Vote</span>
         <span class="n">candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_network_nodes</span><span class="p">()</span> <span class="c1"># al least himself</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) </span><span class="si">{}</span><span class="s2"> candidates to train set&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">)))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
             <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
 
         <span class="c1"># Send vote</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Sending train set vote.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
         <span class="n">samples</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">TRAIN_SET_SIZE</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">candidates</span><span class="p">))</span>
         <span class="n">nodes_voted</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">candidates</span><span class="p">,</span> <span class="n">samples</span><span class="p">)</span>
-        <span class="n">weights</span> <span class="o">=</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1000</span><span class="p">),</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1000</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1000</span><span class="p">)</span><span class="o">/</span><span class="mi">4</span><span class="p">)]</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="p">[</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1000</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">samples</span><span class="p">)]</span>
         <span class="n">votes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">nodes_voted</span><span class="p">,</span><span class="n">weights</span><span class="p">))</span>
 
         <span class="c1"># Adding votes</span>
@@ -538,6 +552,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__train_set_votes_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
 
         <span class="c1"># Send and wait for votes</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Sending train set vote.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Self Vote: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="n">votes</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_vote_train_set_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="n">votes</span><span class="p">))</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Waiting other node votes.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
@@ -653,12 +668,9 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Evaluated. Losss: </span><span class="si">{}</span><span class="s2">, Metric: </span><span class="si">{}</span><span class="s2">. (Check tensorboard for more info)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">results</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
             <span class="c1"># Send metrics</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__bc_metrics</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">__bc_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">metrics</span><span class="p">):</span> 
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Broadcasting metrics.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">())))</span>
-        <span class="n">encoded_msgs</span> <span class="o">=</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_metrics_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">round</span><span class="p">,</span><span class="n">metrics</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">metrics</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">encoded_msgs</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Broadcasting metrics.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">())))</span>
+                <span class="n">encoded_msgs</span> <span class="o">=</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_metrics_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">round</span><span class="p">,</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">results</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">encoded_msgs</span><span class="p">)</span>
 
     <span class="c1">######################</span>
     <span class="c1">#    Round finish    #</span>
@@ -675,7 +687,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="c1"># Clear node agregation</span>
         <span class="k">for</span> <span class="n">nc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">():</span>
-            <span class="n">nc</span><span class="o">.</span><span class="n">set_models_agregated</span><span class="p">([])</span>
+            <span class="n">nc</span><span class="o">.</span><span class="n">clear_models_agregated</span><span class="p">()</span>
 
         <span class="c1"># Next Step or Finish</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Round </span><span class="si">{}</span><span class="s2"> of </span><span class="si">{}</span><span class="s2"> finished.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">round</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">totalrounds</span><span class="p">))</span>
@@ -775,8 +787,6 @@
                     <span class="c1"># Send Fragments</span>
                     <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">encoded_msgs</span><span class="p">:</span>
                         <span class="n">nc</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="n">Settings</span><span class="o">.</span><span class="n">FRAGMENTS_DELAY</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">FRAGMENTS_DELAY</span><span class="p">)</span>
                 
             <span class="c1"># Wait to guarantee the frequency of gossipping</span>
             <span class="n">time_diff</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">begin</span>

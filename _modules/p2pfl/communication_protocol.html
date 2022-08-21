@@ -155,6 +155,7 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -232,8 +233,8 @@
 <span class="sd">    The valid messages can be classified into gossiped and non-gossiped:</span>
 <span class="sd">        Gossiped messages: </span>
 <span class="sd">            - BEAT &lt;node&gt; &lt;HASH&gt; </span>
-<span class="sd">            - START_LEARNING_EVENT &lt;rounds&gt; &lt;epoches&gt; &lt;HASH&gt;</span>
-<span class="sd">            - STOP_LEARNING_EVENT &lt;HASH&gt;</span>
+<span class="sd">            - START_LEARNING &lt;rounds&gt; &lt;epoches&gt; &lt;HASH&gt;</span>
+<span class="sd">            - STOP_LEARNING &lt;HASH&gt;</span>
 <span class="sd">            - VOTE_TRAIN_SET &lt;node&gt; (&lt;node&gt; &lt;punct&gt;)* VOTE_TRAIN_SET_CLOSE &lt;HASH&gt; </span>
 <span class="sd">            - METRICS &lt;node&gt; &lt;round&gt; &lt;loss&gt; &lt;metric&gt; &lt;HASH&gt; </span>
 
@@ -270,15 +271,15 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Connection message header.</span>
 <span class="sd">    &quot;&quot;&quot;</span>        
-    <span class="n">CONN_TO_EVENT</span> <span class="o">=</span> <span class="s2">&quot;CONNECT_TO&quot;</span>
+    <span class="n">CONN_TO</span> <span class="o">=</span> <span class="s2">&quot;CONNECT_TO&quot;</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Connection to message header.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">START_LEARNING_EVENT</span> <span class="o">=</span> <span class="s2">&quot;START_LEARNING_EVENT&quot;</span>
+    <span class="n">START_LEARNING</span> <span class="o">=</span> <span class="s2">&quot;START_LEARNING&quot;</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Start learning message header.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">STOP_LEARNING_EVENT</span> <span class="o">=</span> <span class="s2">&quot;STOP_LEARNING_EVENT&quot;</span>
+    <span class="n">STOP_LEARNING</span> <span class="o">=</span> <span class="s2">&quot;STOP_LEARNING&quot;</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stop learning message header.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -404,10 +405,10 @@
                    
 
                 <span class="c1"># Connect to</span>
-                <span class="k">elif</span> <span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">CONN_TO_EVENT</span><span class="p">:</span>
+                <span class="k">elif</span> <span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">CONN_TO</span><span class="p">:</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
-                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">CONN_TO_EVENT</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">])):</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">CONN_TO</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">])):</span>
                                 <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
@@ -420,12 +421,12 @@
                         <span class="k">break</span>
 
                 <span class="c1"># Start learning</span>
-                <span class="k">elif</span> <span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">START_LEARNING_EVENT</span><span class="p">:</span>
+                <span class="k">elif</span> <span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">START_LEARNING</span><span class="p">:</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">and</span> <span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
                             <span class="n">hash_</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
                             <span class="n">cmd_text</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
-                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">START_LEARNING_EVENT</span><span class="p">,</span> <span class="n">hash_</span><span class="p">,</span> <span class="n">cmd_text</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">])):</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">START_LEARNING</span><span class="p">,</span> <span class="n">hash_</span><span class="p">,</span> <span class="n">cmd_text</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">])):</span>
                                 <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
@@ -438,12 +439,12 @@
                         <span class="k">break</span>
 
                 <span class="c1"># Stop learning</span>
-                <span class="k">elif</span> <span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP_LEARNING_EVENT</span><span class="p">:</span>
+                <span class="k">elif</span> <span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP_LEARNING</span><span class="p">:</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>            
                         <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
                             <span class="n">hash_</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                             <span class="n">cmd_text</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
-                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP_LEARNING_EVENT</span><span class="p">,</span> <span class="n">hash_</span><span class="p">,</span> <span class="n">cmd_text</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP_LEARNING</span><span class="p">,</span> <span class="n">hash_</span><span class="p">,</span> <span class="n">cmd_text</span><span class="p">):</span>
                                 <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
@@ -622,6 +623,20 @@
             <span class="k">return</span> <span class="n">header_pos</span>
    
         <span class="k">return</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="CommunicationProtocol.check_params_incomplete"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.check_params_incomplete">[docs]</a>    <span class="k">def</span> <span class="nf">check_params_incomplete</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if a params message is incomplete. If the message is complete or is not a params message, it returns 0.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Number of bytes that needs to be complete</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">PARAMS</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)]</span> <span class="o">==</span> <span class="n">header</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span><span class="o">&lt;</span><span class="n">Settings</span><span class="o">.</span><span class="n">BLOCK_SIZE</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Settings</span><span class="o">.</span><span class="n">BLOCK_SIZE</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="mi">0</span></div>
     
 
     <span class="c1">#######################################</span>
@@ -665,7 +680,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            A encoded connect to message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">CONN_TO_EVENT</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">ip</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">CONN_TO</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">ip</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="CommunicationProtocol.build_start_learning_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_start_learning_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_start_learning_msg</span><span class="p">(</span><span class="n">rounds</span><span class="p">,</span> <span class="n">epochs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -676,14 +691,14 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            A encoded start learning message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">START_LEARNING_EVENT</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">rounds</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">epochs</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">START_LEARNING</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">rounds</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">epochs</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="CommunicationProtocol.build_stop_learning_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_stop_learning_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_stop_learning_msg</span><span class="p">():</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            A encoded stop learning message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP_LEARNING_EVENT</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP_LEARNING</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="CommunicationProtocol.build_models_ready_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_models_ready_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_models_ready_msg</span><span class="p">(</span><span class="nb">round</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

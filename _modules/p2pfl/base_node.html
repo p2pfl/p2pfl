@@ -155,17 +155,25 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../p2pfl.utils.html">p2pfl.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
 </ul>
 </li>
@@ -211,7 +219,6 @@
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">sys</span>
-
 <span class="kn">from</span> <span class="nn">p2pfl.communication_protocol</span> <span class="kn">import</span> <span class="n">CommunicationProtocol</span>
 <span class="kn">from</span> <span class="nn">p2pfl.encrypter</span> <span class="kn">import</span> <span class="n">AESCipher</span><span class="p">,</span> <span class="n">RSACipher</span>
 <span class="kn">from</span> <span class="nn">p2pfl.gossiper</span> <span class="kn">import</span> <span class="n">Gossiper</span>
@@ -249,7 +256,7 @@
 
         <span class="c1"># Super init</span>
         <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;node-&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__terminate_flag</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_terminate_flag</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
 
         <span class="c1"># Setting Up Node Socket (listening)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__node_socket</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span> <span class="c1">#TCP Socket</span>
@@ -309,7 +316,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Stops the node. Heartbeater and Gossiper will be stopped too.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__terminate_flag</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_terminate_flag</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Send a self message to the loop to avoid the wait of the next recv</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__send</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span><span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -326,7 +333,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Process new connections loop</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;(</span><span class="si">{}</span><span class="s1">) Node started&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
-        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__terminate_flag</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span> 
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_terminate_flag</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span> 
             <span class="k">try</span><span class="p">:</span>
                 <span class="p">(</span><span class="n">ns</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_socket</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
                 <span class="n">msg</span> <span class="o">=</span> <span class="n">ns</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">BLOCK_SIZE</span><span class="p">)</span>
@@ -335,8 +342,8 @@
                 <span class="k">if</span> <span class="n">msg</span><span class="p">:</span>
                     <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span>
                     <span class="n">callback</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">fu</span><span class="p">,</span><span class="n">fc</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__process_new_connection</span><span class="p">(</span><span class="n">ns</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">fu</span><span class="p">,</span> <span class="n">fc</span><span class="p">)</span>
-                    <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">process_connection</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">callback</span><span class="p">)</span>
-                        
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">process_connection</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">callback</span><span class="p">):</span>
+                        <span class="n">ns</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
        
@@ -345,7 +352,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">gossiper</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
         <span class="c1"># Stop Node</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;(</span><span class="si">{}</span><span class="s1">) Stopping node. Disconnecting from </span><span class="si">{}</span><span class="s1"> nodos&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__neightbors</span><span class="p">)))</span> 
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;(</span><span class="si">{}</span><span class="s1">) Stopping node. Disconnecting from </span><span class="si">{}</span><span class="s1"> nodos&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__neightbors</span><span class="p">)))</span> 
         <span class="n">nei_copy_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nei_copy_list</span><span class="p">:</span>
             <span class="n">n</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>

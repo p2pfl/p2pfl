@@ -134,7 +134,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -209,7 +209,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -217,10 +217,63 @@
         <article role="main">
           <section id="quickstart">
 <h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this heading">#</a></h1>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>TODO</p>
+<p><strong>P2P Federated Learning (p2pfl)</strong> is a library focused on the easy creation of federated learning systems.</p>
+<section id="pytorch-quickstart">
+<h2>PyTorch Quickstart<a class="headerlink" href="#pytorch-quickstart" title="Permalink to this heading">#</a></h2>
+<p>In this tutorial we will learn how to train a <strong>Multilayer Perceptron</strong> on <strong>MNIST</strong> using <strong>p2pfl</strong> and PyTorch. We will use a adapted version of the MNIST dataset to federated envairoments.</p>
+<p>Two nodes will be uded, one of these nodes will only start and the other will start, connect and start learning.</p>
+<p>For the node that only starts (<code class="docutils literal notranslate"><span class="pre">node1.py</span></code>), with a couple of lines everything will be configured:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">p2pfl.node</span> <span class="kn">import</span> <span class="n">Node</span>
+<span class="kn">from</span> <span class="nn">p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm</span> <span class="kn">import</span> <span class="n">MnistFederatedDM</span>
+<span class="kn">from</span> <span class="nn">p2pfl.learning.pytorch.mnist_examples.models.mlp</span> <span class="kn">import</span> <span class="n">MLP</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">MLP</span><span class="p">(),</span><span class="n">MnistFederatedDM</span><span class="p">(</span><span class="n">sub_id</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">number_sub</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span><span class="n">port</span><span class="o">=</span><span class="mi">6666</span><span class="p">)</span>
+    <span class="n">node</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>    
+</pre></div>
 </div>
+<p>For the other node (<code class="docutils literal notranslate"><span class="pre">node2.py</span></code>) a few more lines will be needed:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">p2pfl.node</span> <span class="kn">import</span> <span class="n">Node</span>
+<span class="kn">from</span> <span class="nn">p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm</span> <span class="kn">import</span> <span class="n">MnistFederatedDM</span>
+<span class="kn">from</span> <span class="nn">p2pfl.learning.pytorch.mnist_examples.models.mlp</span> <span class="kn">import</span> <span class="n">MLP</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+
+    <span class="n">node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">MLP</span><span class="p">(),</span><span class="n">MnistFederatedDM</span><span class="p">(</span><span class="n">sub_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">number_sub</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">)</span>
+    <span class="n">node</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="n">node</span><span class="o">.</span><span class="n">connect_to</span><span class="p">(</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span><span class="mi">6666</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+        
+    <span class="n">node</span><span class="o">.</span><span class="n">set_start_learning</span><span class="p">(</span><span class="n">rounds</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Wait 4 results</span>
+        
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="n">node</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Now, for executing the experiment, <code class="docutils literal notranslate"><span class="pre">node1.py</span></code> will be executed first, after that, execute <code class="docutils literal notranslate"><span class="pre">node2.py</span></code>.</p>
+<p>For more information see the <a class="reference external" href="https://pguijas.github.io/federated_learning_p2p/documentation.html">documentation</a>.</p>
+<section id="other-examples">
+<h3>Other examples<a class="headerlink" href="#other-examples" title="Permalink to this heading">#</a></h3>
+<p>This and othe examples can be found <a class="reference external" href="https://github.com/pguijas/federated_learning_p2p/tree/main/examples/">here</a>.</p>
+</section>
+</section>
+<section id="tensorflow-quickstart">
+<h2>TensorFlow Quickstart<a class="headerlink" href="#tensorflow-quickstart" title="Permalink to this heading">#</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>not implemented yet</p>
+</div>
+</section>
 </section>
 
         </article>
@@ -268,8 +321,31 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Quickstart</a><ul>
+<li><a class="reference internal" href="#pytorch-quickstart">PyTorch Quickstart</a><ul>
+<li><a class="reference internal" href="#other-examples">Other examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tensorflow-quickstart">TensorFlow Quickstart</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

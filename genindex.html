@@ -171,13 +171,6 @@
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.utils.html">p2pfl.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
-</ul>
-</li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -230,6 +223,8 @@
           <li><a href="p2pfl.html#p2pfl.node.Node.add_model">(p2pfl.node.Node method)</a>
 </li>
         </ul></li>
+        <li><a href="p2pfl.html#p2pfl.node_connection.NodeConnection.add_models_agregated">add_models_agregated() (p2pfl.node_connection.NodeConnection method)</a>
+</li>
         <li><a href="p2pfl.html#p2pfl.heartbeater.Heartbeater.add_node">add_node() (p2pfl.heartbeater.Heartbeater method)</a>
 </li>
         <li><a href="p2pfl.utils.html#p2pfl.utils.observer.Observable.add_observer">add_observer() (p2pfl.utils.observer.Observable method)</a>
@@ -328,9 +323,13 @@
           <li><a href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.check_parameters">(p2pfl.learning.pytorch.lightninglearner.LightningLearner method)</a>
 </li>
         </ul></li>
+        <li><a href="p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.check_params_incomplete">check_params_incomplete() (p2pfl.communication_protocol.CommunicationProtocol method)</a>
+</li>
         <li><a href="p2pfl.learning.agregators.html#p2pfl.learning.agregators.agregator.Agregator.clear">clear() (p2pfl.learning.agregators.agregator.Agregator method)</a>
 </li>
         <li><a href="p2pfl.html#p2pfl.node_connection.NodeConnection.clear_buffer">clear_buffer() (p2pfl.node_connection.NodeConnection method)</a>
+</li>
+        <li><a href="p2pfl.html#p2pfl.node_connection.NodeConnection.clear_models_agregated">clear_models_agregated() (p2pfl.node_connection.NodeConnection method)</a>
 </li>
         <li><a href="p2pfl.html#p2pfl.heartbeater.Heartbeater.clear_nodes">clear_nodes() (p2pfl.heartbeater.Heartbeater method)</a>
 </li>
@@ -342,10 +341,10 @@
           <li><a href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.logger.FederatedTensorboardLogger.close">(p2pfl.learning.pytorch.logger.FederatedTensorboardLogger method)</a>
 </li>
         </ul></li>
-        <li><a href="p2pfl.learning.pytorch.mnist_examples.models.html#p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN">CNN (class in p2pfl.learning.pytorch.mnist_examples.models.cnn)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="p2pfl.learning.pytorch.mnist_examples.models.html#p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN">CNN (class in p2pfl.learning.pytorch.mnist_examples.models.cnn)</a>
+</li>
         <li><a href="p2pfl.html#p2pfl.command.Command">Command (class in p2pfl.command)</a>
 </li>
         <li><a href="p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.command_dict">command_dict (p2pfl.communication_protocol.CommunicationProtocol attribute)</a>
@@ -360,14 +359,12 @@
         </ul></li>
         <li><a href="p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.CONN">CONN (p2pfl.communication_protocol.CommunicationProtocol attribute)</a>
 </li>
+        <li><a href="p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.CONN_TO">CONN_TO (p2pfl.communication_protocol.CommunicationProtocol attribute)</a>
+</li>
         <li><a href="p2pfl.html#p2pfl.command.Conn_to_cmd">Conn_to_cmd (class in p2pfl.command)</a>
 </li>
-        <li><a href="p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.CONN_TO_EVENT">CONN_TO_EVENT (p2pfl.communication_protocol.CommunicationProtocol attribute)</a>
-
-        <ul>
-          <li><a href="p2pfl.utils.html#p2pfl.utils.observer.Events.CONN_TO_EVENT">(p2pfl.utils.observer.Events attribute)</a>
+        <li><a href="p2pfl.utils.html#p2pfl.utils.observer.Events.CONN_TO_EVENT">CONN_TO_EVENT (p2pfl.utils.observer.Events attribute)</a>
 </li>
-        </ul></li>
         <li><a href="p2pfl.html#p2pfl.base_node.BaseNode.connect_to">connect_to() (p2pfl.base_node.BaseNode method)</a>
 
         <ul>
@@ -498,8 +495,6 @@
           <li><a href="p2pfl.learning.pytorch.mnist_examples.models.html#p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP.forward">(p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP method)</a>
 </li>
         </ul></li>
-        <li><a href="p2pfl.html#p2pfl.settings.Settings.FRAGMENTS_DELAY">FRAGMENTS_DELAY (p2pfl.settings.Settings attribute)</a>
-</li>
     </ul></td>
   </tr></table>
 </section>
@@ -521,6 +516,8 @@
         <li><a href="p2pfl.html#p2pfl.encrypter.AESCipher.get_key">get_key() (p2pfl.encrypter.AESCipher method)</a>
 
         <ul>
+          <li><a href="p2pfl.html#p2pfl.encrypter.Encrypter.get_key">(p2pfl.encrypter.Encrypter method)</a>
+</li>
           <li><a href="p2pfl.html#p2pfl.encrypter.RSACipher.get_key">(p2pfl.encrypter.RSACipher method)</a>
 </li>
         </ul></li>
@@ -542,10 +539,10 @@
 </li>
         <li><a href="p2pfl.html#p2pfl.base_node.BaseNode.get_network_nodes">get_network_nodes() (p2pfl.base_node.BaseNode method)</a>
 </li>
-        <li><a href="p2pfl.html#p2pfl.heartbeater.Heartbeater.get_nodes">get_nodes() (p2pfl.heartbeater.Heartbeater method)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="p2pfl.html#p2pfl.heartbeater.Heartbeater.get_nodes">get_nodes() (p2pfl.heartbeater.Heartbeater method)</a>
+</li>
         <li><a href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.get_num_samples">get_num_samples() (p2pfl.learning.learner.NodeLearner method)</a>
 
         <ul>
@@ -1080,12 +1077,12 @@
         <ul>
           <li><a href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.set_model">(p2pfl.learning.pytorch.lightninglearner.LightningLearner method)</a>
 </li>
+          <li><a href="p2pfl.html#p2pfl.node.Node.set_model">(p2pfl.node.Node method)</a>
+</li>
         </ul></li>
         <li><a href="p2pfl.html#p2pfl.node_connection.NodeConnection.set_model_initialized">set_model_initialized() (p2pfl.node_connection.NodeConnection method)</a>
 </li>
         <li><a href="p2pfl.html#p2pfl.node_connection.NodeConnection.set_model_ready_status">set_model_ready_status() (p2pfl.node_connection.NodeConnection method)</a>
-</li>
-        <li><a href="p2pfl.html#p2pfl.node_connection.NodeConnection.set_models_agregated">set_models_agregated() (p2pfl.node_connection.NodeConnection method)</a>
 </li>
         <li><a href="p2pfl.learning.agregators.html#p2pfl.learning.agregators.agregator.Agregator.set_nodes_to_agregate">set_nodes_to_agregate() (p2pfl.learning.agregators.agregator.Agregator method)</a>
 </li>
@@ -1113,14 +1110,12 @@
           <li><a href="p2pfl.html#p2pfl.node_connection.NodeConnection.start">(p2pfl.node_connection.NodeConnection method)</a>
 </li>
         </ul></li>
+        <li><a href="p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.START_LEARNING">START_LEARNING (p2pfl.communication_protocol.CommunicationProtocol attribute)</a>
+</li>
         <li><a href="p2pfl.html#p2pfl.command.Start_learning_cmd">Start_learning_cmd (class in p2pfl.command)</a>
 </li>
-        <li><a href="p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.START_LEARNING_EVENT">START_LEARNING_EVENT (p2pfl.communication_protocol.CommunicationProtocol attribute)</a>
-
-        <ul>
-          <li><a href="p2pfl.utils.html#p2pfl.utils.observer.Events.START_LEARNING_EVENT">(p2pfl.utils.observer.Events attribute)</a>
+        <li><a href="p2pfl.utils.html#p2pfl.utils.observer.Events.START_LEARNING_EVENT">START_LEARNING_EVENT (p2pfl.utils.observer.Events attribute)</a>
 </li>
-        </ul></li>
         <li><a href="p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.STOP">STOP (p2pfl.communication_protocol.CommunicationProtocol attribute)</a>
 </li>
         <li><a href="p2pfl.html#p2pfl.base_node.BaseNode.stop">stop() (p2pfl.base_node.BaseNode method)</a>
@@ -1137,14 +1132,12 @@
         </ul></li>
         <li><a href="p2pfl.html#p2pfl.command.Stop_cmd">Stop_cmd (class in p2pfl.command)</a>
 </li>
+        <li><a href="p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.STOP_LEARNING">STOP_LEARNING (p2pfl.communication_protocol.CommunicationProtocol attribute)</a>
+</li>
         <li><a href="p2pfl.html#p2pfl.command.Stop_learning_cmd">Stop_learning_cmd (class in p2pfl.command)</a>
 </li>
-        <li><a href="p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.STOP_LEARNING_EVENT">STOP_LEARNING_EVENT (p2pfl.communication_protocol.CommunicationProtocol attribute)</a>
-
-        <ul>
-          <li><a href="p2pfl.utils.html#p2pfl.utils.observer.Events.STOP_LEARNING_EVENT">(p2pfl.utils.observer.Events attribute)</a>
+        <li><a href="p2pfl.utils.html#p2pfl.utils.observer.Events.STOP_LEARNING_EVENT">STOP_LEARNING_EVENT (p2pfl.utils.observer.Events attribute)</a>
 </li>
-        </ul></li>
     </ul></td>
   </tr></table>
 </section>
