@@ -10,7 +10,7 @@ from p2pfl.settings import Settings
 
 class CommunicationProtocol:
     """
-    Manages the meaning of node communication messages. Some messages contains a hash at end, it is used as a unique identifier for the message, 
+    Manages the meaning of node communication messages. Some messages contain a hash at end, it is used as a unique identifier for the message, 
     this kind of messages are gossiped to the entire network.
     
     The valid messages can be classified into gossiped and non-gossiped:
@@ -30,7 +30,7 @@ class CommunicationProtocol:
             - MODELS_AGGREGATED <node>* MODELS_AGGREGATED_CLOSE
             - MODEL_INITIALIZED
 
-    Furthermore, all messages consists of encoded text (utf-8), with the exception of the `PARAMS` message, which contains serialized binaries.
+    Furthermore, all messages consist of encoded text (utf-8), with the exception of the `PARAMS` message, which contains serialized binaries.
 
     Non-static methods are used to process the different messages. Static methods are used to build messages and process only the `CONNECT` message (handshake). 
     
@@ -114,7 +114,7 @@ class CommunicationProtocol:
 
     def add_processed_messages(self,messages):
         """
-        Add messages to the last messages list. If ammount is higher than `Settings.AMOUNT_LAST_MESSAGES_SAVED` remove the oldest to keep the size.
+        Add messages to the last messages list. If ammount is higher than ``Settings.AMOUNT_LAST_MESSAGES_SAVED`` remove the oldest to keep the size.
 
         Args:
             hash_messages: List of hashes of the messages.
@@ -443,14 +443,14 @@ class CommunicationProtocol:
     def build_beat_msg(node):
         """ 
         Returns:
-            A encoded beat message.
+            An encoded beat message.
         """
         return CommunicationProtocol.generate_hased_message(CommunicationProtocol.BEAT + " " + node)
 
     def build_stop_msg():
         """ 
         Returns:
-            A encoded stop message.
+            An encoded stop message.
         """
         return (CommunicationProtocol.STOP + "\n").encode("utf-8")
 
@@ -461,7 +461,7 @@ class CommunicationProtocol:
             port: The port to connect to.
 
         Returns:
-            A encoded connect to message.
+            An encoded connect to message.
         """
         return (CommunicationProtocol.CONN_TO + " " + ip + " " + str(port) + "\n").encode("utf-8")
 
@@ -472,14 +472,14 @@ class CommunicationProtocol:
             epochs: The number of epochs to train.
 
         Returns:
-            A encoded start learning message.
+            An encoded start learning message.
         """
         return CommunicationProtocol.generate_hased_message(CommunicationProtocol.START_LEARNING + " " + str(rounds) + " " + str(epochs))
 
     def build_stop_learning_msg():
         """
         Returns:
-            A encoded stop learning message.
+            An encoded stop learning message.
         """
         return CommunicationProtocol.generate_hased_message(CommunicationProtocol.STOP_LEARNING)
 
@@ -489,7 +489,7 @@ class CommunicationProtocol:
             round: The last round finished.
 
         Returns:
-            A encoded ready message.
+            An encoded ready message.
         """
         return (CommunicationProtocol.MODELS_READY + " " + str(round) + "\n").encode("utf-8")
 
@@ -497,12 +497,12 @@ class CommunicationProtocol:
         """
         Args:
             node: The node that sent the message.
-            round: The round when the metrics was calculated.
+            round: The round when the metrics were calculated.
             loss: The loss of the last round.
             metric: The metric of the last round.
         
         Returns:
-            A encoded metrics message.
+            An encoded metrics message.
         """
         return CommunicationProtocol.generate_hased_message(CommunicationProtocol.METRICS + " " + node + " " + str(round) + " " + str(loss) + " " + str(metric))
 
@@ -513,7 +513,7 @@ class CommunicationProtocol:
             votes: Votes of the node.
         
         Returns:
-            A encoded vote train set message.
+            An encoded vote train set message.
         """
         aux = ""
         for v in votes:
@@ -526,7 +526,7 @@ class CommunicationProtocol:
             nodes: List of strings to indicate aggregated nodes.
         
         Returns:
-            A encoded models aggregated message.
+            An encoded models aggregated message.
         """
         aux = ""
         for n in nodes:
@@ -536,7 +536,7 @@ class CommunicationProtocol:
     def build_model_initialized_msg():
         """
         Returns:
-            A encoded model inicialized message.
+            An encoded model inicialized message.
         """
         return (CommunicationProtocol.MODEL_INITIALIZED + "\n").encode("utf-8")
 
@@ -552,7 +552,7 @@ class CommunicationProtocol:
             force: Whether or not to force connection.
 
         Returns:
-            A encoded connect message.
+            An encoded connect message.
         """
         return (CommunicationProtocol.CONN + " " + ip + " " + str(port) + " " + str(broadcast) + " " + str(force) + "\n").encode("utf-8")
 

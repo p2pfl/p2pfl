@@ -4,11 +4,11 @@
 
 ## PyTorch Quickstart
 
-In this tutorial we will learn how to train a **Multilayer Perceptron** on **MNIST** using **p2pfl** and PyTorch. We will use a adapted version of the MNIST dataset to federated envairoments.
+In this tutorial, we will learn how to train a **Multilayer Perceptron** on **MNIST** using **p2pfl** and PyTorch. We will use an adapted version of the MNIST dataset to federated environments.
 
-Two nodes will be uded, one of these nodes will only start and the other will start, connect and start learning.
+Two nodes will be used, one of these nodes will only start and the other will start, connect and start learning.
 
-For the node that only starts (``node1.py``), with a couple of lines everything will be configured:
+The node that only starts (``node1.py``) will be configured with just a couple of lines:
 
 ```python
 from p2pfl.node import Node
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     node.start()    
 ```
 
-For the other node (``node2.py``) a few more lines will be needed:
+The other node (``node2.py``) will need a few more lines:
 
 ```python
 from p2pfl.node import Node
@@ -50,13 +50,13 @@ if __name__ == '__main__':
     node.stop()
 ```
 
-Now, for executing the experiment, ``node1.py`` will be executed first, after that, execute ``node2.py``.
+Now, to execute the experiment, ``node1.py`` will be executed first, after that, execute ``node2.py``.
 
 For more information see the [documentation](https://pguijas.github.io/federated_learning_p2p/documentation.html).
 
 ### Other examples
 
-This and othe examples can be found [here](https://github.com/pguijas/federated_learning_p2p/tree/main/examples/).
+This and other examples can be found [here](https://github.com/pguijas/federated_learning_p2p/tree/main/examples/).
 
 ## TensorFlow Quickstart
 

@@ -22,7 +22,7 @@ class BaseNode(threading.Thread, Observer):
     Attributes:
         host (str): The host of the node.
         port (int): The port of the node.
-        simulation (bool): If the node is in simulation mode or not. Basically a simulation nodes don't have encryption and metrics aren't sended to network nodes.
+        simulation (bool): If the node is in simulation mode or not. Basically, simulation nodes don't have encryption and metrics aren't sent to network nodes.
         heartbeater (Heartbeater): The heartbeater of the node.
         gossiper (Gossiper): The gossiper of the node.
     """
@@ -50,8 +50,8 @@ class BaseNode(threading.Thread, Observer):
             self.__node_socket.bind((host, port))
         self.__node_socket.listen(50) # no more than 50 connections at queue
         
-        # Neightbors
-        self.__neightbors = [] # private to avoid concurrency issues
+        # Neighbors
+        self.__neighbors = [] # private to avoid concurrency issues
         self.__nei_lock = threading.Lock()
 
         # Logging
@@ -89,7 +89,7 @@ class BaseNode(threading.Thread, Observer):
         super().start()
         # Heartbeater and Gossiper
         self.heartbeater = Heartbeater(self.get_name())
-        self.gossiper = Gossiper(self.get_name(),self.__neightbors) # thread safe, only read
+        self.gossiper = Gossiper(self.get_name(),self.__neighbors) # thread safe, only read
         self.heartbeater.add_observer(self)
         self.gossiper.add_observer(self)
         self.heartbeater.start()
@@ -112,7 +112,7 @@ class BaseNode(threading.Thread, Observer):
 
     def run(self):
         """
-        Main loop of the node, when a node is running, this method is beeing executed. It will listen for new connections and process them.
+        Main loop of the node, when a node is running, this method is being executed. It will listen for new connections and process them.
         """
         # Process new connections loop
         logging.info('({}) Node started'.format(self.get_name()))
@@ -135,7 +135,7 @@ class BaseNode(threading.Thread, Observer):
         self.gossiper.stop()
 
         # Stop Node
-        logging.info('({}) Stopping node. Disconnecting from {} nodos'.format(self.get_name(), len(self.__neightbors))) 
+        logging.info('({}) Stopping node. Disconnecting from {} nodos'.format(self.get_name(), len(self.__neighbors))) 
         nei_copy_list = self.get_neighbors()
         for n in nei_copy_list:
             n.stop()
@@ -166,12 +166,12 @@ class BaseNode(threading.Thread, Observer):
                     aes_cipher = AESCipher()
                     node_socket.sendall(aes_cipher.get_key())
 
-                # Add neightboor
+                # Add neighboor
                 if result == 0:
                     logging.info('{} Connection accepted with {}:{}'.format(self.get_name(),h,p))
                     nc = NodeConnection(self.get_name(),node_socket,(h,p),aes_cipher)
                     nc.add_observer(self)
-                    self.__neightbors.append(nc)
+                    self.__neighbors.append(nc)
                     nc.start(force=force)
                     
                     if full:
@@ -204,13 +204,13 @@ class BaseNode(threading.Thread, Observer):
 
     def connect_to(self, h, p, full=False, force=False):
         """"
-        Connects a node to other.
+        Connects a node to another.
         
         Args:
             h (str): The host of the node.
             p (int): The port of the node.
             full (bool): If True, the node will be connected to the entire network.
-            force (bool): If True, the the node will be connected even though it should not be.
+            force (bool): If True, the node will be connected even though it should not be.
 
         Returns:
             node: The node that has been connected to.
@@ -245,11 +245,11 @@ class BaseNode(threading.Thread, Observer):
                     # Symetric
                     aes_cipher = AESCipher(key=s.recv(AESCipher.key_len()))
 
-                # Add socket to neightbors
+                # Add socket to neighbors
                 logging.info("{} Connected to {}:{}".format(self.get_name(),h,p))
                 nc = NodeConnection(self.get_name(),s,(h,p),aes_cipher)
                 nc.add_observer(self)
-                self.__neightbors.append(nc)
+                self.__neighbors.append(nc)
                 nc.start(force=force)
                 self.__nei_lock.release()
                 return nc
@@ -280,7 +280,7 @@ class BaseNode(threading.Thread, Observer):
             
     def get_neighbor(self, h, p, thread_safe=True):
         """
-        Get a ``NodeConnection`` from the neightbors list.
+        Get a ``NodeConnection`` from the neighbors list.
 
         Args:
             h (str): The host of the node.
@@ -293,7 +293,7 @@ class BaseNode(threading.Thread, Observer):
             self.__nei_lock.acquire()
 
         return_node = None    
-        for n in self.__neightbors:
+        for n in self.__neighbors:
             if n.get_addr() == (h,p):
                 return_node = n
                 break
@@ -306,23 +306,23 @@ class BaseNode(threading.Thread, Observer):
     def get_neighbors(self):
         """
         Returns:
-            list: The neightbors of the node.
+            list: The neighbors of the node.
         """
         self.__nei_lock.acquire()
-        n = self.__neightbors.copy()
+        n = self.__neighbors.copy()
         self.__nei_lock.release()
         return n
 
     def rm_neighbor(self,n):
         """
-        Removes a neightboor from the neightbors list.
+        Removes a neighboor from the neighbors list.
 
         Args:
-            n (NodeConnection): The neightboor to be removed.
+            n (NodeConnection): The neighboor to be removed.
         """
         self.__nei_lock.acquire()
         try:
-            self.__neightbors.remove(n)
+            self.__neighbors.remove(n)
             n.stop()
         except:
             pass
@@ -341,18 +341,18 @@ class BaseNode(threading.Thread, Observer):
 
     def broadcast(self, msg, exc=[], thread_safe=True):
         """
-        Broadcasts a message to all the neightbors.
+        Broadcasts a message to all the neighbors.
 
         Args:
             msg (str): The message to be broadcasted.
-            exc (list): The neightbors to be excluded.
-            thread_safe (bool): If True, the broadcast will access the neightbors list in a thread safe mode.
+            exc (list): The neighbors to be excluded.
+            thread_safe (bool): If True, the broadcast will access the neighbors list in a thread safe mode.
 
         """
         if thread_safe:
             self.__nei_lock.acquire()
 
-        for n in self.__neightbors:
+        for n in self.__neighbors:
             if not (n in exc):
                 n.send(msg)
 
@@ -390,7 +390,7 @@ class BaseNode(threading.Thread, Observer):
         elif event == Events.PROCESSED_MESSAGES_EVENT:
             node, msgs = obj
             # Comunicate to connections the new messages processed
-            for nc in self.__neightbors:
+            for nc in self.__neighbors:
                 if nc != node:
                     nc.add_processed_messages(list(msgs.keys()))
             # Gossip the new messages

@@ -19,8 +19,8 @@ class Node(BaseNode):
     Metrics will be saved under a folder with the name of the node.
             
     Args:
-        model: Model to be learned. Carefull, model should be compatible with data and the learner.
-        data: Dataset to be used in the learning process. Carefull, model should be compatible with data and the learner.
+        model: Model to be learned. Careful, model should be compatible with data and the learner.
+        data: Dataset to be used in the learning process. Careful, model should be compatible with data and the learner.
         host (str): Host where the node will be listening.
         port (int): Port where the node will be listening.
         learner (NodeLearner): Learner to be used in the learning process. Default: LightningLearner.
@@ -75,14 +75,14 @@ class Node(BaseNode):
 
     def connect_to(self, h, p, full=False, force=False):
         """"
-        Connects a node to other. If learning is running connections are not allowed (it should be forced).
-        Carefull, if connection is forced with a new node, it will produce timeouts in the network.
+        Connects a node to another. If learning is running, connections are not allowed (it should be forced).
+        Careful, if connection is forced with a new node, it will produce timeouts in the network.
     
         Args:
             h (str): The host of the node.
             p (int): The port of the node.
             full (bool): If True, the node will be connected to the entire network.
-            force (bool): If True, the the node will be connected even though it should not be.
+            force (bool): If True, the node will be connected even though it should not be.
 
         Returns:
             node: The node that has been connected to.
@@ -246,7 +246,7 @@ class Node(BaseNode):
                     if self.learner.check_parameters(decoded_model):
                         models_added = self.aggregator.add_model(decoded_model,contributors,weight)
                         if models_added is not None:
-                            # CAREFULL RARE BUG at MACBOOCK: When CPU is high, only new nodes will be sent.
+                            # CAREFUL RARE BUG at MACBOOCK: When CPU is high, only new nodes will be sent.
                             self.broadcast(CommunicationProtocol.build_models_aggregated_msg(models_added))
                     else:
                         raise ModelNotMatchingError("Not matching models")
@@ -547,7 +547,7 @@ class Node(BaseNode):
                 logging.info("({}) Gossip finished.".format(self.get_name()))
                 return
 
-            # Save state of neightbors. If nodes are not responding gossip will stop
+            # Save state of neighbors. If nodes are not responding gossip will stop
             if len(last_x_status) != Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS:
                 last_x_status.append([status_function(nc) for nc in nei])
             else:
@@ -561,7 +561,7 @@ class Node(BaseNode):
                     logging.info("({}) Gossiping exited for {} equal reounds.".format(self.get_name(), Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS))
                     return
 
-            # Select a random subset of neightbors
+            # Select a random subset of neighbors
             samples = min(Settings.GOSSIP_MODELS_PER_ROUND,len(nei))
             nei = random.sample(nei, samples)
 

@@ -14,11 +14,11 @@ class NodeConnection(threading.Thread, Observable):
     """
     This class represents a connection to a node. It is a thread, so it's going to process all messages in a background thread using the CommunicationProtocol.
 
-    The NodeConnection can recive many messages in a single recv and exists 2 kinds of messages:
+    The NodeConnection can receive many messages in a single recv and exists 2 kinds of messages:
         - Binary messages (models)
         - Text messages (commands)
 
-    Carefully, if the connection is broken, it will be closed. If the user wants to reconnect, he/she should create a new connection.
+    Be careful, if the connection is broken, it will be closed. If the user wants to reconnect, he/she should create a new connection.
 
     Args:
         parent_node: The parent node of this connection.
@@ -101,14 +101,14 @@ class NodeConnection(threading.Thread, Observable):
 
     def run(self):
         """
-        NodeConnection loop. Recive and process messages.
+        NodeConnection loop. Receive and process messages.
         """
         self.__socket.settimeout(Settings.NODE_TIMEOUT)
         amount_pending_params = 0
         param_buffer = b""
         while not self.__terminate_flag.is_set():
             try:
-                # Recive message
+                # Receive message
                 og_msg = b""
                 if amount_pending_params == 0:
                     og_msg = self.__socket.recv(Settings.BLOCK_SIZE)
@@ -192,7 +192,7 @@ class NodeConnection(threading.Thread, Observable):
         """
         Add to a list of communication protocol messages that have been processed. (By other nodes)
         Messages are added to avoid multiple processing of the same messages, also the non-processing
-        of these messges avoid cycles in the network.
+        of these messages avoid cycles in the network.
  
         Args:
             msgs: The list of messages that have been processed.

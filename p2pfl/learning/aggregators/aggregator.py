@@ -5,8 +5,8 @@ from p2pfl.utils.observer import Events, Observable
    
 class Aggregator(threading.Thread, Observable):
     """
-    Class to manage the aggregation of models. Its a thread so, aggregation will be done in background if all models was added or timeouts have gone. 
-    Also its a observable so, it will notify the node when the aggregation was done.
+    Class to manage the aggregation of models. It is a thread so, aggregation will be done in background if all models were added or timeouts have gone. 
+    Also it is an observable so, it will notify the node when the aggregation was done.
 
     Args:
         node_name: (str): String with the name of the node.
@@ -27,7 +27,7 @@ class Aggregator(threading.Thread, Observable):
 
     def run(self):
         """
-        Wait for the aggregation to be done or timeout. Then aggregate the models and notify.
+        Wait for the aggregation to be done or timeout. Then, aggregate the models and notify it.
         """
         self.__thread_executed = True
 
@@ -81,7 +81,7 @@ class Aggregator(threading.Thread, Observable):
             weight: Number of samples used to get the model.
         """
         if self.__waiting_aggregated_model and not self.__aggregated_waited_model:
-            logging.info("({}) Recived an aggregated model.".format(self.node_name))
+            logging.info("({}) Received an aggregated model.".format(self.node_name))
             self.__aggregated_waited_model = True
             self.notify(Events.AGGREGATION_FINISHED_EVENT,model) 
         else:

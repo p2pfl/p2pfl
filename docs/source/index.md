@@ -13,7 +13,7 @@ sphinx-apidoc -F -o tmp ../p2pfl
 - [ ] Secure Aggregation
 - [ ] Iterative terminal for node gestion
 - [ ] Connect nodes during training process
-- [ ] Gossip loop optimization for sending models (too much sendings when a node fails)
+- [ ] Gossip loop optimization to send models (too much sendings when a node fails)
 - [ ] Tolerance to incomplete reception of messages
 - [ ] Tests with a high number of nodes in deploy
 - [ ] Comparison of node settings when learning starts

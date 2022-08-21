@@ -9,7 +9,7 @@ from p2pfl.utils.observer import Events, Observable
 
 class Gossiper(threading.Thread, Observable):
     """
-    Thread based gossiper. It gossip messages from list of pending messages. ``Settings.GOSSIP_MESSAGES_PER_ROUND`` are sended per iteration (`Settings.GOSSIP_FREC` times per second).
+    Thread based gossiper. It gossips messages from list of pending messages. ``Settings.GOSSIP_MESSAGES_PER_ROUND`` are sended per iteration (``Settings.GOSSIP_FREC`` times per second).
 
     Communicates with node via observer pattern.
     
@@ -41,7 +41,7 @@ class Gossiper(threading.Thread, Observable):
 
     def run(self):
         """
-        Gossiper Main Loop. Sends `Settings.GOSSIP_MODEL_SENDS_BY_ROUND` messages `Settings.GOSSIP_FREC` times per second.        
+        Gossiper Main Loop. Sends `Settings.GOSSIP_MODEL_SENDS_BY_ROUND` messages ``Settings.GOSSIP_FREC`` times per second.        
         """
         while not self.__terminate_flag.is_set():
 

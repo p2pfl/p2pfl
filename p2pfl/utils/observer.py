@@ -25,7 +25,7 @@ class Events():
     """
     CONN_TO_EVENT                   = "CONN_TO_EVENT"
     """
-    Used to notify when a node must connect to other. (arg: (host,port))
+    Used to notify when a node must connect to another. (arg: (host,port))
     """
     START_LEARNING_EVENT            = "START_LEARNING_EVENT"
     """
@@ -53,7 +53,7 @@ class Events():
     """
     PROCESSED_MESSAGES_EVENT        = "PROCESSED_MESSAGES_EVENT"
     """
-    Used to notify when a node process messages. (arg: (node, messages))
+    Used to notify when a node processes messages. (arg: (node, messages))
     """
     GOSSIP_BROADCAST_EVENT          = "GOSSIP_BROADCAST_EVENT"
     """
@@ -61,7 +61,7 @@ class Events():
     """
     BEAT_RECEIVED_EVENT             = "BEAT_RECEIVED_EVENT"
     """
-    Used to notify when a node receive a beat. (arg: node)
+    Used to notify when a node receives a beat. (arg: node)
     """
     
 ##################################
@@ -95,7 +95,7 @@ class Observable():
 
     def notify(self, event, obj):
         """
-        Notifies to all the observers an event.
+        Notifies an event to all the observers.
 
         Args:
             event: The event to notify.

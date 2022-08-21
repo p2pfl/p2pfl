@@ -123,8 +123,8 @@ class AESCipher(Encrypter):
     
     def add_padding(self, msg):
         """
-        Add padding to a encoded UTF-8 text. Adds " " charactets (1 byte) to fill the rest of the block.
-        Careful: for this case the filling content don't affect to the meaning of messages.
+        Add padding to an encoded UTF-8 text. Adds " " charactets (1 byte) to fill the rest of the block.
+        Careful: in this case, the filling content doesn't affect to the meaning of messages.
 
         Args:
             msg: (bytes) The encoded text.

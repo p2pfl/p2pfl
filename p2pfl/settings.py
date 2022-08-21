@@ -38,7 +38,7 @@ class Settings():
     """
     AGGREGATION_TIMEOUT = 60
     """
-    Timeout (seconds) for a node to wait for other models. Timeout stars when the first model is added.
+    Timeout (seconds) for a node to wait for other models. Timeout starts when the first model is added.
     """
 
     # HEARTBEATER

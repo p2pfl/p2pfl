@@ -5,7 +5,7 @@
 
 class NodeLearner:
     """
-    Template to implement learning processes, iincluding metric monitoring during training.
+    Template to implement learning processes, including metric monitoring during training.
     """
 
     def set_model(self, model): 
@@ -115,13 +115,13 @@ class NodeLearner:
 
     def evaluate(self): 
         """
-        Evaluate the model. With a given parameters.
+        Evaluate the model with actual parameters.
         """
         pass
 
     def log_validation_metrics(self, loss, metric, round=None, name=None):
         """
-        Log the validation metrics. It also can be used to log the othe node metrics.
+        Log the validation metrics. It also can be used to log the other node metrics.
         """
         pass
 

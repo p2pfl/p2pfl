@@ -6,6 +6,6 @@ class DecodingParamsError(Exception):
 
 class ModelNotMatchingError(Exception):  
     """
-    An exception raised when parameters not match with the model.
+    An exception raised when parameters do not match with the model.
     """
     pass
