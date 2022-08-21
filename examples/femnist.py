@@ -28,7 +28,6 @@ def set_settings():
     Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS = 30
     Settings.GOSSIP_MODELS_FREC = 10
     Settings.GOSSIP_MODELS_PER_ROUND = 10
-    Settings.FRAGMENTS_DELAY = 0.0
 
 
 ##################################

@@ -92,7 +92,3 @@ class Settings():
     """
     Amount of gossip models per round.
     """
-    FRAGMENTS_DELAY = 0.0
-    """
-    Delay (seconds) to wait before sending a fragment. This is a very important value, if the node is too slow and the buffer isn't big enough, the node will send fragments too fast and the other node will not receive them.
-    """
