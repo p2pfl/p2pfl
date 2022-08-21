@@ -160,7 +160,7 @@
 <li class="toctree-l1 current has-children"><a class="reference internal" href="documentation.html">Documentation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2 current has-children"><a class="reference internal" href="p2pfl.html">p2pfl package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html">p2pfl.learning.aggregators package</a></li>
 <li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
@@ -222,12 +222,12 @@
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class that represents the events that can be observed.</p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.AGREGATION_FINISHED_EVENT">
-<span class="sig-name descname"><span class="pre">AGREGATION_FINISHED_EVENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'AGREGATION_FINISHED_EVENT'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.AGREGATION_FINISHED_EVENT" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="p2pfl.utils.observer.Events.AGGREGATION_FINISHED_EVENT">
+<span class="sig-name descname"><span class="pre">AGGREGATION_FINISHED_EVENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'AGGREGATION_FINISHED_EVENT'</span></em><a class="headerlink" href="#p2pfl.utils.observer.Events.AGGREGATION_FINISHED_EVENT" title="Permalink to this definition">#</a></dt>
 <dd><p>model or None)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Used to notify that the agregation was done. (arg</p>
+<dd class="field-odd"><p>Used to notify that the aggregation was done. (arg</p>
 </dd>
 </dl>
 </dd></dl>
@@ -238,7 +238,7 @@
 <dd><p>node)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Used to notify when a node receive a beat. (arg</p>
+<dd class="field-odd"><p>Used to notify when a node receives a beat. (arg</p>
 </dd>
 </dl>
 </dd></dl>
@@ -249,7 +249,7 @@
 <dd><p>(host,port))</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Used to notify when a node must connect to other. (arg</p>
+<dd class="field-odd"><p>Used to notify when a node must connect to another. (arg</p>
 </dd>
 </dl>
 </dd></dl>
@@ -315,7 +315,7 @@
 <dd><p>(node, messages))</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Used to notify when a node process messages. (arg</p>
+<dd class="field-odd"><p>Used to notify when a node processes messages. (arg</p>
 </dd>
 </dl>
 </dd></dl>
@@ -386,7 +386,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.utils.observer.Observable.notify">
 <span class="sig-name descname"><span class="pre">notify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/utils/observer.html#Observable.notify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.utils.observer.Observable.notify" title="Permalink to this definition">#</a></dt>
-<dd><p>Notifies to all the observers an event.</p>
+<dd><p>Notifies an event to all the observers.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="p2pfl.learning.pytorch.mnist_examples package" href="p2pfl.learning.pytorch.mnist_examples.html" /><link rel="prev" title="p2pfl.learning.agregators package" href="p2pfl.learning.agregators.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="p2pfl.learning.pytorch.mnist_examples package" href="p2pfl.learning.pytorch.mnist_examples.html" /><link rel="prev" title="p2pfl.learning.aggregators package" href="p2pfl.learning.aggregators.html" />
 
     <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
         <title>p2pfl.learning.pytorch package - P2P FL</title>
@@ -160,7 +160,7 @@
 <li class="toctree-l1 current has-children"><a class="reference internal" href="documentation.html">Documentation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2 current has-children"><a class="reference internal" href="p2pfl.html">p2pfl package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l3 current has-children"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html">p2pfl.learning.aggregators package</a></li>
 <li class="toctree-l4 current has-children current-page"><a class="current reference internal" href="#">p2pfl.learning.pytorch package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
@@ -310,7 +310,7 @@ If params are not provided, self parameters are encoded.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.learning.pytorch.lightninglearner.LightningLearner.evaluate">
 <span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/learning/pytorch/lightninglearner.html#LightningLearner.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.learning.pytorch.lightninglearner.LightningLearner.evaluate" title="Permalink to this definition">#</a></dt>
-<dd><p>Evaluate the model. With a given parameters.</p>
+<dd><p>Evaluate the model with actual parameters.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -362,7 +362,7 @@ If params are not provided, self parameters are encoded.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.learning.pytorch.lightninglearner.LightningLearner.log_validation_metrics">
 <span class="sig-name descname"><span class="pre">log_validation_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loss</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/learning/pytorch/lightninglearner.html#LightningLearner.log_validation_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.learning.pytorch.lightninglearner.LightningLearner.log_validation_metrics" title="Permalink to this definition">#</a></dt>
-<dd><p>Log the validation metrics. It also can be used to log the othe node metrics.</p>
+<dd><p>Log the validation metrics. It also can be used to log the other node metrics.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -509,14 +509,14 @@ Please use <cite>LightningLoggerBase.finalize</cite> instead.</p>
               </div>
               <svg><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="p2pfl.learning.agregators.html">
+          <a class="prev-page" href="p2pfl.learning.aggregators.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">p2pfl.learning.agregators package</div>
+                <div class="title">p2pfl.learning.aggregators package</div>
                 
               </div>
             </a>

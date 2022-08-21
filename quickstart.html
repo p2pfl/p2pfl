@@ -160,7 +160,7 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html">p2pfl.learning.aggregators package</a></li>
 <li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
@@ -171,13 +171,6 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.utils.html">p2pfl.utils package</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -220,9 +213,9 @@
 <p><strong>P2P Federated Learning (p2pfl)</strong> is a library focused on the easy creation of federated learning systems.</p>
 <section id="pytorch-quickstart">
 <h2>PyTorch Quickstart<a class="headerlink" href="#pytorch-quickstart" title="Permalink to this heading">#</a></h2>
-<p>In this tutorial we will learn how to train a <strong>Multilayer Perceptron</strong> on <strong>MNIST</strong> using <strong>p2pfl</strong> and PyTorch. We will use a adapted version of the MNIST dataset to federated envairoments.</p>
-<p>Two nodes will be uded, one of these nodes will only start and the other will start, connect and start learning.</p>
-<p>For the node that only starts (<code class="docutils literal notranslate"><span class="pre">node1.py</span></code>), with a couple of lines everything will be configured:</p>
+<p>In this tutorial, we will learn how to train a <strong>Multilayer Perceptron</strong> on <strong>MNIST</strong> using <strong>p2pfl</strong> and PyTorch. We will use an adapted version of the MNIST dataset to federated environments.</p>
+<p>Two nodes will be used, one of these nodes will only start and the other will start, connect and start learning.</p>
+<p>The node that only starts (<code class="docutils literal notranslate"><span class="pre">node1.py</span></code>) will be configured with just a couple of lines:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">p2pfl.node</span> <span class="kn">import</span> <span class="n">Node</span>
 <span class="kn">from</span> <span class="nn">p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm</span> <span class="kn">import</span> <span class="n">MnistFederatedDM</span>
 <span class="kn">from</span> <span class="nn">p2pfl.learning.pytorch.mnist_examples.models.mlp</span> <span class="kn">import</span> <span class="n">MLP</span>
@@ -232,7 +225,7 @@
     <span class="n">node</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>    
 </pre></div>
 </div>
-<p>For the other node (<code class="docutils literal notranslate"><span class="pre">node2.py</span></code>) a few more lines will be needed:</p>
+<p>The other node (<code class="docutils literal notranslate"><span class="pre">node2.py</span></code>) will need a few more lines:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">p2pfl.node</span> <span class="kn">import</span> <span class="n">Node</span>
 <span class="kn">from</span> <span class="nn">p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm</span> <span class="kn">import</span> <span class="n">MnistFederatedDM</span>
 <span class="kn">from</span> <span class="nn">p2pfl.learning.pytorch.mnist_examples.models.mlp</span> <span class="kn">import</span> <span class="n">MLP</span>
@@ -260,11 +253,11 @@
     <span class="n">node</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Now, for executing the experiment, <code class="docutils literal notranslate"><span class="pre">node1.py</span></code> will be executed first, after that, execute <code class="docutils literal notranslate"><span class="pre">node2.py</span></code>.</p>
+<p>Now, to execute the experiment, <code class="docutils literal notranslate"><span class="pre">node1.py</span></code> will be executed first, after that, execute <code class="docutils literal notranslate"><span class="pre">node2.py</span></code>.</p>
 <p>For more information see the <a class="reference external" href="https://pguijas.github.io/federated_learning_p2p/documentation.html">documentation</a>.</p>
 <section id="other-examples">
 <h3>Other examples<a class="headerlink" href="#other-examples" title="Permalink to this heading">#</a></h3>
-<p>This and othe examples can be found <a class="reference external" href="https://github.com/pguijas/federated_learning_p2p/tree/main/examples/">here</a>.</p>
+<p>This and other examples can be found <a class="reference external" href="https://github.com/pguijas/federated_learning_p2p/tree/main/examples/">here</a>.</p>
 </section>
 </section>
 <section id="tensorflow-quickstart">

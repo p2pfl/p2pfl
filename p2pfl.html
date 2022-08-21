@@ -160,7 +160,7 @@
 <li class="toctree-l1 current has-children"><a class="reference internal" href="documentation.html">Documentation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">p2pfl package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html">p2pfl.learning.aggregators package</a></li>
 <li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
@@ -216,11 +216,11 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.agregators.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.agregators.html#module-p2pfl.learning.agregators.agregator">p2pfl.learning.agregators.agregator module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.agregators.html#module-p2pfl.learning.agregators.fedavg">p2pfl.learning.agregators.fedavg module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.agregators.html#module-p2pfl.learning.agregators">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.aggregators.html">p2pfl.learning.aggregators package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html#module-p2pfl.learning.aggregators.aggregator">p2pfl.learning.aggregators.aggregator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html#module-p2pfl.learning.aggregators.fedavg">p2pfl.learning.aggregators.fedavg module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html#module-p2pfl.learning.aggregators">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><ul>
@@ -292,7 +292,7 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="p2pfl.base_node.BaseNode.simulation">
 <span class="sig-name descname"><span class="pre">simulation</span></span><a class="headerlink" href="#p2pfl.base_node.BaseNode.simulation" title="Permalink to this definition">#</a></dt>
-<dd><p>If the node is in simulation mode or not. Basically a simulation nodes don’t have encryption and metrics aren’t sended to network nodes.</p>
+<dd><p>If the node is in simulation mode or not. Basically, simulation nodes don’t have encryption and metrics aren’t sent to network nodes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
@@ -325,13 +325,13 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.base_node.BaseNode.broadcast">
 <span class="sig-name descname"><span class="pre">broadcast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thread_safe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode.broadcast"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode.broadcast" title="Permalink to this definition">#</a></dt>
-<dd><p>Broadcasts a message to all the neightbors.</p>
+<dd><p>Broadcasts a message to all the neighbors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>msg</strong> (<em>str</em>) – The message to be broadcasted.</p></li>
-<li><p><strong>exc</strong> (<em>list</em>) – The neightbors to be excluded.</p></li>
-<li><p><strong>thread_safe</strong> (<em>bool</em>) – If True, the broadcast will access the neightbors list in a thread safe mode.</p></li>
+<li><p><strong>exc</strong> (<em>list</em>) – The neighbors to be excluded.</p></li>
+<li><p><strong>thread_safe</strong> (<em>bool</em>) – If True, the broadcast will access the neighbors list in a thread safe mode.</p></li>
 </ul>
 </dd>
 </dl>
@@ -341,14 +341,14 @@
 <dt class="sig sig-object py" id="p2pfl.base_node.BaseNode.connect_to">
 <span class="sig-name descname"><span class="pre">connect_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode.connect_to"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode.connect_to" title="Permalink to this definition">#</a></dt>
 <dd><p>”
-Connects a node to other.</p>
+Connects a node to another.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>h</strong> (<em>str</em>) – The host of the node.</p></li>
 <li><p><strong>p</strong> (<em>int</em>) – The port of the node.</p></li>
 <li><p><strong>full</strong> (<em>bool</em>) – If True, the node will be connected to the entire network.</p></li>
-<li><p><strong>force</strong> (<em>bool</em>) – If True, the the node will be connected even though it should not be.</p></li>
+<li><p><strong>force</strong> (<em>bool</em>) – If True, the node will be connected even though it should not be.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -403,7 +403,7 @@ Connects a node to other.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.base_node.BaseNode.get_neighbor">
 <span class="sig-name descname"><span class="pre">get_neighbor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thread_safe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode.get_neighbor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode.get_neighbor" title="Permalink to this definition">#</a></dt>
-<dd><p>Get a <code class="docutils literal notranslate"><span class="pre">NodeConnection</span></code> from the neightbors list.</p>
+<dd><p>Get a <code class="docutils literal notranslate"><span class="pre">NodeConnection</span></code> from the neighbors list.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -425,7 +425,7 @@ Connects a node to other.</p>
 <span class="sig-name descname"><span class="pre">get_neighbors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode.get_neighbors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode.get_neighbors" title="Permalink to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The neightbors of the node.</p>
+<dd class="field-odd"><p>The neighbors of the node.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list</p>
@@ -449,10 +449,10 @@ Connects a node to other.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.base_node.BaseNode.rm_neighbor">
 <span class="sig-name descname"><span class="pre">rm_neighbor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode.rm_neighbor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode.rm_neighbor" title="Permalink to this definition">#</a></dt>
-<dd><p>Removes a neightboor from the neightbors list.</p>
+<dd><p>Removes a neighboor from the neighbors list.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>n</strong> (<a class="reference internal" href="#p2pfl.node_connection.NodeConnection" title="p2pfl.node_connection.NodeConnection"><em>NodeConnection</em></a>) – The neightboor to be removed.</p>
+<dd class="field-odd"><p><strong>n</strong> (<a class="reference internal" href="#p2pfl.node_connection.NodeConnection" title="p2pfl.node_connection.NodeConnection"><em>NodeConnection</em></a>) – The neighboor to be removed.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -460,7 +460,7 @@ Connects a node to other.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.base_node.BaseNode.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/base_node.html#BaseNode.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.base_node.BaseNode.run" title="Permalink to this definition">#</a></dt>
-<dd><p>Main loop of the node, when a node is running, this method is beeing executed. It will listen for new connections and process them.</p>
+<dd><p>Main loop of the node, when a node is running, this method is being executed. It will listen for new connections and process them.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -574,13 +574,13 @@ Connects a node to other.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="p2pfl.command.Models_agregated_cmd">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.command.</span></span><span class="sig-name descname"><span class="pre">Models_agregated_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_connection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Models_agregated_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Models_agregated_cmd" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="p2pfl.command.Models_aggregated_cmd">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.command.</span></span><span class="sig-name descname"><span class="pre">Models_aggregated_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_connection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Models_aggregated_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Models_aggregated_cmd" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#p2pfl.command.Command" title="p2pfl.command.Command"><code class="xref py py-class docutils literal notranslate"><span class="pre">Command</span></code></a></p>
-<p>Command that should be executed as a response to a <strong>models_agregated</strong> message.</p>
+<p>Command that should be executed as a response to a <strong>models_aggregated</strong> message.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="p2pfl.command.Models_agregated_cmd.execute">
-<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Models_agregated_cmd.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Models_agregated_cmd.execute" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="p2pfl.command.Models_aggregated_cmd.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/command.html#Models_aggregated_cmd.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.command.Models_aggregated_cmd.execute" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -652,7 +652,7 @@ Connects a node to other.</p>
 <dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.communication_protocol.</span></span><span class="sig-name descname"><span class="pre">CommunicationProtocol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Manages the meaning of node communication messages. Some messages contains a hash at end, it is used as a unique identifier for the message,
+<p>Manages the meaning of node communication messages. Some messages contain a hash at end, it is used as a unique identifier for the message,
 this kind of messages are gossiped to the entire network.</p>
 <dl class="simple">
 <dt>The valid messages can be classified into gossiped and non-gossiped:</dt><dd><dl class="simple">
@@ -670,14 +670,14 @@ this kind of messages are gossiped to the entire network.</p>
 <li><p>STOP</p></li>
 <li><p>PARAMS &lt;data&gt; PARAMS</p></li>
 <li><p>MODELS_READY &lt;round&gt;</p></li>
-<li><p>MODELS_AGREGATED &lt;node&gt;* MODELS_AGREGATED_CLOSE</p></li>
+<li><p>MODELS_AGGREGATED &lt;node&gt;* MODELS_AGGREGATED_CLOSE</p></li>
 <li><p>MODEL_INITIALIZED</p></li>
 </ul>
 </dd>
 </dl>
 </dd>
 </dl>
-<p>Furthermore, all messages consists of encoded text (utf-8), with the exception of the <cite>PARAMS</cite> message, which contains serialized binaries.</p>
+<p>Furthermore, all messages consist of encoded text (utf-8), with the exception of the <cite>PARAMS</cite> message, which contains serialized binaries.</p>
 <p>Non-static methods are used to process the different messages. Static methods are used to build messages and process only the <cite>CONNECT</cite> message (handshake).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -721,15 +721,15 @@ this kind of messages are gossiped to the entire network.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.MODELS_AGREGATED">
-<span class="sig-name descname"><span class="pre">MODELS_AGREGATED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'MODELS_AGREGATED'</span></em><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.MODELS_AGREGATED" title="Permalink to this definition">#</a></dt>
-<dd><p>Models agregated message header.</p>
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.MODELS_AGGREGATED">
+<span class="sig-name descname"><span class="pre">MODELS_AGGREGATED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'MODELS_AGGREGATED'</span></em><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.MODELS_AGGREGATED" title="Permalink to this definition">#</a></dt>
+<dd><p>Models aggregated message header.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.MODELS_AGREGATED_CLOSE">
-<span class="sig-name descname"><span class="pre">MODELS_AGREGATED_CLOSE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\\MODELS_AGREGATED'</span></em><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.MODELS_AGREGATED_CLOSE" title="Permalink to this definition">#</a></dt>
-<dd><p>Models agregated message closing.</p>
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.MODELS_AGGREGATED_CLOSE">
+<span class="sig-name descname"><span class="pre">MODELS_AGGREGATED_CLOSE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\\MODELS_AGGREGATED'</span></em><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.MODELS_AGGREGATED_CLOSE" title="Permalink to this definition">#</a></dt>
+<dd><p>Models aggregated message closing.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -789,7 +789,7 @@ this kind of messages are gossiped to the entire network.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.add_processed_messages">
 <span class="sig-name descname"><span class="pre">add_processed_messages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">messages</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.add_processed_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.add_processed_messages" title="Permalink to this definition">#</a></dt>
-<dd><p>Add messages to the last messages list. If ammount is higher than <cite>Settings.AMOUNT_LAST_MESSAGES_SAVED</cite> remove the oldest to keep the size.</p>
+<dd><p>Add messages to the last messages list. If ammount is higher than <code class="docutils literal notranslate"><span class="pre">Settings.AMOUNT_LAST_MESSAGES_SAVED</span></code> remove the oldest to keep the size.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>hash_messages</strong> – List of hashes of the messages.</p>
@@ -802,7 +802,7 @@ this kind of messages are gossiped to the entire network.</p>
 <span class="sig-name descname"><span class="pre">build_beat_msg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.build_beat_msg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.build_beat_msg" title="Permalink to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A encoded beat message.</p>
+<dd class="field-odd"><p>An encoded beat message.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -822,7 +822,7 @@ Not Hashed. Special case of message.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A encoded connect message.</p>
+<dd class="field-even"><p>An encoded connect message.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -838,7 +838,7 @@ Not Hashed. Special case of message.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A encoded connect to message.</p>
+<dd class="field-even"><p>An encoded connect to message.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -850,13 +850,13 @@ Not Hashed. Special case of message.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>node</strong> – The node that sent the message.</p></li>
-<li><p><strong>round</strong> – The round when the metrics was calculated.</p></li>
+<li><p><strong>round</strong> – The round when the metrics were calculated.</p></li>
 <li><p><strong>loss</strong> – The loss of the last round.</p></li>
 <li><p><strong>metric</strong> – The metric of the last round.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A encoded metrics message.</p>
+<dd class="field-even"><p>An encoded metrics message.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -866,20 +866,20 @@ Not Hashed. Special case of message.</p>
 <span class="sig-name descname"><span class="pre">build_model_initialized_msg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.build_model_initialized_msg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.build_model_initialized_msg" title="Permalink to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A encoded model inicialized message.</p>
+<dd class="field-odd"><p>An encoded model inicialized message.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.build_models_agregated_msg">
-<span class="sig-name descname"><span class="pre">build_models_agregated_msg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.build_models_agregated_msg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.build_models_agregated_msg" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="p2pfl.communication_protocol.CommunicationProtocol.build_models_aggregated_msg">
+<span class="sig-name descname"><span class="pre">build_models_aggregated_msg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.build_models_aggregated_msg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.build_models_aggregated_msg" title="Permalink to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>nodes</strong> – List of strings to indicate agregated nodes.</p>
+<dd class="field-odd"><p><strong>nodes</strong> – List of strings to indicate aggregated nodes.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A encoded models agregated message.</p>
+<dd class="field-even"><p>An encoded models aggregated message.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -892,7 +892,7 @@ Not Hashed. Special case of message.</p>
 <dd class="field-odd"><p><strong>round</strong> – The last round finished.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A encoded ready message.</p>
+<dd class="field-even"><p>An encoded ready message.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -923,7 +923,7 @@ Not Hashed. Special case of message (binary message).</p>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A encoded start learning message.</p>
+<dd class="field-even"><p>An encoded start learning message.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -933,7 +933,7 @@ Not Hashed. Special case of message (binary message).</p>
 <span class="sig-name descname"><span class="pre">build_stop_learning_msg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.build_stop_learning_msg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.build_stop_learning_msg" title="Permalink to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A encoded stop learning message.</p>
+<dd class="field-odd"><p>An encoded stop learning message.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -943,7 +943,7 @@ Not Hashed. Special case of message (binary message).</p>
 <span class="sig-name descname"><span class="pre">build_stop_msg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/communication_protocol.html#CommunicationProtocol.build_stop_msg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.communication_protocol.CommunicationProtocol.build_stop_msg" title="Permalink to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A encoded stop message.</p>
+<dd class="field-odd"><p>An encoded stop message.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -959,7 +959,7 @@ Not Hashed. Special case of message (binary message).</p>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A encoded vote train set message.</p>
+<dd class="field-even"><p>An encoded vote train set message.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1053,8 +1053,8 @@ Static method that checks if the message is a valid connection message and execu
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.encrypter.AESCipher.add_padding">
 <span class="sig-name descname"><span class="pre">add_padding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/encrypter.html#AESCipher.add_padding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.encrypter.AESCipher.add_padding" title="Permalink to this definition">#</a></dt>
-<dd><p>Add padding to a encoded UTF-8 text. Adds ” ” charactets (1 byte) to fill the rest of the block.
-Careful: for this case the filling content don’t affect to the meaning of messages.</p>
+<dd><p>Add padding to an encoded UTF-8 text. Adds ” ” charactets (1 byte) to fill the rest of the block.
+Careful: in this case, the filling content doesn’t affect to the meaning of messages.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>msg</strong> – (bytes) The encoded text.</p>
@@ -1241,7 +1241,7 @@ Keep in mind that AES uses a block cipher, so the message sould be filled with p
 <dt class="sig sig-object py" id="p2pfl.gossiper.Gossiper">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.gossiper.</span></span><span class="sig-name descname"><span class="pre">Gossiper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighbors</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/gossiper.html#Gossiper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.gossiper.Gossiper" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Thread</span></code>, <a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Observable" title="p2pfl.utils.observer.Observable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Observable</span></code></a></p>
-<p>Thread based gossiper. It gossip messages from list of pending messages. <code class="docutils literal notranslate"><span class="pre">Settings.GOSSIP_MESSAGES_PER_ROUND</span></code> are sended per iteration (<cite>Settings.GOSSIP_FREC</cite> times per second).</p>
+<p>Thread based gossiper. It gossips messages from list of pending messages. <code class="docutils literal notranslate"><span class="pre">Settings.GOSSIP_MESSAGES_PER_ROUND</span></code> are sended per iteration (<code class="docutils literal notranslate"><span class="pre">Settings.GOSSIP_FREC</span></code> times per second).</p>
 <p>Communicates with node via observer pattern.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1268,7 +1268,7 @@ Keep in mind that AES uses a block cipher, so the message sould be filled with p
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.gossiper.Gossiper.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/gossiper.html#Gossiper.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.gossiper.Gossiper.run" title="Permalink to this definition">#</a></dt>
-<dd><p>Gossiper Main Loop. Sends <cite>Settings.GOSSIP_MODEL_SENDS_BY_ROUND</cite> messages <cite>Settings.GOSSIP_FREC</cite> times per second.</p>
+<dd><p>Gossiper Main Loop. Sends <cite>Settings.GOSSIP_MODEL_SENDS_BY_ROUND</cite> messages <code class="docutils literal notranslate"><span class="pre">Settings.GOSSIP_FREC</span></code> times per second.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1347,19 +1347,19 @@ It happend <code class="docutils literal notranslate"><span class="pre">HEARTBEA
 <span id="p2pfl-node-module"></span><h2>p2pfl.node module<a class="headerlink" href="#module-p2pfl.node" title="Permalink to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="p2pfl.node.Node">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.node.</span></span><span class="sig-name descname"><span class="pre">Node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host='127.0.0.1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learner=&lt;class</span> <span class="pre">'p2pfl.learning.pytorch.lightninglearner.LightningLearner'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">agregator=&lt;class</span> <span class="pre">'p2pfl.learning.agregators.fedavg.FedAvg'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simulation=True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node.html#Node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node.Node" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.node.</span></span><span class="sig-name descname"><span class="pre">Node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host='127.0.0.1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learner=&lt;class</span> <span class="pre">'p2pfl.learning.pytorch.lightninglearner.LightningLearner'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregator=&lt;class</span> <span class="pre">'p2pfl.learning.aggregators.fedavg.FedAvg'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simulation=True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node.html#Node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node.Node" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#p2pfl.base_node.BaseNode" title="p2pfl.base_node.BaseNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseNode</span></code></a></p>
 <p>Class based on a base node that allows <strong>p2p Federated Learning</strong>.</p>
 <p>Metrics will be saved under a folder with the name of the node.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model</strong> – Model to be learned. Carefull, model should be compatible with data and the learner.</p></li>
-<li><p><strong>data</strong> – Dataset to be used in the learning process. Carefull, model should be compatible with data and the learner.</p></li>
+<li><p><strong>model</strong> – Model to be learned. Careful, model should be compatible with data and the learner.</p></li>
+<li><p><strong>data</strong> – Dataset to be used in the learning process. Careful, model should be compatible with data and the learner.</p></li>
 <li><p><strong>host</strong> (<em>str</em>) – Host where the node will be listening.</p></li>
 <li><p><strong>port</strong> (<em>int</em>) – Port where the node will be listening.</p></li>
 <li><p><strong>learner</strong> (<a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner" title="p2pfl.learning.learner.NodeLearner"><em>NodeLearner</em></a>) – Learner to be used in the learning process. Default: LightningLearner.</p></li>
-<li><p><strong>agregator</strong> (<a class="reference internal" href="p2pfl.learning.agregators.html#p2pfl.learning.agregators.agregator.Agregator" title="p2pfl.learning.agregators.agregator.Agregator"><em>Agregator</em></a>) – Agregator to be used in the learning process. Default: FedAvg.</p></li>
+<li><p><strong>aggregator</strong> (<a class="reference internal" href="p2pfl.learning.aggregators.html#p2pfl.learning.aggregators.aggregator.Aggregator" title="p2pfl.learning.aggregators.aggregator.Aggregator"><em>Aggregator</em></a>) – Aggregator to be used in the learning process. Default: FedAvg.</p></li>
 <li><p><strong>simulation</strong> (<em>bool</em>) – If False, node will share metrics and communication will be encrypted. Default: True.</p></li>
 </ul>
 </dd>
@@ -1398,12 +1398,12 @@ It happend <code class="docutils literal notranslate"><span class="pre">HEARTBEA
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="p2pfl.node.Node.agregator">
-<span class="sig-name descname"><span class="pre">agregator</span></span><a class="headerlink" href="#p2pfl.node.Node.agregator" title="Permalink to this definition">#</a></dt>
-<dd><p>Agregator to be used in the learning process.</p>
+<dt class="sig sig-object py" id="p2pfl.node.Node.aggregator">
+<span class="sig-name descname"><span class="pre">aggregator</span></span><a class="headerlink" href="#p2pfl.node.Node.aggregator" title="Permalink to this definition">#</a></dt>
+<dd><p>Aggregator to be used in the learning process.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="p2pfl.learning.agregators.html#p2pfl.learning.agregators.agregator.Agregator" title="p2pfl.learning.agregators.agregator.Agregator">Agregator</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="p2pfl.learning.aggregators.html#p2pfl.learning.aggregators.aggregator.Aggregator" title="p2pfl.learning.aggregators.aggregator.Aggregator">Aggregator</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1411,7 +1411,7 @@ It happend <code class="docutils literal notranslate"><span class="pre">HEARTBEA
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.node.Node.add_model">
 <span class="sig-name descname"><span class="pre">add_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node.html#Node.add_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node.Node.add_model" title="Permalink to this definition">#</a></dt>
-<dd><p>Add a model. If the model isn’t inicializated, the recieved model is used for it. Otherwise, the model is agregated using the <strong>agregator</strong>.</p>
+<dd><p>Add a model. If the model isn’t inicializated, the recieved model is used for it. Otherwise, the model is aggregated using the <strong>aggregator</strong>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>m</strong> – Encoded model. Contains model and their contributors</p>
@@ -1423,15 +1423,15 @@ It happend <code class="docutils literal notranslate"><span class="pre">HEARTBEA
 <dt class="sig sig-object py" id="p2pfl.node.Node.connect_to">
 <span class="sig-name descname"><span class="pre">connect_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node.html#Node.connect_to"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node.Node.connect_to" title="Permalink to this definition">#</a></dt>
 <dd><p>”
-Connects a node to other. If learning is running connections are not allowed (it should be forced).
-Carefull, if connection is forced with a new node, it will produce timeouts in the network.</p>
+Connects a node to another. If learning is running, connections are not allowed (it should be forced).
+Careful, if connection is forced with a new node, it will produce timeouts in the network.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>h</strong> (<em>str</em>) – The host of the node.</p></li>
 <li><p><strong>p</strong> (<em>int</em>) – The port of the node.</p></li>
 <li><p><strong>full</strong> (<em>bool</em>) – If True, the node will be connected to the entire network.</p></li>
-<li><p><strong>force</strong> (<em>bool</em>) – If True, the the node will be connected even though it should not be.</p></li>
+<li><p><strong>force</strong> (<em>bool</em>) – If True, the node will be connected even though it should not be.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1518,13 +1518,13 @@ Carefully, model, not only weights.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Thread</span></code>, <a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Observable" title="p2pfl.utils.observer.Observable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Observable</span></code></a></p>
 <p>This class represents a connection to a node. It is a thread, so it’s going to process all messages in a background thread using the CommunicationProtocol.</p>
 <dl class="simple">
-<dt>The NodeConnection can recive many messages in a single recv and exists 2 kinds of messages:</dt><dd><ul class="simple">
+<dt>The NodeConnection can receive many messages in a single recv and exists 2 kinds of messages:</dt><dd><ul class="simple">
 <li><p>Binary messages (models)</p></li>
 <li><p>Text messages (commands)</p></li>
 </ul>
 </dd>
 </dl>
-<p>Carefully, if the connection is broken, it will be closed. If the user wants to reconnect, he/she should create a new connection.</p>
+<p>Be careful, if the connection is broken, it will be closed. If the user wants to reconnect, he/she should create a new connection.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1535,12 +1535,12 @@ Carefully, model, not only weights.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.add_models_agregated">
-<span class="sig-name descname"><span class="pre">add_models_agregated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">models</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.add_models_agregated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.add_models_agregated" title="Permalink to this definition">#</a></dt>
-<dd><p>Add the models agregated.</p>
+<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.add_models_aggregated">
+<span class="sig-name descname"><span class="pre">add_models_aggregated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">models</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.add_models_aggregated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.add_models_aggregated" title="Permalink to this definition">#</a></dt>
+<dd><p>Add the models aggregated.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>models</strong> – Models agregated.</p>
+<dd class="field-odd"><p><strong>models</strong> – Models aggregated.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1561,7 +1561,7 @@ Carefully, model, not only weights.</p>
 <span class="sig-name descname"><span class="pre">add_processed_messages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msgs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.add_processed_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.add_processed_messages" title="Permalink to this definition">#</a></dt>
 <dd><p>Add to a list of communication protocol messages that have been processed. (By other nodes)
 Messages are added to avoid multiple processing of the same messages, also the non-processing
-of these messges avoid cycles in the network.</p>
+of these messages avoid cycles in the network.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>msgs</strong> – The list of messages that have been processed.</p>
@@ -1576,9 +1576,9 @@ of these messges avoid cycles in the network.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.clear_models_agregated">
-<span class="sig-name descname"><span class="pre">clear_models_agregated</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.clear_models_agregated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.clear_models_agregated" title="Permalink to this definition">#</a></dt>
-<dd><p>Clear models agregated.</p>
+<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.clear_models_aggregated">
+<span class="sig-name descname"><span class="pre">clear_models_aggregated</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.clear_models_aggregated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.clear_models_aggregated" title="Permalink to this definition">#</a></dt>
+<dd><p>Clear models aggregated.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1612,11 +1612,11 @@ of these messges avoid cycles in the network.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.get_models_agregated">
-<span class="sig-name descname"><span class="pre">get_models_agregated</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.get_models_agregated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.get_models_agregated" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.get_models_aggregated">
+<span class="sig-name descname"><span class="pre">get_models_aggregated</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.get_models_aggregated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.get_models_aggregated" title="Permalink to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The models agregated.</p>
+<dd class="field-odd"><p>The models aggregated.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1691,7 +1691,7 @@ of these messges avoid cycles in the network.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.node_connection.NodeConnection.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/node_connection.html#NodeConnection.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.node_connection.NodeConnection.run" title="Permalink to this definition">#</a></dt>
-<dd><p>NodeConnection loop. Recive and process messages.</p>
+<dd><p>NodeConnection loop. Receive and process messages.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1764,9 +1764,9 @@ of these messges avoid cycles in the network.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class to define global settings for the p2pfl system.</p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="p2pfl.settings.Settings.AGREGATION_TIMEOUT">
-<span class="sig-name descname"><span class="pre">AGREGATION_TIMEOUT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">60</span></em><a class="headerlink" href="#p2pfl.settings.Settings.AGREGATION_TIMEOUT" title="Permalink to this definition">#</a></dt>
-<dd><p>Timeout (seconds) for a node to wait for other models. Timeout stars when the first model is added.</p>
+<dt class="sig sig-object py" id="p2pfl.settings.Settings.AGGREGATION_TIMEOUT">
+<span class="sig-name descname"><span class="pre">AGGREGATION_TIMEOUT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">60</span></em><a class="headerlink" href="#p2pfl.settings.Settings.AGGREGATION_TIMEOUT" title="Permalink to this definition">#</a></dt>
+<dd><p>Timeout (seconds) for a node to wait for other models. Timeout starts when the first model is added.</p>
 </dd></dl>
 
 <dl class="py attribute">

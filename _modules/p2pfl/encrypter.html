@@ -159,7 +159,7 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.aggregators.html">p2pfl.learning.aggregators package</a></li>
 <li class="toctree-l4 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l6"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
@@ -170,13 +170,6 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../p2pfl.utils.html">p2pfl.utils package</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -340,8 +333,8 @@
     
 <div class="viewcode-block" id="AESCipher.add_padding"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.AESCipher.add_padding">[docs]</a>    <span class="k">def</span> <span class="nf">add_padding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Add padding to a encoded UTF-8 text. Adds &quot; &quot; charactets (1 byte) to fill the rest of the block.</span>
-<span class="sd">        Careful: for this case the filling content don&#39;t affect to the meaning of messages.</span>
+<span class="sd">        Add padding to an encoded UTF-8 text. Adds &quot; &quot; charactets (1 byte) to fill the rest of the block.</span>
+<span class="sd">        Careful: in this case, the filling content doesn&#39;t affect to the meaning of messages.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            msg: (bytes) The encoded text.</span>

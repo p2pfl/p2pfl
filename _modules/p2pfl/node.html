@@ -159,7 +159,7 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.aggregators.html">p2pfl.learning.aggregators package</a></li>
 <li class="toctree-l4 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l6"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
@@ -217,7 +217,7 @@
 <span class="kn">from</span> <span class="nn">p2pfl.command</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">p2pfl.communication_protocol</span> <span class="kn">import</span> <span class="n">CommunicationProtocol</span>
 <span class="kn">from</span> <span class="nn">p2pfl.settings</span> <span class="kn">import</span> <span class="n">Settings</span>
-<span class="kn">from</span> <span class="nn">p2pfl.learning.agregators.fedavg</span> <span class="kn">import</span> <span class="n">FedAvg</span>
+<span class="kn">from</span> <span class="nn">p2pfl.learning.aggregators.fedavg</span> <span class="kn">import</span> <span class="n">FedAvg</span>
 <span class="kn">from</span> <span class="nn">p2pfl.learning.exceptions</span> <span class="kn">import</span> <span class="n">DecodingParamsError</span><span class="p">,</span> <span class="n">ModelNotMatchingError</span>
 <span class="kn">from</span> <span class="nn">p2pfl.learning.pytorch.lightninglearner</span> <span class="kn">import</span> <span class="n">LightningLearner</span>
 <span class="kn">from</span> <span class="nn">p2pfl.utils.observer</span> <span class="kn">import</span> <span class="n">Events</span><span class="p">,</span> <span class="n">Observer</span>
@@ -229,26 +229,26 @@
 <span class="sd">    Metrics will be saved under a folder with the name of the node.</span>
 <span class="sd">            </span>
 <span class="sd">    Args:</span>
-<span class="sd">        model: Model to be learned. Carefull, model should be compatible with data and the learner.</span>
-<span class="sd">        data: Dataset to be used in the learning process. Carefull, model should be compatible with data and the learner.</span>
+<span class="sd">        model: Model to be learned. Careful, model should be compatible with data and the learner.</span>
+<span class="sd">        data: Dataset to be used in the learning process. Careful, model should be compatible with data and the learner.</span>
 <span class="sd">        host (str): Host where the node will be listening.</span>
 <span class="sd">        port (int): Port where the node will be listening.</span>
 <span class="sd">        learner (NodeLearner): Learner to be used in the learning process. Default: LightningLearner.</span>
-<span class="sd">        agregator (Agregator): Agregator to be used in the learning process. Default: FedAvg.</span>
+<span class="sd">        aggregator (Aggregator): Aggregator to be used in the learning process. Default: FedAvg.</span>
 <span class="sd">        simulation (bool): If False, node will share metrics and communication will be encrypted. Default: True.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        round (int): Round of the learning process.</span>
 <span class="sd">        totalrounds (int): Total number of rounds of the learning process.</span>
 <span class="sd">        learner (NodeLearner): Learner to be used in the learning process.</span>
-<span class="sd">        agregator (Agregator): Agregator to be used in the learning process.</span>
+<span class="sd">        aggregator (Aggregator): Aggregator to be used in the learning process.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1">#####################</span>
     <span class="c1">#     Node Init     #</span>
     <span class="c1">#####################</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">learner</span><span class="o">=</span><span class="n">LightningLearner</span><span class="p">,</span> <span class="n">agregator</span><span class="o">=</span><span class="n">FedAvg</span><span class="p">,</span> <span class="n">simulation</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">learner</span><span class="o">=</span><span class="n">LightningLearner</span><span class="p">,</span> <span class="n">aggregator</span><span class="o">=</span><span class="n">FedAvg</span><span class="p">,</span> <span class="n">simulation</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="c1"># Super init</span>
         <span class="n">BaseNode</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">host</span><span class="p">,</span><span class="n">port</span><span class="p">,</span> <span class="n">simulation</span><span class="p">)</span>
         <span class="n">Observer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -263,9 +263,9 @@
         <span class="c1"># Learner</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">learner</span> <span class="o">=</span> <span class="n">learner</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">log_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span> 
 
-        <span class="c1"># Agregator</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span> <span class="o">=</span> <span class="n">agregator</span><span class="p">(</span> <span class="n">node_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">add_observer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="c1"># Aggregator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aggregator</span> <span class="o">=</span> <span class="n">aggregator</span><span class="p">(</span> <span class="n">node_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aggregator</span><span class="o">.</span><span class="n">add_observer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="c1"># Train Set Votes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span> <span class="o">=</span> <span class="p">[]</span>
@@ -274,8 +274,8 @@
 
         <span class="c1"># Locks</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__wait_votes_ready_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__finish_agregation_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__finish_agregation_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__finish_aggregation_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__finish_aggregation_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__wait_init_model_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__wait_init_model_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
 
@@ -285,14 +285,14 @@
 
 <div class="viewcode-block" id="Node.connect_to"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.connect_to">[docs]</a>    <span class="k">def</span> <span class="nf">connect_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;&quot;</span>
-<span class="sd">        Connects a node to other. If learning is running connections are not allowed (it should be forced).</span>
-<span class="sd">        Carefull, if connection is forced with a new node, it will produce timeouts in the network.</span>
+<span class="sd">        Connects a node to another. If learning is running, connections are not allowed (it should be forced).</span>
+<span class="sd">        Careful, if connection is forced with a new node, it will produce timeouts in the network.</span>
 <span class="sd">    </span>
 <span class="sd">        Args:</span>
 <span class="sd">            h (str): The host of the node.</span>
 <span class="sd">            p (int): The port of the node.</span>
 <span class="sd">            full (bool): If True, the node will be connected to the entire network.</span>
-<span class="sd">            force (bool): If True, the the node will be connected even though it should not be.</span>
+<span class="sd">            force (bool): If True, the node will be connected even though it should not be.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            node: The node that has been connected to.</span>
@@ -426,10 +426,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">totalrounds</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># Leraner</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">interrupt_fit</span><span class="p">()</span>
-        <span class="c1"># Agregator</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">check_and_run_agregation</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  
-        <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">set_nodes_to_agregate</span><span class="p">([])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="c1"># Aggregator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aggregator</span><span class="o">.</span><span class="n">check_and_run_aggregation</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">aggregator</span><span class="o">.</span><span class="n">set_nodes_to_aggregate</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aggregator</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="c1"># Try to free wait locks</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__wait_votes_ready_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
@@ -437,12 +437,12 @@
             <span class="k">pass</span>
 
     <span class="c1">####################################</span>
-    <span class="c1">#         Model Agregation         #</span>
+    <span class="c1">#         Model Aggregation         #</span>
     <span class="c1">####################################</span>
 
 <div class="viewcode-block" id="Node.add_model"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node.Node.add_model">[docs]</a>    <span class="k">def</span> <span class="nf">add_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">m</span><span class="p">):</span> 
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Add a model. If the model isn&#39;t inicializated, the recieved model is used for it. Otherwise, the model is agregated using the **agregator**.</span>
+<span class="sd">        Add a model. If the model isn&#39;t inicializated, the recieved model is used for it. Otherwise, the model is aggregated using the **aggregator**.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            m: Encoded model. Contains model and their contributors</span>
@@ -451,13 +451,13 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__model_initialized</span><span class="p">:</span>
-                    <span class="c1"># Add model to agregator</span>
+                    <span class="c1"># Add model to aggregator</span>
                     <span class="n">decoded_model</span><span class="p">,</span> <span class="n">contributors</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">decode_parameters</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">check_parameters</span><span class="p">(</span><span class="n">decoded_model</span><span class="p">):</span>
-                        <span class="n">models_added</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="n">decoded_model</span><span class="p">,</span><span class="n">contributors</span><span class="p">,</span><span class="n">weight</span><span class="p">)</span>
+                        <span class="n">models_added</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggregator</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="n">decoded_model</span><span class="p">,</span><span class="n">contributors</span><span class="p">,</span><span class="n">weight</span><span class="p">)</span>
                         <span class="k">if</span> <span class="n">models_added</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                            <span class="c1"># CAREFULL RARE BUG at MACBOOCK: When CPU is high, only new nodes will be sent.</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_models_agregated_msg</span><span class="p">(</span><span class="n">models_added</span><span class="p">))</span>
+                            <span class="c1"># CAREFUL RARE BUG at MACBOOCK: When CPU is high, only new nodes will be sent.</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_models_aggregated_msg</span><span class="p">(</span><span class="n">models_added</span><span class="p">))</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">raise</span> <span class="n">ModelNotMatchingError</span><span class="p">(</span><span class="s2">&quot;Not matching models&quot;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -500,7 +500,7 @@
 
             <span class="c1"># Full connect train set</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__connect_and_set_agregator</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__connect_and_set_aggregator</span><span class="p">()</span>
 
             <span class="c1"># Evaluate and send metrics</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -510,17 +510,17 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__train</span><span class="p">()</span>
             
-            <span class="c1"># Agregate Model</span>
+            <span class="c1"># Aggregate Model</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">get_parameters</span><span class="p">(),[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()],</span><span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">get_num_samples</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_models_agregated_msg</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()]))</span> <span class="c1"># Notify agregation</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__gossip_model_agregation</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">aggregator</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">get_parameters</span><span class="p">(),[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()],</span><span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">get_num_samples</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_models_aggregated_msg</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()]))</span> <span class="c1"># Notify aggregation</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__gossip_model_aggregation</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span> 
 
-            <span class="c1"># Set Models To Agregate </span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">set_waiting_agregated_model</span><span class="p">()</span>
+            <span class="c1"># Set Models To Aggregate </span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">aggregator</span><span class="o">.</span><span class="n">set_waiting_aggregated_model</span><span class="p">()</span>
 
-        <span class="c1"># Gossip agregated model (also syncrhonizes nodes)</span>
+        <span class="c1"># Gossip aggregated model (also syncrhonizes nodes)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__gossip_model_difusion</span><span class="p">()</span>
 
@@ -582,7 +582,7 @@
             <span class="k">if</span> <span class="n">votes_ready</span> <span class="ow">or</span> <span class="n">timeout</span><span class="p">:</span>
 
                 <span class="k">if</span> <span class="n">timeout</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">votes_ready</span><span class="p">:</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Timeout for vote agregation. Missing votes from </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="nb">set</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">nc_votes</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Timeout for vote aggregation. Missing votes from </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="nb">set</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">nc_votes</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
 
                 <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
                 <span class="k">for</span> <span class="n">node_vote</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">nc_votes</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
@@ -624,9 +624,9 @@
     <span class="c1">#    Connect Trainset    #</span>
     <span class="c1">##########################</span>
 
-    <span class="k">def</span> <span class="nf">__connect_and_set_agregator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># Set Models To Agregate </span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">set_nodes_to_agregate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__connect_and_set_aggregator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Set Models To Aggregate </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aggregator</span><span class="o">.</span><span class="n">set_nodes_to_aggregate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span><span class="p">)</span>
 
         <span class="c1"># Connect Train Set Nodes</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span> <span class="p">:</span>
@@ -682,12 +682,12 @@
             <span class="k">if</span> <span class="n">nc</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__initial_neighbors</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">rm_neighbor</span><span class="p">(</span><span class="n">nc</span><span class="p">)</span>
         <span class="c1"># Set Next Round</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aggregator</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">finalize_round</span><span class="p">()</span> <span class="c1"># revisar x si esto pueiera quedar mejor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">round</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="c1"># Clear node agregation</span>
+        <span class="c1"># Clear node aggregation</span>
         <span class="k">for</span> <span class="n">nc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">():</span>
-            <span class="n">nc</span><span class="o">.</span><span class="n">clear_models_agregated</span><span class="p">()</span>
+            <span class="n">nc</span><span class="o">.</span><span class="n">clear_models_aggregated</span><span class="p">()</span>
 
         <span class="c1"># Next Step or Finish</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Round </span><span class="si">{}</span><span class="s2"> of </span><span class="si">{}</span><span class="s2"> finished.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">round</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">totalrounds</span><span class="p">))</span>
@@ -706,17 +706,17 @@
     <span class="c1">#    Model Gossiping    #</span>
     <span class="c1">#########################</span>
 
-    <span class="k">def</span> <span class="nf">__gossip_model_agregation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__gossip_model_aggregation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Anonymous functions</span>
-        <span class="n">candidate_condition</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">nc</span><span class="p">:</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">get_models_agregated</span><span class="p">())</span><span class="o">&lt;</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span><span class="p">)</span>
-        <span class="n">status_function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">nc</span><span class="p">:</span> <span class="p">(</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="nb">len</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">get_models_agregated</span><span class="p">())</span> <span class="p">)</span>
-        <span class="n">model_function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">nc</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">agregator</span><span class="o">.</span><span class="n">get_partial_agregation</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">get_models_agregated</span><span class="p">())</span>
+        <span class="n">candidate_condition</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">nc</span><span class="p">:</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">get_models_aggregated</span><span class="p">())</span><span class="o">&lt;</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__train_set</span><span class="p">)</span>
+        <span class="n">status_function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">nc</span><span class="p">:</span> <span class="p">(</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="nb">len</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">get_models_aggregated</span><span class="p">())</span> <span class="p">)</span>
+        <span class="n">model_function</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">nc</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggregator</span><span class="o">.</span><span class="n">get_partial_aggregation</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">get_models_aggregated</span><span class="p">())</span>
 
         <span class="c1"># Gossip</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__gossip_model</span><span class="p">(</span><span class="n">candidate_condition</span><span class="p">,</span><span class="n">status_function</span><span class="p">,</span><span class="n">model_function</span><span class="p">)</span>
          
     <span class="k">def</span> <span class="nf">__gossip_model_difusion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">initialization</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="c1"># Wait a model (init or agregated)</span>
+        <span class="c1"># Wait a model (init or aggregated)</span>
         <span class="k">if</span> <span class="n">initialization</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Waiting initialization.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__wait_init_model_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
@@ -724,8 +724,8 @@
             <span class="n">candidate_condition</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">nc</span><span class="p">:</span> <span class="ow">not</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_model_initialized</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Waiting aregation.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__finish_agregation_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Gossiping agregated model.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">())))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__finish_aggregation_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Gossiping aggregated model.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">())))</span>
             <span class="n">candidate_condition</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">nc</span><span class="p">:</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_model_ready_status</span><span class="p">()</span><span class="o">&lt;</span><span class="bp">self</span><span class="o">.</span><span class="n">round</span>
 
         <span class="c1"># Anonymous functions</span>
@@ -757,7 +757,7 @@
                 <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Gossip finished.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
                 <span class="k">return</span>
 
-            <span class="c1"># Save state of neightbors. If nodes are not responding gossip will stop</span>
+            <span class="c1"># Save state of neighbors. If nodes are not responding gossip will stop</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">last_x_status</span><span class="p">)</span> <span class="o">!=</span> <span class="n">Settings</span><span class="o">.</span><span class="n">GOSSIP_EXIT_ON_X_EQUAL_ROUNDS</span><span class="p">:</span>
                 <span class="n">last_x_status</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">status_function</span><span class="p">(</span><span class="n">nc</span><span class="p">)</span> <span class="k">for</span> <span class="n">nc</span> <span class="ow">in</span> <span class="n">nei</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
@@ -771,15 +771,15 @@
                     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Gossiping exited for </span><span class="si">{}</span><span class="s2"> equal reounds.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">Settings</span><span class="o">.</span><span class="n">GOSSIP_EXIT_ON_X_EQUAL_ROUNDS</span><span class="p">))</span>
                     <span class="k">return</span>
 
-            <span class="c1"># Select a random subset of neightbors</span>
+            <span class="c1"># Select a random subset of neighbors</span>
             <span class="n">samples</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">GOSSIP_MODELS_PER_ROUND</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">nei</span><span class="p">))</span>
             <span class="n">nei</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">nei</span><span class="p">,</span> <span class="n">samples</span><span class="p">)</span>
 
-            <span class="c1"># Generate and Send Model Partial Agregations (model, node_contributors)</span>
+            <span class="c1"># Generate and Send Model Partial Aggregations (model, node_contributors)</span>
             <span class="k">for</span> <span class="n">nc</span> <span class="ow">in</span> <span class="n">nei</span><span class="p">:</span>
                 <span class="n">model</span><span class="p">,</span><span class="n">contributors</span><span class="p">,</span><span class="n">weights</span> <span class="o">=</span> <span class="n">model_function</span><span class="p">(</span><span class="n">nc</span><span class="p">)</span>
 
-                <span class="c1"># Send Partial Agregation</span>
+                <span class="c1"># Send Partial Aggregation</span>
                 <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Gossiping model to </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">nc</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
                     <span class="n">encoded_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">encode_parameters</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">contributors</span><span class="o">=</span><span class="n">contributors</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">weights</span><span class="p">)</span>
@@ -814,17 +814,17 @@
                 <span class="n">n</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
                 <span class="k">return</span>
                 
-        <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">AGREGATION_FINISHED_EVENT</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">AGGREGATION_FINISHED_EVENT</span><span class="p">:</span>
             <span class="c1"># Set parameters and communate it to the training process</span>
             <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">learner</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
-                <span class="c1"># Share that agregation is done</span>
+                <span class="c1"># Share that aggregation is done</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_models_ready_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">round</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Agregation finished with no parameters&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Aggregation finished with no parameters&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__finish_agregation_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__finish_aggregation_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
             <span class="k">except</span><span class="p">:</span>
                 <span class="k">pass</span>
 

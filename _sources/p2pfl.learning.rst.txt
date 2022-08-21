@@ -7,7 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   p2pfl.learning.agregators
+   p2pfl.learning.aggregators
    p2pfl.learning.pytorch
 
 Submodules

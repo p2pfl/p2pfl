@@ -159,7 +159,7 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.aggregators.html">p2pfl.learning.aggregators package</a></li>
 <li class="toctree-l4 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l6"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
@@ -170,13 +170,6 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../p2pfl.utils.html">p2pfl.utils package</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -231,11 +224,11 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class represents a connection to a node. It is a thread, so it&#39;s going to process all messages in a background thread using the CommunicationProtocol.</span>
 
-<span class="sd">    The NodeConnection can recive many messages in a single recv and exists 2 kinds of messages:</span>
+<span class="sd">    The NodeConnection can receive many messages in a single recv and exists 2 kinds of messages:</span>
 <span class="sd">        - Binary messages (models)</span>
 <span class="sd">        - Text messages (commands)</span>
 
-<span class="sd">    Carefully, if the connection is broken, it will be closed. If the user wants to reconnect, he/she should create a new connection.</span>
+<span class="sd">    Be careful, if the connection is broken, it will be closed. If the user wants to reconnect, he/she should create a new connection.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        parent_node: The parent node of this connection.</span>
@@ -268,7 +261,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__model_ready</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__aes_cipher</span> <span class="o">=</span> <span class="n">aes_cipher</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__model_initialized</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__models_agregated</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__models_aggregated</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="c1"># Communication Protocol</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">comm_protocol</span> <span class="o">=</span> <span class="n">CommunicationProtocol</span><span class="p">({</span>
             <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">BEAT</span><span class="p">:</span> <span class="n">Beat_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
@@ -280,7 +273,7 @@
             <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_READY</span><span class="p">:</span> <span class="n">Models_Ready_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
             <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">METRICS</span><span class="p">:</span> <span class="n">Metrics_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
             <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">VOTE_TRAIN_SET</span><span class="p">:</span> <span class="n">Vote_train_set_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
-            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGREGATED</span><span class="p">:</span> <span class="n">Models_agregated_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
+            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGGREGATED</span><span class="p">:</span> <span class="n">Models_aggregated_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
             <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODEL_INITIALIZED</span><span class="p">:</span> <span class="n">Model_initialized_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
         <span class="p">})</span>
 
@@ -318,14 +311,14 @@
 
 <div class="viewcode-block" id="NodeConnection.run"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node_connection.NodeConnection.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        NodeConnection loop. Recive and process messages.</span>
+<span class="sd">        NodeConnection loop. Receive and process messages.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__socket</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">NODE_TIMEOUT</span><span class="p">)</span>
         <span class="n">amount_pending_params</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">param_buffer</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
         <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__terminate_flag</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="c1"># Recive message</span>
+                <span class="c1"># Receive message</span>
                 <span class="n">og_msg</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
                 <span class="k">if</span> <span class="n">amount_pending_params</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">og_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">BLOCK_SIZE</span><span class="p">)</span>
@@ -409,7 +402,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add to a list of communication protocol messages that have been processed. (By other nodes)</span>
 <span class="sd">        Messages are added to avoid multiple processing of the same messages, also the non-processing</span>
-<span class="sd">        of these messges avoid cycles in the network.</span>
+<span class="sd">        of these messages avoid cycles in the network.</span>
 <span class="sd"> </span>
 <span class="sd">        Args:</span>
 <span class="sd">            msgs: The list of messages that have been processed.</span>
@@ -458,29 +451,29 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__model_initialized</span></div>
 
     <span class="c1">##########################</span>
-    <span class="c1">#    Models Agregated    #</span>
+    <span class="c1">#    Models Aggregated    #</span>
     <span class="c1">##########################</span>
 
-<div class="viewcode-block" id="NodeConnection.add_models_agregated"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node_connection.NodeConnection.add_models_agregated">[docs]</a>    <span class="k">def</span> <span class="nf">add_models_agregated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">models</span><span class="p">):</span>
+<div class="viewcode-block" id="NodeConnection.add_models_aggregated"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node_connection.NodeConnection.add_models_aggregated">[docs]</a>    <span class="k">def</span> <span class="nf">add_models_aggregated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">models</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Add the models agregated.</span>
+<span class="sd">        Add the models aggregated.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            models: Models agregated.</span>
+<span class="sd">            models: Models aggregated.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__models_agregated</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">models</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">__models_agregated</span><span class="p">))</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__models_aggregated</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">models</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">__models_aggregated</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="NodeConnection.clear_models_agregated"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node_connection.NodeConnection.clear_models_agregated">[docs]</a>    <span class="k">def</span> <span class="nf">clear_models_agregated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="NodeConnection.clear_models_aggregated"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node_connection.NodeConnection.clear_models_aggregated">[docs]</a>    <span class="k">def</span> <span class="nf">clear_models_aggregated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Clear models agregated.</span>
+<span class="sd">        Clear models aggregated.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__models_agregated</span> <span class="o">=</span> <span class="p">[]</span></div>
-<div class="viewcode-block" id="NodeConnection.get_models_agregated"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node_connection.NodeConnection.get_models_agregated">[docs]</a>    <span class="k">def</span> <span class="nf">get_models_agregated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__models_aggregated</span> <span class="o">=</span> <span class="p">[]</span></div>
+<div class="viewcode-block" id="NodeConnection.get_models_aggregated"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.node_connection.NodeConnection.get_models_aggregated">[docs]</a>    <span class="k">def</span> <span class="nf">get_models_aggregated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
-<span class="sd">            The models agregated.</span>
+<span class="sd">            The models aggregated.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__models_agregated</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__models_aggregated</span></div>
     
     <span class="c1">#######################</span>
     <span class="c1">#    Params Buffer    #</span>

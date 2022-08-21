@@ -159,7 +159,7 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.agregators.html">p2pfl.learning.agregators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.aggregators.html">p2pfl.learning.aggregators package</a></li>
 <li class="toctree-l4 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l6"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
@@ -170,13 +170,6 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../../p2pfl.utils.html">p2pfl.utils package</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -227,7 +220,7 @@
 
 <div class="viewcode-block" id="CommunicationProtocol"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol">[docs]</a><span class="k">class</span> <span class="nc">CommunicationProtocol</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Manages the meaning of node communication messages. Some messages contains a hash at end, it is used as a unique identifier for the message, </span>
+<span class="sd">    Manages the meaning of node communication messages. Some messages contain a hash at end, it is used as a unique identifier for the message, </span>
 <span class="sd">    this kind of messages are gossiped to the entire network.</span>
 <span class="sd">    </span>
 <span class="sd">    The valid messages can be classified into gossiped and non-gossiped:</span>
@@ -244,10 +237,10 @@
 <span class="sd">            - STOP </span>
 <span class="sd">            - PARAMS &lt;data&gt; \PARAMS</span>
 <span class="sd">            - MODELS_READY &lt;round&gt; </span>
-<span class="sd">            - MODELS_AGREGATED &lt;node&gt;* MODELS_AGREGATED_CLOSE</span>
+<span class="sd">            - MODELS_AGGREGATED &lt;node&gt;* MODELS_AGGREGATED_CLOSE</span>
 <span class="sd">            - MODEL_INITIALIZED</span>
 
-<span class="sd">    Furthermore, all messages consists of encoded text (utf-8), with the exception of the `PARAMS` message, which contains serialized binaries.</span>
+<span class="sd">    Furthermore, all messages consist of encoded text (utf-8), with the exception of the `PARAMS` message, which contains serialized binaries.</span>
 
 <span class="sd">    Non-static methods are used to process the different messages. Static methods are used to build messages and process only the `CONNECT` message (handshake). </span>
 <span class="sd">    </span>
@@ -307,13 +300,13 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Vote train set message closing.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">MODELS_AGREGATED</span> <span class="o">=</span> <span class="s2">&quot;MODELS_AGREGATED&quot;</span>    
+    <span class="n">MODELS_AGGREGATED</span> <span class="o">=</span> <span class="s2">&quot;MODELS_AGGREGATED&quot;</span>    
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Models agregated message header.</span>
+<span class="sd">    Models aggregated message header.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">MODELS_AGREGATED_CLOSE</span> <span class="o">=</span> <span class="s2">&quot;\MODELS_AGREGATED&quot;</span> 
+    <span class="n">MODELS_AGGREGATED_CLOSE</span> <span class="o">=</span> <span class="s2">&quot;\MODELS_AGGREGATED&quot;</span> 
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Models agregated message closing.</span>
+<span class="sd">    Models aggregated message closing.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">MODEL_INITIALIZED</span> <span class="o">=</span> <span class="s2">&quot;MODEL_INITIALIZED&quot;</span> 
     <span class="sd">&quot;&quot;&quot;</span>
@@ -331,7 +324,7 @@
 
 <div class="viewcode-block" id="CommunicationProtocol.add_processed_messages"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.add_processed_messages">[docs]</a>    <span class="k">def</span> <span class="nf">add_processed_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">messages</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Add messages to the last messages list. If ammount is higher than `Settings.AMOUNT_LAST_MESSAGES_SAVED` remove the oldest to keep the size.</span>
+<span class="sd">        Add messages to the last messages list. If ammount is higher than ``Settings.AMOUNT_LAST_MESSAGES_SAVED`` remove the oldest to keep the size.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            hash_messages: List of hashes of the messages.</span>
@@ -518,11 +511,11 @@
                         <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
                         <span class="k">break</span>
                     
-                <span class="c1"># Models Agregated</span>
-                <span class="k">elif</span> <span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGREGATED</span><span class="p">:</span>
+                <span class="c1"># Models Aggregated</span>
+                <span class="k">elif</span> <span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGGREGATED</span><span class="p">:</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="c1"># Divide messages and check length of message</span>
-                        <span class="n">close_pos</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGREGATED_CLOSE</span><span class="p">)</span>
+                        <span class="n">close_pos</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGGREGATED_CLOSE</span><span class="p">)</span>
                         <span class="n">content</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">close_pos</span><span class="p">]</span>
                         <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="n">close_pos</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
 
@@ -532,7 +525,7 @@
                             <span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
 
                         <span class="c1"># Exec</span>
-                        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGREGATED</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">nodes</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGGREGATED</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">nodes</span><span class="p">):</span>
                             <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
                             <span class="k">break</span>
 
@@ -660,14 +653,14 @@
 <div class="viewcode-block" id="CommunicationProtocol.build_beat_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_beat_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_beat_msg</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            A encoded beat message.</span>
+<span class="sd">            An encoded beat message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">BEAT</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">node</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="CommunicationProtocol.build_stop_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_stop_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_stop_msg</span><span class="p">():</span>
         <span class="sd">&quot;&quot;&quot; </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            A encoded stop message.</span>
+<span class="sd">            An encoded stop message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
 
@@ -678,7 +671,7 @@
 <span class="sd">            port: The port to connect to.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A encoded connect to message.</span>
+<span class="sd">            An encoded connect to message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">CONN_TO</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">ip</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
 
@@ -689,14 +682,14 @@
 <span class="sd">            epochs: The number of epochs to train.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A encoded start learning message.</span>
+<span class="sd">            An encoded start learning message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">START_LEARNING</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">rounds</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">epochs</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="CommunicationProtocol.build_stop_learning_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_stop_learning_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_stop_learning_msg</span><span class="p">():</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
-<span class="sd">            A encoded stop learning message.</span>
+<span class="sd">            An encoded stop learning message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP_LEARNING</span><span class="p">)</span></div>
 
@@ -706,7 +699,7 @@
 <span class="sd">            round: The last round finished.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A encoded ready message.</span>
+<span class="sd">            An encoded ready message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_READY</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
 
@@ -714,12 +707,12 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Args:</span>
 <span class="sd">            node: The node that sent the message.</span>
-<span class="sd">            round: The round when the metrics was calculated.</span>
+<span class="sd">            round: The round when the metrics were calculated.</span>
 <span class="sd">            loss: The loss of the last round.</span>
 <span class="sd">            metric: The metric of the last round.</span>
 <span class="sd">        </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            A encoded metrics message.</span>
+<span class="sd">            An encoded metrics message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">METRICS</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">node</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">metric</span><span class="p">))</span></div>
 
@@ -730,30 +723,30 @@
 <span class="sd">            votes: Votes of the node.</span>
 <span class="sd">        </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            A encoded vote train set message.</span>
+<span class="sd">            An encoded vote train set message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">aux</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">votes</span><span class="p">:</span>
             <span class="n">aux</span> <span class="o">=</span> <span class="n">aux</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">VOTE_TRAIN_SET</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">node</span> <span class="o">+</span> <span class="n">aux</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">VOTE_TRAIN_SET_CLOSE</span><span class="p">)</span></div>
         
-<div class="viewcode-block" id="CommunicationProtocol.build_models_agregated_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_models_agregated_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_models_agregated_msg</span><span class="p">(</span><span class="n">nodes</span><span class="p">):</span>
+<div class="viewcode-block" id="CommunicationProtocol.build_models_aggregated_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_models_aggregated_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_models_aggregated_msg</span><span class="p">(</span><span class="n">nodes</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Args:</span>
-<span class="sd">            nodes: List of strings to indicate agregated nodes.</span>
+<span class="sd">            nodes: List of strings to indicate aggregated nodes.</span>
 <span class="sd">        </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            A encoded models agregated message.</span>
+<span class="sd">            An encoded models aggregated message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">aux</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
             <span class="n">aux</span> <span class="o">=</span> <span class="n">aux</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">n</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGREGATED</span> <span class="o">+</span> <span class="n">aux</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGREGATED_CLOSE</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGGREGATED</span> <span class="o">+</span> <span class="n">aux</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGGREGATED_CLOSE</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="CommunicationProtocol.build_model_initialized_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_model_initialized_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_model_initialized_msg</span><span class="p">():</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
-<span class="sd">            A encoded model inicialized message.</span>
+<span class="sd">            An encoded model inicialized message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODEL_INITIALIZED</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
 
@@ -769,7 +762,7 @@
 <span class="sd">            force: Whether or not to force connection.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A encoded connect message.</span>
+<span class="sd">            An encoded connect message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">CONN</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">ip</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">broadcast</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">force</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
 
