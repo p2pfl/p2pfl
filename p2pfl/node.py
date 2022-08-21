@@ -23,14 +23,14 @@ class Node(BaseNode):
         data: Dataset to be used in the learning process. Carefull, model should be compatible with data and the learner.
         host (str): Host where the node will be listening.
         port (int): Port where the node will be listening.
-        learner: Learner to be used in the learning process. Default: LightningLearner.
+        learner (NodeLearner): Learner to be used in the learning process. Default: LightningLearner.
         agregator (Agregator): Agregator to be used in the learning process. Default: FedAvg.
         simulation (bool): If False, node will share metrics and communication will be encrypted. Default: True.
 
     Attributes:
         round (int): Round of the learning process.
         totalrounds (int): Total number of rounds of the learning process.
-        learner (Learner): Learner to be used in the learning process.
+        learner (NodeLearner): Learner to be used in the learning process.
         agregator (Agregator): Agregator to be used in the learning process.
     """
 

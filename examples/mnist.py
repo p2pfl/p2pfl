@@ -6,15 +6,6 @@ import time
 
 def mnist_execution(n,start,simulation,conntect_to=None, iid=True):
 
-    n1 = Node(MLP(),MnistFederatedDM())
-    n2 = Node(MLP(),MnistFederatedDM())
-    n3 = Node(MLP(),MnistFederatedDM())
-    n4 = Node(MLP(),MnistFederatedDM())
-    n1.start()
-    n2.start()
-    n3.start()
-    n4.start()
-
     # Node Creation
     nodes = []
     for i in range(n):
