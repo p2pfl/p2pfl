@@ -27,7 +27,7 @@ class CommunicationProtocol:
             - STOP 
             - PARAMS <data> \PARAMS
             - MODELS_READY <round> 
-            - MODELS_AGREGATED <node>* MODELS_AGREGATED_CLOSE
+            - MODELS_AGGREGATED <node>* MODELS_AGGREGATED_CLOSE
             - MODEL_INITIALIZED
 
     Furthermore, all messages consists of encoded text (utf-8), with the exception of the `PARAMS` message, which contains serialized binaries.
@@ -90,13 +90,13 @@ class CommunicationProtocol:
     """
     Vote train set message closing.
     """
-    MODELS_AGREGATED = "MODELS_AGREGATED"    
+    MODELS_AGGREGATED = "MODELS_AGGREGATED"    
     """
-    Models agregated message header.
+    Models aggregated message header.
     """
-    MODELS_AGREGATED_CLOSE = "\MODELS_AGREGATED" 
+    MODELS_AGGREGATED_CLOSE = "\MODELS_AGGREGATED" 
     """
-    Models agregated message closing.
+    Models aggregated message closing.
     """
     MODEL_INITIALIZED = "MODEL_INITIALIZED" 
     """
@@ -301,11 +301,11 @@ class CommunicationProtocol:
                         error = True
                         break
                     
-                # Models Agregated
-                elif message[0] == CommunicationProtocol.MODELS_AGREGATED:
+                # Models Aggregated
+                elif message[0] == CommunicationProtocol.MODELS_AGGREGATED:
                     try:
                         # Divide messages and check length of message
-                        close_pos = message.index(CommunicationProtocol.MODELS_AGREGATED_CLOSE)
+                        close_pos = message.index(CommunicationProtocol.MODELS_AGGREGATED_CLOSE)
                         content = message[1:close_pos]
                         message = message[close_pos+1:]
 
@@ -315,7 +315,7 @@ class CommunicationProtocol:
                             nodes.append(n)
 
                         # Exec
-                        if not self.__exec(CommunicationProtocol.MODELS_AGREGATED, None, None, nodes):
+                        if not self.__exec(CommunicationProtocol.MODELS_AGGREGATED, None, None, nodes):
                             error = True
                             break
 
@@ -520,18 +520,18 @@ class CommunicationProtocol:
             aux = aux + " " + v[0]+ " " + str(v[1])
         return CommunicationProtocol.generate_hased_message(CommunicationProtocol.VOTE_TRAIN_SET + " " + node + aux + " " + CommunicationProtocol.VOTE_TRAIN_SET_CLOSE)
         
-    def build_models_agregated_msg(nodes):
+    def build_models_aggregated_msg(nodes):
         """
         Args:
-            nodes: List of strings to indicate agregated nodes.
+            nodes: List of strings to indicate aggregated nodes.
         
         Returns:
-            A encoded models agregated message.
+            A encoded models aggregated message.
         """
         aux = ""
         for n in nodes:
             aux = aux + " " + n
-        return (CommunicationProtocol.MODELS_AGREGATED + aux + " " + CommunicationProtocol.MODELS_AGREGATED_CLOSE + "\n").encode("utf-8")
+        return (CommunicationProtocol.MODELS_AGGREGATED + aux + " " + CommunicationProtocol.MODELS_AGGREGATED_CLOSE + "\n").encode("utf-8")
 
     def build_model_initialized_msg():
         """

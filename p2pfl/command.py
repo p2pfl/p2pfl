@@ -90,12 +90,12 @@ class Vote_train_set_cmd(Command):
     def execute(self, node, votes):
         self.node_connection.notify_train_set_votes(node, votes)
 
-class Models_agregated_cmd(Command):
+class Models_aggregated_cmd(Command):
     """
-    Command that should be executed as a response to a **models_agregated** message.
+    Command that should be executed as a response to a **models_aggregated** message.
     """
     def execute(self,node_list):
-        self.node_connection.add_models_agregated(node_list)
+        self.node_connection.add_models_aggregated(node_list)
 
 class Model_initialized_cmd(Command):
     """

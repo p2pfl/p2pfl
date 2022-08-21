@@ -6,7 +6,7 @@ def set_test_settings():
     Settings.BLOCK_SIZE = 8192 
     Settings.NODE_TIMEOUT = 10
     Settings.VOTE_TIMEOUT = 10
-    Settings.AGREGATION_TIMEOUT = 10
+    Settings.AGGREGATION_TIMEOUT = 10
     Settings.HEARTBEAT_PERIOD = 3
     Settings.HEARTBEATER_REFRESH_NEIGHBORS_BY_PERIOD = 2
     Settings.WAIT_HEARTBEATS_CONVERGENCE = 4

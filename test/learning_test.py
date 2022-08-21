@@ -1,5 +1,5 @@
 from p2pfl.node import Node
-from p2pfl.learning.agregators.fedavg import FedAvg
+from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.learning.pytorch.lightninglearner import LightningLearner
 from collections import OrderedDict
@@ -24,33 +24,33 @@ def test_encoding():
 def test_avg_simple():
     n = Node(None,None)
     n.start()
-    agregator = FedAvg()
+    aggregator = FedAvg()
     a = OrderedDict([('a', torch.tensor(-1)), ('b', torch.tensor(-1))])
     b = OrderedDict([('a', torch.tensor(0)), ('b', torch.tensor(0))])
     c = OrderedDict([('a', torch.tensor(1)), ('b', torch.tensor(1))])
 
-    result = agregator.agregate({"a":(a,1),"b":(b,1),"c":(c,1)})
+    result = aggregator.aggregate({"a":(a,1),"b":(b,1),"c":(c,1)})
     for layer in b:
         assert result[layer] == b[layer]
 
-    result = agregator.agregate({"a":(a,1),"b":(b,7),"c":(c,1)}) 
+    result = aggregator.aggregate({"a":(a,1),"b":(b,7),"c":(c,1)}) 
     for layer in b:
         assert result[layer] == b[layer]
 
-    result = agregator.agregate({"a":(a,800),"b":(b,0),"c":(c,0)})
+    result = aggregator.aggregate({"a":(a,800),"b":(b,0),"c":(c,0)})
     for layer in b:
         assert result[layer] == a[layer]
 
     n.stop()
 
 def test_avg_complex():
-    agregator = FedAvg()
+    aggregator = FedAvg()
     nl1 = LightningLearner(MLP(), None)
     params = nl1.get_parameters()
     params1 = nl1.get_parameters()
     params2 = nl1.get_parameters()
 
-    result = agregator.agregate({"a":(params,1)})
+    result = aggregator.aggregate({"a":(params,1)})
     # Check Results
     for layer in params:
         assert torch.eq(params[layer], result[layer]).all()
@@ -59,7 +59,7 @@ def test_avg_complex():
         params1[layer] = params1[layer]+1
         params2[layer] = params2[layer]-1
     
-    result = agregator.agregate({"a":(params1,1),  "b":(params2,1)}) 
+    result = aggregator.aggregate({"a":(params1,1),  "b":(params2,1)}) 
 
     # Check Results -> Careful with rounding errors
     for layer in params:

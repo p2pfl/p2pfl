@@ -1,8 +1,8 @@
 import logging
 import torch
-from p2pfl.learning.agregators.agregator import Agregator
+from p2pfl.learning.aggregators.aggregator import Aggregator
    
-class FedAvg(Agregator):
+class FedAvg(Aggregator):
     """
     Federated Averaging (FedAvg) [McMahan et al., 2016]
     Paper: https://arxiv.org/abs/1602.05629
@@ -10,7 +10,7 @@ class FedAvg(Agregator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def agregate(self,models): 
+    def aggregate(self,models): 
         """
         Ponderated average of the models.
 
@@ -18,9 +18,9 @@ class FedAvg(Agregator):
             models: Dictionary with the models (node: model,num_samples).
         """
 
-        # Check if there are models to agregate
+        # Check if there are models to aggregate
         if len(models)==0:
-            logging.error("({}) Trying to agregate models when there is no models".format(self.node_name))
+            logging.error("({}) Trying to aggregate models when there is no models".format(self.node_name))
             return None
 
         models = list(models.values())

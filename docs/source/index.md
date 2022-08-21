@@ -9,8 +9,8 @@ sphinx-apidoc -F -o tmp ../p2pfl
 
 ## Future work
 
-- [ ] Add new agregation algoritms
-- [ ] Secure Agregation
+- [ ] Add new aggregation algoritms
+- [ ] Secure Aggregation
 - [ ] Iterative terminal for node gestion
 - [ ] Connect nodes during training process
 - [ ] Gossip loop optimization for sending models (too much sendings when a node fails)

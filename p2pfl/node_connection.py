@@ -51,7 +51,7 @@ class NodeConnection(threading.Thread, Observable):
         self.__model_ready = -1
         self.__aes_cipher = aes_cipher
         self.__model_initialized = False
-        self.__models_agregated = []
+        self.__models_aggregated = []
         # Communication Protocol
         self.comm_protocol = CommunicationProtocol({
             CommunicationProtocol.BEAT: Beat_cmd(self),
@@ -63,7 +63,7 @@ class NodeConnection(threading.Thread, Observable):
             CommunicationProtocol.MODELS_READY: Models_Ready_cmd(self),
             CommunicationProtocol.METRICS: Metrics_cmd(self),
             CommunicationProtocol.VOTE_TRAIN_SET: Vote_train_set_cmd(self),
-            CommunicationProtocol.MODELS_AGREGATED: Models_agregated_cmd(self),
+            CommunicationProtocol.MODELS_AGGREGATED: Models_aggregated_cmd(self),
             CommunicationProtocol.MODEL_INITIALIZED: Model_initialized_cmd(self),
         })
 
@@ -241,29 +241,29 @@ class NodeConnection(threading.Thread, Observable):
         return self.__model_initialized
 
     ##########################
-    #    Models Agregated    #
+    #    Models Aggregated    #
     ##########################
 
-    def add_models_agregated(self,models):
+    def add_models_aggregated(self,models):
         """
-        Add the models agregated.
+        Add the models aggregated.
         
         Args:
-            models: Models agregated.
+            models: Models aggregated.
         """
-        self.__models_agregated = list(set(models+self.__models_agregated))
+        self.__models_aggregated = list(set(models+self.__models_aggregated))
 
-    def clear_models_agregated(self):
+    def clear_models_aggregated(self):
         """
-        Clear models agregated.
+        Clear models aggregated.
         """
-        self.__models_agregated = []
-    def get_models_agregated(self):
+        self.__models_aggregated = []
+    def get_models_aggregated(self):
         """
         Returns:
-            The models agregated.
+            The models aggregated.
         """
-        return self.__models_agregated
+        return self.__models_aggregated
     
     #######################
     #    Params Buffer    #

@@ -19,9 +19,9 @@ class Events():
     """
     Used to notify that a connection has been closed. (arg: NodeConnection)
     """
-    AGREGATION_FINISHED_EVENT       = "AGREGATION_FINISHED_EVENT"
+    AGGREGATION_FINISHED_EVENT       = "AGGREGATION_FINISHED_EVENT"
     """
-    Used to notify that the agregation was done. (arg: model or None)
+    Used to notify that the aggregation was done. (arg: model or None)
     """
     CONN_TO_EVENT                   = "CONN_TO_EVENT"
     """
