@@ -25,9 +25,9 @@ class MLP(pl.LightningModule):
         self.lr_rate = lr_rate
         self.metric = metric()
 
-        self.l1 = torch.nn.Linear(28 * 28, 128)
-        self.l2 = torch.nn.Linear(128, 256)
-        self.l3 = torch.nn.Linear(256, out_channels)
+        self.l1 = torch.nn.Linear(28 * 28, 256)
+        self.l2 = torch.nn.Linear(256, 128)
+        self.l3 = torch.nn.Linear(128, out_channels)
 
     def forward(self, x):
         """
