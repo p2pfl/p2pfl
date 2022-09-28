@@ -1,5 +1,7 @@
 # federated_learning_p2p
 
+![GitHub Logo](logo.png)
+
 p2pfl is a decentralized federated learning library, it allows creating basic federated learning systems on p2p networks using gossip protocols.
 
 See documentation [here](https://pguijas.github.io/federated_learning_p2p/).
