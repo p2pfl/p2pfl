@@ -9,13 +9,13 @@
 
 P2PFL is a general-purpose open-source library for the execution (simulated and in real environments) of Decentralized Federated Learning systems, specifically making use of P2P networks and the Gossisp protocol.
 
-## Documentation
+## 📚 Documentation
 
 - [Documentation](https://pguijas.github.io/federated_learning_p2p/).
 
 - [Memory of the first version](other/memoria.pdf).
 
-## Features
+## ✅ Features
 
 - Easy to use and extend
 - Fault tolerant
@@ -24,7 +24,7 @@ P2PFL is a general-purpose open-source library for the execution (simulated and 
 - Privacy-preserving
 - Framework agnostic
 
-## Installation
+## 📥 Installation
 
 To install the library, you can simply run:
 
@@ -32,11 +32,11 @@ To install the library, you can simply run:
 pip install p2pfl
 ```
 
-## Roadmap
+## 🚀 Roadmap
 
 ![Roadmap](other/roadmap.png)
 
-## Contributing
+## 👫 Contributing
 
 Contributions are always welcome!
 
@@ -44,6 +44,6 @@ See `CONTRIBUTING.md` for ways to get started.
 
 Please adhere to this project's code of conduct specified in `CODE_OF_CONDUCT.md`.
 
-## License
+## ⚠️ License
 
 [GNU General Public License, Version 3.0](https://www.gnu.org/licenses/gpl-3.0.en.html)
