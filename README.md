@@ -1,17 +1,28 @@
-![GitHub Logo](logo.png)
+![GitHub Logo](other/logo.png)
 
-# P2PFL - Federated Learning over p2p networks
+# P2PFL - Federated Learning over P2P networks
 
 [![GitHub license](https://img.shields.io/github/license/pguijas/federated_learning_p2p)](https://github.com/pguijas/federated_learning_p2p/blob/main/LICENSE.md)
 [![GitHub issues](https://img.shields.io/github/issues/pguijas/federated_learning_p2p)](https://img.shields.io/github/issues/pguijas/federated_learning_p2p)
 ![GitHub forks](https://img.shields.io/github/forks/pguijas/federated_learning_p2p)
 ![GitHub forks](https://img.shields.io/github/stars/pguijas/federated_learning_p2p)
 
-p2pfl is a decentralized federated learning library, it allows creating basic federated learning systems on p2p networks using gossip protocols.
+P2PFL is a general-purpose open-source library for the execution (simulated and in real environments) of Decentralized Federated Learning systems, specifically making use of P2P networks and the Gossisp protocol.
 
-See documentation [here](https://pguijas.github.io/federated_learning_p2p/).
+## Documentation
 
-See memory and future work [here](memoria.pdf)
+- [Documentation](https://pguijas.github.io/federated_learning_p2p/).
+
+- [Memory of the first version](other/memoria.pdf).
+
+## Features
+
+- Easy to use and extend
+- Fault tolerant
+- Decentralized and Scalable
+- Simulated and real environments
+- Privacy-preserving
+- Framework agnostic
 
 ## Installation
 
@@ -21,8 +32,18 @@ To install the library, you can simply run:
 pip install p2pfl
 ```
 
-## Important
+## Roadmap
 
-Carefully with number of open files at high scale experiments.
+![Roadmap](other/roadmap.png)
 
-If fails, try to change the number of open files. `ulimit -n {VALUE}`
+## Contributing
+
+Contributions are always welcome!
+
+See `CONTRIBUTING.md` for ways to get started.
+
+Please adhere to this project's code of conduct specified in `CODE_OF_CONDUCT.md`.
+
+## License
+
+[GNU General Public License, Version 3.0](https://www.gnu.org/licenses/gpl-3.0.en.html)
