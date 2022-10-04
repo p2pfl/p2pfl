@@ -6,6 +6,7 @@ from Crypto import Random
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 
+
 class Encrypter:
     """
     Class with methods to encrypt and decrypt messages.
@@ -14,15 +15,17 @@ class Encrypter:
     def encrypt(self, message):
         pass
 
-    def decrypt(self, message):      
+    def decrypt(self, message):
         pass
 
     def get_key(self):
         pass
-    
+
+
 ###############################
 #    Asymmetric Encryption    #
 ###############################
+
 
 class RSACipher(Encrypter):
     """
@@ -38,7 +41,7 @@ class RSACipher(Encrypter):
     def encrypt(self, message):
         """
         Encrypts a message using RSA. Message is encrypted using the public key of the pair (the other node key).
-        
+
         Args:
             message: (bytes) The message to encrypt.
 
@@ -50,7 +53,7 @@ class RSACipher(Encrypter):
 
     def decrypt(self, message):
         """
-        Decrypts a message using RSA. Message is decripted using the private key. 
+        Decrypts a message using RSA. Message is decripted using the private key.
 
         Args:
             message: (bytes) The message to decrypt.
@@ -73,26 +76,28 @@ class RSACipher(Encrypter):
     def get_key(self):
         """
         Get the serialized RSA public key.
-        
+
         Returns:
             key: The serialized key encoded at base64.
         """
         return base64.b64encode(self.__public_key.exportKey("DER"))
 
+
 ##############################
 #    Symmetric Encryption    #
 ##############################
+
 
 class AESCipher(Encrypter):
     """
     Class with methods to encrypt and decrypt messages using AES symetric encryption.
     """
-    
-    def __init__(self, key=None): 
+
+    def __init__(self, key=None):
         self.bs = AES.block_size
         self.key = key
         if key is None:
-            self.key = get_random_bytes(16) # 256 bits
+            self.key = get_random_bytes(16)  # 256 bits
         self.cipher = AES.new(self.key, AES.MODE_ECB)
 
     def encrypt(self, message):
@@ -104,13 +109,13 @@ class AESCipher(Encrypter):
             message: (str) The message to encrypt.
 
         Returns:
-            message: (str) The encrypted message. 
+            message: (str) The encrypted message.
         """
         return self.cipher.encrypt(message)
 
     def decrypt(self, message):
         """
-        Decrypts a message using AES. Message is decripted using the shared key. 
+        Decrypts a message using AES. Message is decripted using the shared key.
         Keep in mind that AES uses a block cipher, so the message can be a filled message with padding.
 
         Args:
@@ -120,7 +125,7 @@ class AESCipher(Encrypter):
             message: (bytes) The decrypted message.
         """
         return self.cipher.decrypt(message)
-    
+
     def add_padding(self, msg):
         """
         Add padding to an encoded UTF-8 text. Adds " " charactets (1 byte) to fill the rest of the block.
@@ -128,7 +133,7 @@ class AESCipher(Encrypter):
 
         Args:
             msg: (bytes) The encoded text.
-        
+
         Returns:
             msg: (bytes) The encoded text with padding.
         """
@@ -142,12 +147,12 @@ class AESCipher(Encrypter):
         for i in range(bytes_left):
             msg += pading_char
 
-        return msg 
+        return msg
 
     def get_key(self):
         """
         Get the shared RSA key.
-        
+
         Returns:
             key: The shared key.
         """
@@ -161,7 +166,7 @@ class AESCipher(Encrypter):
         return AES.block_size
 
     def key_len():
-        """ 
+        """
         Returns:
             key_len: (int) The length of the key in bytes.
         """

@@ -4,9 +4,10 @@ from pytorch_lightning.utilities.distributed import rank_zero_only
 from torch.utils.tensorboard import SummaryWriter
 import torch
 
+
 class FederatedTensorboardLogger(LightningLoggerBase):
     """
-    Logger for PyTorch Lightning in federated learning. 
+    Logger for PyTorch Lightning in federated learning.
     It is made to save the information of the different trainings (in the different rounds) in the same graph.
 
     End of round determined with `finalize_round`
@@ -17,7 +18,7 @@ class FederatedTensorboardLogger(LightningLoggerBase):
         version (int): Version of the experiment.
     """
 
-    def __init__(self, dir, name = None, version=0, **kwargs):
+    def __init__(self, dir, name=None, version=0, **kwargs):
         super().__init__()
         self._name = "unknown_node"
         self._version = version
@@ -36,34 +37,29 @@ class FederatedTensorboardLogger(LightningLoggerBase):
         self.round = 0
         self.local_step = 0
         self.global_step = 0
-        
+
         self.writer.add_scalar("fl_round", self.round, self.global_step)
 
-        
     @property
     def name(self):
-        """
-        """
+        """ """
         return self._name
 
     @property
     def version(self):
-        """
-        """
+        """ """
         return self._version
 
     @rank_zero_only
     def log_hyperparams(self, params):
-        """
-        """
+        """ """
         # params is an argparse.Namespace
         # your code to record hyperparameters goes here
         pass
 
     @rank_zero_only
     def log_metrics(self, metrics, step):
-        """
-        """
+        """ """
 
         # FL round information
         self.local_step = step
@@ -71,7 +67,7 @@ class FederatedTensorboardLogger(LightningLoggerBase):
 
         # Log Round
         self.writer.add_scalar("fl_round", self.round, __step)
-       
+
         for k, v in metrics.items():
             if isinstance(v, torch.Tensor):
                 v = v.item()
@@ -87,8 +83,7 @@ class FederatedTensorboardLogger(LightningLoggerBase):
                     raise ValueError(m) from ex
 
     def log_scalar(self, key, value, round=None, name=None):
-        """
-        """
+        """ """
         if round is None:
             round = self.round
 
@@ -97,17 +92,14 @@ class FederatedTensorboardLogger(LightningLoggerBase):
         else:
             self.writer.add_scalars(key, {name: value}, round)
 
-
     @rank_zero_only
     def save(self):
-        """
-        """
+        """ """
         # Optional. Any code necessary to save logger data goes here
         pass
 
     def finalize(self, status):
-        """
-        """
+        """ """
         pass
 
     def finalize_round(self):

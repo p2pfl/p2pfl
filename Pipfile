@@ -7,9 +7,16 @@ name = "pypi"
 pytorch-lightning = "*"
 notebook = "*"
 pytest = "*"
+pytest-cov = "*"
+torchvision = "*"
+sphinx = "*"
+myst-parser = "*"
+furo = "*"
+pycryptodome = "*"
+black = "*"
 
 [dev-packages]
 torch-tb-profiler = "*"
 
 [requires]
-python_version = "3.9.2"
+python_version = "*"

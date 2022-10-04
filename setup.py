@@ -3,27 +3,27 @@ from pathlib import Path
 
 HERE = Path(__file__).parent
 
-PACKAGE_NAME = 'p2pfl' 
-VERSION = '0.1.7' 
-AUTHOR = 'Pedro Guijas' 
-AUTHOR_EMAIL = 'pguijas@gmail.com' 
-URL = 'https://pguijas.github.io/federated_learning_p2p/' 
-DESCRIPTION = 'p2p Federated Learning framework' 
-LONG_DESCRIPTION = (HERE / "README.md").read_text(encoding='utf-8')
+PACKAGE_NAME = "p2pfl"
+VERSION = "0.1.7"
+AUTHOR = "Pedro Guijas"
+AUTHOR_EMAIL = "pguijas@gmail.com"
+URL = "https://pguijas.github.io/federated_learning_p2p/"
+DESCRIPTION = "p2p Federated Learning framework"
+LONG_DESCRIPTION = (HERE / "README.md").read_text(encoding="utf-8")
 LONG_DESC_TYPE = "text/markdown"
-LICENSE = 'MIT' 
+LICENSE = "MIT"
 
 INSTALL_REQUIRES = [
     "torch==1.11.0",
     "tensorboard",
     "pytorch-lightning",
     "torchvision",
-    "pycryptodome"
-] # dependencias
+    "pycryptodome",
+]  # dependencias
 
 
 setup(
-    name=PACKAGE_NAME, 
+    name=PACKAGE_NAME,
     version=VERSION,
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,
@@ -44,9 +44,7 @@ setup(
         ],
     ),
     include_package_data=True,
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
-    test_suite='test'
+    setup_requires=["pytest-runner"],
+    tests_require=["pytest"],
+    test_suite="test",
 )
-
-

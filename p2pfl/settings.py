@@ -9,7 +9,8 @@ from p2pfl.encrypter import AESCipher
 # Global Settings #
 ###################
 
-class Settings():
+
+class Settings:
     """
     Class to define global settings for the p2pfl system.
     """
@@ -24,7 +25,11 @@ class Settings():
     rest = BLOCK_SIZE % AESCipher.get_block_size()
     if rest != 0:
         new_value = BLOCK_SIZE + AESCipher.get_block_size() - rest
-        logging.info("Changing buffer size to %d. %d is incompatible with the AES block size.", BLOCK_SIZE, new_value)
+        logging.info(
+            "Changing buffer size to %d. %d is incompatible with the AES block size.",
+            BLOCK_SIZE,
+            new_value,
+        )
         BLOCK_SIZE = new_value
 
     # TIMEOUT'S
@@ -54,8 +59,8 @@ class Settings():
     """
     Time (seconds) to wait for the heartbeats to converge.
     """
-    
-    # TRAIN SET 
+
+    # TRAIN SET
     TRAIN_SET_SIZE = 10
     """
     Size of the training set.
@@ -66,7 +71,7 @@ class Settings():
     """
 
     # GOSSIP Messages
-    AMOUNT_LAST_MESSAGES_SAVED = 100 
+    AMOUNT_LAST_MESSAGES_SAVED = 100
     """
     Amount of last messages saved. Used to avoid gossiping cycles.
     """

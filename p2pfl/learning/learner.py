@@ -1,14 +1,14 @@
-
 ################################
 #    NodeLearning Interface    #  -->  Template Pattern
 ################################
+
 
 class NodeLearner:
     """
     Template to implement learning processes, including metric monitoring during training.
     """
 
-    def set_model(self, model): 
+    def set_model(self, model):
         """
         Set the model of the learner. (not wheights)
 
@@ -20,12 +20,12 @@ class NodeLearner:
         """
         pass
 
-    def set_data(self, data): 
+    def set_data(self, data):
         """
         Set the data of the learner. It is used to fit the model.
 
         Args:
-            data: The data of the learner. 
+            data: The data of the learner.
         """
         pass
 
@@ -33,21 +33,21 @@ class NodeLearner:
         """
         Encode the parameters of the model. (binary)
         If params are not provided, self parameters are encoded.
-        
+
         Args:
             params: The parameters of the model. (non-binary)
             contributors: The contributors of the model.
-            weight: The weight of the model. 
-            
+            weight: The weight of the model.
+
         Returns:
             The encoded parameters of the model (params, contributors, weight).
         """
         pass
 
-    def decode_parameters(self,data): 
+    def decode_parameters(self, data):
         """
         Decode the parameters of the model. (binary)
-        
+
         Args:
             data: The encoded parameters of the model.
 
@@ -59,7 +59,7 @@ class NodeLearner:
         """
         pass
 
-    def check_parameters(self, params): 
+    def check_parameters(self, params):
         """
         Check if the parameters are compatible with the model.
 
@@ -70,8 +70,8 @@ class NodeLearner:
             True if the parameters are compatible with the model.
         """
         pass
-    
-    def set_parameters(self, params): 
+
+    def set_parameters(self, params):
         """
         Set the parameters of the model.
 
@@ -83,7 +83,7 @@ class NodeLearner:
         """
         pass
 
-    def get_parameters(self): 
+    def get_parameters(self):
         """
         Get the parameters of the model.
 
@@ -92,7 +92,7 @@ class NodeLearner:
         """
         pass
 
-    def set_epochs(self, epochs): 
+    def set_epochs(self, epochs):
         """
         Set the number of epochs of the model.
 
@@ -101,19 +101,19 @@ class NodeLearner:
         """
         pass
 
-    def fit(self): 
+    def fit(self):
         """
         Fit the model.
         """
         pass
 
-    def interrupt_fit(self): 
+    def interrupt_fit(self):
         """
         Interrupt the fit process.
         """
         pass
 
-    def evaluate(self): 
+    def evaluate(self):
         """
         Evaluate the model with actual parameters.
         """
@@ -125,7 +125,7 @@ class NodeLearner:
         """
         pass
 
-    def get_num_samples(self): 
+    def get_num_samples(self):
         """
         Get the number of samples of the model.
 
@@ -134,13 +134,13 @@ class NodeLearner:
         """
         pass
 
-    def init(self): 
+    def init(self):
         """
         Init the learner.
         """
         pass
 
-    def close(self): 
+    def close(self):
         """
         Close the learner.
         """

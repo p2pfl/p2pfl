@@ -7,21 +7,23 @@ from p2pfl.utils.observer import Events, Observable
 #    Gossiper    #
 ##################
 
+
 class Gossiper(threading.Thread, Observable):
     """
     Thread based gossiper. It gossips messages from list of pending messages. ``Settings.GOSSIP_MESSAGES_PER_ROUND`` are sended per iteration (``Settings.GOSSIP_FREC`` times per second).
 
     Communicates with node via observer pattern.
-    
+
     Args:
         nodo_padre (str): Name of the parent node.
         neighbors (list): List of neighbors.
 
     """
+
     def __init__(self, node_name, neighbors):
         Observable.__init__(self)
-        threading.Thread.__init__(self, name=("gossiper-" + node_name ))
-        self.__neighbors = neighbors # list as reference of the original neighbors list
+        threading.Thread.__init__(self, name=("gossiper-" + node_name))
+        self.__neighbors = neighbors  # list as reference of the original neighbors list
         self.__msgs = {}
         self.__add_lock = threading.Lock()
         self.__terminate_flag = threading.Event()
@@ -41,44 +43,46 @@ class Gossiper(threading.Thread, Observable):
 
     def run(self):
         """
-        Gossiper Main Loop. Sends `Settings.GOSSIP_MODEL_SENDS_BY_ROUND` messages ``Settings.GOSSIP_FREC`` times per second.        
+        Gossiper Main Loop. Sends `Settings.GOSSIP_MODEL_SENDS_BY_ROUND` messages ``Settings.GOSSIP_FREC`` times per second.
         """
         while not self.__terminate_flag.is_set():
 
             messages_left = Settings.GOSSIP_MESSAGES_PER_ROUND
-            
+
             # Lock
             self.__add_lock.acquire()
             begin = time.time()
-            
+
             # Send to all the nodes except the ones that the message was already sent to
             if len(self.__msgs) > 0:
                 msg_list = list(self.__msgs.items()).copy()
-                nei = set(self.__neighbors.copy()) # copy to avoid concurrent problems
+                nei = set(self.__neighbors.copy())  # copy to avoid concurrent problems
 
-                for msg,nodes in msg_list:
+                for msg, nodes in msg_list:
                     nodes = set(nodes)
                     sended = len(nei - nodes)
 
                     if messages_left - sended >= 0:
-                        self.notify(Events.GOSSIP_BROADCAST_EVENT, (msg,list(nodes)))
+                        self.notify(Events.GOSSIP_BROADCAST_EVENT, (msg, list(nodes)))
                         del self.__msgs[msg]
                         messages_left = messages_left - sended
                         if messages_left == 0:
                             break
                     else:
                         # Lists to concatenate / Sets to difference
-                        excluded = (list(nei - nodes))[:abs(messages_left - sended)]
-                        self.notify(Events.GOSSIP_BROADCAST_EVENT, (msg,list(nodes)+excluded))
+                        excluded = (list(nei - nodes))[: abs(messages_left - sended)]
+                        self.notify(
+                            Events.GOSSIP_BROADCAST_EVENT, (msg, list(nodes) + excluded)
+                        )
                         self.__msgs[msg] = list(nodes) + list(nei - set(excluded))
                         break
 
             # Unlock
             self.__add_lock.release()
-            
+
             # Wait to guarantee the frequency of gossipping
             time_diff = time.time() - begin
-            time_sleep = 1/Settings.GOSSIP_MESSAGES_FREC-time_diff
+            time_sleep = 1 / Settings.GOSSIP_MESSAGES_FREC - time_diff
             if time_sleep > 0:
                 time.sleep(time_sleep)
 

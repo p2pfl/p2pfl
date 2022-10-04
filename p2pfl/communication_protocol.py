@@ -8,32 +8,33 @@ from p2pfl.settings import Settings
 #    CommunicationProtocol    # --> Invoker of Command Patern
 ###############################
 
+
 class CommunicationProtocol:
     """
-    Manages the meaning of node communication messages. Some messages contain a hash at end, it is used as a unique identifier for the message, 
+    Manages the meaning of node communication messages. Some messages contain a hash at end, it is used as a unique identifier for the message,
     this kind of messages are gossiped to the entire network.
-    
+
     The valid messages can be classified into gossiped and non-gossiped:
-        Gossiped messages: 
-            - BEAT <node> <HASH> 
+        Gossiped messages:
+            - BEAT <node> <HASH>
             - START_LEARNING <rounds> <epoches> <HASH>
             - STOP_LEARNING <HASH>
-            - VOTE_TRAIN_SET <node> (<node> <punct>)* VOTE_TRAIN_SET_CLOSE <HASH> 
-            - METRICS <node> <round> <loss> <metric> <HASH> 
+            - VOTE_TRAIN_SET <node> (<node> <punct>)* VOTE_TRAIN_SET_CLOSE <HASH>
+            - METRICS <node> <round> <loss> <metric> <HASH>
 
         Non Gossiped messages (communication over only 2 nodes):
             - CONNECT <ip> <port> <full> <force>
             - CONNECT_TO <ip> <port>
-            - STOP 
+            - STOP
             - PARAMS <data> \PARAMS
-            - MODELS_READY <round> 
+            - MODELS_READY <round>
             - MODELS_AGGREGATED <node>* MODELS_AGGREGATED_CLOSE
             - MODEL_INITIALIZED
 
     Furthermore, all messages consist of encoded text (utf-8), with the exception of the `PARAMS` message, which contains serialized binaries.
 
-    Non-static methods are used to process the different messages. Static methods are used to build messages and process only the `CONNECT` message (handshake). 
-    
+    Non-static methods are used to process the different messages. Static methods are used to build messages and process only the `CONNECT` message (handshake).
+
     Args:
         command_dict: Dictionary with the callbacks to execute at `process_message`.
 
@@ -46,14 +47,14 @@ class CommunicationProtocol:
     """
     Beat message header.
     """
-    STOP = "STOP"           
+    STOP = "STOP"
     """
     Stop message header.
     """
-    CONN = "CONNECT" 
+    CONN = "CONNECT"
     """
     Connection message header.
-    """        
+    """
     CONN_TO = "CONNECT_TO"
     """
     Connection to message header.
@@ -66,23 +67,23 @@ class CommunicationProtocol:
     """
     Stop learning message header.
     """
-    PARAMS = "PARAMS" # special case (binary) 
+    PARAMS = "PARAMS"  # special case (binary)
     """
     Parameters message header.
     """
-    PARAMS_CLOSE = "\PARAMS" # special case (binary)
+    PARAMS_CLOSE = "\PARAMS"  # special case (binary)
     """
     Parameters message closing.
     """
-    MODELS_READY = "MODELS_READY"    
+    MODELS_READY = "MODELS_READY"
     """
     Models ready message header.
-    """ 
+    """
     METRICS = "METRICS"
     """
     Metrics message header.
     """
-    VOTE_TRAIN_SET = "VOTE_TRAIN_SET" 
+    VOTE_TRAIN_SET = "VOTE_TRAIN_SET"
     """
     Vote train set message header.
     """
@@ -90,19 +91,19 @@ class CommunicationProtocol:
     """
     Vote train set message closing.
     """
-    MODELS_AGGREGATED = "MODELS_AGGREGATED"    
+    MODELS_AGGREGATED = "MODELS_AGGREGATED"
     """
     Models aggregated message header.
     """
-    MODELS_AGGREGATED_CLOSE = "\MODELS_AGGREGATED" 
+    MODELS_AGGREGATED_CLOSE = "\MODELS_AGGREGATED"
     """
     Models aggregated message closing.
     """
-    MODEL_INITIALIZED = "MODEL_INITIALIZED" 
+    MODEL_INITIALIZED = "MODEL_INITIALIZED"
     """
     Model initialized message header.
     """
-    
+
     ############################################
     #    MSG PROCESSING (Non Static Methods)   #
     ############################################
@@ -112,7 +113,7 @@ class CommunicationProtocol:
         self.last_messages = []
         self.__last_messages_lock = threading.Lock()
 
-    def add_processed_messages(self,messages):
+    def add_processed_messages(self, messages):
         """
         Add messages to the last messages list. If ammount is higher than ``Settings.AMOUNT_LAST_MESSAGES_SAVED`` remove the oldest to keep the size.
 
@@ -122,14 +123,16 @@ class CommunicationProtocol:
         self.__last_messages_lock.acquire()
         self.last_messages = self.last_messages + messages
         # Remove oldest messages
-        if len(self.last_messages)>Settings.AMOUNT_LAST_MESSAGES_SAVED:
-            self.last_messages = self.last_messages[len(self.last_messages)-Settings.AMOUNT_LAST_MESSAGES_SAVED:]
+        if len(self.last_messages) > Settings.AMOUNT_LAST_MESSAGES_SAVED:
+            self.last_messages = self.last_messages[
+                len(self.last_messages) - Settings.AMOUNT_LAST_MESSAGES_SAVED :
+            ]
         self.__last_messages_lock.release()
 
     def process_message(self, msg):
         """
-        Processes messages and executes the callback associated with it (from ``command_dict``).        
-        
+        Processes messages and executes the callback associated with it (from ``command_dict``).
+
         Args:
             msg: The message to process.
 
@@ -142,17 +145,25 @@ class CommunicationProtocol:
 
         # Determine if is a binary message or not
         header = CommunicationProtocol.PARAMS.encode("utf-8")
-        if msg[0:len(header)] == header:
+        if msg[0 : len(header)] == header:
             end = CommunicationProtocol.PARAMS_CLOSE.encode("utf-8")
 
             # Check if done
             end_pos = msg.find(end)
             if end_pos != -1:
-                return [], not self.__exec(CommunicationProtocol.PARAMS, None, None, msg[len(header):end_pos], True)
+                return [], not self.__exec(
+                    CommunicationProtocol.PARAMS,
+                    None,
+                    None,
+                    msg[len(header) : end_pos],
+                    True,
+                )
 
-            return [],not self.__exec(CommunicationProtocol.PARAMS, None, None, msg[len(header):], False)
+            return [], not self.__exec(
+                CommunicationProtocol.PARAMS, None, None, msg[len(header) :], False
+            )
 
-        else:      
+        else:
             # Try to decode the message
             message = ""
             try:
@@ -160,7 +171,7 @@ class CommunicationProtocol:
                 message = message.split()
             except:
                 error = True
-        
+
             # Process messages
             while len(message) > 0:
 
@@ -169,7 +180,9 @@ class CommunicationProtocol:
                     if len(message) > 2:
                         hash_ = message[2]
                         cmd_text = (" ".join(message[0:3]) + "\n").encode("utf-8")
-                        if self.__exec(CommunicationProtocol.BEAT,hash_, cmd_text, message[1]):
+                        if self.__exec(
+                            CommunicationProtocol.BEAT, hash_, cmd_text, message[1]
+                        ):
                             message = message[3:]
                         else:
                             error = True
@@ -177,7 +190,7 @@ class CommunicationProtocol:
                     else:
                         error = True
                         break
-                    
+
                 # Stop (non gossiped)
                 elif message[0] == CommunicationProtocol.STOP:
                     if self.__exec(CommunicationProtocol.STOP, None, None):
@@ -185,17 +198,22 @@ class CommunicationProtocol:
                     else:
                         error = True
                         break
-                   
 
                 # Connect to
                 elif message[0] == CommunicationProtocol.CONN_TO:
                     if len(message) > 2:
                         if message[2].isdigit():
-                            if self.__exec(CommunicationProtocol.CONN_TO, None, None, message[1], int(message[2])):
+                            if self.__exec(
+                                CommunicationProtocol.CONN_TO,
+                                None,
+                                None,
+                                message[1],
+                                int(message[2]),
+                            ):
                                 message = message[3:]
                             else:
                                 error = True
-                                break 
+                                break
                         else:
                             error = True
                             break
@@ -209,7 +227,13 @@ class CommunicationProtocol:
                         if message[1].isdigit() and message[2].isdigit():
                             hash_ = message[3]
                             cmd_text = (" ".join(message[0:4]) + "\n").encode("utf-8")
-                            if self.__exec(CommunicationProtocol.START_LEARNING, hash_, cmd_text, int(message[1]), int(message[2])):
+                            if self.__exec(
+                                CommunicationProtocol.START_LEARNING,
+                                hash_,
+                                cmd_text,
+                                int(message[1]),
+                                int(message[2]),
+                            ):
                                 message = message[4:]
                             else:
                                 error = True
@@ -223,11 +247,13 @@ class CommunicationProtocol:
 
                 # Stop learning
                 elif message[0] == CommunicationProtocol.STOP_LEARNING:
-                    if len(message) > 1:            
+                    if len(message) > 1:
                         if message[1].isdigit():
                             hash_ = message[1]
                             cmd_text = (" ".join(message[0:2]) + "\n").encode("utf-8")
-                            if self.__exec(CommunicationProtocol.STOP_LEARNING, hash_, cmd_text):
+                            if self.__exec(
+                                CommunicationProtocol.STOP_LEARNING, hash_, cmd_text
+                            ):
                                 message = message[2:]
                             else:
                                 error = True
@@ -238,12 +264,17 @@ class CommunicationProtocol:
                     else:
                         error = True
                         break
-        
+
                 # Models Ready
                 elif message[0] == CommunicationProtocol.MODELS_READY:
                     if len(message) > 1:
                         if message[1].isdigit():
-                            if self.__exec(CommunicationProtocol.MODELS_READY, None, None, int(message[1])):
+                            if self.__exec(
+                                CommunicationProtocol.MODELS_READY,
+                                None,
+                                None,
+                                int(message[1]),
+                            ):
                                 message = message[2:]
                             else:
                                 error = True
@@ -261,7 +292,15 @@ class CommunicationProtocol:
                         try:
                             hash_ = message[5]
                             cmd_text = (" ".join(message[0:6]) + "\n").encode("utf-8")
-                            if self.__exec(CommunicationProtocol.METRICS, hash_, cmd_text, message[1], int(message[2]), float(message[3]), float(message[4])):
+                            if self.__exec(
+                                CommunicationProtocol.METRICS,
+                                hash_,
+                                cmd_text,
+                                message[1],
+                                int(message[2]),
+                                float(message[3]),
+                                float(message[4]),
+                            ):
                                 message = message[6:]
                             else:
                                 error = True
@@ -277,22 +316,32 @@ class CommunicationProtocol:
                 elif message[0] == CommunicationProtocol.VOTE_TRAIN_SET:
                     try:
                         # Divide messages and check length of message
-                        close_pos = message.index(CommunicationProtocol.VOTE_TRAIN_SET_CLOSE)
+                        close_pos = message.index(
+                            CommunicationProtocol.VOTE_TRAIN_SET_CLOSE
+                        )
                         node = message[1]
                         vote_msg = message[2:close_pos]
-                        hash_ = message[close_pos+1]
-                        cmd_text = (" ".join(message[0:close_pos+2]) + "\n").encode("utf-8")
+                        hash_ = message[close_pos + 1]
+                        cmd_text = (" ".join(message[0 : close_pos + 2]) + "\n").encode(
+                            "utf-8"
+                        )
 
-                        if len(vote_msg)%2 != 0:
+                        if len(vote_msg) % 2 != 0:
                             raise Exception("Invalid vote message")
-                        message = message[close_pos+2:]
+                        message = message[close_pos + 2 :]
 
                         # Process vote message
                         votes = []
                         for i in range(0, len(vote_msg), 2):
-                            votes.append((vote_msg[i], int(vote_msg[i+1])))
+                            votes.append((vote_msg[i], int(vote_msg[i + 1])))
 
-                        if not self.__exec(CommunicationProtocol.VOTE_TRAIN_SET, hash_, cmd_text, node,dict(votes)):
+                        if not self.__exec(
+                            CommunicationProtocol.VOTE_TRAIN_SET,
+                            hash_,
+                            cmd_text,
+                            node,
+                            dict(votes),
+                        ):
                             error = True
                             break
 
@@ -300,22 +349,26 @@ class CommunicationProtocol:
                         logging.exception(e)
                         error = True
                         break
-                    
+
                 # Models Aggregated
                 elif message[0] == CommunicationProtocol.MODELS_AGGREGATED:
                     try:
                         # Divide messages and check length of message
-                        close_pos = message.index(CommunicationProtocol.MODELS_AGGREGATED_CLOSE)
+                        close_pos = message.index(
+                            CommunicationProtocol.MODELS_AGGREGATED_CLOSE
+                        )
                         content = message[1:close_pos]
-                        message = message[close_pos+1:]
+                        message = message[close_pos + 1 :]
 
                         # Get Nodes
-                        nodes=[]
+                        nodes = []
                         for n in content:
                             nodes.append(n)
 
                         # Exec
-                        if not self.__exec(CommunicationProtocol.MODELS_AGGREGATED, None, None, nodes):
+                        if not self.__exec(
+                            CommunicationProtocol.MODELS_AGGREGATED, None, None, nodes
+                        ):
                             error = True
                             break
 
@@ -331,17 +384,17 @@ class CommunicationProtocol:
                     else:
                         error = True
                         break
-                    
-                # Non Recognized message            
+
+                # Non Recognized message
                 else:
                     error = True
                     break
-                
+
             # Return
-            return self.tmp_exec_msgs,error
+            return self.tmp_exec_msgs, error
 
     # Exec callbacks
-    def __exec(self,action,hash_, cmd_text, *args):
+    def __exec(self, action, hash_, cmd_text, *args):
         try:
             # Check if can be executed
             if hash_ not in self.last_messages or hash_ is None:
@@ -357,19 +410,18 @@ class CommunicationProtocol:
             logging.exception(e)
             return False
 
-
     ########################################
     #    MSG PROCESSING (Static Methods)   #
     ########################################
 
     def process_connection(message, callback):
-        """"
+        """ "
         Static method that checks if the message is a valid connection message and executes the callback (accept connection).
 
         Args:
             message: The message to check.
             callback: What do if the connection message is legit.
-        
+
         Returns:
             True if connection was accepted, False otherwise.
         """
@@ -389,7 +441,7 @@ class CommunicationProtocol:
             return False
 
     def check_collapse(msg):
-        """"
+        """ "
         Static method that checks if in the message there is a collapse (a binary message (it should fill all the buffer) and a non-binary message before it).
 
         Actually, collapses can only happen with ``PARAMS`` binary message.
@@ -398,29 +450,28 @@ class CommunicationProtocol:
             msg: The message to check.
 
         Returns:
-            Length of the collapse (number of bytes to the binary headear). 
+            Length of the collapse (number of bytes to the binary headear).
         """
         header = CommunicationProtocol.PARAMS.encode("utf-8")
         header_pos = msg.find(header)
-        if header_pos != -1 and msg[0:len(header)] != header:
+        if header_pos != -1 and msg[0 : len(header)] != header:
             return header_pos
-   
+
         return 0
 
     def check_params_incomplete(msg):
         """
         Checks if a params message is incomplete. If the message is complete or is not a params message, it returns 0.
-        
+
         Returns:
             Number of bytes that needs to be complete
         """
         header = CommunicationProtocol.PARAMS.encode("utf-8")
-        if msg[0:len(header)] == header:
-            if len(msg)<Settings.BLOCK_SIZE:
-                return Settings.BLOCK_SIZE-len(msg)
+        if msg[0 : len(header)] == header:
+            if len(msg) < Settings.BLOCK_SIZE:
+                return Settings.BLOCK_SIZE - len(msg)
 
         return 0
-    
 
     #######################################
     #     MSG BUILDERS (Static Methods)   #
@@ -437,18 +488,20 @@ class CommunicationProtocol:
             Hashed and encoded message.
         """
         # random number to avoid generating the same hash for a different message (at she same time)
-        id = hash(msg+str(datetime.now())+str(random.randint(0,100000)))
+        id = hash(msg + str(datetime.now()) + str(random.randint(0, 100000)))
         return (msg + " " + str(id) + "\n").encode("utf-8")
 
     def build_beat_msg(node):
-        """ 
+        """
         Returns:
             An encoded beat message.
         """
-        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.BEAT + " " + node)
+        return CommunicationProtocol.generate_hased_message(
+            CommunicationProtocol.BEAT + " " + node
+        )
 
     def build_stop_msg():
-        """ 
+        """
         Returns:
             An encoded stop message.
         """
@@ -463,7 +516,9 @@ class CommunicationProtocol:
         Returns:
             An encoded connect to message.
         """
-        return (CommunicationProtocol.CONN_TO + " " + ip + " " + str(port) + "\n").encode("utf-8")
+        return (
+            CommunicationProtocol.CONN_TO + " " + ip + " " + str(port) + "\n"
+        ).encode("utf-8")
 
     def build_start_learning_msg(rounds, epochs):
         """
@@ -474,14 +529,18 @@ class CommunicationProtocol:
         Returns:
             An encoded start learning message.
         """
-        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.START_LEARNING + " " + str(rounds) + " " + str(epochs))
+        return CommunicationProtocol.generate_hased_message(
+            CommunicationProtocol.START_LEARNING + " " + str(rounds) + " " + str(epochs)
+        )
 
     def build_stop_learning_msg():
         """
         Returns:
             An encoded stop learning message.
         """
-        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.STOP_LEARNING)
+        return CommunicationProtocol.generate_hased_message(
+            CommunicationProtocol.STOP_LEARNING
+        )
 
     def build_models_ready_msg(round):
         """
@@ -491,7 +550,9 @@ class CommunicationProtocol:
         Returns:
             An encoded ready message.
         """
-        return (CommunicationProtocol.MODELS_READY + " " + str(round) + "\n").encode("utf-8")
+        return (CommunicationProtocol.MODELS_READY + " " + str(round) + "\n").encode(
+            "utf-8"
+        )
 
     def build_metrics_msg(node, round, loss, metric):
         """
@@ -500,38 +561,61 @@ class CommunicationProtocol:
             round: The round when the metrics were calculated.
             loss: The loss of the last round.
             metric: The metric of the last round.
-        
+
         Returns:
             An encoded metrics message.
         """
-        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.METRICS + " " + node + " " + str(round) + " " + str(loss) + " " + str(metric))
+        return CommunicationProtocol.generate_hased_message(
+            CommunicationProtocol.METRICS
+            + " "
+            + node
+            + " "
+            + str(round)
+            + " "
+            + str(loss)
+            + " "
+            + str(metric)
+        )
 
-    def build_vote_train_set_msg(node,votes):
+    def build_vote_train_set_msg(node, votes):
         """
         Args:
             node: The node that sent the message.
             votes: Votes of the node.
-        
+
         Returns:
             An encoded vote train set message.
         """
         aux = ""
         for v in votes:
-            aux = aux + " " + v[0]+ " " + str(v[1])
-        return CommunicationProtocol.generate_hased_message(CommunicationProtocol.VOTE_TRAIN_SET + " " + node + aux + " " + CommunicationProtocol.VOTE_TRAIN_SET_CLOSE)
-        
+            aux = aux + " " + v[0] + " " + str(v[1])
+        return CommunicationProtocol.generate_hased_message(
+            CommunicationProtocol.VOTE_TRAIN_SET
+            + " "
+            + node
+            + aux
+            + " "
+            + CommunicationProtocol.VOTE_TRAIN_SET_CLOSE
+        )
+
     def build_models_aggregated_msg(nodes):
         """
         Args:
             nodes: List of strings to indicate aggregated nodes.
-        
+
         Returns:
             An encoded models aggregated message.
         """
         aux = ""
         for n in nodes:
             aux = aux + " " + n
-        return (CommunicationProtocol.MODELS_AGGREGATED + aux + " " + CommunicationProtocol.MODELS_AGGREGATED_CLOSE + "\n").encode("utf-8")
+        return (
+            CommunicationProtocol.MODELS_AGGREGATED
+            + aux
+            + " "
+            + CommunicationProtocol.MODELS_AGGREGATED_CLOSE
+            + "\n"
+        ).encode("utf-8")
 
     def build_model_initialized_msg():
         """
@@ -554,7 +638,18 @@ class CommunicationProtocol:
         Returns:
             An encoded connect message.
         """
-        return (CommunicationProtocol.CONN + " " + ip + " " + str(port) + " " + str(broadcast) + " " + str(force) + "\n").encode("utf-8")
+        return (
+            CommunicationProtocol.CONN
+            + " "
+            + ip
+            + " "
+            + str(port)
+            + " "
+            + str(broadcast)
+            + " "
+            + str(force)
+            + "\n"
+        ).encode("utf-8")
 
     def build_params_msg(data):
         """
@@ -575,12 +670,14 @@ class CommunicationProtocol:
         size = Settings.BLOCK_SIZE - len(header)
         data_msgs = []
         for i in range(0, len(data), size):
-            data_msgs.append(header + (data[i:i+size]))
+            data_msgs.append(header + (data[i : i + size]))
 
         # Adding closing message
         if len(data_msgs[-1]) + len(end) <= Settings.BLOCK_SIZE:
             data_msgs[-1] += end
-            data_msgs[-1] += b'\0' * (Settings.BLOCK_SIZE - len(data_msgs[-1])) # padding to avoid message fragmentation
+            data_msgs[-1] += b"\0" * (
+                Settings.BLOCK_SIZE - len(data_msgs[-1])
+            )  # padding to avoid message fragmentation
         else:
             data_msgs.append(header + end)
 

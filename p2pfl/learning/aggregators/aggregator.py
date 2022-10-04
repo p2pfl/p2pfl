@@ -2,18 +2,20 @@ import threading
 import logging
 from p2pfl.settings import Settings
 from p2pfl.utils.observer import Events, Observable
-   
+
+
 class Aggregator(threading.Thread, Observable):
     """
-    Class to manage the aggregation of models. It is a thread so, aggregation will be done in background if all models were added or timeouts have gone. 
+    Class to manage the aggregation of models. It is a thread so, aggregation will be done in background if all models were added or timeouts have gone.
     Also it is an observable so, it will notify the node when the aggregation was done.
 
     Args:
         node_name: (str): String with the name of the node.
     """
+
     def __init__(self, node_name="unknown"):
         self.node_name = node_name
-        threading.Thread.__init__(self, name = "aggregator-" + node_name)
+        threading.Thread.__init__(self, name="aggregator-" + node_name)
         self.daemon = True
         Observable.__init__(self)
         self.__train_set = []
@@ -32,30 +34,38 @@ class Aggregator(threading.Thread, Observable):
         self.__thread_executed = True
 
         # Wait for all models to be added or TIMEOUT
-        self.__aggregation_lock.acquire(timeout=Settings.AGGREGATION_TIMEOUT) 
-        
+        self.__aggregation_lock.acquire(timeout=Settings.AGGREGATION_TIMEOUT)
+
         # Check if node still running (could happen if aggregation thread was a residual thread)
         if self.__train_set == []:
             logging.info("({}) Shutting Down Aggregator Process".format(self.node_name))
-            self.notify(Events.AGGREGATION_FINISHED_EVENT,None) # To avoid residual trainning-thread
+            self.notify(
+                Events.AGGREGATION_FINISHED_EVENT, None
+            )  # To avoid residual trainning-thread
             return
-        
+
         # Start aggregation
-        n_model_aggregated = sum([len(nodes.split()) for nodes in list(self.__models.keys())])
+        n_model_aggregated = sum(
+            [len(nodes.split()) for nodes in list(self.__models.keys())]
+        )
         if n_model_aggregated != len(self.__train_set):
-            logging.info("({}) Aggregating models, timeout reached. Missing models: {}".format(self.node_name,set(self.__train_set)-set(self.__models.keys())))
+            logging.info(
+                "({}) Aggregating models, timeout reached. Missing models: {}".format(
+                    self.node_name, set(self.__train_set) - set(self.__models.keys())
+                )
+            )
         else:
             logging.info("({}) Aggregating models.".format(self.node_name))
 
         # Notify node
-        self.notify(Events.AGGREGATION_FINISHED_EVENT,self.aggregate(self.__models)) 
+        self.notify(Events.AGGREGATION_FINISHED_EVENT, self.aggregate(self.__models))
 
-    def aggregate(self,models): 
+    def aggregate(self, models):
         """
         Aggregate the models.
         """
         print("Not implemented")
-            
+
     def set_nodes_to_aggregate(self, l):
         """
         List with the name of nodes to aggregate.
@@ -83,48 +93,65 @@ class Aggregator(threading.Thread, Observable):
         if self.__waiting_aggregated_model and not self.__aggregated_waited_model:
             logging.info("({}) Received an aggregated model.".format(self.node_name))
             self.__aggregated_waited_model = True
-            self.notify(Events.AGGREGATION_FINISHED_EVENT,model) 
+            self.notify(Events.AGGREGATION_FINISHED_EVENT, model)
         else:
             if nodes is not None:
                 self.__lock.acquire()
 
                 # Start aggregation timeout
                 if self.__train_set != [] and not self.__thread_executed:
-                    self.start()  
+                    self.start()
 
                 # Get a list of nodes added
-                models_added = [n.split() for n in list(self.__models.keys())] 
-                models_added = [element for sublist in models_added for element in sublist] # Flatten list
-                
+                models_added = [n.split() for n in list(self.__models.keys())]
+                models_added = [
+                    element for sublist in models_added for element in sublist
+                ]  # Flatten list
+
                 # Check if aggregation is needed
-                if len(self.__train_set)>len(models_added):
-                    # Check if all nodes are in the train_set 
-                    if all([n in self.__train_set for n in nodes]): 
-                        # Check if all nodes are not aggregated                    
+                if len(self.__train_set) > len(models_added):
+                    # Check if all nodes are in the train_set
+                    if all([n in self.__train_set for n in nodes]):
+                        # Check if all nodes are not aggregated
                         if all([n not in models_added for n in nodes]):
                             # Aggregate model
-                            self.__models[" ".join(nodes)] = ((model, weight))
-                            logging.info("({}) Model added ({}/{}) from {}".format(self.node_name, str(len(models_added)+len(nodes)), str(len(self.__train_set)), str(nodes)))
+                            self.__models[" ".join(nodes)] = (model, weight)
+                            logging.info(
+                                "({}) Model added ({}/{}) from {}".format(
+                                    self.node_name,
+                                    str(len(models_added) + len(nodes)),
+                                    str(len(self.__train_set)),
+                                    str(nodes),
+                                )
+                            )
                             # Check if all models have been added
                             self.check_and_run_aggregation()
-                            # Build response 
+                            # Build response
                             response = models_added + nodes
                             # Unloock
                             self.__lock.release()
-                            
+
                             return response
                         else:
                             self.__lock.release()
-                            logging.debug("({}) Can't add a model that has already been added {}".format(self.node_name, nodes))
+                            logging.debug(
+                                "({}) Can't add a model that has already been added {}".format(
+                                    self.node_name, nodes
+                                )
+                            )
                     else:
                         self.__lock.release()
-                        logging.debug("({}) Can't add a model from a node ({}) that is not in the training test.".format(self.node_name, nodes))                
+                        logging.debug(
+                            "({}) Can't add a model from a node ({}) that is not in the training test.".format(
+                                self.node_name, nodes
+                            )
+                        )
                 else:
                     self.__lock.release()
 
         return None
-                
-    def get_partial_aggregation(self,except_nodes):
+
+    def get_partial_aggregation(self, except_nodes):
         """
         Get the partial aggregation of the models.
 
@@ -138,31 +165,35 @@ class Aggregator(threading.Thread, Observable):
         nodes_aggregated = []
         aggregation_weight = 0
         models = self.__models.copy()
-        for n,(m,s) in list(models.items()):
-            splited_nodes = n.split() 
+        for n, (m, s) in list(models.items()):
+            splited_nodes = n.split()
             if all([n not in except_nodes for n in splited_nodes]):
-                dict_aux[n] = (m,s)
+                dict_aux[n] = (m, s)
                 nodes_aggregated += splited_nodes
                 aggregation_weight += s
-        
+
         # If there are no models to aggregate
         if len(dict_aux) == 0:
-            return None,None,None
+            return None, None, None
 
         return (self.aggregate(dict_aux), nodes_aggregated, aggregation_weight)
-            
-    def check_and_run_aggregation(self,force=False):
+
+    def check_and_run_aggregation(self, force=False):
         """
         Check if all models have been added and start aggregation if so.
 
         Args:
             force: If true, aggregation will be started even if not all models have been added.
         """
-        models_added = [nodes.split() for nodes in list(self.__models.keys())] 
-        models_added = [element for sublist in models_added for element in sublist] # Flatten list
+        models_added = [nodes.split() for nodes in list(self.__models.keys())]
+        models_added = [
+            element for sublist in models_added for element in sublist
+        ]  # Flatten list
         # Try Unloock
         try:
-            if (force or len(models_added)>=len(self.__train_set)) and self.__train_set!=[]: 
+            if (
+                force or len(models_added) >= len(self.__train_set)
+            ) and self.__train_set != []:
                 self.__aggregation_lock.release()
         except:
             pass

@@ -10,6 +10,7 @@ from p2pfl.node_connection import NodeConnection
 from p2pfl.heartbeater import Heartbeater
 from p2pfl.utils.observer import Events, Observer
 
+
 class BaseNode(threading.Thread, Observer):
     """
     This class represents a base node in the network (without **FL**). It is a thread, so it's going to process all messages in a background thread using the CommunicationProtocol.
@@ -38,47 +39,49 @@ class BaseNode(threading.Thread, Observer):
         self.simulation = simulation
 
         # Super init
-        threading.Thread.__init__(self, name = "node-" + self.get_name())
+        threading.Thread.__init__(self, name="node-" + self.get_name())
         self._terminate_flag = threading.Event()
 
         # Setting Up Node Socket (listening)
-        self.__node_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #TCP Socket
-        if port==None:
-            self.__node_socket.bind((host, 0)) # gets a random free port
+        self.__node_socket = socket.socket(
+            socket.AF_INET, socket.SOCK_STREAM
+        )  # TCP Socket
+        if port == None:
+            self.__node_socket.bind((host, 0))  # gets a random free port
             self.port = self.__node_socket.getsockname()[1]
         else:
             self.__node_socket.bind((host, port))
-        self.__node_socket.listen(50) # no more than 50 connections at queue
-        
+        self.__node_socket.listen(50)  # no more than 50 connections at queue
+
         # Neighbors
-        self.__neighbors = [] # private to avoid concurrency issues
+        self.__neighbors = []  # private to avoid concurrency issues
         self.__nei_lock = threading.Lock()
 
         # Logging
         logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
         # Heartbeater and Gossiper
-        self.gossiper = None 
-        self.heartbeater = None 
-        
+        self.gossiper = None
+        self.heartbeater = None
+
     def get_addr(self):
         """
         Returns:
-            tuple: The address of the node.    
+            tuple: The address of the node.
         """
-        return self.host,self.port
+        return self.host, self.port
 
     def get_name(self):
         """
         Returns:
             str: The name of the node.
         """
-        return str(self.get_addr()[0]) + ":" + str(self.get_addr()[1]) 
+        return str(self.get_addr()[0]) + ":" + str(self.get_addr()[1])
 
     #######################
     #   Node Management   #
     #######################
-    
+
     def start(self):
         """
         Starts the node (node loop in a thread). It will listen for new connections and process them. Heartbeater and Gossiper will be started too.
@@ -89,20 +92,22 @@ class BaseNode(threading.Thread, Observer):
         super().start()
         # Heartbeater and Gossiper
         self.heartbeater = Heartbeater(self.get_name())
-        self.gossiper = Gossiper(self.get_name(),self.__neighbors) # thread safe, only read
+        self.gossiper = Gossiper(
+            self.get_name(), self.__neighbors
+        )  # thread safe, only read
         self.heartbeater.add_observer(self)
         self.gossiper.add_observer(self)
         self.heartbeater.start()
         self.gossiper.start()
-    
-    def stop(self): 
+
+    def stop(self):
         """
         Stops the node. Heartbeater and Gossiper will be stopped too.
         """
         self._terminate_flag.set()
         try:
             # Send a self message to the loop to avoid the wait of the next recv
-            self.__send(self.host,self.port,b"")
+            self.__send(self.host, self.port, b"")
         except:
             pass
 
@@ -115,43 +120,48 @@ class BaseNode(threading.Thread, Observer):
         Main loop of the node, when a node is running, this method is being executed. It will listen for new connections and process them.
         """
         # Process new connections loop
-        logging.info('({}) Node started'.format(self.get_name()))
-        while not self._terminate_flag.is_set(): 
+        logging.info("({}) Node started".format(self.get_name()))
+        while not self._terminate_flag.is_set():
             try:
                 (ns, _) = self.__node_socket.accept()
                 msg = ns.recv(Settings.BLOCK_SIZE)
-                
+
                 # Process new connection
                 if msg:
                     msg = msg.decode("UTF-8")
-                    callback = lambda h,p,fu,fc: self.__process_new_connection(ns, h, p, fu, fc)
-                    if not CommunicationProtocol.process_connection(msg,callback):
+                    callback = lambda h, p, fu, fc: self.__process_new_connection(
+                        ns, h, p, fu, fc
+                    )
+                    if not CommunicationProtocol.process_connection(msg, callback):
                         ns.close()
             except Exception as e:
                 logging.exception(e)
-       
+
         # Stop Heartbeater and Gossiper
         self.heartbeater.stop()
         self.gossiper.stop()
 
         # Stop Node
-        logging.info('({}) Stopping node. Disconnecting from {} nodos'.format(self.get_name(), len(self.__neighbors))) 
+        logging.info(
+            "({}) Stopping node. Disconnecting from {} nodos".format(
+                self.get_name(), len(self.__neighbors)
+            )
+        )
         nei_copy_list = self.get_neighbors()
         for n in nei_copy_list:
             n.stop()
         self.__node_socket.close()
 
-
     def __process_new_connection(self, node_socket, h, p, full, force):
         try:
             # Check if connection with the node already exist
             self.__nei_lock.acquire()
-            if self.get_neighbor(h,p,thread_safe=False) == None:
+            if self.get_neighbor(h, p, thread_safe=False) == None:
 
                 # Check if ip and port are correct
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.settimeout(2)
-                result = s.connect_ex((h,p)) 
+                result = s.connect_ex((h, p))
                 s.close()
 
                 # Encryption
@@ -168,21 +178,33 @@ class BaseNode(threading.Thread, Observer):
 
                 # Add neighboor
                 if result == 0:
-                    logging.info('{} Connection accepted with {}:{}'.format(self.get_name(),h,p))
-                    nc = NodeConnection(self.get_name(),node_socket,(h,p),aes_cipher)
+                    logging.info(
+                        "{} Connection accepted with {}:{}".format(
+                            self.get_name(), h, p
+                        )
+                    )
+                    nc = NodeConnection(
+                        self.get_name(), node_socket, (h, p), aes_cipher
+                    )
                     nc.add_observer(self)
                     self.__neighbors.append(nc)
                     nc.start(force=force)
-                    
+
                     if full:
-                        self.broadcast(CommunicationProtocol.build_connect_to_msg(h,p),exc=[nc],thread_safe=False)
+                        self.broadcast(
+                            CommunicationProtocol.build_connect_to_msg(h, p),
+                            exc=[nc],
+                            thread_safe=False,
+                        )
             else:
                 node_socket.close()
-            
+
             self.__nei_lock.release()
-            
+
         except Exception as e:
-            logging.debug('({}) Connection refused with {}:{}'.format(self.get_name(),h,p))
+            logging.debug(
+                "({}) Connection refused with {}:{}".format(self.get_name(), h, p)
+            )
             self.__nei_lock.release()
             node_socket.close()
             self.rm_neighbor(nc)
@@ -192,7 +214,7 @@ class BaseNode(threading.Thread, Observer):
     #############################
 
     # Create a tcp socket and send data
-    def __send(self, h, p, data, persist=False): 
+    def __send(self, h, p, data, persist=False):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((h, p))
         s.sendall(data)
@@ -203,9 +225,9 @@ class BaseNode(threading.Thread, Observer):
             return None
 
     def connect_to(self, h, p, full=False, force=False):
-        """"
+        """ "
         Connects a node to another.
-        
+
         Args:
             h (str): The host of the node.
             p (int): The port of the node.
@@ -219,7 +241,7 @@ class BaseNode(threading.Thread, Observer):
             full = "1"
         else:
             full = "0"
-        
+
         if force:
             force = "1"
         else:
@@ -229,11 +251,13 @@ class BaseNode(threading.Thread, Observer):
             # Check if connection with the node already exist
             h = socket.gethostbyname(h)
             self.__nei_lock.acquire()
-            if self.get_neighbor(h,p,thread_safe=False) == None:
-            
+            if self.get_neighbor(h, p, thread_safe=False) == None:
+
                 # Send connection request
-                msg=CommunicationProtocol.build_connect_msg(self.host,self.port,full,force)
-                s = self.__send(h,p,msg,persist=True)
+                msg = CommunicationProtocol.build_connect_msg(
+                    self.host, self.port, full, force
+                )
+                s = self.__send(h, p, msg, persist=True)
 
                 # Encryption
                 aes_cipher = None
@@ -246,21 +270,25 @@ class BaseNode(threading.Thread, Observer):
                     aes_cipher = AESCipher(key=s.recv(AESCipher.key_len()))
 
                 # Add socket to neighbors
-                logging.info("{} Connected to {}:{}".format(self.get_name(),h,p))
-                nc = NodeConnection(self.get_name(),s,(h,p),aes_cipher)
+                logging.info("{} Connected to {}:{}".format(self.get_name(), h, p))
+                nc = NodeConnection(self.get_name(), s, (h, p), aes_cipher)
                 nc.add_observer(self)
                 self.__neighbors.append(nc)
                 nc.start(force=force)
                 self.__nei_lock.release()
                 return nc
-        
+
             else:
-                logging.info("{} Already connected to {}:{}".format(self.get_name(),h,p))
+                logging.info(
+                    "{} Already connected to {}:{}".format(self.get_name(), h, p)
+                )
                 self.__nei_lock.release()
                 return None
-    
+
         except Exception as e:
-            logging.info("{} Can't connect to the node {}:{}".format(self.get_name(),h,p))
+            logging.info(
+                "{} Can't connect to the node {}:{}".format(self.get_name(), h, p)
+            )
             logging.exception(e)
             try:
                 self.__nei_lock.release()
@@ -271,13 +299,13 @@ class BaseNode(threading.Thread, Observer):
     def disconnect_from(self, h, p):
         """
         Disconnects from a node.
-        
+
         Args:
             h (str): The host of the node.
             p (int): The port of the node.
         """
-        self.get_neighbor(h,p).stop()
-            
+        self.get_neighbor(h, p).stop()
+
     def get_neighbor(self, h, p, thread_safe=True):
         """
         Get a ``NodeConnection`` from the neighbors list.
@@ -292,15 +320,15 @@ class BaseNode(threading.Thread, Observer):
         if thread_safe:
             self.__nei_lock.acquire()
 
-        return_node = None    
+        return_node = None
         for n in self.__neighbors:
-            if n.get_addr() == (h,p):
+            if n.get_addr() == (h, p):
                 return_node = n
                 break
-            
+
         if thread_safe:
             self.__nei_lock.release()
-        
+
         return return_node
 
     def get_neighbors(self):
@@ -313,7 +341,7 @@ class BaseNode(threading.Thread, Observer):
         self.__nei_lock.release()
         return n
 
-    def rm_neighbor(self,n):
+    def rm_neighbor(self, n):
         """
         Removes a neighboor from the neighbors list.
 
@@ -334,7 +362,7 @@ class BaseNode(threading.Thread, Observer):
             list: The nodes of the network.
         """
         return self.heartbeater.get_nodes()
-      
+
     ##########################
     #     Msg management     #
     ##########################
@@ -358,15 +386,15 @@ class BaseNode(threading.Thread, Observer):
 
         if thread_safe:
             self.__nei_lock.release()
-        
+
     ###########################
     #     Observer Events     #
     ###########################
 
-    def update(self,event,obj):
+    def update(self, event, obj):
         """
         Observer update method. Used to handle events that can occur with the different components and connections of the node.
-        
+
         Args:
             event (Events): Event that has occurred.
             obj: Information about the change or event.
@@ -375,18 +403,18 @@ class BaseNode(threading.Thread, Observer):
             self.rm_neighbor(obj)
 
         elif event == Events.NODE_CONNECTED_EVENT:
-            n,_ = obj
-            n.send(CommunicationProtocol.build_beat_msg(self.get_name())) 
+            n, _ = obj
+            n.send(CommunicationProtocol.build_beat_msg(self.get_name()))
 
         elif event == Events.CONN_TO_EVENT:
             self.connect_to(obj[0], obj[1], full=False)
 
         elif event == Events.SEND_BEAT_EVENT:
-            self.broadcast(CommunicationProtocol.build_beat_msg(self.get_name())) 
+            self.broadcast(CommunicationProtocol.build_beat_msg(self.get_name()))
 
         elif event == Events.GOSSIP_BROADCAST_EVENT:
-            self.broadcast(obj[0],exc=obj[1]) 
-            
+            self.broadcast(obj[0], exc=obj[1])
+
         elif event == Events.PROCESSED_MESSAGES_EVENT:
             node, msgs = obj
             # Comunicate to connections the new messages processed
@@ -394,8 +422,7 @@ class BaseNode(threading.Thread, Observer):
                 if nc != node:
                     nc.add_processed_messages(list(msgs.keys()))
             # Gossip the new messages
-            self.gossiper.add_messages(list(msgs.values()),node)
+            self.gossiper.add_messages(list(msgs.values()), node)
 
         elif event == Events.BEAT_RECEIVED_EVENT:
             self.heartbeater.add_node(obj)
-
