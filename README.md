@@ -13,7 +13,9 @@ P2PFL is a general-purpose open-source library for the execution (simulated and 
 
 - [Documentation](https://pguijas.github.io/federated_learning_p2p/).
 
-- [Memory of the first version](other/memoria.pdf).
+- [Report of the end-of-degree project](other/memoria.pdf).
+
+- [Report for the award for the best open source end-of-degree project](other/memoria-open-source.pdf).
 
 ## ✅ Features
 
@@ -44,6 +46,10 @@ See `CONTRIBUTING.md` for ways to get started.
 
 Please adhere to this project's code of conduct specified in `CODE_OF_CONDUCT.md`.
 
-## ⚠️ License
+## 💬 Google Group
+
+If you have any questions, or you to be notified of any updates, you can join the Google Group [here](https://groups.google.com/g/p2pfl).
+
+## 📜 License
 
 [GNU General Public License, Version 3.0](https://www.gnu.org/licenses/gpl-3.0.en.html)
