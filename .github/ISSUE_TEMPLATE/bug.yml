@@ -43,12 +43,12 @@ body:
   validations:
     required: false
 - type: dropdown
-  id: browsers
+  id: systems
   attributes:
-    label: What browsers are you seeing the problem on?
+    label: In which system are you seeing the problem on?
     multiple: true
     options:
-      - Firefox
-      - Chrome
-      - Safari
-      - Microsoft Edge
+      - Windows 10
+      - Windows 11
+      - Linux
+      - Mac OS
