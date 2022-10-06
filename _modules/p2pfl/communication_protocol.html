@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
+    <meta name="generator" content="sphinx-5.2.3, furo 2022.09.29"/>
         <title>p2pfl.communication_protocol - P2P FL</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -156,6 +156,7 @@
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -208,7 +209,24 @@
         </div>
         <article role="main">
           <h1>Source code for p2pfl.communication_protocol</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span></span><span class="c1"># </span>
+<span class="c1"># This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).</span>
+<span class="c1"># Copyright (c) 2022 Pedro Guijas Bravo.</span>
+<span class="c1"># </span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify  </span>
+<span class="c1"># it under the terms of the GNU General Public License as published by  </span>
+<span class="c1"># the Free Software Foundation, version 3.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful, but </span>
+<span class="c1"># WITHOUT ANY WARRANTY; without even the implied warranty of </span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU </span>
+<span class="c1"># General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License </span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">threading</span>
@@ -218,32 +236,33 @@
 <span class="c1">#    CommunicationProtocol    # --&gt; Invoker of Command Patern</span>
 <span class="c1">###############################</span>
 
+
 <div class="viewcode-block" id="CommunicationProtocol"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol">[docs]</a><span class="k">class</span> <span class="nc">CommunicationProtocol</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Manages the meaning of node communication messages. Some messages contain a hash at end, it is used as a unique identifier for the message, </span>
+<span class="sd">    Manages the meaning of node communication messages. Some messages contain a hash at end, it is used as a unique identifier for the message,</span>
 <span class="sd">    this kind of messages are gossiped to the entire network.</span>
-<span class="sd">    </span>
+
 <span class="sd">    The valid messages can be classified into gossiped and non-gossiped:</span>
-<span class="sd">        Gossiped messages: </span>
-<span class="sd">            - BEAT &lt;node&gt; &lt;HASH&gt; </span>
+<span class="sd">        Gossiped messages:</span>
+<span class="sd">            - BEAT &lt;node&gt; &lt;HASH&gt;</span>
 <span class="sd">            - START_LEARNING &lt;rounds&gt; &lt;epoches&gt; &lt;HASH&gt;</span>
 <span class="sd">            - STOP_LEARNING &lt;HASH&gt;</span>
-<span class="sd">            - VOTE_TRAIN_SET &lt;node&gt; (&lt;node&gt; &lt;punct&gt;)* VOTE_TRAIN_SET_CLOSE &lt;HASH&gt; </span>
-<span class="sd">            - METRICS &lt;node&gt; &lt;round&gt; &lt;loss&gt; &lt;metric&gt; &lt;HASH&gt; </span>
+<span class="sd">            - VOTE_TRAIN_SET &lt;node&gt; (&lt;node&gt; &lt;punct&gt;)* VOTE_TRAIN_SET_CLOSE &lt;HASH&gt;</span>
+<span class="sd">            - METRICS &lt;node&gt; &lt;round&gt; &lt;loss&gt; &lt;metric&gt; &lt;HASH&gt;</span>
 
 <span class="sd">        Non Gossiped messages (communication over only 2 nodes):</span>
 <span class="sd">            - CONNECT &lt;ip&gt; &lt;port&gt; &lt;full&gt; &lt;force&gt;</span>
 <span class="sd">            - CONNECT_TO &lt;ip&gt; &lt;port&gt;</span>
-<span class="sd">            - STOP </span>
+<span class="sd">            - STOP</span>
 <span class="sd">            - PARAMS &lt;data&gt; \PARAMS</span>
-<span class="sd">            - MODELS_READY &lt;round&gt; </span>
+<span class="sd">            - MODELS_READY &lt;round&gt;</span>
 <span class="sd">            - MODELS_AGGREGATED &lt;node&gt;* MODELS_AGGREGATED_CLOSE</span>
 <span class="sd">            - MODEL_INITIALIZED</span>
 
 <span class="sd">    Furthermore, all messages consist of encoded text (utf-8), with the exception of the `PARAMS` message, which contains serialized binaries.</span>
 
-<span class="sd">    Non-static methods are used to process the different messages. Static methods are used to build messages and process only the `CONNECT` message (handshake). </span>
-<span class="sd">    </span>
+<span class="sd">    Non-static methods are used to process the different messages. Static methods are used to build messages and process only the `CONNECT` message (handshake).</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        command_dict: Dictionary with the callbacks to execute at `process_message`.</span>
 
@@ -256,14 +275,14 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Beat message header.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">STOP</span> <span class="o">=</span> <span class="s2">&quot;STOP&quot;</span>           
+    <span class="n">STOP</span> <span class="o">=</span> <span class="s2">&quot;STOP&quot;</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stop message header.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">CONN</span> <span class="o">=</span> <span class="s2">&quot;CONNECT&quot;</span> 
+    <span class="n">CONN</span> <span class="o">=</span> <span class="s2">&quot;CONNECT&quot;</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Connection message header.</span>
-<span class="sd">    &quot;&quot;&quot;</span>        
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">CONN_TO</span> <span class="o">=</span> <span class="s2">&quot;CONNECT_TO&quot;</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Connection to message header.</span>
@@ -276,23 +295,23 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stop learning message header.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">PARAMS</span> <span class="o">=</span> <span class="s2">&quot;PARAMS&quot;</span> <span class="c1"># special case (binary) </span>
+    <span class="n">PARAMS</span> <span class="o">=</span> <span class="s2">&quot;PARAMS&quot;</span>  <span class="c1"># special case (binary)</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Parameters message header.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">PARAMS_CLOSE</span> <span class="o">=</span> <span class="s2">&quot;\PARAMS&quot;</span> <span class="c1"># special case (binary)</span>
+    <span class="n">PARAMS_CLOSE</span> <span class="o">=</span> <span class="s2">&quot;\PARAMS&quot;</span>  <span class="c1"># special case (binary)</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Parameters message closing.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">MODELS_READY</span> <span class="o">=</span> <span class="s2">&quot;MODELS_READY&quot;</span>    
+    <span class="n">MODELS_READY</span> <span class="o">=</span> <span class="s2">&quot;MODELS_READY&quot;</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Models ready message header.</span>
-<span class="sd">    &quot;&quot;&quot;</span> 
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">METRICS</span> <span class="o">=</span> <span class="s2">&quot;METRICS&quot;</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Metrics message header.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">VOTE_TRAIN_SET</span> <span class="o">=</span> <span class="s2">&quot;VOTE_TRAIN_SET&quot;</span> 
+    <span class="n">VOTE_TRAIN_SET</span> <span class="o">=</span> <span class="s2">&quot;VOTE_TRAIN_SET&quot;</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Vote train set message header.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -300,19 +319,19 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Vote train set message closing.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">MODELS_AGGREGATED</span> <span class="o">=</span> <span class="s2">&quot;MODELS_AGGREGATED&quot;</span>    
+    <span class="n">MODELS_AGGREGATED</span> <span class="o">=</span> <span class="s2">&quot;MODELS_AGGREGATED&quot;</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Models aggregated message header.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">MODELS_AGGREGATED_CLOSE</span> <span class="o">=</span> <span class="s2">&quot;\MODELS_AGGREGATED&quot;</span> 
+    <span class="n">MODELS_AGGREGATED_CLOSE</span> <span class="o">=</span> <span class="s2">&quot;\MODELS_AGGREGATED&quot;</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Models aggregated message closing.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">MODEL_INITIALIZED</span> <span class="o">=</span> <span class="s2">&quot;MODEL_INITIALIZED&quot;</span> 
+    <span class="n">MODEL_INITIALIZED</span> <span class="o">=</span> <span class="s2">&quot;MODEL_INITIALIZED&quot;</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Model initialized message header.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="c1">############################################</span>
     <span class="c1">#    MSG PROCESSING (Non Static Methods)   #</span>
     <span class="c1">############################################</span>
@@ -322,7 +341,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">last_messages</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__last_messages_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
 
-<div class="viewcode-block" id="CommunicationProtocol.add_processed_messages"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.add_processed_messages">[docs]</a>    <span class="k">def</span> <span class="nf">add_processed_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">messages</span><span class="p">):</span>
+<div class="viewcode-block" id="CommunicationProtocol.add_processed_messages"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.add_processed_messages">[docs]</a>    <span class="k">def</span> <span class="nf">add_processed_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add messages to the last messages list. If ammount is higher than ``Settings.AMOUNT_LAST_MESSAGES_SAVED`` remove the oldest to keep the size.</span>
 
@@ -332,14 +351,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__last_messages_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_messages</span> <span class="o">+</span> <span class="n">messages</span>
         <span class="c1"># Remove oldest messages</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_messages</span><span class="p">)</span><span class="o">&gt;</span><span class="n">Settings</span><span class="o">.</span><span class="n">AMOUNT_LAST_MESSAGES_SAVED</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">last_messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_messages</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_messages</span><span class="p">)</span><span class="o">-</span><span class="n">Settings</span><span class="o">.</span><span class="n">AMOUNT_LAST_MESSAGES_SAVED</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_messages</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">Settings</span><span class="o">.</span><span class="n">AMOUNT_LAST_MESSAGES_SAVED</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_messages</span><span class="p">[</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_messages</span><span class="p">)</span> <span class="o">-</span> <span class="n">Settings</span><span class="o">.</span><span class="n">AMOUNT_LAST_MESSAGES_SAVED</span> <span class="p">:</span>
+            <span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__last_messages_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="CommunicationProtocol.process_message"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.process_message">[docs]</a>    <span class="k">def</span> <span class="nf">process_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Processes messages and executes the callback associated with it (from ``command_dict``).        </span>
-<span class="sd">        </span>
+<span class="sd">        Processes messages and executes the callback associated with it (from ``command_dict``).</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            msg: The message to process.</span>
 
@@ -352,17 +373,25 @@
 
         <span class="c1"># Determine if is a binary message or not</span>
         <span class="n">header</span> <span class="o">=</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">PARAMS</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)]</span> <span class="o">==</span> <span class="n">header</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)]</span> <span class="o">==</span> <span class="n">header</span><span class="p">:</span>
             <span class="n">end</span> <span class="o">=</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">PARAMS_CLOSE</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
 
             <span class="c1"># Check if done</span>
             <span class="n">end_pos</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">end_pos</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-                <span class="k">return</span> <span class="p">[],</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">PARAMS</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">msg</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">):</span><span class="n">end_pos</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">[],</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span>
+                    <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">PARAMS</span><span class="p">,</span>
+                    <span class="kc">None</span><span class="p">,</span>
+                    <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">msg</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="p">:</span> <span class="n">end_pos</span><span class="p">],</span>
+                    <span class="kc">True</span><span class="p">,</span>
+                <span class="p">)</span>
 
-            <span class="k">return</span> <span class="p">[],</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">PARAMS</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">msg</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">):],</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[],</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span>
+                <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">PARAMS</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">msg</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="p">:],</span> <span class="kc">False</span>
+            <span class="p">)</span>
 
-        <span class="k">else</span><span class="p">:</span>      
+        <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Try to decode the message</span>
             <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
             <span class="k">try</span><span class="p">:</span>
@@ -370,7 +399,7 @@
                 <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
             <span class="k">except</span><span class="p">:</span>
                 <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
-        
+
             <span class="c1"># Process messages</span>
             <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
 
@@ -379,7 +408,9 @@
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
                         <span class="n">hash_</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
                         <span class="n">cmd_text</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">BEAT</span><span class="p">,</span><span class="n">hash_</span><span class="p">,</span> <span class="n">cmd_text</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span>
+                            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">BEAT</span><span class="p">,</span> <span class="n">hash_</span><span class="p">,</span> <span class="n">cmd_text</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="p">):</span>
                             <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
@@ -387,7 +418,7 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
                         <span class="k">break</span>
-                    
+
                 <span class="c1"># Stop (non gossiped)</span>
                 <span class="k">elif</span> <span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP</span><span class="p">:</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
@@ -395,17 +426,22 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
                         <span class="k">break</span>
-                   
 
                 <span class="c1"># Connect to</span>
                 <span class="k">elif</span> <span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">CONN_TO</span><span class="p">:</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
-                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">CONN_TO</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">])):</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span>
+                                <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">CONN_TO</span><span class="p">,</span>
+                                <span class="kc">None</span><span class="p">,</span>
+                                <span class="kc">None</span><span class="p">,</span>
+                                <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                <span class="nb">int</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+                            <span class="p">):</span>
                                 <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
-                                <span class="k">break</span> 
+                                <span class="k">break</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
                             <span class="k">break</span>
@@ -419,7 +455,13 @@
                         <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">and</span> <span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
                             <span class="n">hash_</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
                             <span class="n">cmd_text</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
-                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">START_LEARNING</span><span class="p">,</span> <span class="n">hash_</span><span class="p">,</span> <span class="n">cmd_text</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">])):</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span>
+                                <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">START_LEARNING</span><span class="p">,</span>
+                                <span class="n">hash_</span><span class="p">,</span>
+                                <span class="n">cmd_text</span><span class="p">,</span>
+                                <span class="nb">int</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                <span class="nb">int</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+                            <span class="p">):</span>
                                 <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
@@ -433,11 +475,13 @@
 
                 <span class="c1"># Stop learning</span>
                 <span class="k">elif</span> <span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP_LEARNING</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>            
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
                             <span class="n">hash_</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                             <span class="n">cmd_text</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
-                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP_LEARNING</span><span class="p">,</span> <span class="n">hash_</span><span class="p">,</span> <span class="n">cmd_text</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span>
+                                <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP_LEARNING</span><span class="p">,</span> <span class="n">hash_</span><span class="p">,</span> <span class="n">cmd_text</span>
+                            <span class="p">):</span>
                                 <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
@@ -448,12 +492,17 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
                         <span class="k">break</span>
-        
+
                 <span class="c1"># Models Ready</span>
                 <span class="k">elif</span> <span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_READY</span><span class="p">:</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
-                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_READY</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">])):</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span>
+                                <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_READY</span><span class="p">,</span>
+                                <span class="kc">None</span><span class="p">,</span>
+                                <span class="kc">None</span><span class="p">,</span>
+                                <span class="nb">int</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                            <span class="p">):</span>
                                 <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
@@ -471,7 +520,15 @@
                         <span class="k">try</span><span class="p">:</span>
                             <span class="n">hash_</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
                             <span class="n">cmd_text</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
-                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">METRICS</span><span class="p">,</span> <span class="n">hash_</span><span class="p">,</span> <span class="n">cmd_text</span><span class="p">,</span> <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">4</span><span class="p">])):</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span>
+                                <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">METRICS</span><span class="p">,</span>
+                                <span class="n">hash_</span><span class="p">,</span>
+                                <span class="n">cmd_text</span><span class="p">,</span>
+                                <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                <span class="nb">int</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+                                <span class="nb">float</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span>
+                                <span class="nb">float</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">4</span><span class="p">]),</span>
+                            <span class="p">):</span>
                                 <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">6</span><span class="p">:]</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
@@ -487,22 +544,32 @@
                 <span class="k">elif</span> <span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">VOTE_TRAIN_SET</span><span class="p">:</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="c1"># Divide messages and check length of message</span>
-                        <span class="n">close_pos</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">VOTE_TRAIN_SET_CLOSE</span><span class="p">)</span>
+                        <span class="n">close_pos</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">index</span><span class="p">(</span>
+                            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">VOTE_TRAIN_SET_CLOSE</span>
+                        <span class="p">)</span>
                         <span class="n">node</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                         <span class="n">vote_msg</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="n">close_pos</span><span class="p">]</span>
-                        <span class="n">hash_</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="n">close_pos</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
-                        <span class="n">cmd_text</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">close_pos</span><span class="o">+</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+                        <span class="n">hash_</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="n">close_pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                        <span class="n">cmd_text</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="n">close_pos</span> <span class="o">+</span> <span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
+                            <span class="s2">&quot;utf-8&quot;</span>
+                        <span class="p">)</span>
 
-                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vote_msg</span><span class="p">)</span><span class="o">%</span><span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vote_msg</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
                             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Invalid vote message&quot;</span><span class="p">)</span>
-                        <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="n">close_pos</span><span class="o">+</span><span class="mi">2</span><span class="p">:]</span>
+                        <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="n">close_pos</span> <span class="o">+</span> <span class="mi">2</span> <span class="p">:]</span>
 
                         <span class="c1"># Process vote message</span>
                         <span class="n">votes</span> <span class="o">=</span> <span class="p">[]</span>
                         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">vote_msg</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
-                            <span class="n">votes</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">vote_msg</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">vote_msg</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])))</span>
+                            <span class="n">votes</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">vote_msg</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">vote_msg</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])))</span>
 
-                        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">VOTE_TRAIN_SET</span><span class="p">,</span> <span class="n">hash_</span><span class="p">,</span> <span class="n">cmd_text</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span><span class="nb">dict</span><span class="p">(</span><span class="n">votes</span><span class="p">)):</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span>
+                            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">VOTE_TRAIN_SET</span><span class="p">,</span>
+                            <span class="n">hash_</span><span class="p">,</span>
+                            <span class="n">cmd_text</span><span class="p">,</span>
+                            <span class="n">node</span><span class="p">,</span>
+                            <span class="nb">dict</span><span class="p">(</span><span class="n">votes</span><span class="p">),</span>
+                        <span class="p">):</span>
                             <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
                             <span class="k">break</span>
 
@@ -510,22 +577,26 @@
                         <span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
                         <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
                         <span class="k">break</span>
-                    
+
                 <span class="c1"># Models Aggregated</span>
                 <span class="k">elif</span> <span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGGREGATED</span><span class="p">:</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="c1"># Divide messages and check length of message</span>
-                        <span class="n">close_pos</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGGREGATED_CLOSE</span><span class="p">)</span>
+                        <span class="n">close_pos</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">index</span><span class="p">(</span>
+                            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGGREGATED_CLOSE</span>
+                        <span class="p">)</span>
                         <span class="n">content</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">close_pos</span><span class="p">]</span>
-                        <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="n">close_pos</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+                        <span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="n">close_pos</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span>
 
                         <span class="c1"># Get Nodes</span>
-                        <span class="n">nodes</span><span class="o">=</span><span class="p">[]</span>
+                        <span class="n">nodes</span> <span class="o">=</span> <span class="p">[]</span>
                         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
                             <span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
 
                         <span class="c1"># Exec</span>
-                        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGGREGATED</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">nodes</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec</span><span class="p">(</span>
+                            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGGREGATED</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">nodes</span>
+                        <span class="p">):</span>
                             <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
                             <span class="k">break</span>
 
@@ -541,17 +612,17 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
                         <span class="k">break</span>
-                    
-                <span class="c1"># Non Recognized message            </span>
+
+                <span class="c1"># Non Recognized message</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">error</span> <span class="o">=</span> <span class="kc">True</span>
                     <span class="k">break</span>
-                
+
             <span class="c1"># Return</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmp_exec_msgs</span><span class="p">,</span><span class="n">error</span></div>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmp_exec_msgs</span><span class="p">,</span> <span class="n">error</span></div>
 
     <span class="c1"># Exec callbacks</span>
-    <span class="k">def</span> <span class="nf">__exec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">action</span><span class="p">,</span><span class="n">hash_</span><span class="p">,</span> <span class="n">cmd_text</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__exec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">hash_</span><span class="p">,</span> <span class="n">cmd_text</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Check if can be executed</span>
             <span class="k">if</span> <span class="n">hash_</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_messages</span> <span class="ow">or</span> <span class="n">hash_</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -567,19 +638,18 @@
             <span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-
     <span class="c1">########################################</span>
     <span class="c1">#    MSG PROCESSING (Static Methods)   #</span>
     <span class="c1">########################################</span>
 
 <div class="viewcode-block" id="CommunicationProtocol.process_connection"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.process_connection">[docs]</a>    <span class="k">def</span> <span class="nf">process_connection</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">callback</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot; &quot;</span>
 <span class="sd">        Static method that checks if the message is a valid connection message and executes the callback (accept connection).</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            message: The message to check.</span>
 <span class="sd">            callback: What do if the connection message is legit.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            True if connection was accepted, False otherwise.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -599,7 +669,7 @@
             <span class="k">return</span> <span class="kc">False</span></div>
 
 <div class="viewcode-block" id="CommunicationProtocol.check_collapse"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.check_collapse">[docs]</a>    <span class="k">def</span> <span class="nf">check_collapse</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot; &quot;</span>
 <span class="sd">        Static method that checks if in the message there is a collapse (a binary message (it should fill all the buffer) and a non-binary message before it).</span>
 
 <span class="sd">        Actually, collapses can only happen with ``PARAMS`` binary message.</span>
@@ -608,29 +678,28 @@
 <span class="sd">            msg: The message to check.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Length of the collapse (number of bytes to the binary headear). </span>
+<span class="sd">            Length of the collapse (number of bytes to the binary headear).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">header</span> <span class="o">=</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">PARAMS</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
         <span class="n">header_pos</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">header_pos</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">msg</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)]</span> <span class="o">!=</span> <span class="n">header</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">header_pos</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">msg</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)]</span> <span class="o">!=</span> <span class="n">header</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">header_pos</span>
-   
+
         <span class="k">return</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="CommunicationProtocol.check_params_incomplete"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.check_params_incomplete">[docs]</a>    <span class="k">def</span> <span class="nf">check_params_incomplete</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Checks if a params message is incomplete. If the message is complete or is not a params message, it returns 0.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            Number of bytes that needs to be complete</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">header</span> <span class="o">=</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">PARAMS</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)]</span> <span class="o">==</span> <span class="n">header</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span><span class="o">&lt;</span><span class="n">Settings</span><span class="o">.</span><span class="n">BLOCK_SIZE</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">Settings</span><span class="o">.</span><span class="n">BLOCK_SIZE</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)]</span> <span class="o">==</span> <span class="n">header</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">Settings</span><span class="o">.</span><span class="n">BLOCK_SIZE</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Settings</span><span class="o">.</span><span class="n">BLOCK_SIZE</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="mi">0</span></div>
-    
 
     <span class="c1">#######################################</span>
     <span class="c1">#     MSG BUILDERS (Static Methods)   #</span>
@@ -647,18 +716,20 @@
 <span class="sd">            Hashed and encoded message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># random number to avoid generating the same hash for a different message (at she same time)</span>
-        <span class="nb">id</span> <span class="o">=</span> <span class="nb">hash</span><span class="p">(</span><span class="n">msg</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100000</span><span class="p">)))</span>
+        <span class="nb">id</span> <span class="o">=</span> <span class="nb">hash</span><span class="p">(</span><span class="n">msg</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100000</span><span class="p">)))</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">msg</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="CommunicationProtocol.build_beat_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_beat_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_beat_msg</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; </span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            An encoded beat message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">BEAT</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">node</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span>
+            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">BEAT</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">node</span>
+        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="CommunicationProtocol.build_stop_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_stop_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_stop_msg</span><span class="p">():</span>
-        <span class="sd">&quot;&quot;&quot; </span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            An encoded stop message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -673,7 +744,9 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            An encoded connect to message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">CONN_TO</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">ip</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">CONN_TO</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">ip</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="CommunicationProtocol.build_start_learning_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_start_learning_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_start_learning_msg</span><span class="p">(</span><span class="n">rounds</span><span class="p">,</span> <span class="n">epochs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -684,14 +757,18 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            An encoded start learning message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">START_LEARNING</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">rounds</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">epochs</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span>
+            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">START_LEARNING</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">rounds</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">epochs</span><span class="p">)</span>
+        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="CommunicationProtocol.build_stop_learning_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_stop_learning_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_stop_learning_msg</span><span class="p">():</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            An encoded stop learning message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP_LEARNING</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span>
+            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">STOP_LEARNING</span>
+        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="CommunicationProtocol.build_models_ready_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_models_ready_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_models_ready_msg</span><span class="p">(</span><span class="nb">round</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -701,7 +778,9 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            An encoded ready message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_READY</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_READY</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
+            <span class="s2">&quot;utf-8&quot;</span>
+        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="CommunicationProtocol.build_metrics_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_metrics_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_metrics_msg</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="nb">round</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">metric</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -710,38 +789,61 @@
 <span class="sd">            round: The round when the metrics were calculated.</span>
 <span class="sd">            loss: The loss of the last round.</span>
 <span class="sd">            metric: The metric of the last round.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            An encoded metrics message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">METRICS</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">node</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">metric</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span>
+            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">METRICS</span>
+            <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+            <span class="o">+</span> <span class="n">node</span>
+            <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">)</span>
+            <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+            <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span>
+        <span class="p">)</span></div>
 
-<div class="viewcode-block" id="CommunicationProtocol.build_vote_train_set_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_vote_train_set_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_vote_train_set_msg</span><span class="p">(</span><span class="n">node</span><span class="p">,</span><span class="n">votes</span><span class="p">):</span>
+<div class="viewcode-block" id="CommunicationProtocol.build_vote_train_set_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_vote_train_set_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_vote_train_set_msg</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">votes</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Args:</span>
 <span class="sd">            node: The node that sent the message.</span>
 <span class="sd">            votes: Votes of the node.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            An encoded vote train set message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">aux</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">votes</span><span class="p">:</span>
-            <span class="n">aux</span> <span class="o">=</span> <span class="n">aux</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">VOTE_TRAIN_SET</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">node</span> <span class="o">+</span> <span class="n">aux</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">VOTE_TRAIN_SET_CLOSE</span><span class="p">)</span></div>
-        
+            <span class="n">aux</span> <span class="o">=</span> <span class="n">aux</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">generate_hased_message</span><span class="p">(</span>
+            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">VOTE_TRAIN_SET</span>
+            <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+            <span class="o">+</span> <span class="n">node</span>
+            <span class="o">+</span> <span class="n">aux</span>
+            <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+            <span class="o">+</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">VOTE_TRAIN_SET_CLOSE</span>
+        <span class="p">)</span></div>
+
 <div class="viewcode-block" id="CommunicationProtocol.build_models_aggregated_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_models_aggregated_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_models_aggregated_msg</span><span class="p">(</span><span class="n">nodes</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Args:</span>
 <span class="sd">            nodes: List of strings to indicate aggregated nodes.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            An encoded models aggregated message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">aux</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
             <span class="n">aux</span> <span class="o">=</span> <span class="n">aux</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">n</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGGREGATED</span> <span class="o">+</span> <span class="n">aux</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGGREGATED_CLOSE</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGGREGATED</span>
+            <span class="o">+</span> <span class="n">aux</span>
+            <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+            <span class="o">+</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">MODELS_AGGREGATED_CLOSE</span>
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="CommunicationProtocol.build_model_initialized_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_model_initialized_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_model_initialized_msg</span><span class="p">():</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -764,7 +866,18 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            An encoded connect message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">CONN</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">ip</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">broadcast</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">force</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">CONN</span>
+            <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+            <span class="o">+</span> <span class="n">ip</span>
+            <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+            <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">broadcast</span><span class="p">)</span>
+            <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">force</span><span class="p">)</span>
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="CommunicationProtocol.build_params_msg"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol.build_params_msg">[docs]</a>    <span class="k">def</span> <span class="nf">build_params_msg</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -785,12 +898,14 @@
         <span class="n">size</span> <span class="o">=</span> <span class="n">Settings</span><span class="o">.</span><span class="n">BLOCK_SIZE</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
         <span class="n">data_msgs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">size</span><span class="p">):</span>
-            <span class="n">data_msgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">header</span> <span class="o">+</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">size</span><span class="p">]))</span>
+            <span class="n">data_msgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">header</span> <span class="o">+</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">size</span><span class="p">]))</span>
 
         <span class="c1"># Adding closing message</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_msgs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">end</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">Settings</span><span class="o">.</span><span class="n">BLOCK_SIZE</span><span class="p">:</span>
             <span class="n">data_msgs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">end</span>
-            <span class="n">data_msgs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="sa">b</span><span class="s1">&#39;</span><span class="se">\0</span><span class="s1">&#39;</span> <span class="o">*</span> <span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">BLOCK_SIZE</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_msgs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span> <span class="c1"># padding to avoid message fragmentation</span>
+            <span class="n">data_msgs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\0</span><span class="s2">&quot;</span> <span class="o">*</span> <span class="p">(</span>
+                <span class="n">Settings</span><span class="o">.</span><span class="n">BLOCK_SIZE</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_msgs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="p">)</span>  <span class="c1"># padding to avoid message fragmentation</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">data_msgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">header</span> <span class="o">+</span> <span class="n">end</span><span class="p">)</span>
 
@@ -834,6 +949,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/scripts/furo.js"></script>
     </body>
 </html>

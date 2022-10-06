@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Quickstart" href="quickstart.html" /><link rel="prev" title="P2P Federated Learning" href="index.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Documentation" href="documentation.html" /><link rel="prev" title="Contributing" href="contributing.html" />
 
     <meta name="generator" content="sphinx-5.2.3, furo 2022.09.29"/>
-        <title>Installation - P2P FL</title>
+        <title>Library Design - P2P FL</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -155,9 +155,10 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Library Design</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -210,31 +211,46 @@
           </label>
         </div>
         <article role="main">
-          <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">#</a></h1>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>PyTorch version 1.11.0 is required.</p>
-</div>
-<section id="install-using-pip">
-<h2>Install using pip<a class="headerlink" href="#install-using-pip" title="Permalink to this heading">#</a></h2>
-<p>Stable releases are available on <a class="reference external" href="https://pypi.org/project/p2pfl/">PyPI</a>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install p2pfl
-</pre></div>
-</div>
+          <section id="library-design">
+<h1>Library Design<a class="headerlink" href="#library-design" title="Permalink to this heading">#</a></h1>
+<p>This document describes the design of the library.</p>
+<section id="design-principles">
+<h2>Design Principles<a class="headerlink" href="#design-principles" title="Permalink to this heading">#</a></h2>
+<p>First of all, its important to keep in mind some design principles that were followed during the development of the library. Some of them are: SOLID principles, KISS, DRY, YAGNI, etc.</p>
 </section>
-<section id="create-a-virtual-environment">
-<h2>Create a virtual environment<a class="headerlink" href="#create-a-virtual-environment" title="Permalink to this heading">#</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pipenv install p2pfl
-</pre></div>
-</div>
+<section id="general-overview">
+<h2>General Overview<a class="headerlink" href="#general-overview" title="Permalink to this heading">#</a></h2>
+<p>The library has been structured, in general, following a design in which the node has different components.</p>
+<p>The class diagrams of the different parts of the library are shown below.</p>
+<section id="node-without-learning">
+<h3>Node without learning<a class="headerlink" href="#node-without-learning" title="Permalink to this heading">#</a></h3>
+<p><img alt="class diagram 1" src="_images/class1.png" /></p>
 </section>
-<section id="dockerized-installation">
-<h2>Dockerized installation<a class="headerlink" href="#dockerized-installation" title="Permalink to this heading">#</a></h2>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>not available yet</p>
-</div>
+<section id="node-with-learning">
+<h3>Node with learning<a class="headerlink" href="#node-with-learning" title="Permalink to this heading">#</a></h3>
+<p><img alt="class diagram 2" src="_images/class2.png" /></p>
+</section>
+<section id="gosspip-protocol">
+<h3>Gosspip protocol<a class="headerlink" href="#gosspip-protocol" title="Permalink to this heading">#</a></h3>
+<p><img alt="class diagram 4" src="_images/class4.png" /></p>
+</section>
+<section id="encryption">
+<h3>Encryption<a class="headerlink" href="#encryption" title="Permalink to this heading">#</a></h3>
+<p><img alt="class diagram 6" src="_images/class6.png" /></p>
+</section>
+</section>
+<section id="design-patterns">
+<h2>Design Patterns<a class="headerlink" href="#design-patterns" title="Permalink to this heading">#</a></h2>
+<p>The library has been structured following some design patterns. The most important ones are:</p>
+<ul class="simple">
+<li><p><strong>Observer pattern</strong>: Used to manage the communication between the different components of the node and the node.</p></li>
+<li><p><strong>Command pattern</strong>: Used to create the communication protocol.</p></li>
+<li><p><strong>Template pattern</strong>: Used to make the library extremely extensible.</p></li>
+</ul>
+</section>
+<section id="communication-protocol">
+<h2>Communication Protocol<a class="headerlink" href="#communication-protocol" title="Permalink to this heading">#</a></h2>
+<p>To know more about the communication protocol, see the <code class="docutils literal notranslate"><span class="pre">communication_protocol</span> <span class="pre">module</span></code> at <a class="reference internal" href="p2pfl.html"><span class="doc std std-doc">documentation</span></a>.</p>
 </section>
 </section>
 
@@ -243,23 +259,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="quickstart.html">
+          <a class="next-page" href="documentation.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Quickstart</div>
+                <div class="title">Documentation</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="index.html">
+          <a class="prev-page" href="contributing.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Home</div>
+                <div class="title">Contributing</div>
                 
               </div>
             </a>
@@ -295,10 +311,17 @@
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Installation</a><ul>
-<li><a class="reference internal" href="#install-using-pip">Install using pip</a></li>
-<li><a class="reference internal" href="#create-a-virtual-environment">Create a virtual environment</a></li>
-<li><a class="reference internal" href="#dockerized-installation">Dockerized installation</a></li>
+<li><a class="reference internal" href="#">Library Design</a><ul>
+<li><a class="reference internal" href="#design-principles">Design Principles</a></li>
+<li><a class="reference internal" href="#general-overview">General Overview</a><ul>
+<li><a class="reference internal" href="#node-without-learning">Node without learning</a></li>
+<li><a class="reference internal" href="#node-with-learning">Node with learning</a></li>
+<li><a class="reference internal" href="#gosspip-protocol">Gosspip protocol</a></li>
+<li><a class="reference internal" href="#encryption">Encryption</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#design-patterns">Design Patterns</a></li>
+<li><a class="reference internal" href="#communication-protocol">Communication Protocol</a></li>
 </ul>
 </li>
 </ul>

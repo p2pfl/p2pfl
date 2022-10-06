@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
+    <meta name="generator" content="sphinx-5.2.3, furo 2022.09.29"/>
         <title>p2pfl.base_node - P2P FL</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -156,6 +156,7 @@
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -208,7 +209,24 @@
         </div>
         <article role="main">
           <h1>Source code for p2pfl.base_node</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">socket</span>
+<span></span><span class="c1"># </span>
+<span class="c1"># This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).</span>
+<span class="c1"># Copyright (c) 2022 Pedro Guijas Bravo.</span>
+<span class="c1"># </span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify  </span>
+<span class="c1"># it under the terms of the GNU General Public License as published by  </span>
+<span class="c1"># the Free Software Foundation, version 3.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful, but </span>
+<span class="c1"># WITHOUT ANY WARRANTY; without even the implied warranty of </span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU </span>
+<span class="c1"># General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License </span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">socket</span>
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">sys</span>
@@ -219,6 +237,7 @@
 <span class="kn">from</span> <span class="nn">p2pfl.node_connection</span> <span class="kn">import</span> <span class="n">NodeConnection</span>
 <span class="kn">from</span> <span class="nn">p2pfl.heartbeater</span> <span class="kn">import</span> <span class="n">Heartbeater</span>
 <span class="kn">from</span> <span class="nn">p2pfl.utils.observer</span> <span class="kn">import</span> <span class="n">Events</span><span class="p">,</span> <span class="n">Observer</span>
+
 
 <div class="viewcode-block" id="BaseNode"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.base_node.BaseNode">[docs]</a><span class="k">class</span> <span class="nc">BaseNode</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">,</span> <span class="n">Observer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -248,47 +267,49 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span> <span class="o">=</span> <span class="n">simulation</span>
 
         <span class="c1"># Super init</span>
-        <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;node-&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+        <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;node-&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_terminate_flag</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
 
         <span class="c1"># Setting Up Node Socket (listening)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__node_socket</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span> <span class="c1">#TCP Socket</span>
-        <span class="k">if</span> <span class="n">port</span><span class="o">==</span><span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__node_socket</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="n">host</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="c1"># gets a random free port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__node_socket</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span>
+            <span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span>
+        <span class="p">)</span>  <span class="c1"># TCP Socket</span>
+        <span class="k">if</span> <span class="n">port</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__node_socket</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="n">host</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>  <span class="c1"># gets a random free port</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_socket</span><span class="o">.</span><span class="n">getsockname</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__node_socket</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__node_socket</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="c1"># no more than 50 connections at queue</span>
-        
+        <span class="bp">self</span><span class="o">.</span><span class="n">__node_socket</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>  <span class="c1"># no more than 50 connections at queue</span>
+
         <span class="c1"># Neighbors</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__neighbors</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># private to avoid concurrency issues</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__neighbors</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># private to avoid concurrency issues</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__nei_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
 
         <span class="c1"># Logging</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
 
         <span class="c1"># Heartbeater and Gossiper</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gossiper</span> <span class="o">=</span> <span class="kc">None</span> 
-        <span class="bp">self</span><span class="o">.</span><span class="n">heartbeater</span> <span class="o">=</span> <span class="kc">None</span> 
-        
+        <span class="bp">self</span><span class="o">.</span><span class="n">gossiper</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">heartbeater</span> <span class="o">=</span> <span class="kc">None</span>
+
 <div class="viewcode-block" id="BaseNode.get_addr"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.base_node.BaseNode.get_addr">[docs]</a>    <span class="k">def</span> <span class="nf">get_addr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple: The address of the node.    </span>
+<span class="sd">            tuple: The address of the node.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span></div>
 
 <div class="viewcode-block" id="BaseNode.get_name"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.base_node.BaseNode.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            str: The name of the node.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span> </div>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span></div>
 
     <span class="c1">#######################</span>
     <span class="c1">#   Node Management   #</span>
     <span class="c1">#######################</span>
-    
+
 <div class="viewcode-block" id="BaseNode.start"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.base_node.BaseNode.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Starts the node (node loop in a thread). It will listen for new connections and process them. Heartbeater and Gossiper will be started too.</span>
@@ -299,20 +320,22 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="c1"># Heartbeater and Gossiper</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">heartbeater</span> <span class="o">=</span> <span class="n">Heartbeater</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gossiper</span> <span class="o">=</span> <span class="n">Gossiper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">__neighbors</span><span class="p">)</span> <span class="c1"># thread safe, only read</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gossiper</span> <span class="o">=</span> <span class="n">Gossiper</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">__neighbors</span>
+        <span class="p">)</span>  <span class="c1"># thread safe, only read</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">heartbeater</span><span class="o">.</span><span class="n">add_observer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gossiper</span><span class="o">.</span><span class="n">add_observer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">heartbeater</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gossiper</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
-    
-<div class="viewcode-block" id="BaseNode.stop"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.base_node.BaseNode.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+
+<div class="viewcode-block" id="BaseNode.stop"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.base_node.BaseNode.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Stops the node. Heartbeater and Gossiper will be stopped too.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_terminate_flag</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Send a self message to the loop to avoid the wait of the next recv</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__send</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span><span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__send</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>
             <span class="k">pass</span></div>
 
@@ -325,43 +348,48 @@
 <span class="sd">        Main loop of the node, when a node is running, this method is being executed. It will listen for new connections and process them.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Process new connections loop</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;(</span><span class="si">{}</span><span class="s1">) Node started&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
-        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_terminate_flag</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span> 
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Node started&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_terminate_flag</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="p">(</span><span class="n">ns</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__node_socket</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
                 <span class="n">msg</span> <span class="o">=</span> <span class="n">ns</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">Settings</span><span class="o">.</span><span class="n">BLOCK_SIZE</span><span class="p">)</span>
-                
+
                 <span class="c1"># Process new connection</span>
                 <span class="k">if</span> <span class="n">msg</span><span class="p">:</span>
                     <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span>
-                    <span class="n">callback</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">fu</span><span class="p">,</span><span class="n">fc</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__process_new_connection</span><span class="p">(</span><span class="n">ns</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">fu</span><span class="p">,</span> <span class="n">fc</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">process_connection</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="n">callback</span><span class="p">):</span>
+                    <span class="n">callback</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">fu</span><span class="p">,</span> <span class="n">fc</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__process_new_connection</span><span class="p">(</span>
+                        <span class="n">ns</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">fu</span><span class="p">,</span> <span class="n">fc</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">process_connection</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">callback</span><span class="p">):</span>
                         <span class="n">ns</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-       
+
         <span class="c1"># Stop Heartbeater and Gossiper</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">heartbeater</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gossiper</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
         <span class="c1"># Stop Node</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;(</span><span class="si">{}</span><span class="s1">) Stopping node. Disconnecting from </span><span class="si">{}</span><span class="s1"> nodos&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__neighbors</span><span class="p">)))</span> 
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Stopping node. Disconnecting from </span><span class="si">{}</span><span class="s2"> nodos&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__neighbors</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
         <span class="n">nei_copy_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nei_copy_list</span><span class="p">:</span>
             <span class="n">n</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__node_socket</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
-
     <span class="k">def</span> <span class="nf">__process_new_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_socket</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">full</span><span class="p">,</span> <span class="n">force</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Check if connection with the node already exist</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__nei_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbor</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">thread_safe</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbor</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">thread_safe</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
 
                 <span class="c1"># Check if ip and port are correct</span>
-                <span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span> 
+                <span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
                 <span class="n">s</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-                <span class="n">result</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">connect_ex</span><span class="p">((</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">))</span> 
+                <span class="n">result</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">connect_ex</span><span class="p">((</span><span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
                 <span class="n">s</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
                 <span class="c1"># Encryption</span>
@@ -378,21 +406,33 @@
 
                 <span class="c1"># Add neighboor</span>
                 <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> Connection accepted with </span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">))</span>
-                    <span class="n">nc</span> <span class="o">=</span> <span class="n">NodeConnection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="n">node_socket</span><span class="p">,(</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">),</span><span class="n">aes_cipher</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Connection accepted with </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="n">nc</span> <span class="o">=</span> <span class="n">NodeConnection</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">node_socket</span><span class="p">,</span> <span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span> <span class="n">aes_cipher</span>
+                    <span class="p">)</span>
                     <span class="n">nc</span><span class="o">.</span><span class="n">add_observer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">__neighbors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nc</span><span class="p">)</span>
                     <span class="n">nc</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
-                    
+
                     <span class="k">if</span> <span class="n">full</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_connect_to_msg</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">),</span><span class="n">exc</span><span class="o">=</span><span class="p">[</span><span class="n">nc</span><span class="p">],</span><span class="n">thread_safe</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span>
+                            <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_connect_to_msg</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span>
+                            <span class="n">exc</span><span class="o">=</span><span class="p">[</span><span class="n">nc</span><span class="p">],</span>
+                            <span class="n">thread_safe</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">node_socket</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            
+
             <span class="bp">self</span><span class="o">.</span><span class="n">__nei_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
-            
+
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;(</span><span class="si">{}</span><span class="s1">) Connection refused with </span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">))</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;(</span><span class="si">{}</span><span class="s2">) Connection refused with </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+            <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__nei_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
             <span class="n">node_socket</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rm_neighbor</span><span class="p">(</span><span class="n">nc</span><span class="p">)</span>
@@ -402,7 +442,7 @@
     <span class="c1">#############################</span>
 
     <span class="c1"># Create a tcp socket and send data</span>
-    <span class="k">def</span> <span class="nf">__send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span> 
+    <span class="k">def</span> <span class="nf">__send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
         <span class="n">s</span><span class="o">.</span><span class="n">connect</span><span class="p">((</span><span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
         <span class="n">s</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -413,9 +453,9 @@
             <span class="k">return</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="BaseNode.connect_to"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.base_node.BaseNode.connect_to">[docs]</a>    <span class="k">def</span> <span class="nf">connect_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot; &quot;</span>
 <span class="sd">        Connects a node to another.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            h (str): The host of the node.</span>
 <span class="sd">            p (int): The port of the node.</span>
@@ -429,7 +469,7 @@
             <span class="n">full</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">full</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
-        
+
         <span class="k">if</span> <span class="n">force</span><span class="p">:</span>
             <span class="n">force</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
         <span class="k">else</span><span class="p">:</span>
@@ -439,11 +479,13 @@
             <span class="c1"># Check if connection with the node already exist</span>
             <span class="n">h</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostbyname</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__nei_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbor</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">thread_safe</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbor</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">thread_safe</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+
                 <span class="c1"># Send connection request</span>
-                <span class="n">msg</span><span class="o">=</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_connect_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span><span class="n">full</span><span class="p">,</span><span class="n">force</span><span class="p">)</span>
-                <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">msg</span><span class="p">,</span><span class="n">persist</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_connect_msg</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">full</span><span class="p">,</span> <span class="n">force</span>
+                <span class="p">)</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
                 <span class="c1"># Encryption</span>
                 <span class="n">aes_cipher</span> <span class="o">=</span> <span class="kc">None</span>
@@ -456,21 +498,25 @@
                     <span class="n">aes_cipher</span> <span class="o">=</span> <span class="n">AESCipher</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">AESCipher</span><span class="o">.</span><span class="n">key_len</span><span class="p">()))</span>
 
                 <span class="c1"># Add socket to neighbors</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Connected to </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">))</span>
-                <span class="n">nc</span> <span class="o">=</span> <span class="n">NodeConnection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="n">s</span><span class="p">,(</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">),</span><span class="n">aes_cipher</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Connected to </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+                <span class="n">nc</span> <span class="o">=</span> <span class="n">NodeConnection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">s</span><span class="p">,</span> <span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span> <span class="n">aes_cipher</span><span class="p">)</span>
                 <span class="n">nc</span><span class="o">.</span><span class="n">add_observer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__neighbors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nc</span><span class="p">)</span>
                 <span class="n">nc</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__nei_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
                 <span class="k">return</span> <span class="n">nc</span>
-        
+
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Already connected to </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">))</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Already connected to </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+                <span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__nei_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
                 <span class="k">return</span> <span class="kc">None</span>
-    
+
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Can&#39;t connect to the node </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">))</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Can&#39;t connect to the node </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+            <span class="p">)</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__nei_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
@@ -481,13 +527,13 @@
 <div class="viewcode-block" id="BaseNode.disconnect_from"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.base_node.BaseNode.disconnect_from">[docs]</a>    <span class="k">def</span> <span class="nf">disconnect_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Disconnects from a node.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            h (str): The host of the node.</span>
 <span class="sd">            p (int): The port of the node.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbor</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
-            
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_neighbor</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
+
 <div class="viewcode-block" id="BaseNode.get_neighbor"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.base_node.BaseNode.get_neighbor">[docs]</a>    <span class="k">def</span> <span class="nf">get_neighbor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">thread_safe</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get a ``NodeConnection`` from the neighbors list.</span>
@@ -502,15 +548,15 @@
         <span class="k">if</span> <span class="n">thread_safe</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__nei_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
 
-        <span class="n">return_node</span> <span class="o">=</span> <span class="kc">None</span>    
+        <span class="n">return_node</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__neighbors</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()</span> <span class="o">==</span> <span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">get_addr</span><span class="p">()</span> <span class="o">==</span> <span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
                 <span class="n">return_node</span> <span class="o">=</span> <span class="n">n</span>
                 <span class="k">break</span>
-            
+
         <span class="k">if</span> <span class="n">thread_safe</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__nei_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
-        
+
         <span class="k">return</span> <span class="n">return_node</span></div>
 
 <div class="viewcode-block" id="BaseNode.get_neighbors"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.base_node.BaseNode.get_neighbors">[docs]</a>    <span class="k">def</span> <span class="nf">get_neighbors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -523,7 +569,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__nei_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">n</span></div>
 
-<div class="viewcode-block" id="BaseNode.rm_neighbor"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.base_node.BaseNode.rm_neighbor">[docs]</a>    <span class="k">def</span> <span class="nf">rm_neighbor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseNode.rm_neighbor"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.base_node.BaseNode.rm_neighbor">[docs]</a>    <span class="k">def</span> <span class="nf">rm_neighbor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Removes a neighboor from the neighbors list.</span>
 
@@ -544,7 +590,7 @@
 <span class="sd">            list: The nodes of the network.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">heartbeater</span><span class="o">.</span><span class="n">get_nodes</span><span class="p">()</span></div>
-      
+
     <span class="c1">##########################</span>
     <span class="c1">#     Msg management     #</span>
     <span class="c1">##########################</span>
@@ -568,15 +614,15 @@
 
         <span class="k">if</span> <span class="n">thread_safe</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__nei_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span></div>
-        
+
     <span class="c1">###########################</span>
     <span class="c1">#     Observer Events     #</span>
     <span class="c1">###########################</span>
 
-<div class="viewcode-block" id="BaseNode.update"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.base_node.BaseNode.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">event</span><span class="p">,</span><span class="n">obj</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseNode.update"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.base_node.BaseNode.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Observer update method. Used to handle events that can occur with the different components and connections of the node.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            event (Events): Event that has occurred.</span>
 <span class="sd">            obj: Information about the change or event.</span>
@@ -585,18 +631,18 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">rm_neighbor</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">NODE_CONNECTED_EVENT</span><span class="p">:</span>
-            <span class="n">n</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">obj</span>
-            <span class="n">n</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_beat_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span> 
+            <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">obj</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_beat_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
 
         <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">CONN_TO_EVENT</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">connect_to</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">obj</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">full</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">SEND_BEAT_EVENT</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_beat_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">CommunicationProtocol</span><span class="o">.</span><span class="n">build_beat_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
 
         <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">GOSSIP_BROADCAST_EVENT</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">exc</span><span class="o">=</span><span class="n">obj</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> 
-            
+            <span class="bp">self</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">exc</span><span class="o">=</span><span class="n">obj</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
         <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">PROCESSED_MESSAGES_EVENT</span><span class="p">:</span>
             <span class="n">node</span><span class="p">,</span> <span class="n">msgs</span> <span class="o">=</span> <span class="n">obj</span>
             <span class="c1"># Comunicate to connections the new messages processed</span>
@@ -604,11 +650,10 @@
                 <span class="k">if</span> <span class="n">nc</span> <span class="o">!=</span> <span class="n">node</span><span class="p">:</span>
                     <span class="n">nc</span><span class="o">.</span><span class="n">add_processed_messages</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">msgs</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
             <span class="c1"># Gossip the new messages</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">gossiper</span><span class="o">.</span><span class="n">add_messages</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">msgs</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span><span class="n">node</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gossiper</span><span class="o">.</span><span class="n">add_messages</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">msgs</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="n">node</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">event</span> <span class="o">==</span> <span class="n">Events</span><span class="o">.</span><span class="n">BEAT_RECEIVED_EVENT</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">heartbeater</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span></div></div>
-
 </pre></div>
         </article>
       </div>
@@ -648,6 +693,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/scripts/furo.js"></script>
     </body>
 </html>

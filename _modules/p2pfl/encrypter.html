@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
+    <meta name="generator" content="sphinx-5.2.3, furo 2022.09.29"/>
         <title>p2pfl.encrypter - P2P FL</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -156,6 +156,7 @@
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -208,13 +209,31 @@
         </div>
         <article role="main">
           <h1>Source code for p2pfl.encrypter</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">Crypto</span> <span class="kn">import</span> <span class="n">Random</span>
+<span></span><span class="c1"># </span>
+<span class="c1"># This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).</span>
+<span class="c1"># Copyright (c) 2022 Pedro Guijas Bravo.</span>
+<span class="c1"># </span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify  </span>
+<span class="c1"># it under the terms of the GNU General Public License as published by  </span>
+<span class="c1"># the Free Software Foundation, version 3.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful, but </span>
+<span class="c1"># WITHOUT ANY WARRANTY; without even the implied warranty of </span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU </span>
+<span class="c1"># General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License </span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span> <span class="nn">Crypto</span> <span class="kn">import</span> <span class="n">Random</span>
 <span class="kn">from</span> <span class="nn">Crypto.PublicKey</span> <span class="kn">import</span> <span class="n">RSA</span>
 <span class="kn">from</span> <span class="nn">Crypto.Cipher</span> <span class="kn">import</span> <span class="n">PKCS1_OAEP</span>
 <span class="kn">import</span> <span class="nn">base64</span>
 <span class="kn">from</span> <span class="nn">Crypto</span> <span class="kn">import</span> <span class="n">Random</span>
 <span class="kn">from</span> <span class="nn">Crypto.Cipher</span> <span class="kn">import</span> <span class="n">AES</span>
 <span class="kn">from</span> <span class="nn">Crypto.Random</span> <span class="kn">import</span> <span class="n">get_random_bytes</span>
+
 
 <div class="viewcode-block" id="Encrypter"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.Encrypter">[docs]</a><span class="k">class</span> <span class="nc">Encrypter</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -224,15 +243,17 @@
 <div class="viewcode-block" id="Encrypter.encrypt"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.Encrypter.encrypt">[docs]</a>    <span class="k">def</span> <span class="nf">encrypt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="Encrypter.decrypt"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.Encrypter.decrypt">[docs]</a>    <span class="k">def</span> <span class="nf">decrypt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>      
+<div class="viewcode-block" id="Encrypter.decrypt"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.Encrypter.decrypt">[docs]</a>    <span class="k">def</span> <span class="nf">decrypt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="Encrypter.get_key"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.Encrypter.get_key">[docs]</a>    <span class="k">def</span> <span class="nf">get_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span></div></div>
-    
+
+
 <span class="c1">###############################</span>
 <span class="c1">#    Asymmetric Encryption    #</span>
 <span class="c1">###############################</span>
+
 
 <div class="viewcode-block" id="RSACipher"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.RSACipher">[docs]</a><span class="k">class</span> <span class="nc">RSACipher</span><span class="p">(</span><span class="n">Encrypter</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -248,7 +269,7 @@
 <div class="viewcode-block" id="RSACipher.encrypt"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.RSACipher.encrypt">[docs]</a>    <span class="k">def</span> <span class="nf">encrypt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Encrypts a message using RSA. Message is encrypted using the public key of the pair (the other node key).</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            message: (bytes) The message to encrypt.</span>
 
@@ -260,7 +281,7 @@
 
 <div class="viewcode-block" id="RSACipher.decrypt"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.RSACipher.decrypt">[docs]</a>    <span class="k">def</span> <span class="nf">decrypt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Decrypts a message using RSA. Message is decripted using the private key. </span>
+<span class="sd">        Decrypts a message using RSA. Message is decripted using the private key.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            message: (bytes) The message to decrypt.</span>
@@ -283,26 +304,28 @@
 <div class="viewcode-block" id="RSACipher.get_key"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.RSACipher.get_key">[docs]</a>    <span class="k">def</span> <span class="nf">get_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the serialized RSA public key.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            key: The serialized key encoded at base64.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__public_key</span><span class="o">.</span><span class="n">exportKey</span><span class="p">(</span><span class="s2">&quot;DER&quot;</span><span class="p">))</span></div></div>
 
+
 <span class="c1">##############################</span>
 <span class="c1">#    Symmetric Encryption    #</span>
 <span class="c1">##############################</span>
+
 
 <div class="viewcode-block" id="AESCipher"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.AESCipher">[docs]</a><span class="k">class</span> <span class="nc">AESCipher</span><span class="p">(</span><span class="n">Encrypter</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class with methods to encrypt and decrypt messages using AES symetric encryption.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span> 
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bs</span> <span class="o">=</span> <span class="n">AES</span><span class="o">.</span><span class="n">block_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">get_random_bytes</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span> <span class="c1"># 256 bits</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">get_random_bytes</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>  <span class="c1"># 256 bits</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cipher</span> <span class="o">=</span> <span class="n">AES</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">AES</span><span class="o">.</span><span class="n">MODE_ECB</span><span class="p">)</span>
 
 <div class="viewcode-block" id="AESCipher.encrypt"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.AESCipher.encrypt">[docs]</a>    <span class="k">def</span> <span class="nf">encrypt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
@@ -314,13 +337,13 @@
 <span class="sd">            message: (str) The message to encrypt.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            message: (str) The encrypted message. </span>
+<span class="sd">            message: (str) The encrypted message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cipher</span><span class="o">.</span><span class="n">encrypt</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="AESCipher.decrypt"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.AESCipher.decrypt">[docs]</a>    <span class="k">def</span> <span class="nf">decrypt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Decrypts a message using AES. Message is decripted using the shared key. </span>
+<span class="sd">        Decrypts a message using AES. Message is decripted using the shared key.</span>
 <span class="sd">        Keep in mind that AES uses a block cipher, so the message can be a filled message with padding.</span>
 
 <span class="sd">        Args:</span>
@@ -330,7 +353,7 @@
 <span class="sd">            message: (bytes) The decrypted message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cipher</span><span class="o">.</span><span class="n">decrypt</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
-    
+
 <div class="viewcode-block" id="AESCipher.add_padding"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.AESCipher.add_padding">[docs]</a>    <span class="k">def</span> <span class="nf">add_padding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add padding to an encoded UTF-8 text. Adds &quot; &quot; charactets (1 byte) to fill the rest of the block.</span>
@@ -338,7 +361,7 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            msg: (bytes) The encoded text.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            msg: (bytes) The encoded text with padding.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -352,12 +375,12 @@
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bytes_left</span><span class="p">):</span>
             <span class="n">msg</span> <span class="o">+=</span> <span class="n">pading_char</span>
 
-        <span class="k">return</span> <span class="n">msg</span> </div>
+        <span class="k">return</span> <span class="n">msg</span></div>
 
 <div class="viewcode-block" id="AESCipher.get_key"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.AESCipher.get_key">[docs]</a>    <span class="k">def</span> <span class="nf">get_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the shared RSA key.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            key: The shared key.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -371,7 +394,7 @@
         <span class="k">return</span> <span class="n">AES</span><span class="o">.</span><span class="n">block_size</span></div>
 
 <div class="viewcode-block" id="AESCipher.key_len"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.encrypter.AESCipher.key_len">[docs]</a>    <span class="k">def</span> <span class="nf">key_len</span><span class="p">():</span>
-        <span class="sd">&quot;&quot;&quot; </span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            key_len: (int) The length of the key in bytes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -415,6 +438,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/scripts/furo.js"></script>
     </body>
 </html>

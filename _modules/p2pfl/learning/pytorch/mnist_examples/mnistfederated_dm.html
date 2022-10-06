@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" />
 
-    <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
+    <meta name="generator" content="sphinx-5.2.3, furo 2022.09.29"/>
         <title>p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm - P2P FL</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -156,6 +156,7 @@
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../contributing.html">Contributing</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -208,18 +209,38 @@
         </div>
         <article role="main">
           <h1>Source code for p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">Subset</span><span class="p">,</span> <span class="n">random_split</span>
+<span></span><span class="c1"># </span>
+<span class="c1"># This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).</span>
+<span class="c1"># Copyright (c) 2022 Pedro Guijas Bravo.</span>
+<span class="c1"># </span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify  </span>
+<span class="c1"># it under the terms of the GNU General Public License as published by  </span>
+<span class="c1"># the Free Software Foundation, version 3.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful, but </span>
+<span class="c1"># WITHOUT ANY WARRANTY; without even the implied warranty of </span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU </span>
+<span class="c1"># General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License </span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">Subset</span><span class="p">,</span> <span class="n">random_split</span>
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span>
 <span class="kn">from</span> <span class="nn">torchvision.datasets</span> <span class="kn">import</span> <span class="n">MNIST</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">floor</span>
 <span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">LightningDataModule</span>
+
 <span class="c1"># To Avoid Crashes with a lot of nodes</span>
 <span class="kn">import</span> <span class="nn">torch.multiprocessing</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">set_sharing_strategy</span><span class="p">(</span><span class="s1">&#39;file_system&#39;</span><span class="p">)</span>
+
+<span class="n">torch</span><span class="o">.</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">set_sharing_strategy</span><span class="p">(</span><span class="s2">&quot;file_system&quot;</span><span class="p">)</span>
 
 <span class="c1">#######################################</span>
 <span class="c1">#    FederatedDataModule for MNIST    #</span>
 <span class="c1">#######################################</span>
+
 
 <div class="viewcode-block" id="MnistFederatedDM"><a class="viewcode-back" href="../../../../../p2pfl.learning.pytorch.mnist_examples.html#p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.MnistFederatedDM">[docs]</a><span class="k">class</span> <span class="nc">MnistFederatedDM</span><span class="p">(</span><span class="n">LightningDataModule</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -237,64 +258,109 @@
     <span class="n">mnist_train</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">mnist_val</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_id</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">number_sub</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">val_percent</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">iid</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sub_id</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">number_sub</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">val_percent</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">iid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span><span class="o">=</span><span class="n">sub_id</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">number_sub</span><span class="o">=</span><span class="n">number_sub</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">val_percent</span><span class="o">=</span><span class="n">val_percent</span>
-        
+        <span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span> <span class="o">=</span> <span class="n">sub_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">number_sub</span> <span class="o">=</span> <span class="n">number_sub</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="n">num_workers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val_percent</span> <span class="o">=</span> <span class="n">val_percent</span>
+
         <span class="c1"># Singletons of MNIST train and test datasets</span>
         <span class="k">if</span> <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_train</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_train</span> <span class="o">=</span> <span class="n">MNIST</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
+            <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_train</span> <span class="o">=</span> <span class="n">MNIST</span><span class="p">(</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">()</span>
+            <span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">iid</span><span class="p">:</span>
                 <span class="n">sorted_indexes</span> <span class="o">=</span> <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_train</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">sort</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_train</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_train</span><span class="o">.</span><span class="n">targets</span><span class="p">[</span><span class="n">sorted_indexes</span><span class="p">]</span>
-                <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_train</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_train</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">sorted_indexes</span><span class="p">]</span>
+                <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_train</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_train</span><span class="o">.</span><span class="n">targets</span><span class="p">[</span><span class="n">sorted_indexes</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_train</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_train</span><span class="o">.</span><span class="n">data</span><span class="p">[</span>
+                    <span class="n">sorted_indexes</span>
+                <span class="p">]</span>
         <span class="k">if</span> <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_val</span> <span class="o">=</span> <span class="n">MNIST</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
+            <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_val</span> <span class="o">=</span> <span class="n">MNIST</span><span class="p">(</span>
+                <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">()</span>
+            <span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">iid</span><span class="p">:</span>
                 <span class="n">sorted_indexes</span> <span class="o">=</span> <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_val</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">sort</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_val</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_val</span><span class="o">.</span><span class="n">targets</span><span class="p">[</span><span class="n">sorted_indexes</span><span class="p">]</span>
-                <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_val</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_val</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">sorted_indexes</span><span class="p">]</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span><span class="o">+</span><span class="mi">1</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_sub</span><span class="p">:</span>
-            <span class="k">raise</span><span class="p">(</span><span class="s2">&quot;Not exist the subset </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span><span class="p">))</span>
+                <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_val</span><span class="o">.</span><span class="n">targets</span> <span class="o">=</span> <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_val</span><span class="o">.</span><span class="n">targets</span><span class="p">[</span>
+                    <span class="n">sorted_indexes</span>
+                <span class="p">]</span>
+                <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_val</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_val</span><span class="o">.</span><span class="n">data</span><span class="p">[</span>
+                    <span class="n">sorted_indexes</span>
+                <span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_sub</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="p">(</span><span class="s2">&quot;Not exist the subset </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span><span class="p">))</span>
 
         <span class="c1"># Training / validation set</span>
         <span class="n">trainset</span> <span class="o">=</span> <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_train</span>
-        <span class="n">rows_by_sub</span> <span class="o">=</span> <span class="n">floor</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trainset</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">number_sub</span><span class="p">)</span>
-        <span class="n">tr_subset</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">trainset</span><span class="p">,</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span><span class="o">*</span><span class="n">rows_by_sub</span><span class="p">,(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">rows_by_sub</span><span class="p">))</span>
-        <span class="n">mnist_train</span><span class="p">,</span> <span class="n">mnist_val</span> <span class="o">=</span> <span class="n">random_split</span><span class="p">(</span><span class="n">tr_subset</span><span class="p">,</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr_subset</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">val_percent</span><span class="p">)),</span> <span class="nb">round</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr_subset</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">val_percent</span><span class="p">)])</span>
-        
+        <span class="n">rows_by_sub</span> <span class="o">=</span> <span class="n">floor</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trainset</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_sub</span><span class="p">)</span>
+        <span class="n">tr_subset</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span>
+            <span class="n">trainset</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span> <span class="o">*</span> <span class="n">rows_by_sub</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">rows_by_sub</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">mnist_train</span><span class="p">,</span> <span class="n">mnist_val</span> <span class="o">=</span> <span class="n">random_split</span><span class="p">(</span>
+            <span class="n">tr_subset</span><span class="p">,</span>
+            <span class="p">[</span>
+                <span class="nb">round</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr_subset</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_percent</span><span class="p">)),</span>
+                <span class="nb">round</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr_subset</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_percent</span><span class="p">),</span>
+            <span class="p">],</span>
+        <span class="p">)</span>
+
         <span class="c1"># Test set</span>
         <span class="n">testset</span> <span class="o">=</span> <span class="n">MnistFederatedDM</span><span class="o">.</span><span class="n">mnist_val</span>
-        <span class="n">rows_by_sub</span> <span class="o">=</span> <span class="n">floor</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">testset</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">number_sub</span><span class="p">)</span>
-        <span class="n">te_subset</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">testset</span><span class="p">,</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span><span class="o">*</span><span class="n">rows_by_sub</span><span class="p">,(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">rows_by_sub</span><span class="p">))</span>
+        <span class="n">rows_by_sub</span> <span class="o">=</span> <span class="n">floor</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">testset</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_sub</span><span class="p">)</span>
+        <span class="n">te_subset</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span>
+            <span class="n">testset</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span> <span class="o">*</span> <span class="n">rows_by_sub</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sub_id</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">rows_by_sub</span><span class="p">)</span>
+        <span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">testset</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_sub</span><span class="p">:</span>
-            <span class="k">raise</span><span class="p">(</span><span class="s2">&quot;Too much partitions&quot;</span><span class="p">)</span>
-        
-        <span class="c1">#DataLoaders</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">mnist_train</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">val_loader</span>   <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">mnist_val</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">test_loader</span>  <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">te_subset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Train: </span><span class="si">{}</span><span class="s2"> Val:</span><span class="si">{}</span><span class="s2"> Test:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mnist_train</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="n">mnist_val</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="n">te_subset</span><span class="p">)))</span>
+            <span class="k">raise</span> <span class="p">(</span><span class="s2">&quot;Too much partitions&quot;</span><span class="p">)</span>
 
-    
+        <span class="c1"># DataLoaders</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+            <span class="n">mnist_train</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+            <span class="n">mnist_val</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+            <span class="n">te_subset</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;Train: </span><span class="si">{}</span><span class="s2"> Val:</span><span class="si">{}</span><span class="s2"> Test:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">mnist_train</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">mnist_val</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">te_subset</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
 <div class="viewcode-block" id="MnistFederatedDM.train_dataloader"><a class="viewcode-back" href="../../../../../p2pfl.learning.pytorch.mnist_examples.html#p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.MnistFederatedDM.train_dataloader">[docs]</a>    <span class="k">def</span> <span class="nf">train_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_loader</span></div>
 
 <div class="viewcode-block" id="MnistFederatedDM.val_dataloader"><a class="viewcode-back" href="../../../../../p2pfl.learning.pytorch.mnist_examples.html#p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.MnistFederatedDM.val_dataloader">[docs]</a>    <span class="k">def</span> <span class="nf">val_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_loader</span></div>
 
 <div class="viewcode-block" id="MnistFederatedDM.test_dataloader"><a class="viewcode-back" href="../../../../../p2pfl.learning.pytorch.mnist_examples.html#p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.MnistFederatedDM.test_dataloader">[docs]</a>    <span class="k">def</span> <span class="nf">test_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_loader</span></div></div>
 </pre></div>
         </article>
@@ -335,6 +401,7 @@
     <script src="../../../../../_static/underscore.js"></script>
     <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/scripts/furo.js"></script>
     </body>
 </html>

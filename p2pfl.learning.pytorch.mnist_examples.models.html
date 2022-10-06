@@ -2,13 +2,13 @@
 <html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="p2pfl.utils package" href="p2pfl.utils.html" /><link rel="prev" title="p2pfl.learning.pytorch.mnist_examples package" href="p2pfl.learning.pytorch.mnist_examples.html" />
 
-    <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
+    <meta name="generator" content="sphinx-5.2.3, furo 2022.09.29"/>
         <title>p2pfl.learning.pytorch.mnist_examples.models package - P2P FL</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -157,6 +157,7 @@
   <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="documentation.html">Documentation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2 current has-children"><a class="reference internal" href="p2pfl.html">p2pfl package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l3 current has-children"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
@@ -194,7 +195,8 @@
           <span>Back to top</span>
         </a>
         <div class="content-icon-container">
-          <div class="theme-toggle-container theme-toggle-content">
+          
+<div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -235,11 +237,6 @@
 <span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/learning/pytorch/mnist_examples/models/cnn.html#CNN.test_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN.test_step" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN.training_step">
 <span class="sig-name descname"><span class="pre">training_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/learning/pytorch/mnist_examples/models/cnn.html#CNN.training_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN.training_step" title="Permalink to this definition">#</a></dt>
@@ -275,11 +272,6 @@
 <span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/learning/pytorch/mnist_examples/models/mlp.html#MLP.test_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP.test_step" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP.training" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP.training_step">
 <span class="sig-name descname"><span class="pre">training_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/learning/pytorch/mnist_examples/models/mlp.html#MLP.training_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP.training_step" title="Permalink to this definition">#</a></dt>
@@ -310,10 +302,10 @@
                 </div>
                 <div class="title">p2pfl.utils package</div>
               </div>
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
           <a class="prev-page" href="p2pfl.learning.pytorch.mnist_examples.html">
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
@@ -349,7 +341,7 @@
       <div class="toc-sticky toc-scroll">
         <div class="toc-title-container">
           <span class="toc-title">
-            Contents
+            On this page
           </span>
         </div>
         <div class="toc-tree-container">
@@ -357,8 +349,28 @@
             <ul>
 <li><a class="reference internal" href="#">p2pfl.learning.pytorch.mnist_examples.models package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-p2pfl.learning.pytorch.mnist_examples.models.cnn">p2pfl.learning.pytorch.mnist_examples.models.cnn module</a></li>
-<li><a class="reference internal" href="#module-p2pfl.learning.pytorch.mnist_examples.models.mlp">p2pfl.learning.pytorch.mnist_examples.models.mlp module</a></li>
+<li><a class="reference internal" href="#module-p2pfl.learning.pytorch.mnist_examples.models.cnn">p2pfl.learning.pytorch.mnist_examples.models.cnn module</a><ul>
+<li><a class="reference internal" href="#p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN"><code class="docutils literal notranslate"><span class="pre">CNN</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN.configure_optimizers"><code class="docutils literal notranslate"><span class="pre">CNN.configure_optimizers()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN.forward"><code class="docutils literal notranslate"><span class="pre">CNN.forward()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN.test_step"><code class="docutils literal notranslate"><span class="pre">CNN.test_step()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN.training_step"><code class="docutils literal notranslate"><span class="pre">CNN.training_step()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN.validation_step"><code class="docutils literal notranslate"><span class="pre">CNN.validation_step()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-p2pfl.learning.pytorch.mnist_examples.models.mlp">p2pfl.learning.pytorch.mnist_examples.models.mlp module</a><ul>
+<li><a class="reference internal" href="#p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP"><code class="docutils literal notranslate"><span class="pre">MLP</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP.configure_optimizers"><code class="docutils literal notranslate"><span class="pre">MLP.configure_optimizers()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP.forward"><code class="docutils literal notranslate"><span class="pre">MLP.forward()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP.test_step"><code class="docutils literal notranslate"><span class="pre">MLP.test_step()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP.training_step"><code class="docutils literal notranslate"><span class="pre">MLP.training_step()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP.validation_step"><code class="docutils literal notranslate"><span class="pre">MLP.validation_step()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-p2pfl.learning.pytorch.mnist_examples.models">Module contents</a></li>
 </ul>
 </li>
@@ -376,6 +388,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/furo.js"></script>
     </body>
 </html>

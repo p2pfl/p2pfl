@@ -2,13 +2,13 @@
 <html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="p2pfl.learning.pytorch package" href="p2pfl.learning.pytorch.html" /><link rel="prev" title="p2pfl.learning package" href="p2pfl.learning.html" />
 
-    <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
+    <meta name="generator" content="sphinx-5.2.3, furo 2022.09.29"/>
         <title>p2pfl.learning.aggregators package - P2P FL</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -157,6 +157,7 @@
   <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="documentation.html">Documentation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2 current has-children"><a class="reference internal" href="p2pfl.html">p2pfl package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l3 current has-children"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
@@ -194,7 +195,8 @@
           <span>Back to top</span>
         </a>
         <div class="content-icon-container">
-          <div class="theme-toggle-container theme-toggle-content">
+          
+<div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -346,10 +348,10 @@ Paper: <a class="reference external" href="https://arxiv.org/abs/1602.05629">htt
                 </div>
                 <div class="title">p2pfl.learning.pytorch package</div>
               </div>
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
           <a class="prev-page" href="p2pfl.learning.html">
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
@@ -385,7 +387,7 @@ Paper: <a class="reference external" href="https://arxiv.org/abs/1602.05629">htt
       <div class="toc-sticky toc-scroll">
         <div class="toc-title-container">
           <span class="toc-title">
-            Contents
+            On this page
           </span>
         </div>
         <div class="toc-tree-container">
@@ -393,8 +395,27 @@ Paper: <a class="reference external" href="https://arxiv.org/abs/1602.05629">htt
             <ul>
 <li><a class="reference internal" href="#">p2pfl.learning.aggregators package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-p2pfl.learning.aggregators.aggregator">p2pfl.learning.aggregators.aggregator module</a></li>
-<li><a class="reference internal" href="#module-p2pfl.learning.aggregators.fedavg">p2pfl.learning.aggregators.fedavg module</a></li>
+<li><a class="reference internal" href="#module-p2pfl.learning.aggregators.aggregator">p2pfl.learning.aggregators.aggregator module</a><ul>
+<li><a class="reference internal" href="#p2pfl.learning.aggregators.aggregator.Aggregator"><code class="docutils literal notranslate"><span class="pre">Aggregator</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.learning.aggregators.aggregator.Aggregator.add_model"><code class="docutils literal notranslate"><span class="pre">Aggregator.add_model()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.aggregators.aggregator.Aggregator.aggregate"><code class="docutils literal notranslate"><span class="pre">Aggregator.aggregate()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.aggregators.aggregator.Aggregator.check_and_run_aggregation"><code class="docutils literal notranslate"><span class="pre">Aggregator.check_and_run_aggregation()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.aggregators.aggregator.Aggregator.clear"><code class="docutils literal notranslate"><span class="pre">Aggregator.clear()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.aggregators.aggregator.Aggregator.get_partial_aggregation"><code class="docutils literal notranslate"><span class="pre">Aggregator.get_partial_aggregation()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.aggregators.aggregator.Aggregator.run"><code class="docutils literal notranslate"><span class="pre">Aggregator.run()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.aggregators.aggregator.Aggregator.set_nodes_to_aggregate"><code class="docutils literal notranslate"><span class="pre">Aggregator.set_nodes_to_aggregate()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.aggregators.aggregator.Aggregator.set_waiting_aggregated_model"><code class="docutils literal notranslate"><span class="pre">Aggregator.set_waiting_aggregated_model()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-p2pfl.learning.aggregators.fedavg">p2pfl.learning.aggregators.fedavg module</a><ul>
+<li><a class="reference internal" href="#p2pfl.learning.aggregators.fedavg.FedAvg"><code class="docutils literal notranslate"><span class="pre">FedAvg</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.learning.aggregators.fedavg.FedAvg.aggregate"><code class="docutils literal notranslate"><span class="pre">FedAvg.aggregate()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-p2pfl.learning.aggregators">Module contents</a></li>
 </ul>
 </li>
@@ -412,6 +433,7 @@ Paper: <a class="reference external" href="https://arxiv.org/abs/1602.05629">htt
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/furo.js"></script>
     </body>
 </html>

@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Quickstart" href="quickstart.html" /><link rel="prev" title="P2P Federated Learning" href="index.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Documentation" href="documentation.html" /><link rel="prev" title="Quickstart" href="quickstart.html" />
 
     <meta name="generator" content="sphinx-5.2.3, furo 2022.09.29"/>
-        <title>Installation - P2P FL</title>
+        <title>Contributing - P2P FL</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -155,9 +155,9 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Contributing</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -210,31 +210,36 @@
           </label>
         </div>
         <article role="main">
-          <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">#</a></h1>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>PyTorch version 1.11.0 is required.</p>
-</div>
-<section id="install-using-pip">
-<h2>Install using pip<a class="headerlink" href="#install-using-pip" title="Permalink to this heading">#</a></h2>
-<p>Stable releases are available on <a class="reference external" href="https://pypi.org/project/p2pfl/">PyPI</a>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install p2pfl
-</pre></div>
-</div>
+          <section id="contributing">
+<h1>Contributing<a class="headerlink" href="#contributing" title="Permalink to this heading">#</a></h1>
+<section id="how-to-contribute">
+<h2>How to contribute<a class="headerlink" href="#how-to-contribute" title="Permalink to this heading">#</a></h2>
+<section id="reporting-bugs">
+<h3>Reporting bugs<a class="headerlink" href="#reporting-bugs" title="Permalink to this heading">#</a></h3>
+<p>If you find a bug, please open an issue in the <a class="reference external" href="https://github.com/pguijas/federated_learning_p2p/issues/new">issue tracker</a>. Please include as much information as possible, including the version of p2pfl you are using, the operating system, and any relevant stack traces or error messages.</p>
 </section>
-<section id="create-a-virtual-environment">
-<h2>Create a virtual environment<a class="headerlink" href="#create-a-virtual-environment" title="Permalink to this heading">#</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pipenv install p2pfl
-</pre></div>
-</div>
+<section id="suggesting-enhancements">
+<h3>Suggesting enhancements<a class="headerlink" href="#suggesting-enhancements" title="Permalink to this heading">#</a></h3>
+<p>If you have an idea for a new feature, please open an issue in the <a class="reference external" href="https://github.com/pguijas/federated_learning_p2p/issues/new">issue tracker</a>. Please include as much information as possible, including a clear and descriptive title, a description of the problem you’re trying to solve, and a description of the feature you’d like to see.</p>
 </section>
-<section id="dockerized-installation">
-<h2>Dockerized installation<a class="headerlink" href="#dockerized-installation" title="Permalink to this heading">#</a></h2>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>not available yet</p>
-</div>
+<section id="contributing-code">
+<h3>Contributing code<a class="headerlink" href="#contributing-code" title="Permalink to this heading">#</a></h3>
+<p>If you’d like to contribute code, please open a pull request. Please include as much information as possible, including a clear and descriptive title, a description of the problem you’re trying to solve, and a description of the feature you’d like to see.</p>
+<p>For more information, see “<a class="reference external" href="https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request">Creating a pull request</a>” in the GitHub Help documentation.</p>
+</section>
+</section>
+<section id="code-style">
+<h2>Code style<a class="headerlink" href="#code-style" title="Permalink to this heading">#</a></h2>
+<p>p2pfl uses <a class="reference external" href="https://github.com/psf/black">black</a> for code formatting. Please run <code class="docutils literal notranslate"><span class="pre">black</span></code> on your code before submitting a pull request.</p>
+<p>Please see more details about design patterns and code style in the <a class="reference external" href="https://pguijas.github.io/federated_learning_p2p/">documentation</a>.</p>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this heading">#</a></h2>
+<p>By contributing to p2pfl, you agree that your contributions will be licensed under its <a class="reference external" href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License, Version 3.0</a>.</p>
+</section>
+<section id="code-of-conduct">
+<h2>Code of Conduct<a class="headerlink" href="#code-of-conduct" title="Permalink to this heading">#</a></h2>
+<p>p2pfl has adopted the <a class="reference external" href="https://www.contributor-covenant.org/">Contributer Covenant</a> as its Code of Conduct. All community members are expected to adhere to it. Please see <a class="reference external" href="https://github.com/pguijas/federated_learning_p2p/blob/main/CODE_OF_CONDUCT.md">CODE_OF_CONDUCT.md</a> for details.</p>
 </section>
 </section>
 
@@ -243,23 +248,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="quickstart.html">
+          <a class="next-page" href="documentation.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Quickstart</div>
+                <div class="title">Documentation</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="index.html">
+          <a class="prev-page" href="quickstart.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Home</div>
+                <div class="title">Quickstart</div>
                 
               </div>
             </a>
@@ -295,10 +300,16 @@
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Installation</a><ul>
-<li><a class="reference internal" href="#install-using-pip">Install using pip</a></li>
-<li><a class="reference internal" href="#create-a-virtual-environment">Create a virtual environment</a></li>
-<li><a class="reference internal" href="#dockerized-installation">Dockerized installation</a></li>
+<li><a class="reference internal" href="#">Contributing</a><ul>
+<li><a class="reference internal" href="#how-to-contribute">How to contribute</a><ul>
+<li><a class="reference internal" href="#reporting-bugs">Reporting bugs</a></li>
+<li><a class="reference internal" href="#suggesting-enhancements">Suggesting enhancements</a></li>
+<li><a class="reference internal" href="#contributing-code">Contributing code</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#code-style">Code style</a></li>
+<li><a class="reference internal" href="#license">License</a></li>
+<li><a class="reference internal" href="#code-of-conduct">Code of Conduct</a></li>
 </ul>
 </li>
 </ul>

@@ -2,13 +2,13 @@
 <html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="p2pfl.learning.aggregators package" href="p2pfl.learning.aggregators.html" /><link rel="prev" title="p2pfl package" href="p2pfl.html" />
 
-    <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
+    <meta name="generator" content="sphinx-5.2.3, furo 2022.09.29"/>
         <title>p2pfl.learning package - P2P FL</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -157,6 +157,7 @@
   <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="documentation.html">Documentation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2 current has-children"><a class="reference internal" href="p2pfl.html">p2pfl package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l3 current has-children current-page"><a class="current reference internal" href="#">p2pfl.learning package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -194,7 +195,8 @@
           <span>Back to top</span>
         </a>
         <div class="content-icon-container">
-          <div class="theme-toggle-container theme-toggle-content">
+          
+<div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -216,8 +218,27 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="p2pfl.learning.aggregators.html">p2pfl.learning.aggregators package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.aggregators.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.aggregators.html#module-p2pfl.learning.aggregators.aggregator">p2pfl.learning.aggregators.aggregator module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.aggregators.html#module-p2pfl.learning.aggregators.fedavg">p2pfl.learning.aggregators.fedavg module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.aggregators.html#module-p2pfl.learning.aggregators.aggregator">p2pfl.learning.aggregators.aggregator module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.aggregators.html#p2pfl.learning.aggregators.aggregator.Aggregator"><code class="docutils literal notranslate"><span class="pre">Aggregator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html#p2pfl.learning.aggregators.aggregator.Aggregator.add_model"><code class="docutils literal notranslate"><span class="pre">Aggregator.add_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html#p2pfl.learning.aggregators.aggregator.Aggregator.aggregate"><code class="docutils literal notranslate"><span class="pre">Aggregator.aggregate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html#p2pfl.learning.aggregators.aggregator.Aggregator.check_and_run_aggregation"><code class="docutils literal notranslate"><span class="pre">Aggregator.check_and_run_aggregation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html#p2pfl.learning.aggregators.aggregator.Aggregator.clear"><code class="docutils literal notranslate"><span class="pre">Aggregator.clear()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html#p2pfl.learning.aggregators.aggregator.Aggregator.get_partial_aggregation"><code class="docutils literal notranslate"><span class="pre">Aggregator.get_partial_aggregation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html#p2pfl.learning.aggregators.aggregator.Aggregator.run"><code class="docutils literal notranslate"><span class="pre">Aggregator.run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html#p2pfl.learning.aggregators.aggregator.Aggregator.set_nodes_to_aggregate"><code class="docutils literal notranslate"><span class="pre">Aggregator.set_nodes_to_aggregate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html#p2pfl.learning.aggregators.aggregator.Aggregator.set_waiting_aggregated_model"><code class="docutils literal notranslate"><span class="pre">Aggregator.set_waiting_aggregated_model()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.aggregators.html#module-p2pfl.learning.aggregators.fedavg">p2pfl.learning.aggregators.fedavg module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.aggregators.html#p2pfl.learning.aggregators.fedavg.FedAvg"><code class="docutils literal notranslate"><span class="pre">FedAvg</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html#p2pfl.learning.aggregators.fedavg.FedAvg.aggregate"><code class="docutils literal notranslate"><span class="pre">FedAvg.aggregate()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.aggregators.html#module-p2pfl.learning.aggregators">Module contents</a></li>
 </ul>
 </li>
@@ -233,8 +254,43 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.pytorch.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.pytorch.html#module-p2pfl.learning.pytorch.lightninglearner">p2pfl.learning.pytorch.lightninglearner module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.pytorch.html#module-p2pfl.learning.pytorch.logger">p2pfl.learning.pytorch.logger module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.pytorch.html#module-p2pfl.learning.pytorch.lightninglearner">p2pfl.learning.pytorch.lightninglearner module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner"><code class="docutils literal notranslate"><span class="pre">LightningLearner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.check_parameters"><code class="docutils literal notranslate"><span class="pre">LightningLearner.check_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.close"><code class="docutils literal notranslate"><span class="pre">LightningLearner.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.decode_parameters"><code class="docutils literal notranslate"><span class="pre">LightningLearner.decode_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.encode_parameters"><code class="docutils literal notranslate"><span class="pre">LightningLearner.encode_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.evaluate"><code class="docutils literal notranslate"><span class="pre">LightningLearner.evaluate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.finalize_round"><code class="docutils literal notranslate"><span class="pre">LightningLearner.finalize_round()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.fit"><code class="docutils literal notranslate"><span class="pre">LightningLearner.fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.get_num_samples"><code class="docutils literal notranslate"><span class="pre">LightningLearner.get_num_samples()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.get_parameters"><code class="docutils literal notranslate"><span class="pre">LightningLearner.get_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.init"><code class="docutils literal notranslate"><span class="pre">LightningLearner.init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.interrupt_fit"><code class="docutils literal notranslate"><span class="pre">LightningLearner.interrupt_fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.log_validation_metrics"><code class="docutils literal notranslate"><span class="pre">LightningLearner.log_validation_metrics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.set_data"><code class="docutils literal notranslate"><span class="pre">LightningLearner.set_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.set_epochs"><code class="docutils literal notranslate"><span class="pre">LightningLearner.set_epochs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.set_model"><code class="docutils literal notranslate"><span class="pre">LightningLearner.set_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.lightninglearner.LightningLearner.set_parameters"><code class="docutils literal notranslate"><span class="pre">LightningLearner.set_parameters()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.pytorch.html#module-p2pfl.learning.pytorch.logger">p2pfl.learning.pytorch.logger module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.logger.FederatedTensorboardLogger"><code class="docutils literal notranslate"><span class="pre">FederatedTensorboardLogger</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.logger.FederatedTensorboardLogger.close"><code class="docutils literal notranslate"><span class="pre">FederatedTensorboardLogger.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.logger.FederatedTensorboardLogger.finalize"><code class="docutils literal notranslate"><span class="pre">FederatedTensorboardLogger.finalize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.logger.FederatedTensorboardLogger.finalize_round"><code class="docutils literal notranslate"><span class="pre">FederatedTensorboardLogger.finalize_round()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.logger.FederatedTensorboardLogger.log_hyperparams"><code class="docutils literal notranslate"><span class="pre">FederatedTensorboardLogger.log_hyperparams()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.logger.FederatedTensorboardLogger.log_metrics"><code class="docutils literal notranslate"><span class="pre">FederatedTensorboardLogger.log_metrics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.logger.FederatedTensorboardLogger.log_scalar"><code class="docutils literal notranslate"><span class="pre">FederatedTensorboardLogger.log_scalar()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.logger.FederatedTensorboardLogger.name"><code class="docutils literal notranslate"><span class="pre">FederatedTensorboardLogger.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.logger.FederatedTensorboardLogger.save"><code class="docutils literal notranslate"><span class="pre">FederatedTensorboardLogger.save()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#p2pfl.learning.pytorch.logger.FederatedTensorboardLogger.version"><code class="docutils literal notranslate"><span class="pre">FederatedTensorboardLogger.version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.pytorch.html#module-p2pfl.learning.pytorch">Module contents</a></li>
 </ul>
 </li>
@@ -452,10 +508,10 @@ If params are not provided, self parameters are encoded.</p>
                 </div>
                 <div class="title">p2pfl.learning.aggregators package</div>
               </div>
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
           <a class="prev-page" href="p2pfl.html">
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
@@ -491,7 +547,7 @@ If params are not provided, self parameters are encoded.</p>
       <div class="toc-sticky toc-scroll">
         <div class="toc-title-container">
           <span class="toc-title">
-            Contents
+            On this page
           </span>
         </div>
         <div class="toc-tree-container">
@@ -500,8 +556,33 @@ If params are not provided, self parameters are encoded.</p>
 <li><a class="reference internal" href="#">p2pfl.learning package</a><ul>
 <li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-p2pfl.learning.exceptions">p2pfl.learning.exceptions module</a></li>
-<li><a class="reference internal" href="#module-p2pfl.learning.learner">p2pfl.learning.learner module</a></li>
+<li><a class="reference internal" href="#module-p2pfl.learning.exceptions">p2pfl.learning.exceptions module</a><ul>
+<li><a class="reference internal" href="#p2pfl.learning.exceptions.DecodingParamsError"><code class="docutils literal notranslate"><span class="pre">DecodingParamsError</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.exceptions.ModelNotMatchingError"><code class="docutils literal notranslate"><span class="pre">ModelNotMatchingError</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-p2pfl.learning.learner">p2pfl.learning.learner module</a><ul>
+<li><a class="reference internal" href="#p2pfl.learning.learner.NodeLearner"><code class="docutils literal notranslate"><span class="pre">NodeLearner</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.learning.learner.NodeLearner.check_parameters"><code class="docutils literal notranslate"><span class="pre">NodeLearner.check_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.learner.NodeLearner.close"><code class="docutils literal notranslate"><span class="pre">NodeLearner.close()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.learner.NodeLearner.decode_parameters"><code class="docutils literal notranslate"><span class="pre">NodeLearner.decode_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.learner.NodeLearner.encode_parameters"><code class="docutils literal notranslate"><span class="pre">NodeLearner.encode_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.learner.NodeLearner.evaluate"><code class="docutils literal notranslate"><span class="pre">NodeLearner.evaluate()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.learner.NodeLearner.finalize_round"><code class="docutils literal notranslate"><span class="pre">NodeLearner.finalize_round()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.learner.NodeLearner.fit"><code class="docutils literal notranslate"><span class="pre">NodeLearner.fit()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.learner.NodeLearner.get_num_samples"><code class="docutils literal notranslate"><span class="pre">NodeLearner.get_num_samples()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.learner.NodeLearner.get_parameters"><code class="docutils literal notranslate"><span class="pre">NodeLearner.get_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.learner.NodeLearner.init"><code class="docutils literal notranslate"><span class="pre">NodeLearner.init()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.learner.NodeLearner.interrupt_fit"><code class="docutils literal notranslate"><span class="pre">NodeLearner.interrupt_fit()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.learner.NodeLearner.log_validation_metrics"><code class="docutils literal notranslate"><span class="pre">NodeLearner.log_validation_metrics()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.learner.NodeLearner.set_data"><code class="docutils literal notranslate"><span class="pre">NodeLearner.set_data()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.learner.NodeLearner.set_epochs"><code class="docutils literal notranslate"><span class="pre">NodeLearner.set_epochs()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.learner.NodeLearner.set_model"><code class="docutils literal notranslate"><span class="pre">NodeLearner.set_model()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.learner.NodeLearner.set_parameters"><code class="docutils literal notranslate"><span class="pre">NodeLearner.set_parameters()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-p2pfl.learning">Module contents</a></li>
 </ul>
 </li>
@@ -519,6 +600,7 @@ If params are not provided, self parameters are encoded.</p>
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/furo.js"></script>
     </body>
 </html>

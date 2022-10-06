@@ -2,13 +2,13 @@
 <html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="p2pfl.learning package" href="p2pfl.learning.html" /><link rel="prev" title="Documentation" href="documentation.html" />
 
-    <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
+    <meta name="generator" content="sphinx-5.2.3, furo 2022.09.29"/>
         <title>p2pfl package - P2P FL</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -157,6 +157,7 @@
   <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="documentation.html">Documentation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">p2pfl package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -194,7 +195,8 @@
           <span>Back to top</span>
         </a>
         <div class="content-icon-container">
-          <div class="theme-toggle-container theme-toggle-content">
+          
+<div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -234,14 +236,67 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.html#module-p2pfl.learning.exceptions">p2pfl.learning.exceptions module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.html#module-p2pfl.learning.learner">p2pfl.learning.learner module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.html#module-p2pfl.learning.exceptions">p2pfl.learning.exceptions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.exceptions.DecodingParamsError"><code class="docutils literal notranslate"><span class="pre">DecodingParamsError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.exceptions.ModelNotMatchingError"><code class="docutils literal notranslate"><span class="pre">ModelNotMatchingError</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.html#module-p2pfl.learning.learner">p2pfl.learning.learner module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner"><code class="docutils literal notranslate"><span class="pre">NodeLearner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.check_parameters"><code class="docutils literal notranslate"><span class="pre">NodeLearner.check_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.close"><code class="docutils literal notranslate"><span class="pre">NodeLearner.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.decode_parameters"><code class="docutils literal notranslate"><span class="pre">NodeLearner.decode_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.encode_parameters"><code class="docutils literal notranslate"><span class="pre">NodeLearner.encode_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.evaluate"><code class="docutils literal notranslate"><span class="pre">NodeLearner.evaluate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.finalize_round"><code class="docutils literal notranslate"><span class="pre">NodeLearner.finalize_round()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.fit"><code class="docutils literal notranslate"><span class="pre">NodeLearner.fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.get_num_samples"><code class="docutils literal notranslate"><span class="pre">NodeLearner.get_num_samples()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.get_parameters"><code class="docutils literal notranslate"><span class="pre">NodeLearner.get_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.init"><code class="docutils literal notranslate"><span class="pre">NodeLearner.init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.interrupt_fit"><code class="docutils literal notranslate"><span class="pre">NodeLearner.interrupt_fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.log_validation_metrics"><code class="docutils literal notranslate"><span class="pre">NodeLearner.log_validation_metrics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.set_data"><code class="docutils literal notranslate"><span class="pre">NodeLearner.set_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.set_epochs"><code class="docutils literal notranslate"><span class="pre">NodeLearner.set_epochs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.set_model"><code class="docutils literal notranslate"><span class="pre">NodeLearner.set_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.set_parameters"><code class="docutils literal notranslate"><span class="pre">NodeLearner.set_parameters()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.html#module-p2pfl.learning">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="p2pfl.utils.html">p2pfl.utils package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.utils.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.utils.html#module-p2pfl.utils.observer">p2pfl.utils.observer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="p2pfl.utils.html#module-p2pfl.utils.observer">p2pfl.utils.observer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Events"><code class="docutils literal notranslate"><span class="pre">Events</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Events.AGGREGATION_FINISHED_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.AGGREGATION_FINISHED_EVENT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Events.BEAT_RECEIVED_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.BEAT_RECEIVED_EVENT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Events.CONN_TO_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.CONN_TO_EVENT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Events.END_CONNECTION_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.END_CONNECTION_EVENT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Events.GOSSIP_BROADCAST_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.GOSSIP_BROADCAST_EVENT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Events.METRICS_RECEIVED_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.METRICS_RECEIVED_EVENT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Events.NODE_CONNECTED_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.NODE_CONNECTED_EVENT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Events.PARAMS_RECEIVED_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.PARAMS_RECEIVED_EVENT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Events.PROCESSED_MESSAGES_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.PROCESSED_MESSAGES_EVENT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Events.SEND_BEAT_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.SEND_BEAT_EVENT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Events.START_LEARNING_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.START_LEARNING_EVENT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Events.STOP_LEARNING_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.STOP_LEARNING_EVENT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Events.TRAIN_SET_VOTE_RECEIVED_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.TRAIN_SET_VOTE_RECEIVED_EVENT</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Observable"><code class="docutils literal notranslate"><span class="pre">Observable</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Observable.add_observer"><code class="docutils literal notranslate"><span class="pre">Observable.add_observer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Observable.get_observers"><code class="docutils literal notranslate"><span class="pre">Observable.get_observers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Observable.notify"><code class="docutils literal notranslate"><span class="pre">Observable.notify()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Observer"><code class="docutils literal notranslate"><span class="pre">Observer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.observer.Observer.update"><code class="docutils literal notranslate"><span class="pre">Observer.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.utils.html#module-p2pfl.utils">Module contents</a></li>
 </ul>
 </li>
@@ -1053,7 +1108,7 @@ Static method that checks if the message is a valid connection message and execu
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.encrypter.AESCipher.add_padding">
 <span class="sig-name descname"><span class="pre">add_padding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/p2pfl/encrypter.html#AESCipher.add_padding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.encrypter.AESCipher.add_padding" title="Permalink to this definition">#</a></dt>
-<dd><p>Add padding to an encoded UTF-8 text. Adds ” ” charactets (1 byte) to fill the rest of the block.
+<dd><p>Add padding to an encoded UTF-8 text. Adds “ “ charactets (1 byte) to fill the rest of the block.
 Careful: in this case, the filling content doesn’t affect to the meaning of messages.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1879,10 +1934,10 @@ of these messages avoid cycles in the network.</p>
                 </div>
                 <div class="title">p2pfl.learning package</div>
               </div>
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
           <a class="prev-page" href="documentation.html">
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
@@ -1918,7 +1973,7 @@ of these messages avoid cycles in the network.</p>
       <div class="toc-sticky toc-scroll">
         <div class="toc-title-container">
           <span class="toc-title">
-            Contents
+            On this page
           </span>
         </div>
         <div class="toc-tree-container">
@@ -1927,15 +1982,237 @@ of these messages avoid cycles in the network.</p>
 <li><a class="reference internal" href="#">p2pfl package</a><ul>
 <li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-p2pfl.base_node">p2pfl.base_node module</a></li>
-<li><a class="reference internal" href="#module-p2pfl.command">p2pfl.command module</a></li>
-<li><a class="reference internal" href="#module-p2pfl.communication_protocol">p2pfl.communication_protocol module</a></li>
-<li><a class="reference internal" href="#module-p2pfl.encrypter">p2pfl.encrypter module</a></li>
-<li><a class="reference internal" href="#module-p2pfl.gossiper">p2pfl.gossiper module</a></li>
-<li><a class="reference internal" href="#module-p2pfl.heartbeater">p2pfl.heartbeater module</a></li>
-<li><a class="reference internal" href="#module-p2pfl.node">p2pfl.node module</a></li>
-<li><a class="reference internal" href="#module-p2pfl.node_connection">p2pfl.node_connection module</a></li>
-<li><a class="reference internal" href="#module-p2pfl.settings">p2pfl.settings module</a></li>
+<li><a class="reference internal" href="#module-p2pfl.base_node">p2pfl.base_node module</a><ul>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode"><code class="docutils literal notranslate"><span class="pre">BaseNode</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.host"><code class="docutils literal notranslate"><span class="pre">BaseNode.host</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.port"><code class="docutils literal notranslate"><span class="pre">BaseNode.port</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.simulation"><code class="docutils literal notranslate"><span class="pre">BaseNode.simulation</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.heartbeater"><code class="docutils literal notranslate"><span class="pre">BaseNode.heartbeater</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.gossiper"><code class="docutils literal notranslate"><span class="pre">BaseNode.gossiper</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.broadcast"><code class="docutils literal notranslate"><span class="pre">BaseNode.broadcast()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.connect_to"><code class="docutils literal notranslate"><span class="pre">BaseNode.connect_to()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.disconnect_from"><code class="docutils literal notranslate"><span class="pre">BaseNode.disconnect_from()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.get_addr"><code class="docutils literal notranslate"><span class="pre">BaseNode.get_addr()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.get_name"><code class="docutils literal notranslate"><span class="pre">BaseNode.get_name()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.get_neighbor"><code class="docutils literal notranslate"><span class="pre">BaseNode.get_neighbor()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.get_neighbors"><code class="docutils literal notranslate"><span class="pre">BaseNode.get_neighbors()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.get_network_nodes"><code class="docutils literal notranslate"><span class="pre">BaseNode.get_network_nodes()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.rm_neighbor"><code class="docutils literal notranslate"><span class="pre">BaseNode.rm_neighbor()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.run"><code class="docutils literal notranslate"><span class="pre">BaseNode.run()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.start"><code class="docutils literal notranslate"><span class="pre">BaseNode.start()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.stop"><code class="docutils literal notranslate"><span class="pre">BaseNode.stop()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.base_node.BaseNode.update"><code class="docutils literal notranslate"><span class="pre">BaseNode.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-p2pfl.command">p2pfl.command module</a><ul>
+<li><a class="reference internal" href="#p2pfl.command.Beat_cmd"><code class="docutils literal notranslate"><span class="pre">Beat_cmd</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.command.Beat_cmd.execute"><code class="docutils literal notranslate"><span class="pre">Beat_cmd.execute()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#p2pfl.command.Command"><code class="docutils literal notranslate"><span class="pre">Command</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.command.Command.execute"><code class="docutils literal notranslate"><span class="pre">Command.execute()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#p2pfl.command.Conn_to_cmd"><code class="docutils literal notranslate"><span class="pre">Conn_to_cmd</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.command.Conn_to_cmd.execute"><code class="docutils literal notranslate"><span class="pre">Conn_to_cmd.execute()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#p2pfl.command.Metrics_cmd"><code class="docutils literal notranslate"><span class="pre">Metrics_cmd</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.command.Metrics_cmd.execute"><code class="docutils literal notranslate"><span class="pre">Metrics_cmd.execute()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#p2pfl.command.Model_initialized_cmd"><code class="docutils literal notranslate"><span class="pre">Model_initialized_cmd</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.command.Model_initialized_cmd.execute"><code class="docutils literal notranslate"><span class="pre">Model_initialized_cmd.execute()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#p2pfl.command.Models_Ready_cmd"><code class="docutils literal notranslate"><span class="pre">Models_Ready_cmd</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.command.Models_Ready_cmd.execute"><code class="docutils literal notranslate"><span class="pre">Models_Ready_cmd.execute()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#p2pfl.command.Models_aggregated_cmd"><code class="docutils literal notranslate"><span class="pre">Models_aggregated_cmd</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.command.Models_aggregated_cmd.execute"><code class="docutils literal notranslate"><span class="pre">Models_aggregated_cmd.execute()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#p2pfl.command.Params_cmd"><code class="docutils literal notranslate"><span class="pre">Params_cmd</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.command.Params_cmd.execute"><code class="docutils literal notranslate"><span class="pre">Params_cmd.execute()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#p2pfl.command.Start_learning_cmd"><code class="docutils literal notranslate"><span class="pre">Start_learning_cmd</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.command.Start_learning_cmd.execute"><code class="docutils literal notranslate"><span class="pre">Start_learning_cmd.execute()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#p2pfl.command.Stop_cmd"><code class="docutils literal notranslate"><span class="pre">Stop_cmd</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.command.Stop_cmd.execute"><code class="docutils literal notranslate"><span class="pre">Stop_cmd.execute()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#p2pfl.command.Stop_learning_cmd"><code class="docutils literal notranslate"><span class="pre">Stop_learning_cmd</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.command.Stop_learning_cmd.execute"><code class="docutils literal notranslate"><span class="pre">Stop_learning_cmd.execute()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#p2pfl.command.Vote_train_set_cmd"><code class="docutils literal notranslate"><span class="pre">Vote_train_set_cmd</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.command.Vote_train_set_cmd.execute"><code class="docutils literal notranslate"><span class="pre">Vote_train_set_cmd.execute()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-p2pfl.communication_protocol">p2pfl.communication_protocol module</a><ul>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.command_dict"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.command_dict</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.last_messages"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.last_messages</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.BEAT"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.BEAT</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.CONN"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.CONN</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.CONN_TO"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.CONN_TO</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.METRICS"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.METRICS</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.MODELS_AGGREGATED"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.MODELS_AGGREGATED</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.MODELS_AGGREGATED_CLOSE"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.MODELS_AGGREGATED_CLOSE</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.MODELS_READY"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.MODELS_READY</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.MODEL_INITIALIZED"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.MODEL_INITIALIZED</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.PARAMS"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.PARAMS</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.PARAMS_CLOSE"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.PARAMS_CLOSE</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.START_LEARNING"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.START_LEARNING</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.STOP"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.STOP</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.STOP_LEARNING"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.STOP_LEARNING</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.VOTE_TRAIN_SET"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.VOTE_TRAIN_SET</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.VOTE_TRAIN_SET_CLOSE"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.VOTE_TRAIN_SET_CLOSE</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.add_processed_messages"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.add_processed_messages()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.build_beat_msg"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.build_beat_msg()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.build_connect_msg"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.build_connect_msg()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.build_connect_to_msg"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.build_connect_to_msg()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.build_metrics_msg"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.build_metrics_msg()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.build_model_initialized_msg"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.build_model_initialized_msg()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.build_models_aggregated_msg"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.build_models_aggregated_msg()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.build_models_ready_msg"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.build_models_ready_msg()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.build_params_msg"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.build_params_msg()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.build_start_learning_msg"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.build_start_learning_msg()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.build_stop_learning_msg"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.build_stop_learning_msg()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.build_stop_msg"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.build_stop_msg()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.build_vote_train_set_msg"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.build_vote_train_set_msg()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.check_collapse"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.check_collapse()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.check_params_incomplete"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.check_params_incomplete()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.generate_hased_message"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.generate_hased_message()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.process_connection"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.process_connection()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.communication_protocol.CommunicationProtocol.process_message"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol.process_message()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-p2pfl.encrypter">p2pfl.encrypter module</a><ul>
+<li><a class="reference internal" href="#p2pfl.encrypter.AESCipher"><code class="docutils literal notranslate"><span class="pre">AESCipher</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.encrypter.AESCipher.add_padding"><code class="docutils literal notranslate"><span class="pre">AESCipher.add_padding()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.encrypter.AESCipher.decrypt"><code class="docutils literal notranslate"><span class="pre">AESCipher.decrypt()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.encrypter.AESCipher.encrypt"><code class="docutils literal notranslate"><span class="pre">AESCipher.encrypt()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.encrypter.AESCipher.get_block_size"><code class="docutils literal notranslate"><span class="pre">AESCipher.get_block_size()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.encrypter.AESCipher.get_key"><code class="docutils literal notranslate"><span class="pre">AESCipher.get_key()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.encrypter.AESCipher.key_len"><code class="docutils literal notranslate"><span class="pre">AESCipher.key_len()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#p2pfl.encrypter.Encrypter"><code class="docutils literal notranslate"><span class="pre">Encrypter</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.encrypter.Encrypter.decrypt"><code class="docutils literal notranslate"><span class="pre">Encrypter.decrypt()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.encrypter.Encrypter.encrypt"><code class="docutils literal notranslate"><span class="pre">Encrypter.encrypt()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.encrypter.Encrypter.get_key"><code class="docutils literal notranslate"><span class="pre">Encrypter.get_key()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#p2pfl.encrypter.RSACipher"><code class="docutils literal notranslate"><span class="pre">RSACipher</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.encrypter.RSACipher.decrypt"><code class="docutils literal notranslate"><span class="pre">RSACipher.decrypt()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.encrypter.RSACipher.encrypt"><code class="docutils literal notranslate"><span class="pre">RSACipher.encrypt()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.encrypter.RSACipher.get_key"><code class="docutils literal notranslate"><span class="pre">RSACipher.get_key()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.encrypter.RSACipher.load_pair_public_key"><code class="docutils literal notranslate"><span class="pre">RSACipher.load_pair_public_key()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-p2pfl.gossiper">p2pfl.gossiper module</a><ul>
+<li><a class="reference internal" href="#p2pfl.gossiper.Gossiper"><code class="docutils literal notranslate"><span class="pre">Gossiper</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.gossiper.Gossiper.add_messages"><code class="docutils literal notranslate"><span class="pre">Gossiper.add_messages()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.gossiper.Gossiper.run"><code class="docutils literal notranslate"><span class="pre">Gossiper.run()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.gossiper.Gossiper.stop"><code class="docutils literal notranslate"><span class="pre">Gossiper.stop()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-p2pfl.heartbeater">p2pfl.heartbeater module</a><ul>
+<li><a class="reference internal" href="#p2pfl.heartbeater.Heartbeater"><code class="docutils literal notranslate"><span class="pre">Heartbeater</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.heartbeater.Heartbeater.add_node"><code class="docutils literal notranslate"><span class="pre">Heartbeater.add_node()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.heartbeater.Heartbeater.clear_nodes"><code class="docutils literal notranslate"><span class="pre">Heartbeater.clear_nodes()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.heartbeater.Heartbeater.get_nodes"><code class="docutils literal notranslate"><span class="pre">Heartbeater.get_nodes()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.heartbeater.Heartbeater.run"><code class="docutils literal notranslate"><span class="pre">Heartbeater.run()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.heartbeater.Heartbeater.stop"><code class="docutils literal notranslate"><span class="pre">Heartbeater.stop()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-p2pfl.node">p2pfl.node module</a><ul>
+<li><a class="reference internal" href="#p2pfl.node.Node"><code class="docutils literal notranslate"><span class="pre">Node</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.node.Node.round"><code class="docutils literal notranslate"><span class="pre">Node.round</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node.Node.totalrounds"><code class="docutils literal notranslate"><span class="pre">Node.totalrounds</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node.Node.learner"><code class="docutils literal notranslate"><span class="pre">Node.learner</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node.Node.aggregator"><code class="docutils literal notranslate"><span class="pre">Node.aggregator</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node.Node.add_model"><code class="docutils literal notranslate"><span class="pre">Node.add_model()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node.Node.connect_to"><code class="docutils literal notranslate"><span class="pre">Node.connect_to()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node.Node.set_data"><code class="docutils literal notranslate"><span class="pre">Node.set_data()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node.Node.set_model"><code class="docutils literal notranslate"><span class="pre">Node.set_model()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node.Node.set_start_learning"><code class="docutils literal notranslate"><span class="pre">Node.set_start_learning()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node.Node.set_stop_learning"><code class="docutils literal notranslate"><span class="pre">Node.set_stop_learning()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node.Node.stop"><code class="docutils literal notranslate"><span class="pre">Node.stop()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node.Node.update"><code class="docutils literal notranslate"><span class="pre">Node.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-p2pfl.node_connection">p2pfl.node_connection module</a><ul>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection"><code class="docutils literal notranslate"><span class="pre">NodeConnection</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.add_models_aggregated"><code class="docutils literal notranslate"><span class="pre">NodeConnection.add_models_aggregated()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.add_param_segment"><code class="docutils literal notranslate"><span class="pre">NodeConnection.add_param_segment()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.add_processed_messages"><code class="docutils literal notranslate"><span class="pre">NodeConnection.add_processed_messages()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.clear_buffer"><code class="docutils literal notranslate"><span class="pre">NodeConnection.clear_buffer()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.clear_models_aggregated"><code class="docutils literal notranslate"><span class="pre">NodeConnection.clear_models_aggregated()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.get_addr"><code class="docutils literal notranslate"><span class="pre">NodeConnection.get_addr()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.get_model_initialized"><code class="docutils literal notranslate"><span class="pre">NodeConnection.get_model_initialized()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.get_model_ready_status"><code class="docutils literal notranslate"><span class="pre">NodeConnection.get_model_ready_status()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.get_models_aggregated"><code class="docutils literal notranslate"><span class="pre">NodeConnection.get_models_aggregated()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.get_name"><code class="docutils literal notranslate"><span class="pre">NodeConnection.get_name()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.get_params"><code class="docutils literal notranslate"><span class="pre">NodeConnection.get_params()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.notify_conn_to"><code class="docutils literal notranslate"><span class="pre">NodeConnection.notify_conn_to()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.notify_heartbeat"><code class="docutils literal notranslate"><span class="pre">NodeConnection.notify_heartbeat()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.notify_metrics"><code class="docutils literal notranslate"><span class="pre">NodeConnection.notify_metrics()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.notify_params"><code class="docutils literal notranslate"><span class="pre">NodeConnection.notify_params()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.notify_start_learning"><code class="docutils literal notranslate"><span class="pre">NodeConnection.notify_start_learning()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.notify_stop_learning"><code class="docutils literal notranslate"><span class="pre">NodeConnection.notify_stop_learning()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.notify_train_set_votes"><code class="docutils literal notranslate"><span class="pre">NodeConnection.notify_train_set_votes()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.run"><code class="docutils literal notranslate"><span class="pre">NodeConnection.run()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.send"><code class="docutils literal notranslate"><span class="pre">NodeConnection.send()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.set_model_initialized"><code class="docutils literal notranslate"><span class="pre">NodeConnection.set_model_initialized()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.set_model_ready_status"><code class="docutils literal notranslate"><span class="pre">NodeConnection.set_model_ready_status()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.start"><code class="docutils literal notranslate"><span class="pre">NodeConnection.start()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.node_connection.NodeConnection.stop"><code class="docutils literal notranslate"><span class="pre">NodeConnection.stop()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-p2pfl.settings">p2pfl.settings module</a><ul>
+<li><a class="reference internal" href="#p2pfl.settings.Settings"><code class="docutils literal notranslate"><span class="pre">Settings</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.settings.Settings.AGGREGATION_TIMEOUT"><code class="docutils literal notranslate"><span class="pre">Settings.AGGREGATION_TIMEOUT</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.settings.Settings.AMOUNT_LAST_MESSAGES_SAVED"><code class="docutils literal notranslate"><span class="pre">Settings.AMOUNT_LAST_MESSAGES_SAVED</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.settings.Settings.BLOCK_SIZE"><code class="docutils literal notranslate"><span class="pre">Settings.BLOCK_SIZE</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.settings.Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS"><code class="docutils literal notranslate"><span class="pre">Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.settings.Settings.GOSSIP_MESSAGES_FREC"><code class="docutils literal notranslate"><span class="pre">Settings.GOSSIP_MESSAGES_FREC</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.settings.Settings.GOSSIP_MESSAGES_PER_ROUND"><code class="docutils literal notranslate"><span class="pre">Settings.GOSSIP_MESSAGES_PER_ROUND</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.settings.Settings.GOSSIP_MODELS_FREC"><code class="docutils literal notranslate"><span class="pre">Settings.GOSSIP_MODELS_FREC</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.settings.Settings.GOSSIP_MODELS_PER_ROUND"><code class="docutils literal notranslate"><span class="pre">Settings.GOSSIP_MODELS_PER_ROUND</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.settings.Settings.HEARTBEATER_REFRESH_NEIGHBORS_BY_PERIOD"><code class="docutils literal notranslate"><span class="pre">Settings.HEARTBEATER_REFRESH_NEIGHBORS_BY_PERIOD</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.settings.Settings.HEARTBEAT_PERIOD"><code class="docutils literal notranslate"><span class="pre">Settings.HEARTBEAT_PERIOD</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.settings.Settings.NODE_TIMEOUT"><code class="docutils literal notranslate"><span class="pre">Settings.NODE_TIMEOUT</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.settings.Settings.TRAIN_SET_CONNECT_TIMEOUT"><code class="docutils literal notranslate"><span class="pre">Settings.TRAIN_SET_CONNECT_TIMEOUT</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.settings.Settings.TRAIN_SET_SIZE"><code class="docutils literal notranslate"><span class="pre">Settings.TRAIN_SET_SIZE</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.settings.Settings.VOTE_TIMEOUT"><code class="docutils literal notranslate"><span class="pre">Settings.VOTE_TIMEOUT</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.settings.Settings.WAIT_HEARTBEATS_CONVERGENCE"><code class="docutils literal notranslate"><span class="pre">Settings.WAIT_HEARTBEATS_CONVERGENCE</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.settings.Settings.rest"><code class="docutils literal notranslate"><span class="pre">Settings.rest</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-p2pfl">Module contents</a></li>
 </ul>
 </li>
@@ -1953,6 +2230,7 @@ of these messages avoid cycles in the network.</p>
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/furo.js"></script>
     </body>
 </html>

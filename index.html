@@ -2,13 +2,13 @@
 <html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Installation" href="installation.html" />
 
-    <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
+    <meta name="generator" content="sphinx-5.2.3, furo 2022.09.29"/>
         <title>P2P FL</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -157,6 +157,8 @@
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="library_design.html">Library Design</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -194,7 +196,8 @@
           <span>Back to top</span>
         </a>
         <div class="content-icon-container">
-          <div class="theme-toggle-container theme-toggle-content">
+          
+<div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -210,27 +213,23 @@
         <article role="main">
           <section id="p2p-federated-learning">
 <h1>P2P Federated Learning<a class="headerlink" href="#p2p-federated-learning" title="Permalink to this heading">#</a></h1>
-<p><strong>P2P Federated Learning (p2pfl)</strong> is a decentralized federated learning library, it allows creating basic federated learning systems on p2p networks using gossip protocols.</p>
+<p>P2PFL is a general-purpose open-source library for the execution (simulated and in real environments) of Decentralized Federated Learning systems, specifically making use of P2P networks and the Gossisp protocol.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">#</a></h2>
+<p>See <a class="reference internal" href="installation.html"><span class="doc std std-doc">Installation</span></a> for instructions on how to install P2PFL.</p>
+</section>
+<section id="quickstart">
+<h2>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this heading">#</a></h2>
+<p>See <a class="reference internal" href="quickstart.html"><span class="doc std std-doc">Quickstart</span></a> for a quick introduction to P2PFL.</p>
+</section>
+<section id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this heading">#</a></h2>
+<p>See <a class="reference internal" href="contributing.html"><span class="doc std std-doc">Contributing</span></a> for instructions on how to contribute to P2PFL.</p>
+<p>Also see the <a class="reference internal" href="library_design.html"><span class="doc std std-doc">library design</span></a> for more information about the design of the library.</p>
 <!---``` 
 sphinx-apidoc -F -o tmp ../p2pfl
 ```
 -->
-<section id="future-work">
-<h2>Future work<a class="headerlink" href="#future-work" title="Permalink to this heading">#</a></h2>
-<ul class="simple">
-<li><p>[ ] Add new aggregation algoritms</p></li>
-<li><p>[ ] Secure Aggregation</p></li>
-<li><p>[ ] Iterative terminal for node gestion</p></li>
-<li><p>[ ] Connect nodes during training process</p></li>
-<li><p>[ ] Gossip loop optimization to send models (too much sendings when a node fails)</p></li>
-<li><p>[ ] Tolerance to incomplete reception of messages</p></li>
-<li><p>[ ] Tests with a high number of nodes in deploy</p></li>
-<li><p>[ ] Comparison of node settings when learning starts</p></li>
-<li><p>[ ] Associate votes to rounds</p></li>
-<li><p>[ ] Network Login Authentication</p></li>
-<li><p>[ ] Study about attacks that could be done in the network</p></li>
-<li><p>[ ] Add support for dockerized installation</p></li>
-</ul>
 </section>
 <section id="index">
 <h2>Index<a class="headerlink" href="#index" title="Permalink to this heading">#</a></h2>
@@ -250,6 +249,31 @@ sphinx-apidoc -F -o tmp ../p2pfl
 <li class="toctree-l2"><a class="reference internal" href="quickstart.html#tensorflow-quickstart">TensorFlow Quickstart</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#how-to-contribute">How to contribute</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#reporting-bugs">Reporting bugs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#suggesting-enhancements">Suggesting enhancements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contributing.html#contributing-code">Contributing code</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#code-style">Code style</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#license">License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#code-of-conduct">Code of Conduct</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="library_design.html">Library Design</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="library_design.html#design-principles">Design Principles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="library_design.html#general-overview">General Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="library_design.html#node-without-learning">Node without learning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_design.html#node-with-learning">Node with learning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_design.html#gosspip-protocol">Gosspip protocol</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_design.html#encryption">Encryption</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="library_design.html#design-patterns">Design Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="library_design.html#communication-protocol">Communication Protocol</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="documentation.html">Documentation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.html">p2pfl package</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.html#subpackages">Subpackages</a><ul>
@@ -258,15 +282,55 @@ sphinx-apidoc -F -o tmp ../p2pfl
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.base_node">p2pfl.base_node module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.command">p2pfl.command module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.communication_protocol">p2pfl.communication_protocol module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.encrypter">p2pfl.encrypter module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.gossiper">p2pfl.gossiper module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.heartbeater">p2pfl.heartbeater module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.node">p2pfl.node module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.node_connection">p2pfl.node_connection module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.settings">p2pfl.settings module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.base_node">p2pfl.base_node module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.base_node.BaseNode"><code class="docutils literal notranslate"><span class="pre">BaseNode</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.command">p2pfl.command module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.command.Beat_cmd"><code class="docutils literal notranslate"><span class="pre">Beat_cmd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.command.Command"><code class="docutils literal notranslate"><span class="pre">Command</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.command.Conn_to_cmd"><code class="docutils literal notranslate"><span class="pre">Conn_to_cmd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.command.Metrics_cmd"><code class="docutils literal notranslate"><span class="pre">Metrics_cmd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.command.Model_initialized_cmd"><code class="docutils literal notranslate"><span class="pre">Model_initialized_cmd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.command.Models_Ready_cmd"><code class="docutils literal notranslate"><span class="pre">Models_Ready_cmd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.command.Models_aggregated_cmd"><code class="docutils literal notranslate"><span class="pre">Models_aggregated_cmd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.command.Params_cmd"><code class="docutils literal notranslate"><span class="pre">Params_cmd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.command.Start_learning_cmd"><code class="docutils literal notranslate"><span class="pre">Start_learning_cmd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.command.Stop_cmd"><code class="docutils literal notranslate"><span class="pre">Stop_cmd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.command.Stop_learning_cmd"><code class="docutils literal notranslate"><span class="pre">Stop_learning_cmd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.command.Vote_train_set_cmd"><code class="docutils literal notranslate"><span class="pre">Vote_train_set_cmd</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.communication_protocol">p2pfl.communication_protocol module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.communication_protocol.CommunicationProtocol"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.encrypter">p2pfl.encrypter module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.encrypter.AESCipher"><code class="docutils literal notranslate"><span class="pre">AESCipher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.encrypter.Encrypter"><code class="docutils literal notranslate"><span class="pre">Encrypter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.encrypter.RSACipher"><code class="docutils literal notranslate"><span class="pre">RSACipher</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.gossiper">p2pfl.gossiper module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.gossiper.Gossiper"><code class="docutils literal notranslate"><span class="pre">Gossiper</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.heartbeater">p2pfl.heartbeater module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.heartbeater.Heartbeater"><code class="docutils literal notranslate"><span class="pre">Heartbeater</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.node">p2pfl.node module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.node.Node"><code class="docutils literal notranslate"><span class="pre">Node</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.node_connection">p2pfl.node_connection module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.node_connection.NodeConnection"><code class="docutils literal notranslate"><span class="pre">NodeConnection</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl.settings">p2pfl.settings module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.html#p2pfl.settings.Settings"><code class="docutils literal notranslate"><span class="pre">Settings</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.html#module-p2pfl">Module contents</a></li>
 </ul>
 </li>
@@ -289,7 +353,7 @@ sphinx-apidoc -F -o tmp ../p2pfl
                 </div>
                 <div class="title">Installation</div>
               </div>
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
           
         </div>
@@ -318,14 +382,16 @@ sphinx-apidoc -F -o tmp ../p2pfl
       <div class="toc-sticky toc-scroll">
         <div class="toc-title-container">
           <span class="toc-title">
-            Contents
+            On this page
           </span>
         </div>
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">P2P Federated Learning</a><ul>
-<li><a class="reference internal" href="#future-work">Future work</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#quickstart">Quickstart</a></li>
+<li><a class="reference internal" href="#contributing">Contributing</a></li>
 <li><a class="reference internal" href="#index">Index</a></li>
 </ul>
 </li>
@@ -343,6 +409,7 @@ sphinx-apidoc -F -o tmp ../p2pfl
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/furo.js"></script>
     </body>
 </html>

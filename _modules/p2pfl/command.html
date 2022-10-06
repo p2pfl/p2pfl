@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
+    <meta name="generator" content="sphinx-5.2.3, furo 2022.09.29"/>
         <title>p2pfl.command - P2P FL</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -156,6 +156,7 @@
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -208,13 +209,31 @@
         </div>
         <article role="main">
           <h1>Source code for p2pfl.command</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="c1"># </span>
+<span class="c1"># This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).</span>
+<span class="c1"># Copyright (c) 2022 Pedro Guijas Bravo.</span>
+<span class="c1"># </span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify  </span>
+<span class="c1"># it under the terms of the GNU General Public License as published by  </span>
+<span class="c1"># the Free Software Foundation, version 3.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful, but </span>
+<span class="c1"># WITHOUT ANY WARRANTY; without even the implied warranty of </span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU </span>
+<span class="c1"># General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License </span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Module that implements commands of the command pattern.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1">#################</span>
 <span class="c1">#    Command    #</span>
 <span class="c1">#################</span>
+
 
 <div class="viewcode-block" id="Command"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Command">[docs]</a><span class="k">class</span> <span class="nc">Command</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -223,94 +242,118 @@
 <span class="sd">    Args:</span>
 <span class="sd">        node_connection: The node connection that is going to execute the command.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_connection</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span> <span class="o">=</span> <span class="n">node_connection</span>
 
-<div class="viewcode-block" id="Command.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Command.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">):</span> <span class="k">pass</span></div></div>
+<div class="viewcode-block" id="Command.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Command.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="k">pass</span></div></div>
+
 
 <span class="c1">########################</span>
 <span class="c1">#       Commands       #</span>
 <span class="c1">########################</span>
 
+
 <div class="viewcode-block" id="Beat_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Beat_cmd">[docs]</a><span class="k">class</span> <span class="nc">Beat_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Command that should be executed as a response to a **beat** message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="Beat_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Beat_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node1</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">notify_heartbeat</span><span class="p">(</span><span class="n">node1</span><span class="p">)</span></div></div>
+
 
 <div class="viewcode-block" id="Stop_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Stop_cmd">[docs]</a><span class="k">class</span> <span class="nc">Stop_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Command that is should be executed as a response to a **stop** message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="Stop_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Stop_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">local</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div></div>
+
 
 <div class="viewcode-block" id="Conn_to_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Conn_to_cmd">[docs]</a><span class="k">class</span> <span class="nc">Conn_to_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Command that should be executed as a response to a **conn_to** message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Conn_to_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Conn_to_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">notify_conn_to</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">p</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="Conn_to_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Conn_to_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">notify_conn_to</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span></div></div>
+
 
 <div class="viewcode-block" id="Start_learning_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Start_learning_cmd">[docs]</a><span class="k">class</span> <span class="nc">Start_learning_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Command that should be executed as a response to a **start_learning** message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="Start_learning_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Start_learning_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rounds</span><span class="p">,</span> <span class="n">epochs</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">notify_start_learning</span><span class="p">(</span><span class="n">rounds</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span></div></div>
+
 
 <div class="viewcode-block" id="Stop_learning_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Stop_learning_cmd">[docs]</a><span class="k">class</span> <span class="nc">Stop_learning_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Command that should be executed as a response to a **stop_learning** message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="Stop_learning_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Stop_learning_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">notify_stop_learning</span><span class="p">()</span></div></div>
+
 
 <div class="viewcode-block" id="Params_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Params_cmd">[docs]</a><span class="k">class</span> <span class="nc">Params_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Command that should be executed as a response to a **params** message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Params_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Params_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">msg</span><span class="p">,</span><span class="n">done</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Params_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Params_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">done</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">add_param_segment</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
             <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">get_params</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">clear_buffer</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">notify_params</span><span class="p">(</span><span class="n">params</span><span class="p">)</span></div></div>
 
+
 <div class="viewcode-block" id="Models_Ready_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Models_Ready_cmd">[docs]</a><span class="k">class</span> <span class="nc">Models_Ready_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Command that should be executed as a response to a **ready** message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Models_Ready_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Models_Ready_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="nb">round</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Models_Ready_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Models_Ready_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">round</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">set_model_ready_status</span><span class="p">(</span><span class="nb">round</span><span class="p">)</span></div></div>
+
 
 <div class="viewcode-block" id="Metrics_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Metrics_cmd">[docs]</a><span class="k">class</span> <span class="nc">Metrics_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Command that should be executed as a response to a **metrics** message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="Metrics_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Metrics_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="nb">round</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">metric</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">notify_metrics</span><span class="p">(</span><span class="n">node</span><span class="p">,</span><span class="nb">round</span><span class="p">,</span><span class="n">loss</span><span class="p">,</span><span class="n">metric</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">notify_metrics</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="nb">round</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">metric</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="Vote_train_set_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Vote_train_set_cmd">[docs]</a><span class="k">class</span> <span class="nc">Vote_train_set_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Command that should be executed as a response to a **vote** message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="Vote_train_set_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Vote_train_set_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">votes</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">notify_train_set_votes</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">votes</span><span class="p">)</span></div></div>
+
 
 <div class="viewcode-block" id="Models_aggregated_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Models_aggregated_cmd">[docs]</a><span class="k">class</span> <span class="nc">Models_aggregated_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Command that should be executed as a response to a **models_aggregated** message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Models_aggregated_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Models_aggregated_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">node_list</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Models_aggregated_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Models_aggregated_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_list</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">add_models_aggregated</span><span class="p">(</span><span class="n">node_list</span><span class="p">)</span></div></div>
+
 
 <div class="viewcode-block" id="Model_initialized_cmd"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Model_initialized_cmd">[docs]</a><span class="k">class</span> <span class="nc">Model_initialized_cmd</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Command that should be executed as a response to a **model_initialized** message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="Model_initialized_cmd.execute"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.command.Model_initialized_cmd.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">node_connection</span><span class="o">.</span><span class="n">set_model_initialized</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span></div></div>
 </pre></div>
@@ -352,6 +395,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/scripts/furo.js"></script>
     </body>
 </html>

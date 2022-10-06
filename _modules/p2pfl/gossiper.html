@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
+    <meta name="generator" content="sphinx-5.2.3, furo 2022.09.29"/>
         <title>p2pfl.gossiper - P2P FL</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -156,6 +156,7 @@
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -208,7 +209,24 @@
         </div>
         <article role="main">
           <h1>Source code for p2pfl.gossiper</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">time</span>
+<span></span><span class="c1"># </span>
+<span class="c1"># This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).</span>
+<span class="c1"># Copyright (c) 2022 Pedro Guijas Bravo.</span>
+<span class="c1"># </span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify  </span>
+<span class="c1"># it under the terms of the GNU General Public License as published by  </span>
+<span class="c1"># the Free Software Foundation, version 3.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful, but </span>
+<span class="c1"># WITHOUT ANY WARRANTY; without even the implied warranty of </span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU </span>
+<span class="c1"># General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License </span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">from</span> <span class="nn">p2pfl.settings</span> <span class="kn">import</span> <span class="n">Settings</span>
 <span class="kn">from</span> <span class="nn">p2pfl.utils.observer</span> <span class="kn">import</span> <span class="n">Events</span><span class="p">,</span> <span class="n">Observable</span>
@@ -217,21 +235,23 @@
 <span class="c1">#    Gossiper    #</span>
 <span class="c1">##################</span>
 
+
 <div class="viewcode-block" id="Gossiper"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.gossiper.Gossiper">[docs]</a><span class="k">class</span> <span class="nc">Gossiper</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">,</span> <span class="n">Observable</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Thread based gossiper. It gossips messages from list of pending messages. ``Settings.GOSSIP_MESSAGES_PER_ROUND`` are sended per iteration (``Settings.GOSSIP_FREC`` times per second).</span>
 
 <span class="sd">    Communicates with node via observer pattern.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        nodo_padre (str): Name of the parent node.</span>
 <span class="sd">        neighbors (list): List of neighbors.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_name</span><span class="p">,</span> <span class="n">neighbors</span><span class="p">):</span>
         <span class="n">Observable</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;gossiper-&quot;</span> <span class="o">+</span> <span class="n">node_name</span> <span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__neighbors</span> <span class="o">=</span> <span class="n">neighbors</span> <span class="c1"># list as reference of the original neighbors list</span>
+        <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;gossiper-&quot;</span> <span class="o">+</span> <span class="n">node_name</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__neighbors</span> <span class="o">=</span> <span class="n">neighbors</span>  <span class="c1"># list as reference of the original neighbors list</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__msgs</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__add_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__terminate_flag</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
@@ -251,44 +271,46 @@
 
 <div class="viewcode-block" id="Gossiper.run"><a class="viewcode-back" href="../../p2pfl.html#p2pfl.gossiper.Gossiper.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Gossiper Main Loop. Sends `Settings.GOSSIP_MODEL_SENDS_BY_ROUND` messages ``Settings.GOSSIP_FREC`` times per second.        </span>
+<span class="sd">        Gossiper Main Loop. Sends `Settings.GOSSIP_MODEL_SENDS_BY_ROUND` messages ``Settings.GOSSIP_FREC`` times per second.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__terminate_flag</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
 
             <span class="n">messages_left</span> <span class="o">=</span> <span class="n">Settings</span><span class="o">.</span><span class="n">GOSSIP_MESSAGES_PER_ROUND</span>
-            
+
             <span class="c1"># Lock</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__add_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
             <span class="n">begin</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-            
+
             <span class="c1"># Send to all the nodes except the ones that the message was already sent to</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__msgs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">msg_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__msgs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-                <span class="n">nei</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__neighbors</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span> <span class="c1"># copy to avoid concurrent problems</span>
+                <span class="n">nei</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__neighbors</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>  <span class="c1"># copy to avoid concurrent problems</span>
 
-                <span class="k">for</span> <span class="n">msg</span><span class="p">,</span><span class="n">nodes</span> <span class="ow">in</span> <span class="n">msg_list</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">msg</span><span class="p">,</span> <span class="n">nodes</span> <span class="ow">in</span> <span class="n">msg_list</span><span class="p">:</span>
                     <span class="n">nodes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
                     <span class="n">sended</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nei</span> <span class="o">-</span> <span class="n">nodes</span><span class="p">)</span>
 
                     <span class="k">if</span> <span class="n">messages_left</span> <span class="o">-</span> <span class="n">sended</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">Events</span><span class="o">.</span><span class="n">GOSSIP_BROADCAST_EVENT</span><span class="p">,</span> <span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="nb">list</span><span class="p">(</span><span class="n">nodes</span><span class="p">)))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">Events</span><span class="o">.</span><span class="n">GOSSIP_BROADCAST_EVENT</span><span class="p">,</span> <span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">nodes</span><span class="p">)))</span>
                         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">__msgs</span><span class="p">[</span><span class="n">msg</span><span class="p">]</span>
                         <span class="n">messages_left</span> <span class="o">=</span> <span class="n">messages_left</span> <span class="o">-</span> <span class="n">sended</span>
                         <span class="k">if</span> <span class="n">messages_left</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                             <span class="k">break</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="c1"># Lists to concatenate / Sets to difference</span>
-                        <span class="n">excluded</span> <span class="o">=</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">nei</span> <span class="o">-</span> <span class="n">nodes</span><span class="p">))[:</span><span class="nb">abs</span><span class="p">(</span><span class="n">messages_left</span> <span class="o">-</span> <span class="n">sended</span><span class="p">)]</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span><span class="n">Events</span><span class="o">.</span><span class="n">GOSSIP_BROADCAST_EVENT</span><span class="p">,</span> <span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="nb">list</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">+</span><span class="n">excluded</span><span class="p">))</span>
+                        <span class="n">excluded</span> <span class="o">=</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">nei</span> <span class="o">-</span> <span class="n">nodes</span><span class="p">))[:</span> <span class="nb">abs</span><span class="p">(</span><span class="n">messages_left</span> <span class="o">-</span> <span class="n">sended</span><span class="p">)]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">notify</span><span class="p">(</span>
+                            <span class="n">Events</span><span class="o">.</span><span class="n">GOSSIP_BROADCAST_EVENT</span><span class="p">,</span> <span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span> <span class="o">+</span> <span class="n">excluded</span><span class="p">)</span>
+                        <span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">__msgs</span><span class="p">[</span><span class="n">msg</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">nei</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">excluded</span><span class="p">))</span>
                         <span class="k">break</span>
 
             <span class="c1"># Unlock</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__add_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
-            
+
             <span class="c1"># Wait to guarantee the frequency of gossipping</span>
             <span class="n">time_diff</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">begin</span>
-            <span class="n">time_sleep</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">Settings</span><span class="o">.</span><span class="n">GOSSIP_MESSAGES_FREC</span><span class="o">-</span><span class="n">time_diff</span>
+            <span class="n">time_sleep</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">Settings</span><span class="o">.</span><span class="n">GOSSIP_MESSAGES_FREC</span> <span class="o">-</span> <span class="n">time_diff</span>
             <span class="k">if</span> <span class="n">time_sleep</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">time_sleep</span><span class="p">)</span></div>
 
@@ -336,6 +358,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/scripts/furo.js"></script>
     </body>
 </html>

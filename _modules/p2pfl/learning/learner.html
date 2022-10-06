@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
+    <meta name="generator" content="sphinx-5.2.3, furo 2022.09.29"/>
         <title>p2pfl.learning.learner - P2P FL</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -156,6 +156,7 @@
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../documentation.html">Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -208,17 +209,34 @@
         </div>
         <article role="main">
           <h1>Source code for p2pfl.learning.learner</h1><div class="highlight"><pre>
-<span></span>
+<span></span><span class="c1"># </span>
+<span class="c1"># This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).</span>
+<span class="c1"># Copyright (c) 2022 Pedro Guijas Bravo.</span>
+<span class="c1"># </span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify  </span>
+<span class="c1"># it under the terms of the GNU General Public License as published by  </span>
+<span class="c1"># the Free Software Foundation, version 3.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful, but </span>
+<span class="c1"># WITHOUT ANY WARRANTY; without even the implied warranty of </span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU </span>
+<span class="c1"># General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License </span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+
 <span class="c1">################################</span>
 <span class="c1">#    NodeLearning Interface    #  --&gt;  Template Pattern</span>
 <span class="c1">################################</span>
+
 
 <div class="viewcode-block" id="NodeLearner"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner">[docs]</a><span class="k">class</span> <span class="nc">NodeLearner</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Template to implement learning processes, including metric monitoring during training.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="NodeLearner.set_model"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.set_model">[docs]</a>    <span class="k">def</span> <span class="nf">set_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span> 
+<div class="viewcode-block" id="NodeLearner.set_model"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.set_model">[docs]</a>    <span class="k">def</span> <span class="nf">set_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the model of the learner. (not wheights)</span>
 
@@ -230,12 +248,12 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="NodeLearner.set_data"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.set_data">[docs]</a>    <span class="k">def</span> <span class="nf">set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span> 
+<div class="viewcode-block" id="NodeLearner.set_data"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.set_data">[docs]</a>    <span class="k">def</span> <span class="nf">set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the data of the learner. It is used to fit the model.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            data: The data of the learner. </span>
+<span class="sd">            data: The data of the learner.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
@@ -243,21 +261,21 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Encode the parameters of the model. (binary)</span>
 <span class="sd">        If params are not provided, self parameters are encoded.</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            params: The parameters of the model. (non-binary)</span>
 <span class="sd">            contributors: The contributors of the model.</span>
-<span class="sd">            weight: The weight of the model. </span>
-<span class="sd">            </span>
+<span class="sd">            weight: The weight of the model.</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            The encoded parameters of the model (params, contributors, weight).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="NodeLearner.decode_parameters"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.decode_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">decode_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">):</span> 
+<div class="viewcode-block" id="NodeLearner.decode_parameters"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.decode_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">decode_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Decode the parameters of the model. (binary)</span>
-<span class="sd">        </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            data: The encoded parameters of the model.</span>
 
@@ -269,7 +287,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="NodeLearner.check_parameters"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.check_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">check_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span> 
+<div class="viewcode-block" id="NodeLearner.check_parameters"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.check_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">check_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if the parameters are compatible with the model.</span>
 
@@ -280,8 +298,8 @@
 <span class="sd">            True if the parameters are compatible with the model.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
-    
-<div class="viewcode-block" id="NodeLearner.set_parameters"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.set_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span> 
+
+<div class="viewcode-block" id="NodeLearner.set_parameters"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.set_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the parameters of the model.</span>
 
@@ -293,7 +311,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="NodeLearner.get_parameters"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.get_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">get_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+<div class="viewcode-block" id="NodeLearner.get_parameters"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.get_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">get_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the parameters of the model.</span>
 
@@ -302,7 +320,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="NodeLearner.set_epochs"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.set_epochs">[docs]</a>    <span class="k">def</span> <span class="nf">set_epochs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epochs</span><span class="p">):</span> 
+<div class="viewcode-block" id="NodeLearner.set_epochs"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.set_epochs">[docs]</a>    <span class="k">def</span> <span class="nf">set_epochs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epochs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the number of epochs of the model.</span>
 
@@ -311,19 +329,19 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="NodeLearner.fit"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+<div class="viewcode-block" id="NodeLearner.fit"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fit the model.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="NodeLearner.interrupt_fit"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.interrupt_fit">[docs]</a>    <span class="k">def</span> <span class="nf">interrupt_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+<div class="viewcode-block" id="NodeLearner.interrupt_fit"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.interrupt_fit">[docs]</a>    <span class="k">def</span> <span class="nf">interrupt_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Interrupt the fit process.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="NodeLearner.evaluate"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+<div class="viewcode-block" id="NodeLearner.evaluate"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Evaluate the model with actual parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -335,7 +353,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="NodeLearner.get_num_samples"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.get_num_samples">[docs]</a>    <span class="k">def</span> <span class="nf">get_num_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+<div class="viewcode-block" id="NodeLearner.get_num_samples"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.get_num_samples">[docs]</a>    <span class="k">def</span> <span class="nf">get_num_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the number of samples of the model.</span>
 
@@ -344,13 +362,13 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="NodeLearner.init"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.init">[docs]</a>    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+<div class="viewcode-block" id="NodeLearner.init"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.init">[docs]</a>    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Init the learner.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="NodeLearner.close"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+<div class="viewcode-block" id="NodeLearner.close"><a class="viewcode-back" href="../../../p2pfl.learning.html#p2pfl.learning.learner.NodeLearner.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Close the learner.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -400,6 +418,7 @@
     <script src="../../../_static/underscore.js"></script>
     <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/scripts/furo.js"></script>
     </body>
 </html>

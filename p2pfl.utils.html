@@ -2,13 +2,13 @@
 <html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="p2pfl.learning.pytorch.mnist_examples.models package" href="p2pfl.learning.pytorch.mnist_examples.models.html" />
 
-    <meta name="generator" content="sphinx-5.0.1, furo 2022.06.04.1"/>
+    <meta name="generator" content="sphinx-5.2.3, furo 2022.09.29"/>
         <title>p2pfl.utils package - P2P FL</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
     
@@ -157,6 +157,7 @@
   <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="documentation.html">Documentation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2 current has-children"><a class="reference internal" href="p2pfl.html">p2pfl package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -194,7 +195,8 @@
           <span>Back to top</span>
         </a>
         <div class="content-icon-container">
-          <div class="theme-toggle-container theme-toggle-content">
+          
+<div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -432,7 +434,7 @@
         <div class="related-pages">
           
           <a class="prev-page" href="p2pfl.learning.pytorch.mnist_examples.models.html">
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
@@ -468,7 +470,7 @@
       <div class="toc-sticky toc-scroll">
         <div class="toc-title-container">
           <span class="toc-title">
-            Contents
+            On this page
           </span>
         </div>
         <div class="toc-tree-container">
@@ -476,7 +478,35 @@
             <ul>
 <li><a class="reference internal" href="#">p2pfl.utils package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-p2pfl.utils.observer">p2pfl.utils.observer module</a></li>
+<li><a class="reference internal" href="#module-p2pfl.utils.observer">p2pfl.utils.observer module</a><ul>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Events"><code class="docutils literal notranslate"><span class="pre">Events</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Events.AGGREGATION_FINISHED_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.AGGREGATION_FINISHED_EVENT</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Events.BEAT_RECEIVED_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.BEAT_RECEIVED_EVENT</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Events.CONN_TO_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.CONN_TO_EVENT</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Events.END_CONNECTION_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.END_CONNECTION_EVENT</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Events.GOSSIP_BROADCAST_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.GOSSIP_BROADCAST_EVENT</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Events.METRICS_RECEIVED_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.METRICS_RECEIVED_EVENT</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Events.NODE_CONNECTED_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.NODE_CONNECTED_EVENT</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Events.PARAMS_RECEIVED_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.PARAMS_RECEIVED_EVENT</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Events.PROCESSED_MESSAGES_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.PROCESSED_MESSAGES_EVENT</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Events.SEND_BEAT_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.SEND_BEAT_EVENT</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Events.START_LEARNING_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.START_LEARNING_EVENT</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Events.STOP_LEARNING_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.STOP_LEARNING_EVENT</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Events.TRAIN_SET_VOTE_RECEIVED_EVENT"><code class="docutils literal notranslate"><span class="pre">Events.TRAIN_SET_VOTE_RECEIVED_EVENT</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Observable"><code class="docutils literal notranslate"><span class="pre">Observable</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Observable.add_observer"><code class="docutils literal notranslate"><span class="pre">Observable.add_observer()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Observable.get_observers"><code class="docutils literal notranslate"><span class="pre">Observable.get_observers()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Observable.notify"><code class="docutils literal notranslate"><span class="pre">Observable.notify()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Observer"><code class="docutils literal notranslate"><span class="pre">Observer</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.utils.observer.Observer.update"><code class="docutils literal notranslate"><span class="pre">Observer.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-p2pfl.utils">Module contents</a></li>
 </ul>
 </li>
@@ -494,6 +524,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/furo.js"></script>
     </body>
 </html>
