@@ -48,7 +48,6 @@ body:
     label: In which system are you seeing the problem on?
     multiple: true
     options:
-      - Windows 10
-      - Windows 11
+      - Windows
       - Linux
       - Mac OS
