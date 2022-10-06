@@ -1,20 +1,25 @@
----
-name: Feature request
-about: Suggest an idea for this project
-title: ''
-labels: ''
-assignees: ''
+name: 💡 federated_learning_p2p Feature request
+description: Submit a proposal/request for a new federated_learning_p2p feature
 
----
-
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
-
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
-
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
-
-**Additional context**
-Add any other context or screenshots about the feature request here.
+body:
+- type: textarea
+  attributes:
+    label: 💡 The feature, motivation and pitch
+    description: >
+      A clear and concise description of the feature proposal. Please outline the motivation for the proposal. Is your feature request related to a specific problem? e.g., *"I'm working on X and would like Y to be possible"*. If this is related to another GitHub issue, please link here too.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Alternatives
+    description: >
+      A description of any alternative solutions or features you've considered, if any.
+- type: textarea
+  attributes:
+    label: Additional context
+    description: >
+      Add any other context or screenshots about the feature request.
+- type: markdown
+  attributes:
+    value: >
+      Thanks for contributing 🎉!
