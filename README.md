@@ -4,10 +4,10 @@
 
 [![GitHub license](https://img.shields.io/github/license/pguijas/federated_learning_p2p)](https://github.com/pguijas/federated_learning_p2p/blob/main/LICENSE.md)
 [![GitHub issues](https://img.shields.io/github/issues/pguijas/federated_learning_p2p)](https://github.com/pguijas/federated_learning_p2p/issues)
-![GitHub forks](https://img.shields.io/github/forks/pguijas/federated_learning_p2p)
-![GitHub forks](https://img.shields.io/github/stars/pguijas/federated_learning_p2p)
-![GitHub activity](https://img.shields.io/github/commit-activity/m/pguijas/federated_learning_p2p)
 ![GitHub contributors](https://img.shields.io/github/contributors/pguijas/federated_learning_p2p)
+![GitHub forks](https://img.shields.io/github/forks/pguijas/federated_learning_p2p)
+![GitHub stars](https://img.shields.io/github/stars/pguijas/federated_learning_p2p)
+![GitHub activity](https://img.shields.io/github/commit-activity/m/pguijas/federated_learning_p2p)
 
 P2PFL is a general-purpose open-source library for the execution (simulated and in real environments) of Decentralized Federated Learning systems, specifically making use of P2P networks and the Gossisp protocol.
 
