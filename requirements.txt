@@ -1,4 +1,6 @@
-pytorch-lightning
+torch==1.11.0
+pytorch-lightning==1.6.5
+torchmetrics==0.7.3
 pytest
 pytest-cov
 torchvision
