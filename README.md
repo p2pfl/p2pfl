@@ -30,6 +30,14 @@ P2PFL is a general-purpose open-source library for the execution (simulated and 
 
 ## 📥 Installation
 
+---
+
+- diferenciar entre instalación con pip y setup para desarrollo
+
+- python 3.9 / fallando con versiones superiores por compatibilidad con torch
+
+---
+
 To install the library, you can simply run:
 
 ```bash
