@@ -70,24 +70,24 @@ class Node(BaseNode):
 
         # Add message handlers
         self.add_message_handler(
-            LearningMessages.START_LEARNING, self.__start_learning_callback
+            LearningMessagesV2.START_LEARNING, self.__start_learning_callback
         )
         self.add_message_handler(
-            LearningMessages.STOP_LEARNING, self.__stop_learning_callback
+            LearningMessagesV2.STOP_LEARNING, self.__stop_learning_callback
         )
         self.add_message_handler(
-            LearningMessages.MODEL_INITIALIZED, self.__model_initialized_callback
+            LearningMessagesV2.MODEL_INITIALIZED, self.__model_initialized_callback
         )
         self.add_message_handler(
-            LearningMessages.VOTE_TRAIN_SET, self.__vote_train_set_callback
+            LearningMessagesV2.VOTE_TRAIN_SET, self.__vote_train_set_callback
         )
         self.add_message_handler(
-            LearningMessages.MODELS_AGGREGATED, self.__models_agregated_callback
+            LearningMessagesV2.MODELS_AGGREGATED, self.__models_agregated_callback
         )
         self.add_message_handler(
-            LearningMessages.MODELS_READY, self.__models_ready_callback
+            LearningMessagesV2.MODELS_READY, self.__models_ready_callback
         )
-        self.add_message_handler(LearningMessages.METRICS, self.__metrics_callback)
+        self.add_message_handler(LearningMessagesV2.METRICS, self.__metrics_callback)
 
         # Learning
         self.round = None
@@ -268,13 +268,13 @@ class Node(BaseNode):
             # ------------------------------------------------ build_start_learning_msg ------------------------------------------------
             self._neighbors.broadcast_msg(
                 self._neighbors.build_msg(
-                    LearningMessages.START_LEARNING, [rounds, epochs]
+                    LearningMessagesV2.START_LEARNING, [rounds, epochs]
                 )
             )
             # Initialize model
             # ------------------------------------------------ build_model_initialized_msg ------------------------------------------------
             self._neighbors.broadcast_msg(
-                self._neighbors.build_msg(LearningMessages.MODEL_INITIALIZED)
+                self._neighbors.build_msg(LearningMessagesV2.MODEL_INITIALIZED)
             )
             self.__wait_init_model_lock.release()
             self.__model_initialized = True
@@ -287,7 +287,7 @@ class Node(BaseNode):
         if self.round is not None:
             # ------------------------------------------------ build_stop_learning_msg ------------------------------------------------
             self._neighbors.broadcast_msg(
-                self._neighbors.build_msg(LearningMessages.STOP_LEARNING)
+                self._neighbors.build_msg(LearningMessagesV2.STOP_LEARNING)
             )
             self.__stop_learning()
         else:
@@ -399,7 +399,7 @@ class Node(BaseNode):
                 # ESTO ES REDUNDANTE, EL PROPIO NODO HA DE TENER EL PROPIO MODELO AGREGADO
                 self._neighbors.broadcast_msg(
                     self._neighbors.build_msg(
-                        LearningMessages.MODELS_AGGREGATED, [self.addr]
+                        LearningMessagesV2.MODELS_AGGREGATED, [self.addr]
                     )
                 )
                 self.__gossip_model_aggregation()
