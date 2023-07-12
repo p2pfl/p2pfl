@@ -52,6 +52,15 @@ class Neighbors:
         self.__processed_messages = []
         self.__processed_messages_lock = threading.Lock()
 
+    def start(self):
+        self.start_heartbeater()
+        self.start_gossiper()
+
+    def stop(self):
+        self.stop_heartbeater()
+        self.stop_gossiper()
+        self.clear_neis()
+
     ####
     # Message
     ####
@@ -60,9 +69,45 @@ class Neighbors:
         hs = hash(
             str(cmd) + str(args) + str(datetime.now()) + str(random.randint(0, 100000))
         )
+        args = [str(a) for a in args]
         return node_pb2.Message(
             source=self.__self_addr, ttl=Settings.TTL, hash=hs, cmd=cmd, args=args
         )
+
+    def send_message(self, nei, msg):
+        try:
+            self.__neighbors[nei][1].send_message(msg, timeout=Settings.GRPC_TIMEOUT)
+        except Exception as e:
+            # Remove neighbor
+            print(f"Cannot send message to {nei}. Error code: {e.code()}")
+            self.remove(nei)
+
+    def broadcast_msg(self, msg, node_list=None):
+        # Node list
+        if node_list is not None:
+            node_list = node_list
+        else:
+            node_list = self.get_all().keys()
+        # Send
+        for n in node_list:
+            self.send_message(n, msg)
+
+    def send_model(self, nei, round, serialized_model, contributors=[], weight=0):
+        try:
+            self.__neighbors[nei][1].add_model(
+                node_pb2.Weights(
+                    source=self.__self_addr,
+                    round=round,
+                    weights=serialized_model,
+                    contributors=contributors,
+                    weight=weight,
+                ),
+                timeout=Settings.GRPC_TIMEOUT,
+            )
+        except Exception as e:
+            # Remove neighbor
+            print(f"Cannot send model to {nei}. Error code: {e.code()}")
+            self.remove(nei)
 
     ####
     # Neighbors management
@@ -152,28 +197,6 @@ class Neighbors:
             self.remove(nei)
 
     ####
-    # Messages
-    ####
-
-    def send_message(self, nei, msg):
-        try:
-            self.__neighbors[nei][1].send_message(msg)
-        except:
-            # Remove neighbor
-            print(f"Cannot send message to {nei}")
-            self.remove(nei)
-
-    def broadcast_msg(self, msg, node_list=None):
-        # Node list
-        if node_list is not None:
-            node_list = node_list
-        else:
-            node_list = self.get_all().keys()
-        # Send
-        for n in node_list:
-            self.send_message(n, msg)
-
-    ####
     # Heartbeating
     ####
 
@@ -225,7 +248,7 @@ class Neighbors:
                 except Exception as e:
                     self.remove(nei)
 
-            # Wait to allow a frequency
+            # Sleep to allow the periodicity
             sleep_time = max(0, period - (t - time.time()))
             time.sleep(sleep_time)
 
@@ -239,8 +262,8 @@ class Neighbors:
         if msg in self.__processed_messages:
             self.__processed_messages_lock.release()
             return False
-        # If there are more than 1000 messages, remove the oldest one
-        if len(self.__processed_messages) > 100:
+        # If there are more than X messages, remove the oldest one
+        if len(self.__processed_messages) > Settings.AMOUNT_LAST_MESSAGES_SAVED:
             self.__processed_messages.pop(0)
         # Add message
         self.__processed_messages.append(msg)
@@ -305,7 +328,7 @@ class Neighbors:
                 for nei in neis:
                     self.send_message(nei, msg)
 
-            # Sleep
+            # Sleep to allow periodicity
             sleep_time = max(0, period - (t - time.time()))
             time.sleep(sleep_time)
 

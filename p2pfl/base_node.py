@@ -22,14 +22,30 @@ import socket
 from p2pfl.proto import node_pb2
 from p2pfl.proto import node_pb2_grpc
 from p2pfl.neighbors import Neighbors
+from p2pfl.settings import Settings
 from concurrent import futures
+import threading
 
 
 """
 - revisar cierre de conexiones directamente conectadas
 - nuevos mensajes se añadan a gossip?? o a parte
+- meter simulación
+- hacerlo más robusto desacopplando las llamadas a los servicios de la interfaz del nodo?
 - NEEDED OBSERVER? -> No xq los eventos eran mensajes en la comunicación entre nodos
+- meter sistema de logging
+- meter tipado
+- documentar
+- panel de control -> web + terminal
 """
+
+
+class LearningMessages:
+    """
+    ¿?¿?¿?¿?¿?¿?
+    """
+
+    BEAT = "beat"
 
 
 class BaseNode:
@@ -38,10 +54,11 @@ class BaseNode:
     #####################
 
     def __init__(self, host="127.0.0.1", port=None, simulation=True):
-        # Set message callbacks
-        self.__msg_callbacks = {
-            "beat": self.__heartbeat_callback,  # cambiar string x algún tipo de dato más ligero
-        }
+        # Set message handlers
+        self.__msg_callbacks = {}
+        self.add_message_handler(LearningMessages.BEAT, self.__heartbeat_callback)
+        # Is running
+        self.__running = False
         # Random port
         if port is None:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -49,21 +66,29 @@ class BaseNode:
                 port = s.getsockname()[1]
         self.addr = f"{host}:{port}"
         # Neighbors
-        self.__neighbors = Neighbors(self.addr)
+        self._neighbors = Neighbors(self.addr)
         # Server
         self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
         # Logging
-        logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+        log_level = logging.getLevelName(Settings.LOG_LEVEL)
+        logging.basicConfig(stream=sys.stdout, level=log_level)
 
     #######################################
     #   Node Management (servicer loop)   #
     #######################################
 
+    def assert_running(self, running):
+        running_state = self.__running
+        if running_state != running:
+            raise Exception(f"Node is {'not ' if running_state else ''}running.")
+
     def start(self, wait=False):
-        # Heartbeat
-        self.__neighbors.start_heartbeater()
-        # Gossping
-        self.__neighbors.start_gossiper()
+        # Check not running
+        self.assert_running(False)
+        # Set running
+        self.__running = True
+        # Heartbeat and Gossip
+        self._neighbors.start()
         # Server
         node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.server)
         self.server.add_insecure_port(self.addr)
@@ -74,44 +99,53 @@ class BaseNode:
             print("Server terminated.")
 
     def stop(self):
+        # Check running
+        self.assert_running(True)
+        # Stop server
         self.server.stop(0)
-        # REEMPLAZAR POR STOP DE NEIGHBORS
-        self.__neighbors.clear_neis()
-        self.__neighbors.stop_heartbeater()
-        self.__neighbors.stop_gossiper()
+        # Stop neighbors
+        self._neighbors.stop()
+        # Set not running
+        self.__running = False
 
     #############################
     #  Neighborhood management  #
     #############################
 
     def connect(self, addr):
+        # Check running
+        self.assert_running(True)
+        # Connect
         print(f"[{self.addr}] connecting to {addr}...")
-        self.__neighbors.add(addr, handshake_msg=True)
+        self._neighbors.add(addr, handshake_msg=True)
 
     def get_neighbors(self, only_direct=False):
-        return self.__neighbors.get_all(only_direct)
+        return self._neighbors.get_all(only_direct)
 
     def disconnect_from(self, addr):
+        # Check running
+        self.assert_running(True)
+        # Disconnect
         print(f"[{self.addr}] removing {addr}...")
-        self.__neighbors.remove(addr, disconnect_msg=True)
+        self._neighbors.remove(addr, disconnect_msg=True)
 
-    ####
-    # GRPC - Remote Services
-    ####
+    ############################
+    #  GRPC - Remote Services  #
+    ############################
 
     def handshake(self, request, _):
-        self.__neighbors.add(request.addr, handshake_msg=False)
-        return node_pb2.Empty()
+        self._neighbors.add(request.addr, handshake_msg=False)
+        return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
 
     def disconnect(self, request, _):
-        self.__neighbors.remove(request.addr, disconnect_msg=False)
-        return node_pb2.Empty()
+        self._neighbors.remove(request.addr, disconnect_msg=False)
+        return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
 
     def send_message(self, request, context):
         # If not processed
-        if self.__neighbors.add_processed_msg(request.hash):
+        if self._neighbors.add_processed_msg(request.hash):
             # Gossip
-            self.__neighbors.gossip(request)
+            self._neighbors.gossip(request)
             # Process message
             if request.cmd in self.__msg_callbacks.keys():
                 self.__msg_callbacks[request.cmd](request)
@@ -119,9 +153,15 @@ class BaseNode:
                 raise Exception(f"[{self.addr}] Unknown command: {request.cmd}")
         return node_pb2.Status(status="ok")
 
+    def add_model(self, request, context):
+        raise NotImplementedError
+
     ####
     # Message Handlers
     ####
+
+    def add_message_handler(self, cmd, callback):
+        self.__msg_callbacks[cmd] = callback
 
     # ns si hace falta mensajes o meterlo como callbacks depende de como se haga lo de interpretar mensajes
 
@@ -129,62 +169,5 @@ class BaseNode:
     # AÑADIR TIMESTAMP COMO ARGUMENTO PARA EVITAR HEARTBEATS GOSSIPEADOS RESIDUALES
     #
     def __heartbeat_callback(self, request):
-        self.__neighbors.heartbeat(request.source)
-        return node_pb2.Empty()
-
-    ###########################
-    #     Observer Events     #
-    ###########################
-
-
-"""
-    def notify_heartbeat(self, node):
-        self.notify(Events.BEAT_RECEIVED_EVENT, node)
-
-    def notify_conn_to(self, h, p):
-        self.notify(Events.CONN_TO_EVENT, (h, p))
-
-    def notify_start_learning(self, r, e):
-        self.notify(Events.START_LEARNING_EVENT, (r, e))
-
-    def notify_stop_learning(self, cmd):
-        self.notify(Events.STOP_LEARNING_EVENT, None)
-
-    def notify_params(self, params):
-        self.notify(Events.PARAMS_RECEIVED_EVENT, (params))
-
-    def notify_metrics(self, node, round, loss, metric):
-        self.notify(Events.METRICS_RECEIVED_EVENT, (node, round, loss, metric))
-
-    def notify_train_set_votes(self, node, votes):
-        self.notify(Events.TRAIN_SET_VOTE_RECEIVED_EVENT, (node, votes))
-
-    def update(self, event, obj):
-        if event == Events.END_CONNECTION_EVENT:
-            self.rm_neighbor(obj)
-
-        elif event == Events.NODE_CONNECTED_EVENT:
-            n, _ = obj
-            n.send(CommunicationProtocol.build_beat_msg(self.get_name()))
-
-        elif event == Events.CONN_TO_EVENT:
-            self.connect_to(obj[0], obj[1], full=False)
-
-        elif event == Events.SEND_BEAT_EVENT:
-            self.broadcast(CommunicationProtocol.build_beat_msg(self.get_name()))
-
-        elif event == Events.GOSSIP_BROADCAST_EVENT:
-            self.broadcast(obj[0], exc=obj[1])
-
-        elif event == Events.PROCESSED_MESSAGES_EVENT:
-            node, msgs = obj
-            # Comunicate to connections the new messages processed
-            for nc in self.__neighbors:
-                if nc != node:
-                    nc.add_processed_messages(list(msgs.keys()))
-            # Gossip the new messages
-            self.gossiper.add_messages(list(msgs.values()), node)
-
-        elif event == Events.BEAT_RECEIVED_EVENT:
-            self.heartbeater.add_node(obj)
-"""
+        self._neighbors.heartbeat(request.source)
+        return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()

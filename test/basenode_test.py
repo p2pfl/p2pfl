@@ -161,8 +161,8 @@ def test_bad_msg(two_nodes):
     time.sleep(0.1)
 
     # Create an error message
-    msg = n1._BaseNode__neighbors.build_msg("BAD_MSG")
-    n1._BaseNode__neighbors.send_message(n2.addr, msg)
+    msg = n1._BaseNode_neighbors.build_msg("BAD_MSG")
+    n1._BaseNode_neighbors.send_message(n2.addr, msg)
     time.sleep(1)
     assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == 0
 
@@ -183,7 +183,7 @@ def test_node_abrupt_down(four_nodes):
     wait_convergence(four_nodes, 3, only_direct=True)
 
     # n1 stops heartbeater
-    n1._BaseNode__neighbors.stop_heartbeater()
+    n1._BaseNode_neighbors.stop_heartbeater()
     wait_convergence([n2, n3, n4], 2, only_direct=True)
     n1.stop()
 

@@ -2,6 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 import p2pfl.proto.node_pb2 as node__pb2
 
 
@@ -17,17 +18,22 @@ class NodeServicesStub(object):
         self.handshake = channel.unary_unary(
             "/node.NodeServices/handshake",
             request_serializer=node__pb2.HandShakeRequest.SerializeToString,
-            response_deserializer=node__pb2.Empty.FromString,
+            response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
         )
         self.disconnect = channel.unary_unary(
             "/node.NodeServices/disconnect",
             request_serializer=node__pb2.HandShakeRequest.SerializeToString,
-            response_deserializer=node__pb2.Empty.FromString,
+            response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
         )
         self.send_message = channel.unary_unary(
             "/node.NodeServices/send_message",
             request_serializer=node__pb2.Message.SerializeToString,
-            response_deserializer=node__pb2.Empty.FromString,
+            response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        )
+        self.add_model = channel.unary_unary(
+            "/node.NodeServices/add_model",
+            request_serializer=node__pb2.Weights.SerializeToString,
+            response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
         )
 
 
@@ -52,23 +58,34 @@ class NodeServicesServicer(object):
         context.set_details("Method not implemented!")
         raise NotImplementedError("Method not implemented!")
 
+    def add_model(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details("Method not implemented!")
+        raise NotImplementedError("Method not implemented!")
+
 
 def add_NodeServicesServicer_to_server(servicer, server):
     rpc_method_handlers = {
         "handshake": grpc.unary_unary_rpc_method_handler(
             servicer.handshake,
             request_deserializer=node__pb2.HandShakeRequest.FromString,
-            response_serializer=node__pb2.Empty.SerializeToString,
+            response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
         ),
         "disconnect": grpc.unary_unary_rpc_method_handler(
             servicer.disconnect,
             request_deserializer=node__pb2.HandShakeRequest.FromString,
-            response_serializer=node__pb2.Empty.SerializeToString,
+            response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
         ),
         "send_message": grpc.unary_unary_rpc_method_handler(
             servicer.send_message,
             request_deserializer=node__pb2.Message.FromString,
-            response_serializer=node__pb2.Empty.SerializeToString,
+            response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+        ),
+        "add_model": grpc.unary_unary_rpc_method_handler(
+            servicer.add_model,
+            request_deserializer=node__pb2.Weights.FromString,
+            response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
         ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -99,7 +116,7 @@ class NodeServices(object):
             target,
             "/node.NodeServices/handshake",
             node__pb2.HandShakeRequest.SerializeToString,
-            node__pb2.Empty.FromString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,
             insecure,
@@ -128,7 +145,7 @@ class NodeServices(object):
             target,
             "/node.NodeServices/disconnect",
             node__pb2.HandShakeRequest.SerializeToString,
-            node__pb2.Empty.FromString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,
             insecure,
@@ -157,7 +174,36 @@ class NodeServices(object):
             target,
             "/node.NodeServices/send_message",
             node__pb2.Message.SerializeToString,
-            node__pb2.Empty.FromString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+        )
+
+    @staticmethod
+    def add_model(
+        request,
+        target,
+        options=(),
+        channel_credentials=None,
+        call_credentials=None,
+        insecure=False,
+        compression=None,
+        wait_for_ready=None,
+        timeout=None,
+        metadata=None,
+    ):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            "/node.NodeServices/add_model",
+            node__pb2.Weights.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,
             insecure,

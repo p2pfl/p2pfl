@@ -13,14 +13,17 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
+
+
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
-    b'\n\nnode.proto\x12\x04node"O\n\x07Message\x12\x0e\n\x06source\x18\x01 \x01(\t\x12\x0b\n\x03ttl\x18\x02 \x01(\x05\x12\x0c\n\x04hash\x18\x03 \x01(\x03\x12\x0b\n\x03\x63md\x18\x04 \x01(\t\x12\x0c\n\x04\x61rgs\x18\x05 \x03(\t"\x18\n\x06Status\x12\x0e\n\x06status\x18\x01 \x01(\t"\x07\n\x05\x45mpty" \n\x10HandShakeRequest\x12\x0c\n\x04\x61\x64\x64r\x18\x01 \x01(\t2\x9f\x01\n\x0cNodeServices\x12\x30\n\thandshake\x12\x16.node.HandShakeRequest\x1a\x0b.node.Empty\x12\x31\n\ndisconnect\x12\x16.node.HandShakeRequest\x1a\x0b.node.Empty\x12*\n\x0csend_message\x12\r.node.Message\x1a\x0b.node.Emptyb\x06proto3'
+    b'\n\nnode.proto\x12\x04node\x1a\x1bgoogle/protobuf/empty.proto"O\n\x07Message\x12\x0e\n\x06source\x18\x01 \x01(\t\x12\x0b\n\x03ttl\x18\x02 \x01(\x05\x12\x0c\n\x04hash\x18\x03 \x01(\x03\x12\x0b\n\x03\x63md\x18\x04 \x01(\t\x12\x0c\n\x04\x61rgs\x18\x05 \x03(\t"\x18\n\x06Status\x12\x0e\n\x06status\x18\x01 \x01(\t"_\n\x07Weights\x12\x0e\n\x06source\x18\x01 \x01(\t\x12\r\n\x05round\x18\x02 \x01(\x05\x12\x0f\n\x07weights\x18\x03 \x01(\x0c\x12\x14\n\x0c\x63ontributors\x18\x04 \x03(\t\x12\x0e\n\x06weight\x18\x05 \x01(\x05" \n\x10HandShakeRequest\x12\x0c\n\x04\x61\x64\x64r\x18\x01 \x01(\t2\xf4\x01\n\x0cNodeServices\x12;\n\thandshake\x12\x16.node.HandShakeRequest\x1a\x16.google.protobuf.Empty\x12<\n\ndisconnect\x12\x16.node.HandShakeRequest\x1a\x16.google.protobuf.Empty\x12\x35\n\x0csend_message\x12\r.node.Message\x1a\x16.google.protobuf.Empty\x12\x32\n\tadd_model\x12\r.node.Weights\x1a\x16.google.protobuf.Emptyb\x06proto3'
 )
 
 
 _MESSAGE = DESCRIPTOR.message_types_by_name["Message"]
 _STATUS = DESCRIPTOR.message_types_by_name["Status"]
-_EMPTY = DESCRIPTOR.message_types_by_name["Empty"]
+_WEIGHTS = DESCRIPTOR.message_types_by_name["Weights"]
 _HANDSHAKEREQUEST = DESCRIPTOR.message_types_by_name["HandShakeRequest"]
 Message = _reflection.GeneratedProtocolMessageType(
     "Message",
@@ -44,16 +47,16 @@ Status = _reflection.GeneratedProtocolMessageType(
 )
 _sym_db.RegisterMessage(Status)
 
-Empty = _reflection.GeneratedProtocolMessageType(
-    "Empty",
+Weights = _reflection.GeneratedProtocolMessageType(
+    "Weights",
     (_message.Message,),
     {
-        "DESCRIPTOR": _EMPTY,
+        "DESCRIPTOR": _WEIGHTS,
         "__module__": "node_pb2"
-        # @@protoc_insertion_point(class_scope:node.Empty)
+        # @@protoc_insertion_point(class_scope:node.Weights)
     },
 )
-_sym_db.RegisterMessage(Empty)
+_sym_db.RegisterMessage(Weights)
 
 HandShakeRequest = _reflection.GeneratedProtocolMessageType(
     "HandShakeRequest",
@@ -69,14 +72,14 @@ _sym_db.RegisterMessage(HandShakeRequest)
 _NODESERVICES = DESCRIPTOR.services_by_name["NodeServices"]
 if _descriptor._USE_C_DESCRIPTORS == False:
     DESCRIPTOR._options = None
-    _MESSAGE._serialized_start = 20
-    _MESSAGE._serialized_end = 99
-    _STATUS._serialized_start = 101
-    _STATUS._serialized_end = 125
-    _EMPTY._serialized_start = 127
-    _EMPTY._serialized_end = 134
-    _HANDSHAKEREQUEST._serialized_start = 136
-    _HANDSHAKEREQUEST._serialized_end = 168
-    _NODESERVICES._serialized_start = 171
-    _NODESERVICES._serialized_end = 330
+    _MESSAGE._serialized_start = 49
+    _MESSAGE._serialized_end = 128
+    _STATUS._serialized_start = 130
+    _STATUS._serialized_end = 154
+    _WEIGHTS._serialized_start = 156
+    _WEIGHTS._serialized_end = 251
+    _HANDSHAKEREQUEST._serialized_start = 253
+    _HANDSHAKEREQUEST._serialized_end = 285
+    _NODESERVICES._serialized_start = 288
+    _NODESERVICES._serialized_end = 532
 # @@protoc_insertion_point(module_scope)

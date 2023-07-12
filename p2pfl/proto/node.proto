@@ -19,6 +19,7 @@
 // python -m grpc_tools.protoc -I=p2pfl/proto --python_out=p2pfl/proto --grpc_python_out=p2pfl/proto p2pfl/proto/node.proto
 
 syntax = "proto3";
+import "google/protobuf/empty.proto";
 
 package node;
 
@@ -34,7 +35,13 @@ message Status {
     string status = 1;
 };
 
-message Empty {};
+message Weights {
+    string source = 1;
+    int32 round = 2;
+    bytes weights = 3;
+    repeated string contributors = 4;
+    int32 weight = 5;
+}
 
 message HandShakeRequest {
     string addr = 1; // puede no ser necesario si se usa channel._channel.target()
@@ -42,7 +49,8 @@ message HandShakeRequest {
 
 service NodeServices {
     // mucho empty, mejor meter status messges
-    rpc handshake(HandShakeRequest) returns (Empty);
-    rpc disconnect(HandShakeRequest) returns (Empty);
-    rpc send_message(Message) returns (Empty);
+    rpc handshake(HandShakeRequest) returns (google.protobuf.Empty);
+    rpc disconnect(HandShakeRequest) returns (google.protobuf.Empty);
+    rpc send_message(Message) returns (google.protobuf.Empty);
+    rpc add_model(Weights) returns (google.protobuf.Empty);
 }
