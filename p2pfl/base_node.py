@@ -19,13 +19,12 @@ import logging
 import sys
 import grpc
 import socket
+from concurrent import futures
 from p2pfl.proto import node_pb2
 from p2pfl.proto import node_pb2_grpc
 from p2pfl.neighbors import Neighbors
 from p2pfl.settings import Settings
-from concurrent import futures
-import threading
-
+from p2pfl.messages import NodeMessages
 
 """
 - revisar cierre de conexiones directamente conectadas
@@ -39,15 +38,6 @@ import threading
 - panel de control -> web + terminal
 """
 
-
-class LearningMessages:
-    """
-    ¿?¿?¿?¿?¿?¿?
-    """
-
-    BEAT = "beat"
-
-
 class BaseNode:
     #####################
     #     Node Init     #
@@ -56,7 +46,7 @@ class BaseNode:
     def __init__(self, host="127.0.0.1", port=None, simulation=True):
         # Set message handlers
         self.__msg_callbacks = {}
-        self.add_message_handler(LearningMessages.BEAT, self.__heartbeat_callback)
+        self.add_message_handler(NodeMessages.BEAT, self.__heartbeat_callback)
         # Is running
         self.__running = False
         # Random port
@@ -117,7 +107,7 @@ class BaseNode:
         self.assert_running(True)
         # Connect
         print(f"[{self.addr}] connecting to {addr}...")
-        self._neighbors.add(addr, handshake_msg=True)
+        return self._neighbors.add(addr, handshake_msg=True)
 
     def get_neighbors(self, only_direct=False):
         return self._neighbors.get_all(only_direct)
@@ -134,8 +124,8 @@ class BaseNode:
     ############################
 
     def handshake(self, request, _):
-        self._neighbors.add(request.addr, handshake_msg=False)
-        return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
+        s = self._neighbors.add(request.addr, handshake_msg=False)
+        return node_pb2.BoolMsg(bool=s)
 
     def disconnect(self, request, _):
         self._neighbors.remove(request.addr, disconnect_msg=False)
@@ -150,8 +140,10 @@ class BaseNode:
             if request.cmd in self.__msg_callbacks.keys():
                 self.__msg_callbacks[request.cmd](request)
             else:
-                raise Exception(f"[{self.addr}] Unknown command: {request.cmd}")
-        return node_pb2.Status(status="ok")
+                # disconnect node
+                logging.error(f"[{self.addr}] Unknown command: {request.cmd} from {request.source}")
+                self._neighbors.remove(request.source, disconnect_msg=True) # posible ataque de denegación de servicio
+        return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
 
     def add_model(self, request, context):
         raise NotImplementedError

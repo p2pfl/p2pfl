@@ -15,13 +15,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from test.utils import set_test_settings, wait_convergence, full_connection
+from p2pfl.settings import Settings
+set_test_settings()
 import pytest
 from p2pfl.base_node import BaseNode
 import time
-from p2pfl.settings import Settings
-from test.utils import set_test_settings, wait_convergence, full_connection
 
-set_test_settings()
 
 
 @pytest.fixture
@@ -58,9 +58,11 @@ def four_nodes():
 
 def test_connect_invalid_node():
     n = BaseNode()
+    n.start()
     n.connect("google.es:80")
     n.connect("holadani.holaenrique")
     assert len(n.get_neighbors()) == 0
+    n.stop()
 
 
 def test_basic_node_paring(two_nodes):
@@ -161,8 +163,8 @@ def test_bad_msg(two_nodes):
     time.sleep(0.1)
 
     # Create an error message
-    msg = n1._BaseNode_neighbors.build_msg("BAD_MSG")
-    n1._BaseNode_neighbors.send_message(n2.addr, msg)
+    msg = n1._neighbors.build_msg("BAD_MSG")
+    n1._neighbors.send_message(n2.addr, msg)
     time.sleep(1)
     assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == 0
 
@@ -183,7 +185,7 @@ def test_node_abrupt_down(four_nodes):
     wait_convergence(four_nodes, 3, only_direct=True)
 
     # n1 stops heartbeater
-    n1._BaseNode_neighbors.stop_heartbeater()
+    n1._neighbors.stop_heartbeater()
     wait_convergence([n2, n3, n4], 2, only_direct=True)
     n1.stop()
 

@@ -20,9 +20,10 @@ import time
 import random
 from datetime import datetime
 import grpc
-from p2pfl.proto import node_pb2, node_pb2_grpc
 from p2pfl.settings import Settings
-
+from p2pfl.proto import node_pb2, node_pb2_grpc
+from p2pfl.messages import NodeMessages
+import logging
 
 class Neighbors:
     """
@@ -78,8 +79,11 @@ class Neighbors:
         try:
             self.__neighbors[nei][1].send_message(msg, timeout=Settings.GRPC_TIMEOUT)
         except Exception as e:
+            """
+            MAYBE ADD CUSTOM EXCEPTIONS -> direct disconnection
+            """
             # Remove neighbor
-            print(f"Cannot send message to {nei}. Error code: {e.code()}")
+            logging.info(f"({self.__self_addr}) Cannot send message {msg.cmd} to {nei}. Error: {str(e)}")
             self.remove(nei)
 
     def broadcast_msg(self, msg, node_list=None):
@@ -106,7 +110,7 @@ class Neighbors:
             )
         except Exception as e:
             # Remove neighbor
-            print(f"Cannot send model to {nei}. Error code: {e.code()}")
+            print(f"Cannot send model to {nei}. Error: {str(e)}")
             self.remove(nei)
 
     ####
@@ -140,15 +144,17 @@ class Neighbors:
             channel = grpc.insecure_channel(addr)
             stub = node_pb2_grpc.NodeServicesStub(channel)
 
+            # Handshake
+            if handshake_msg:
+                res = stub.handshake(node_pb2.HandShakeRequest(addr=self.__self_addr))
+                if not res.bool:
+                    channel.close()
+                    return False
+                
             # Add neighbor
             self.__nei_lock.acquire()
             self.__neighbors[addr] = [channel, stub, time.time()]
             self.__nei_lock.release()
-
-            # Handshake
-            if handshake_msg:
-                stub.handshake(node_pb2.HandShakeRequest(addr=self.__self_addr))
-
             return True
 
         except Exception as e:
@@ -205,8 +211,7 @@ class Neighbors:
         if nei not in self.__neighbors.keys():
             self.__nei_lock.release()
             # Add non-direct connected neighbor
-            r = self.add(nei, non_direct=True)
-            print(f"[{self.__self_addr}] trying to add {nei}... {r}")
+            self.add(nei, non_direct=True)
 
         else:
             # Update time
@@ -231,21 +236,22 @@ class Neighbors:
                 nei_copy = self.__neighbors.copy()
                 for nei in nei_copy.keys():
                     if t - nei_copy[nei][2] > timeout:
-                        print("Heartbeat timeout for " + nei + ". Removing...")
+                        logging.info(f"({self.__self_addr}) Heartbeat timeout for {nei}. Removing...")
                         self.remove(nei)
             else:
                 toggle = True
 
             # Send heartbeat
             nei_copy = self.__neighbors.copy()
-            for nei, (conn, _, _) in nei_copy.items():
-                if conn is None:
+            for nei, (_, stub, _) in nei_copy.items():
+                if stub is None:
                     continue
                 try:
-                    node_pb2_grpc.NodeServicesStub(conn).send_message(
-                        self.build_msg("beat")
+                    stub.send_message(
+                        self.build_msg(NodeMessages.BEAT)
                     )  # HARD CODED!!!
                 except Exception as e:
+                    logging.info(f"({self.__self_addr}) Cannot send heartbeat to {nei}. Error: {str(e)}")
                     self.remove(nei)
 
             # Sleep to allow the periodicity
@@ -326,8 +332,12 @@ class Neighbors:
             # Send messages
             for msg, neis in messages_to_send:
                 for nei in neis:
-                    self.send_message(nei, msg)
-
+                    # send only if direct connected (also add a try to deal with desconnections)
+                    try:
+                        if self.__neighbors[nei][1] is not None:
+                            self.send_message(nei, msg)
+                    except KeyError:
+                        pass
             # Sleep to allow periodicity
             sleep_time = max(0, period - (t - time.time()))
             time.sleep(sleep_time)

@@ -20,7 +20,8 @@ import random
 import threading
 import logging
 import time
-from p2pfl.base_node import BaseNode, LearningMessages
+from p2pfl.base_node import BaseNode 
+from p2pfl.messages import LearningNodeMessages
 from p2pfl.settings import Settings
 from p2pfl.learning.pytorch.lightninglearner import LightningLearner
 from p2pfl.learning.aggregators.fedavg import FedAvg
@@ -34,21 +35,8 @@ TODO:
     - Pulir print de logs
     - meter timeout a conexiones grpc
     - add examples
+    - plantearse uso de excepciones propias (grpc) -> más control (tipos de errores en la comunicación -> EN UN BAD MSG QUE NO APAREZCA UN CONN CLOSED -> FACILITAR DEBUG AL USUARIO)
 """
-
-
-class LearningMessagesV2(LearningMessages):
-    """
-    ¿?¿?¿?¿?¿?¿?
-    """
-    START_LEARNING = "start_learning"
-    STOP_LEARNING = "stop_learning"
-    MODEL_INITIALIZED = "model_initialized"
-    MODELS_AGGREGATED = "models_aggregated"
-    MODELS_READY = "models_ready"
-    VOTE_TRAIN_SET = "vote_train_set"
-    METRICS = "metrics"
-
 
 class Node(BaseNode):
     #####################
@@ -70,24 +58,24 @@ class Node(BaseNode):
 
         # Add message handlers
         self.add_message_handler(
-            LearningMessagesV2.START_LEARNING, self.__start_learning_callback
+            LearningNodeMessages.START_LEARNING, self.__start_learning_callback
         )
         self.add_message_handler(
-            LearningMessagesV2.STOP_LEARNING, self.__stop_learning_callback
+            LearningNodeMessages.STOP_LEARNING, self.__stop_learning_callback
         )
         self.add_message_handler(
-            LearningMessagesV2.MODEL_INITIALIZED, self.__model_initialized_callback
+            LearningNodeMessages.MODEL_INITIALIZED, self.__model_initialized_callback
         )
         self.add_message_handler(
-            LearningMessagesV2.VOTE_TRAIN_SET, self.__vote_train_set_callback
+            LearningNodeMessages.VOTE_TRAIN_SET, self.__vote_train_set_callback
         )
         self.add_message_handler(
-            LearningMessagesV2.MODELS_AGGREGATED, self.__models_agregated_callback
+            LearningNodeMessages.MODELS_AGGREGATED, self.__models_agregated_callback
         )
         self.add_message_handler(
-            LearningMessagesV2.MODELS_READY, self.__models_ready_callback
+            LearningNodeMessages.MODELS_READY, self.__models_ready_callback
         )
-        self.add_message_handler(LearningMessagesV2.METRICS, self.__metrics_callback)
+        self.add_message_handler(LearningNodeMessages.METRICS, self.__metrics_callback)
 
         # Learning
         self.round = None
@@ -180,7 +168,7 @@ class Node(BaseNode):
                             # Communicate Aggregation
                             self._neighbors.broadcast_msg(
                                 self._neighbors.build_msg(
-                                    LearningMessages.MODELS_AGGREGATED, models_added
+                                    LearningNodeMessages.MODELS_AGGREGATED, models_added
                                 )
                             )
                     else:
@@ -194,7 +182,7 @@ class Node(BaseNode):
                     self.__wait_init_model_lock.release()
                     # Communicate Initialization
                     self._neighbors.broadcast_msg(
-                        self._neighbors.build_msg(LearningMessages.MODEL_INITIALIZED)
+                        self._neighbors.build_msg(LearningNodeMessages.MODEL_INITIALIZED)
                     )
 
             except DecodingParamsError as e:
@@ -222,6 +210,15 @@ class Node(BaseNode):
         # Response
         return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
 
+    def handshake(self, request, _):
+        if self.round is not None:
+            logging.info(
+                f"({self.addr}) Cant connect to other nodes when learning is running."
+            )
+            return node_pb2.BoolMsg(bool=False)
+        else:
+            return super().handshake(request, _)
+        
     #########################
     #    Node Management    #
     #########################
@@ -232,7 +229,7 @@ class Node(BaseNode):
             logging.info(
                 f"({self.addr}) Cant connect to other nodes when learning is running."
             )
-            return None
+            return False
         # Connect
         return super().connect(addr)
 
@@ -268,13 +265,13 @@ class Node(BaseNode):
             # ------------------------------------------------ build_start_learning_msg ------------------------------------------------
             self._neighbors.broadcast_msg(
                 self._neighbors.build_msg(
-                    LearningMessagesV2.START_LEARNING, [rounds, epochs]
+                    LearningNodeMessages.START_LEARNING, [rounds, epochs]
                 )
             )
             # Initialize model
             # ------------------------------------------------ build_model_initialized_msg ------------------------------------------------
             self._neighbors.broadcast_msg(
-                self._neighbors.build_msg(LearningMessagesV2.MODEL_INITIALIZED)
+                self._neighbors.build_msg(LearningNodeMessages.MODEL_INITIALIZED)
             )
             self.__wait_init_model_lock.release()
             self.__model_initialized = True
@@ -287,7 +284,7 @@ class Node(BaseNode):
         if self.round is not None:
             # ------------------------------------------------ build_stop_learning_msg ------------------------------------------------
             self._neighbors.broadcast_msg(
-                self._neighbors.build_msg(LearningMessagesV2.STOP_LEARNING)
+                self._neighbors.build_msg(LearningNodeMessages.STOP_LEARNING)
             )
             self.__stop_learning()
         else:
@@ -360,7 +357,7 @@ class Node(BaseNode):
             )
             # Share that aggregation is done
             self._neighbors.broadcast_msg(
-                self._neighbors.build_msg(LearningMessages.MODELS_READY, [self.round])
+                self._neighbors.build_msg(LearningNodeMessages.MODELS_READY, [self.round])
             )
         else:
             logging.error(f"({self.addr}) Aggregation finished with no parameters")
@@ -399,7 +396,7 @@ class Node(BaseNode):
                 # ESTO ES REDUNDANTE, EL PROPIO NODO HA DE TENER EL PROPIO MODELO AGREGADO
                 self._neighbors.broadcast_msg(
                     self._neighbors.build_msg(
-                        LearningMessagesV2.MODELS_AGGREGATED, [self.addr]
+                        LearningNodeMessages.MODELS_AGGREGATED, [self.addr]
                     )
                 )
                 self.__gossip_model_aggregation()
@@ -447,7 +444,7 @@ class Node(BaseNode):
         # ------------------------------------------------ build_vote_train_set_msg ------------------------------------------------
         self._neighbors.broadcast_msg(
             self._neighbors.build_msg(
-                LearningMessages.VOTE_TRAIN_SET, list(sum(votes, tuple()))
+                LearningNodeMessages.VOTE_TRAIN_SET, list(sum(votes, tuple()))
             )
         )
         logging.debug(f"({self.addr}) Waiting other node votes.")
@@ -541,7 +538,7 @@ class Node(BaseNode):
             # ------------------------------------------------ build_metrics_msg ------------------------------------------------
             self._neighbors.broadcast_msg(
                 self._neighbors.build_msg(
-                    LearningMessages.METRICS, [self.round, results[0], results[1]]
+                    LearningNodeMessages.METRICS, [self.round, results[0], results[1]]
                 )
             )
 

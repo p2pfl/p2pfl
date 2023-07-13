@@ -31,10 +31,6 @@ message Message {
     repeated string args = 5;
 }
 
-message Status {
-    string status = 1;
-};
-
 message Weights {
     string source = 1;
     int32 round = 2;
@@ -47,9 +43,13 @@ message HandShakeRequest {
     string addr = 1; // puede no ser necesario si se usa channel._channel.target()
 }
 
+message BoolMsg {
+    bool bool = 1; 
+}
+
 service NodeServices {
     // mucho empty, mejor meter status messges
-    rpc handshake(HandShakeRequest) returns (google.protobuf.Empty);
+    rpc handshake(HandShakeRequest) returns (BoolMsg);
     rpc disconnect(HandShakeRequest) returns (google.protobuf.Empty);
     rpc send_message(Message) returns (google.protobuf.Empty);
     rpc add_model(Weights) returns (google.protobuf.Empty);

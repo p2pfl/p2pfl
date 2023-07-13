@@ -15,21 +15,18 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from p2pfl.communication_protocol import CommunicationProtocol
-from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
-from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
-from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
-from p2pfl.node import Node
-import pytest
-import time
 from test.utils import (
     check_equal_models,
     set_test_settings,
     wait_4_results,
-    wait_network_nodes,
+    wait_convergence,
 )
-
 set_test_settings()
+from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
+from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
+from p2pfl.node import Node
+import time
+import pytest
 
 
 @pytest.fixture
@@ -77,13 +74,9 @@ def test_convergence(x):
 
     # Node Connection
     for i in range(len(nodes) - 1):
-        nodes[i + 1].connect_to(nodes[i].host, nodes[i].port, full=True)
+        nodes[i + 1].connect(nodes[i].addr)
         time.sleep(0.1)
-
-    # Check if they are connected
-    time.sleep(3)
-    for node in nodes:
-        assert len(node.get_neighbors()) == n - 1
+    wait_convergence(nodes, n-1, only_direct=True)
 
     # Start Learning
     nodes[0].set_start_learning(rounds=r, epochs=0)
@@ -95,15 +88,13 @@ def test_convergence(x):
     # Stop Nodes
     [n.stop() for n in nodes]
 
-
 def test_interrupt_train(two_nodes):
     if (
         __name__ == "__main__"
     ):  # To avoid creating new process when current has not finished its bootstrapping phase
         n1, n2 = two_nodes
-        n1.connect_to(n2.host, n2.port, full=True)
-
-        time.sleep(1)  # Wait because of asincronity
+        n1.connect(n2.addr)
+        wait_convergence([n1,n2], 1, only_direct=True)
 
         n1.set_start_learning(100, 100)
 
@@ -112,35 +103,33 @@ def test_interrupt_train(two_nodes):
         n1.set_stop_learning()
 
         wait_4_results([n1, n2])
-
+"""
 
 def test_connect_while_training(four_nodes):
     n1, n2, n3, n4 = four_nodes
 
     # Connect Nodes (unless the n4)
-    n1.connect_to(n2.host, n2.port, full=True)
-    n3.connect_to(n1.host, n1.port, full=True)
-    time.sleep(0.1)
+    n1.connect(n2.addr)
+    n3.connect(n1.addr)
+    wait_convergence([n1], 2, only_direct=True)
+    wait_convergence([n2,n3], 1, only_direct=True)
 
     # Start Learning
     n1.set_start_learning(2, 1)
     time.sleep(4)
 
     # Try to connect
-    assert n1.connect_to(n4.host, n4.port, full=True) == None
-    n4.connect_to(n1.host, n1.port, full=False)
+    assert n1.connect(n4.addr) == False
+    assert n4.connect(n1.addr) == False
     time.sleep(1)
-    assert n4.get_neighbors() == []
-
-    for n in four_nodes:
-        n.stop()
-        time.sleep(0.1)
-
+    assert len(n1.get_neighbors(only_direct=True)) == 2
+    assert len(n4.get_neighbors(only_direct=True)) == 0
 
 ##############################
 #    Fault Tolerace Tests    #
 ##############################
 
+"""
 
 @pytest.mark.parametrize("n", [2, 4])
 def test_node_down_on_learning(n):

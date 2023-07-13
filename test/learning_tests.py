@@ -15,15 +15,14 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from test.utils import set_test_settings
+set_test_settings()
 from p2pfl.node import Node
 from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.learning.pytorch.lightninglearner import LightningLearner
 from collections import OrderedDict
 import torch
-from test.utils import set_test_settings
-
-set_test_settings()
 
 ###############################################################################
 #    Test things related to the learning process (not the learning process)   #
