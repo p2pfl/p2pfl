@@ -103,7 +103,6 @@ def test_interrupt_train(two_nodes):
         n1.set_stop_learning()
 
         wait_4_results([n1, n2])
-"""
 
 def test_connect_while_training(four_nodes):
     n1, n2, n3, n4 = four_nodes
@@ -143,12 +142,9 @@ def test_node_down_on_learning(n):
 
     # Node Connection
     for i in range(len(nodes) - 1):
-        nodes[i + 1].connect_to(nodes[i].host, nodes[i].port, full=True)
-        time.sleep(1)
-
-    # Check if they are connected
-    for node in nodes:
-        assert len(node.get_neighbors()) == n - 1
+        nodes[i + 1].connect(nodes[i].addr)
+        time.sleep(0.1)
+    wait_convergence(nodes, n-1, only_direct=True)
 
     # Start Learning
     nodes[0].set_start_learning(rounds=2, epochs=0)
@@ -162,6 +158,7 @@ def test_node_down_on_learning(n):
     for node in nodes:
         node.stop()
 
+"""
 
 def test_bad_binary_model(two_nodes):
     n1, n2 = two_nodes

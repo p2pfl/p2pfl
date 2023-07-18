@@ -36,6 +36,8 @@ TODO:
     - meter timeout a conexiones grpc
     - add examples
     - plantearse uso de excepciones propias (grpc) -> más control (tipos de errores en la comunicación -> EN UN BAD MSG QUE NO APAREZCA UN CONN CLOSED -> FACILITAR DEBUG AL USUARIO)
+    - mensajes de paso de ronda para abortar entrenamientos de nodos rezagados
+    - añadir comprobaciones adicionales en la agregación de modelos/metricas/votos
 """
 
 class Node(BaseNode):
@@ -147,22 +149,29 @@ class Node(BaseNode):
     ############################
 
     def add_model(self, request, _):
-        # -------------------------------------------------------------------------------------------------
-        # ------------------------------ TODO: source and round comprobations -----------------------------
-        # -------------------------------------------------------------------------------------------------
 
-        # Args
-        m, contributors, weight = request.weights, request.contributors, request.weight
+        # REVISAR COMPROBACIONES PARA NO HACERLAS 2 VECES
 
         # Check if Learning is running
         if self.round is not None:
+            
+            # Check source
+            if request.round != self.round: 
+                logging.error(f"({self.addr}) Model Reception in a late round ({request.round} != {self.round}).")
+                return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
+            
+            # Check moment (not init and invalid round)
+            if self.__model_initialized and len(self.__train_set) == 0:
+                logging.error(f"({self.addr}) Model Reception when there is no trainset")
+                return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
+
             try:
                 if self.__model_initialized:
                     # Add model to aggregator
-                    decoded_model = self.learner.decode_parameters(m)
+                    decoded_model = self.learner.decode_parameters(request.weights)
                     if self.learner.check_parameters(decoded_model):
                         models_added = self.aggregator.add_model(
-                            decoded_model, contributors, weight
+                            decoded_model, request.contributors, request.weight
                         )
                         if models_added is not None:
                             # Communicate Aggregation
@@ -175,7 +184,7 @@ class Node(BaseNode):
                         raise ModelNotMatchingError("Not matching models")
                 else:
                     # Initialize model
-                    model = self.learner.decode_parameters(m)
+                    model = self.learner.decode_parameters(request.weights)
                     self.learner.set_parameters(model)
                     self.__model_initialized = True
                     logging.info(f"({self.addr}) Model Weights Initialized")
@@ -387,7 +396,7 @@ class Node(BaseNode):
 
             # Aggregate Model
             if self.round is not None:
-                self.aggregator.add_model(
+                models_added = self.aggregator.add_model(
                     self.learner.get_parameters(),
                     [self.addr],
                     self.learner.get_num_samples()[0],
@@ -396,7 +405,7 @@ class Node(BaseNode):
                 # ESTO ES REDUNDANTE, EL PROPIO NODO HA DE TENER EL PROPIO MODELO AGREGADO
                 self._neighbors.broadcast_msg(
                     self._neighbors.build_msg(
-                        LearningNodeMessages.MODELS_AGGREGATED, [self.addr]
+                        LearningNodeMessages.MODELS_AGGREGATED, models_added
                     )
                 )
                 self.__gossip_model_aggregation()
@@ -628,7 +637,7 @@ class Node(BaseNode):
         # Model fn -> At diffusion, contributors are not relevant
         model_function = lambda _: (
             self.learner.get_parameters(),
-            [],
+            self.aggregator.get_agregated_models(),
             0,
         )
 
@@ -657,6 +666,7 @@ class Node(BaseNode):
 
             # Get nodes wich need models
             neis = [n for n in self.get_neighbors() if candidate_condition(n)]
+            logging.debug(f"({self.addr} Gossip remaining nodes: {neis}")
 
             # Determine end of gossip
             if neis == []:

@@ -55,7 +55,7 @@ def set_test_settings():
     Settings.AMOUNT_LAST_MESSAGES_SAVED = 100
     Settings.GOSSIP_MODELS_PERIOD = 1
     Settings.GOSSIP_MODELS_PER_ROUND = 4
-    Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS = 10
+    Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS = 4
     Settings.TRAIN_SET_SIZE = 4
     Settings.VOTE_TIMEOUT = 2
     Settings.AGGREGATION_TIMEOUT = 2

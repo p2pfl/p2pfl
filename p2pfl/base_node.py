@@ -89,6 +89,7 @@ class BaseNode:
             print("Server terminated.")
 
     def stop(self):
+        logging.info(f"[{self.addr}] Stopping node...")
         # Check running
         self.assert_running(True)
         # Stop server

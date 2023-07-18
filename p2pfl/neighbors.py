@@ -91,14 +91,21 @@ class Neighbors:
         if node_list is not None:
             node_list = node_list
         else:
-            node_list = self.get_all().keys()
+            node_list = self.get_all(only_direct=True).keys()
         # Send
         for n in node_list:
             self.send_message(n, msg)
 
     def send_model(self, nei, round, serialized_model, contributors=[], weight=0):
         try:
-            self.__neighbors[nei][1].add_model(
+            stub = self.__neighbors[nei][1]
+            # if not connected, create a temporal stub to send the message
+            if stub is None:
+                channel = grpc.insecure_channel(nei)
+                stub = node_pb2_grpc.NodeServicesStub(channel)
+            else: 
+                channel = None
+            stub.add_model(
                 node_pb2.Weights(
                     source=self.__self_addr,
                     round=round,
@@ -108,6 +115,9 @@ class Neighbors:
                 ),
                 timeout=Settings.GRPC_TIMEOUT,
             )
+            if not (channel is None):
+                channel.close()
+
         except Exception as e:
             # Remove neighbor
             print(f"Cannot send model to {nei}. Error: {str(e)}")
@@ -169,7 +179,7 @@ class Neighbors:
             return False
 
     def remove(self, nei, disconnect_msg=True):
-        print(f"Removing {nei}")
+        print(f"({self.__self_addr}) Removing {nei}")
         self.__nei_lock.acquire()
         try:
             try:
