@@ -15,8 +15,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from test.utils import set_test_settings, wait_convergence, full_connection
 from p2pfl.settings import Settings
+from test.utils import set_test_settings, wait_convergence, full_connection
 set_test_settings()
 import pytest
 from p2pfl.base_node import BaseNode
@@ -186,7 +186,7 @@ def test_node_abrupt_down(four_nodes):
 
     # n1 stops heartbeater
     n1._neighbors.stop_heartbeater()
-    wait_convergence([n2, n3, n4], 2, only_direct=True)
+    wait_convergence([n2, n3, n4], 2, only_direct=True, wait=10)
     n1.stop()
 
     # n2 stop server

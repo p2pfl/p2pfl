@@ -91,7 +91,7 @@ class Neighbors:
         if node_list is not None:
             node_list = node_list
         else:
-            node_list = self.get_all(only_direct=True).keys()
+            node_list = self.get_all(only_direct=True)
         # Send
         for n in node_list:
             self.send_message(n, msg)
@@ -204,8 +204,8 @@ class Neighbors:
     def get_all(self, only_direct=False):
         neis = self.__neighbors.copy()
         if only_direct:
-            return {k: v[1] for k, v in neis.items() if v[1] is not None}
-        return {k: v[1] for k, v in neis.items()}
+            return [k for k, v in neis.items() if v[1] is not None]
+        return list(neis.keys())
 
     def clear_neis(self):
         nei_copy = self.__neighbors.copy()
@@ -225,7 +225,7 @@ class Neighbors:
 
         else:
             # Update time
-            self.__neighbors[nei][2] = time.time()
+            self.__neighbors[nei][2] = time.time() # CAMBIAR ESTO X TIEMPO DE EMISIÓN PARA EVITAR ERRORES
             self.__nei_lock.release()
 
     def start_heartbeater(self):
@@ -259,7 +259,7 @@ class Neighbors:
                 try:
                     stub.send_message(
                         self.build_msg(NodeMessages.BEAT)
-                    )  # HARD CODED!!!
+                    ) 
                 except Exception as e:
                     logging.info(f"({self.__self_addr}) Cannot send heartbeat to {nei}. Error: {str(e)}")
                     self.remove(nei)

@@ -30,6 +30,7 @@ import p2pfl.proto.node_pb2 as node_pb2
 
 """
 TODO:
+    - Cambiar stops x disconnects
     - Plantearse encapsular estado en un objeto -> Creo que innecesario pero revisarlo
     - Debuguear adición de nodos en caliente (de momento bloqueado)
     - Pulir print de logs
@@ -38,6 +39,7 @@ TODO:
     - plantearse uso de excepciones propias (grpc) -> más control (tipos de errores en la comunicación -> EN UN BAD MSG QUE NO APAREZCA UN CONN CLOSED -> FACILITAR DEBUG AL USUARIO)
     - mensajes de paso de ronda para abortar entrenamientos de nodos rezagados
     - añadir comprobaciones adicionales en la agregación de modelos/metricas/votos
+    - add secure channels
 """
 
 class Node(BaseNode):
@@ -429,7 +431,7 @@ class Node(BaseNode):
 
     def __vote_train_set(self):
         # Vote (at least itself)
-        candidates = list(self.get_neighbors(only_direct=False).keys())
+        candidates = list(self.get_neighbors(only_direct=False))
         if self.addr not in candidates:
             candidates.append(self.addr)
         logging.debug(f"({self.addr}) {len(candidates)} candidates to train set")
@@ -519,7 +521,7 @@ class Node(BaseNode):
     def __validate_train_set(self):
         # Verify if node set is valid (can happend that a node was down when the votes were being processed)
         for tsn in self.__train_set:
-            if tsn not in self.get_neighbors(only_direct=False).keys():
+            if tsn not in self.get_neighbors(only_direct=False):
                 if tsn != self.addr:
                     self.__train_set.remove(tsn)
 

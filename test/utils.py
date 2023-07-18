@@ -48,7 +48,7 @@ Module to define constants for the p2pfl system.
 def set_test_settings():
     Settings.GRPC_TIMEOUT = 0.5
     Settings.HEARTBEAT_PERIOD = 0.5
-    Settings.HEARTBEAT_TIMEOUT = 1
+    Settings.HEARTBEAT_TIMEOUT = 0.8
     Settings.GOSSIP_PERIOD = 0
     Settings.TTL = 3
     Settings.GOSSIP_MESSAGES_PER_PERIOD = 100
