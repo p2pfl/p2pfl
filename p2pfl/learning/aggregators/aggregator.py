@@ -20,16 +20,6 @@ import logging
 from p2pfl.settings import Settings
 from p2pfl.utils.observer import Events, Observable
 
-
-"""
-ESTO DEJA DE SER UN THREAD Y DEJA DE NOTIFICAR
-"""
-
-"""
-METER EL STOP PARA QUE NO SE QUEDEN COLGADOS LOS LOCKS
-"""
-
-
 class Aggregator:
     """
     Class to manage the aggregation of models.
@@ -105,9 +95,7 @@ class Aggregator:
         # Get a list of nodes added
         models_added = [n.split() for n in list(self.__models.keys())]
         # Flatten list
-        models_added = [
-            element for sublist in models_added for element in sublist
-        ]  
+        models_added = [element for sublist in models_added for element in sublist]
         return models_added
 
     def add_model(self, model, contributors, weight):
@@ -119,7 +107,7 @@ class Aggregator:
             nodes: Nodes that colaborated to get the model.
             weight: Number of samples used to get the model.
         """
-                     
+
         nodes = list(contributors)
 
         # Verify that contributors are not empty
@@ -129,7 +117,7 @@ class Aggregator:
             )
             self.__agg_lock.release()
             return None
-        
+
         # Diffusion / Aggregation
         if self.__waiting_aggregated_model and self.__models == {}:
             logging.info(f"({self.node_name}) Received an aggregated model.")
@@ -184,7 +172,7 @@ class Aggregator:
                     )
             else:
                 logging.debug(
-                    f"({self.node_name}) Received a model when is not needed. {self.__train_set} || {self.__models.keys()}"
+                    f"({self.node_name}) Received a model when is not needed."
                 )
             self.__agg_lock.release()
             return None

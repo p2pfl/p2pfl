@@ -21,6 +21,7 @@ from test.utils import (
     wait_4_results,
     wait_convergence,
 )
+
 set_test_settings()
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
@@ -61,6 +62,7 @@ def four_nodes():
 #    Tests Learning    #
 ########################
 
+
 @pytest.mark.parametrize("x", [(2, 1), (2, 2)])
 def test_convergence(x):
     n, r = x
@@ -76,7 +78,7 @@ def test_convergence(x):
     for i in range(len(nodes) - 1):
         nodes[i + 1].connect(nodes[i].addr)
         time.sleep(0.1)
-    wait_convergence(nodes, n-1, only_direct=True)
+    wait_convergence(nodes, n - 1, only_direct=True)
 
     # Start Learning
     nodes[0].set_start_learning(rounds=r, epochs=0)
@@ -88,13 +90,14 @@ def test_convergence(x):
     # Stop Nodes
     [n.stop() for n in nodes]
 
+
 def test_interrupt_train(two_nodes):
     if (
         __name__ == "__main__"
     ):  # To avoid creating new process when current has not finished its bootstrapping phase
         n1, n2 = two_nodes
         n1.connect(n2.addr)
-        wait_convergence([n1,n2], 1, only_direct=True)
+        wait_convergence([n1, n2], 1, only_direct=True)
 
         n1.set_start_learning(100, 100)
 
@@ -104,6 +107,7 @@ def test_interrupt_train(two_nodes):
 
         wait_4_results([n1, n2])
 
+
 def test_connect_while_training(four_nodes):
     n1, n2, n3, n4 = four_nodes
 
@@ -111,7 +115,7 @@ def test_connect_while_training(four_nodes):
     n1.connect(n2.addr)
     n3.connect(n1.addr)
     wait_convergence([n1], 2, only_direct=True)
-    wait_convergence([n2,n3], 1, only_direct=True)
+    wait_convergence([n2, n3], 1, only_direct=True)
 
     # Start Learning
     n1.set_start_learning(2, 1)
@@ -124,13 +128,14 @@ def test_connect_while_training(four_nodes):
     assert len(n1.get_neighbors(only_direct=True)) == 2
     assert len(n4.get_neighbors(only_direct=True)) == 0
 
+
 ##############################
 #    Fault Tolerace Tests    #
 ##############################
 
+
 @pytest.mark.parametrize("n", [2, 4])
 def test_node_down_on_learning(n):
-
     # Node Creation
     nodes = []
     for i in range(n):
@@ -142,7 +147,7 @@ def test_node_down_on_learning(n):
     for i in range(len(nodes) - 1):
         nodes[i + 1].connect(nodes[i].addr)
         time.sleep(0.1)
-    wait_convergence(nodes, n-1, only_direct=False)
+    wait_convergence(nodes, n - 1, only_direct=False)
 
     # Start Learning
     nodes[0].set_start_learning(rounds=2, epochs=0)
@@ -163,7 +168,7 @@ def test_wrong_model():
 
     n1.start()
     n2.start()
-    
+
     n1.connect(n2.addr)
     time.sleep(0.1)
 

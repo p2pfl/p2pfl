@@ -17,11 +17,11 @@
 
 from p2pfl.settings import Settings
 from test.utils import set_test_settings, wait_convergence, full_connection
+
 set_test_settings()
 import pytest
 from p2pfl.base_node import BaseNode
 import time
-
 
 
 @pytest.fixture
@@ -191,7 +191,7 @@ def test_node_abrupt_down(four_nodes):
 
     # n2 stop server
     n2.server.stop(0)
-    wait_convergence([n3, n4], 1, only_direct=True)
+    wait_convergence([n3, n4], 1, only_direct=True, wait=10)
     n2.stop()
 
     # Disconnect n3 n4

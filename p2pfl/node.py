@@ -20,7 +20,7 @@ import random
 import threading
 import logging
 import time
-from p2pfl.base_node import BaseNode 
+from p2pfl.base_node import BaseNode
 from p2pfl.messages import LearningNodeMessages
 from p2pfl.settings import Settings
 from p2pfl.learning.pytorch.lightninglearner import LightningLearner
@@ -31,16 +31,23 @@ import p2pfl.proto.node_pb2 as node_pb2
 """
 TODO:
     - Cambiar stops x disconnects
-    - Plantearse encapsular estado en un objeto -> Creo que innecesario pero revisarlo
-    - Debuguear adición de nodos en caliente (de momento bloqueado)
-    - Pulir print de logs
-    - meter timeout a conexiones grpc
+    - mejorar beats -> meter hora como arg
+    - logs
     - add examples
     - plantearse uso de excepciones propias (grpc) -> más control (tipos de errores en la comunicación -> EN UN BAD MSG QUE NO APAREZCA UN CONN CLOSED -> FACILITAR DEBUG AL USUARIO)
     - mensajes de paso de ronda para abortar entrenamientos de nodos rezagados
     - añadir comprobaciones adicionales en la agregación de modelos/metricas/votos
+    - doc
+    - pulir deploy: multiples versiones + actualizar a versiones recientes de pytorch + añadir tensorflow
     - add secure channels
+    - Plantearse encapsular estado en un objeto -> Creo que innecesario pero revisarlo
+    - meter simulación
+    - panel de control -> web + terminal
+    - meter tipado?
 """
+
+
+
 
 class Node(BaseNode):
     #####################
@@ -85,9 +92,8 @@ class Node(BaseNode):
         self.round = None
         self.totalrounds = None
         self.__train_set = []
-        self.__model_initialized = False
         self.__models_agregated = {}
-        self.__nei_status = {}  # ---------REVISAR!!!!!
+        self.__nei_status = {}
         self.learner = learner(model, data, log_name=self.addr)
         self.aggregator = aggregator(node_name=self.addr)
 
@@ -98,8 +104,8 @@ class Node(BaseNode):
         # Locks
         self.__start_thread_lock = threading.Lock()
         self.__wait_votes_ready_lock = threading.Lock()
-        self.__wait_init_model_lock = threading.Lock()
-        self.__wait_init_model_lock.acquire()
+        self.__model_initialized_lock = threading.Lock()
+        self.__model_initialized_lock.acquire()
 
     ######################
     #    Msg Handlers    #
@@ -151,24 +157,24 @@ class Node(BaseNode):
     ############################
 
     def add_model(self, request, _):
-
-        # REVISAR COMPROBACIONES PARA NO HACERLAS 2 VECES
-
         # Check if Learning is running
         if self.round is not None:
-            
             # Check source
-            if request.round != self.round: 
-                logging.error(f"({self.addr}) Model Reception in a late round ({request.round} != {self.round}).")
+            if request.round != self.round:
+                logging.error(
+                    f"({self.addr}) Model Reception in a late round ({request.round} != {self.round})."
+                )
                 return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
-            
+
             # Check moment (not init and invalid round)
-            if self.__model_initialized and len(self.__train_set) == 0:
-                logging.error(f"({self.addr}) Model Reception when there is no trainset")
+            if not self.__model_initialized_lock.locked() and len(self.__train_set) == 0:
+                logging.error(
+                    f"({self.addr}) Model Reception when there is no trainset"
+                )
                 return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
 
             try:
-                if self.__model_initialized:
+                if not self.__model_initialized_lock.locked():
                     # Add model to aggregator
                     decoded_model = self.learner.decode_parameters(request.weights)
                     if self.learner.check_parameters(decoded_model):
@@ -185,24 +191,24 @@ class Node(BaseNode):
                     else:
                         raise ModelNotMatchingError("Not matching models")
                 else:
-                    # Initialize model
-                    model = self.learner.decode_parameters(request.weights)
-                    self.learner.set_parameters(model)
-                    self.__model_initialized = True
-                    logging.info(f"({self.addr}) Model Weights Initialized")
-                    self.__wait_init_model_lock.release()
-                    # Communicate Initialization
-                    self._neighbors.broadcast_msg(
-                        self._neighbors.build_msg(LearningNodeMessages.MODEL_INITIALIZED)
-                    )
+                    # Initialize model (try to handle concurrent initializations)
+                    try:
+                        self.__model_initialized_lock.release()
+                        model = self.learner.decode_parameters(request.weights)
+                        self.learner.set_parameters(model)
+                        logging.info(f"({self.addr}) Model Weights Initialized")
+                        # Communicate Initialization
+                        self._neighbors.broadcast_msg(
+                            self._neighbors.build_msg(
+                                LearningNodeMessages.MODEL_INITIALIZED
+                            )
+                        )
+                    except RuntimeError:
+                        # unlock unlocked lock
+                        pass
 
             except DecodingParamsError as e:
-                """
-                ------------------------------------------------------------
-                CAMBIAR ESTOS STOPS POR DESCONEXIONES?????
-                ------------------------------------------------------------
-                """
-                logging.error(f"({self.addr}) Error decoding parameters")
+                logging.error(f"({self.addr}) Error decoding parameters.")
                 self.stop()
 
             except ModelNotMatchingError as e:
@@ -229,7 +235,7 @@ class Node(BaseNode):
             return node_pb2.BoolMsg(bool=False)
         else:
             return super().handshake(request, _)
-        
+
     #########################
     #    Node Management    #
     #########################
@@ -271,21 +277,19 @@ class Node(BaseNode):
         self.assert_running(True)
 
         if self.round is None:
-            # Start Learning
+            # Broadcast start Learning
             logging.info(f"({self.addr}) Broadcasting start learning...")
-            # ------------------------------------------------ build_start_learning_msg ------------------------------------------------
             self._neighbors.broadcast_msg(
                 self._neighbors.build_msg(
                     LearningNodeMessages.START_LEARNING, [rounds, epochs]
                 )
             )
-            # Initialize model
-            # ------------------------------------------------ build_model_initialized_msg ------------------------------------------------
+            # Set model initializated 
+            self.__model_initialized_lock.release()
+            # Broadcast initialize model
             self._neighbors.broadcast_msg(
                 self._neighbors.build_msg(LearningNodeMessages.MODEL_INITIALIZED)
             )
-            self.__wait_init_model_lock.release()
-            self.__model_initialized = True
             # Learning Thread
             self.__start_learning_thread(rounds, epochs)
         else:
@@ -368,7 +372,9 @@ class Node(BaseNode):
             )
             # Share that aggregation is done
             self._neighbors.broadcast_msg(
-                self._neighbors.build_msg(LearningNodeMessages.MODELS_READY, [self.round])
+                self._neighbors.build_msg(
+                    LearningNodeMessages.MODELS_READY, [self.round]
+                )
             )
         else:
             logging.error(f"({self.addr}) Aggregation finished with no parameters")
@@ -577,7 +583,7 @@ class Node(BaseNode):
             # Finish
             self.round = None
             self.totalrounds = None
-            self.__model_initialized = False
+            self.__model_initialized_lock.acquire()
             logging.info(f"({self.addr}) Training finished!!.")
 
     #########################
@@ -624,7 +630,7 @@ class Node(BaseNode):
         # Wait a model (init or aggregated) -
         if initialization:
             logging.info(f"({self.addr}) Waiting initialization.")
-            self.__wait_init_model_lock.acquire()
+            self.__model_initialized_lock.acquire()
             logging.info(f"({self.addr}) Gossiping model initialization.")
             candidate_condition = (
                 lambda node: node not in self.__nei_status.keys()

@@ -26,18 +26,6 @@ from p2pfl.neighbors import Neighbors
 from p2pfl.settings import Settings
 from p2pfl.messages import NodeMessages
 
-"""
-- revisar cierre de conexiones directamente conectadas
-- nuevos mensajes se añadan a gossip?? o a parte
-- meter simulación
-- hacerlo más robusto desacopplando las llamadas a los servicios de la interfaz del nodo?
-- NEEDED OBSERVER? -> No xq los eventos eran mensajes en la comunicación entre nodos
-- meter sistema de logging
-- meter tipado
-- documentar
-- panel de control -> web + terminal
-"""
-
 class BaseNode:
     #####################
     #     Node Init     #
@@ -142,8 +130,12 @@ class BaseNode:
                 self.__msg_callbacks[request.cmd](request)
             else:
                 # disconnect node
-                logging.error(f"[{self.addr}] Unknown command: {request.cmd} from {request.source}")
-                self._neighbors.remove(request.source, disconnect_msg=True) # posible ataque de denegación de servicio
+                logging.error(
+                    f"[{self.addr}] Unknown command: {request.cmd} from {request.source}"
+                )
+                self._neighbors.remove(
+                    request.source, disconnect_msg=True
+                )  # posible ataque de denegación de servicio
         return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
 
     def add_model(self, request, context):
@@ -156,11 +148,7 @@ class BaseNode:
     def add_message_handler(self, cmd, callback):
         self.__msg_callbacks[cmd] = callback
 
-    # ns si hace falta mensajes o meterlo como callbacks depende de como se haga lo de interpretar mensajes
-
-    #
-    # AÑADIR TIMESTAMP COMO ARGUMENTO PARA EVITAR HEARTBEATS GOSSIPEADOS RESIDUALES
-    #
     def __heartbeat_callback(self, request):
-        self._neighbors.heartbeat(request.source)
+        time = float(request.args[0])
+        self._neighbors.heartbeat(request.source, time)
         return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()

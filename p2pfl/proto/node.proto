@@ -48,7 +48,6 @@ message BoolMsg {
 }
 
 service NodeServices {
-    // mucho empty, mejor meter status messges
     rpc handshake(HandShakeRequest) returns (BoolMsg);
     rpc disconnect(HandShakeRequest) returns (google.protobuf.Empty);
     rpc send_message(Message) returns (google.protobuf.Empty);

@@ -25,6 +25,7 @@ from p2pfl.proto import node_pb2, node_pb2_grpc
 from p2pfl.messages import NodeMessages
 import logging
 
+
 class Neighbors:
     """
     This class is to manage the neighbors of a node.
@@ -32,10 +33,6 @@ class Neighbors:
         - Remove neighbors
         - Get neighbors
         - Heartbeat: remove neighbors that not send a heartbeat in a period of time
-
-
-    IDEA CHULA! SERVICIOS REMOTOS EN NODE -> LLAMADAS EN NEIGHBORS
-
     """
 
     def __init__(self, self_addr):
@@ -83,7 +80,9 @@ class Neighbors:
             MAYBE ADD CUSTOM EXCEPTIONS -> direct disconnection
             """
             # Remove neighbor
-            logging.info(f"({self.__self_addr}) Cannot send message {msg.cmd} to {nei}. Error: {str(e)}")
+            logging.info(
+                f"({self.__self_addr}) Cannot send message {msg.cmd} to {nei}. Error: {str(e)}"
+            )
             self.remove(nei)
 
     def broadcast_msg(self, msg, node_list=None):
@@ -103,7 +102,7 @@ class Neighbors:
             if stub is None:
                 channel = grpc.insecure_channel(nei)
                 stub = node_pb2_grpc.NodeServicesStub(channel)
-            else: 
+            else:
                 channel = None
             stub.add_model(
                 node_pb2.Weights(
@@ -160,7 +159,7 @@ class Neighbors:
                 if not res.bool:
                     channel.close()
                     return False
-                
+
             # Add neighbor
             self.__nei_lock.acquire()
             self.__neighbors[addr] = [channel, stub, time.time()]
@@ -216,7 +215,7 @@ class Neighbors:
     # Heartbeating
     ####
 
-    def heartbeat(self, nei):
+    def heartbeat(self, nei, time):
         self.__nei_lock.acquire()
         if nei not in self.__neighbors.keys():
             self.__nei_lock.release()
@@ -225,7 +224,8 @@ class Neighbors:
 
         else:
             # Update time
-            self.__neighbors[nei][2] = time.time() # CAMBIAR ESTO X TIEMPO DE EMISIÓN PARA EVITAR ERRORES
+            if self.__neighbors[nei][2] < time:
+                self.__neighbors[nei][2] = time
             self.__nei_lock.release()
 
     def start_heartbeater(self):
@@ -246,7 +246,9 @@ class Neighbors:
                 nei_copy = self.__neighbors.copy()
                 for nei in nei_copy.keys():
                     if t - nei_copy[nei][2] > timeout:
-                        logging.info(f"({self.__self_addr}) Heartbeat timeout for {nei}. Removing...")
+                        logging.info(
+                            f"({self.__self_addr}) Heartbeat timeout for {nei} ({t - nei_copy[nei][2]}). Removing..."
+                        )
                         self.remove(nei)
             else:
                 toggle = True
@@ -258,10 +260,12 @@ class Neighbors:
                     continue
                 try:
                     stub.send_message(
-                        self.build_msg(NodeMessages.BEAT)
-                    ) 
+                        self.build_msg(NodeMessages.BEAT, args=[str(time.time())])
+                    )
                 except Exception as e:
-                    logging.info(f"({self.__self_addr}) Cannot send heartbeat to {nei}. Error: {str(e)}")
+                    logging.info(
+                        f"({self.__self_addr}) Cannot send heartbeat to {nei}. Error: {str(e)}"
+                    )
                     self.remove(nei)
 
             # Sleep to allow the periodicity

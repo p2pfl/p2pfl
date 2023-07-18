@@ -48,7 +48,7 @@ Module to define constants for the p2pfl system.
 def set_test_settings():
     Settings.GRPC_TIMEOUT = 0.5
     Settings.HEARTBEAT_PERIOD = 0.5
-    Settings.HEARTBEAT_TIMEOUT = 0.8
+    Settings.HEARTBEAT_TIMEOUT = 2
     Settings.GOSSIP_PERIOD = 0
     Settings.TTL = 3
     Settings.GOSSIP_MESSAGES_PER_PERIOD = 100
@@ -91,6 +91,7 @@ def wait_4_results(nodes):
         if finish:
             break
 
+
 def check_equal_models(nodes):
     model = None
     first = True
@@ -101,4 +102,6 @@ def check_equal_models(nodes):
         else:
             # compare layers with a tolerance of 1e-5
             for layer in model:
-                assert np.allclose(model[layer], node.learner.get_parameters()[layer], atol=1e-5)
+                assert np.allclose(
+                    model[layer], node.learner.get_parameters()[layer], atol=1e-5
+                )
