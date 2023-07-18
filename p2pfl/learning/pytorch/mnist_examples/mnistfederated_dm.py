@@ -134,7 +134,7 @@ class MnistFederatedDM(LightningDataModule):
             shuffle=False,
             num_workers=self.num_workers,
         )
-        print(f"Train: {len(mnist_train)} Val:{len(mnist_val)} Test:{len(te_subset)}")
+        #print(f"Train: {len(mnist_train)} Val:{len(mnist_val)} Test:{len(te_subset)}")
 
     def train_dataloader(self):
         """ """

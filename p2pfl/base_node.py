@@ -71,13 +71,13 @@ class BaseNode:
         node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.server)
         self.server.add_insecure_port(self.addr)
         self.server.start()
-        print(f"Server started at {self.addr} ... ")
+        logging.info(f"({self.addr}) Server started.")
         if wait:
             self.server.wait_for_termination()
-            print("Server terminated.")
+            logging.info(f"({self.addr}) Server terminated.")
 
     def stop(self):
-        logging.info(f"[{self.addr}] Stopping node...")
+        logging.info(f"({self.addr}) Stopping node...")
         # Check running
         self.assert_running(True)
         # Stop server
@@ -95,7 +95,7 @@ class BaseNode:
         # Check running
         self.assert_running(True)
         # Connect
-        print(f"[{self.addr}] connecting to {addr}...")
+        logging.info(f"({self.addr}) connecting to {addr}...")
         return self._neighbors.add(addr, handshake_msg=True)
 
     def get_neighbors(self, only_direct=False):
@@ -105,7 +105,7 @@ class BaseNode:
         # Check running
         self.assert_running(True)
         # Disconnect
-        print(f"[{self.addr}] removing {addr}...")
+        logging.info(f"({self.addr}) removing {addr}...")
         self._neighbors.remove(addr, disconnect_msg=True)
 
     ############################

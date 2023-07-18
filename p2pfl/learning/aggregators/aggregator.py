@@ -121,7 +121,6 @@ class Aggregator:
         # Diffusion / Aggregation
         if self.__waiting_aggregated_model and self.__models == {}:
             logging.info(f"({self.node_name}) Received an aggregated model.")
-            print("DESBLOQUEO!!!")
             self.__models = {}
             self.__models = {" ".join(nodes): (model, 1)}
             self.__finish_aggregation_lock.release()  # REVISAR ------

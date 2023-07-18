@@ -119,17 +119,17 @@ class Neighbors:
 
         except Exception as e:
             # Remove neighbor
-            print(f"Cannot send model to {nei}. Error: {str(e)}")
+            logging.info(f"({self.__self_addr}) Cannot send model to {nei}. Error: {str(e)}")
             self.remove(nei)
 
     ####
     # Neighbors management
     ####
 
-    def add(self, addr, handshake_msg=True, non_direct=False):  # si h
+    def add(self, addr, handshake_msg=True, non_direct=False):
         # Cannot add itself
         if addr == self.__self_addr:
-            print("Cannot add itself")
+            logging.info(f"{self.addr} Cannot add itself")
             return False
 
         # Cannot add duplicates
@@ -138,7 +138,7 @@ class Neighbors:
         self.__nei_lock.release()
         # Avoid adding if duplicated and not non_direct neighbor (otherwise, connect creating a channel)
         if duplicated and not non_direct:
-            print("Cannot add duplicates")
+            logging.info(f"{self.addr} Cannot add duplicates")
             return False
 
         # Add non direct connected neighbors
@@ -167,9 +167,7 @@ class Neighbors:
             return True
 
         except Exception as e:
-            print("Crash desde:")
-            print(e)
-            print(self.__neighbors)
+            logging.info(f"{self.__self_addr} Crash while adding a neighbor: {e}")
             # Try to remove neighbor
             try:
                 self.remove(addr)
@@ -178,7 +176,7 @@ class Neighbors:
             return False
 
     def remove(self, nei, disconnect_msg=True):
-        print(f"({self.__self_addr}) Removing {nei}")
+        logging.info(f"({self.__self_addr}) Removing {nei}")
         self.__nei_lock.acquire()
         try:
             try:

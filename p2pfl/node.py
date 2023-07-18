@@ -30,9 +30,7 @@ import p2pfl.proto.node_pb2 as node_pb2
 
 """
 TODO:
-    - Cambiar stops x disconnects
-    - mejorar beats -> meter hora como arg
-    - logs
+    - logger
     - add examples
     - plantearse uso de excepciones propias (grpc) -> más control (tipos de errores en la comunicación -> EN UN BAD MSG QUE NO APAREZCA UN CONN CLOSED -> FACILITAR DEBUG AL USUARIO)
     - mensajes de paso de ronda para abortar entrenamientos de nodos rezagados
@@ -45,9 +43,6 @@ TODO:
     - panel de control -> web + terminal
     - meter tipado?
 """
-
-
-
 
 class Node(BaseNode):
     #####################
