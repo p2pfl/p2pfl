@@ -46,7 +46,6 @@ pip install p2pfl
 
 ## 🚀 TO DO
 
-- add examples
 - plantearse uso de excepciones propias (grpc) -> más control (tipos de errores en la comunicación -> EN UN BAD MSG QUE NO APAREZCA UN CONN CLOSED -> FACILITAR DEBUG AL USUARIO)
 - mensajes de paso de ronda para abortar entrenamientos de nodos rezagados
 - añadir comprobaciones adicionales en la agregación de modelos/metricas/votos
@@ -56,6 +55,7 @@ pip install p2pfl
 - Plantearse encapsular estado en un objeto -> Creo que innecesario pero revisarlo
 - meter simulación
 - panel de control -> web + terminal
+- add FEMNIST
 - meter tipado?
 - num samples en métricas para graficas agregadas ponderadas
 

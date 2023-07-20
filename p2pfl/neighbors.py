@@ -157,7 +157,7 @@ class Neighbors:
 
             # Handshake
             if handshake_msg:
-                res = stub.handshake(node_pb2.HandShakeRequest(addr=self.__self_addr))
+                res = stub.handshake(node_pb2.HandShakeRequest(addr=self.__self_addr), timeout=Settings.GRPC_TIMEOUT)
                 if not res.bool:
                     channel.close()
                     return False
