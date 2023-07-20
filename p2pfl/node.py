@@ -28,22 +28,6 @@ from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
 import p2pfl.proto.node_pb2 as node_pb2
 
-"""
-TODO:
-    - logger
-    - add examples
-    - plantearse uso de excepciones propias (grpc) -> más control (tipos de errores en la comunicación -> EN UN BAD MSG QUE NO APAREZCA UN CONN CLOSED -> FACILITAR DEBUG AL USUARIO)
-    - mensajes de paso de ronda para abortar entrenamientos de nodos rezagados
-    - añadir comprobaciones adicionales en la agregación de modelos/metricas/votos
-    - doc
-    - pulir deploy: multiples versiones + actualizar a versiones recientes de pytorch + añadir tensorflow
-    - add secure channels
-    - Plantearse encapsular estado en un objeto -> Creo que innecesario pero revisarlo
-    - meter simulación
-    - panel de control -> web + terminal
-    - meter tipado?
-"""
-
 class Node(BaseNode):
     #####################
     #     Node Init     #
@@ -89,7 +73,7 @@ class Node(BaseNode):
         self.__train_set = []
         self.__models_agregated = {}
         self.__nei_status = {}
-        self.learner = learner(model, data, log_name=self.addr)
+        self.learner = learner(model, data, self.addr)
         self.aggregator = aggregator(node_name=self.addr)
 
         # Train Set Votes
@@ -138,13 +122,10 @@ class Node(BaseNode):
         self.__nei_status[msg.source] = int(msg.args[0])
 
     def __metrics_callback(self, msg):
-        name = msg.source  # ESTO ES ASI NO?
+        name = msg.source
         round, loss, metric = msg.args[0:3]
         loss = float(loss)
         round = int(round)
-        # -------------------------------------------------------------------------------------------------
-        # ---------------------- LOGGING ACTUALLY NOT WORKING -> REMOVING TENSOBOARD ----------------------
-        # -------------------------------------------------------------------------------------------------
         self.learner.log_validation_metrics(loss, metric, round=round, name=name)
 
     ############################
@@ -162,7 +143,10 @@ class Node(BaseNode):
                 return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
 
             # Check moment (not init and invalid round)
-            if not self.__model_initialized_lock.locked() and len(self.__train_set) == 0:
+            if (
+                not self.__model_initialized_lock.locked()
+                and len(self.__train_set) == 0
+            ):
                 logging.error(
                     f"({self.addr}) Model Reception when there is no trainset"
                 )
@@ -249,8 +233,6 @@ class Node(BaseNode):
         # Interrupt learning
         if self.round is not None:
             self.__stop_learning()
-        # Close learner
-        self.learner.close()
         # Close node
         super().stop()
 
@@ -279,7 +261,7 @@ class Node(BaseNode):
                     LearningNodeMessages.START_LEARNING, [rounds, epochs]
                 )
             )
-            # Set model initializated 
+            # Set model initializated
             self.__model_initialized_lock.release()
             # Broadcast initialize model
             self._neighbors.broadcast_msg(
@@ -317,7 +299,7 @@ class Node(BaseNode):
         if self.round is None:
             self.round = 0
             self.totalrounds = rounds
-            self.learner.init()
+            self.learner.create_new_exp()
             self.__start_thread_lock.release()
             begin = time.time()
 
@@ -543,7 +525,7 @@ class Node(BaseNode):
         results = self.learner.evaluate()
         if results is not None:
             logging.info(
-                f"({self.addr}) Evaluated. Losss: {results[0]}, Metric: {results[1]}. (Check tensorboard for more info)"
+                f"({self.addr}) Evaluated. Losss: {results[0]}, Metric: {results[1]}."
             )
             # Send metrics
             logging.info(f"({self.addr}) Broadcasting metrics.")
@@ -641,7 +623,7 @@ class Node(BaseNode):
         model_function = lambda _: (
             self.learner.get_parameters(),
             self.aggregator.get_agregated_models(),
-            0,
+            1,
         )
 
         # Gossip

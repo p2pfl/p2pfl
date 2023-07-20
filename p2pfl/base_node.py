@@ -26,6 +26,7 @@ from p2pfl.neighbors import Neighbors
 from p2pfl.settings import Settings
 from p2pfl.messages import NodeMessages
 
+
 class BaseNode:
     #####################
     #     Node Init     #

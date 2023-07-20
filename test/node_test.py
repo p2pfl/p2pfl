@@ -78,7 +78,7 @@ def test_convergence(x):
     for i in range(len(nodes) - 1):
         nodes[i + 1].connect(nodes[i].addr)
         time.sleep(0.1)
-    wait_convergence(nodes, n - 1, only_direct=True)
+    wait_convergence(nodes, n - 1, only_direct=False)
 
     # Start Learning
     nodes[0].set_start_learning(rounds=r, epochs=0)

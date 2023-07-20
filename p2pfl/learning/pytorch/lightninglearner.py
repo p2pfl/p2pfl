@@ -21,18 +21,12 @@ import torch
 from pytorch_lightning import Trainer
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
+from p2pfl.learning.pytorch.logger import FederatedLogger
 import logging
 
 ###########################
 #    LightningLearner     #
 ###########################
-
-"""
-
-REVISAR Y RECONSTRUIR EL LOGGER
-
-"""
-
 
 class LightningLearner(NodeLearner):
     """
@@ -46,13 +40,13 @@ class LightningLearner(NodeLearner):
         logger: Logger.
     """
 
-    def __init__(self, model, data, log_name=None):
+    def __init__(self, model, data, self_addr):
         self.model = model
         self.data = data
-        self.log_name = log_name
-        self.logger = None
+        self.logger = FederatedLogger(self_addr)
         self.__trainer = None
         self.epochs = 1
+        self.__self_addr = self_addr
         # To avoid GPU/TPU printings
         logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
 
@@ -61,6 +55,10 @@ class LightningLearner(NodeLearner):
 
     def set_data(self, data):
         self.data = data
+
+    ####
+    # Model weights
+    ####
 
     def encode_parameters(self, params=None):
         if params is None:
@@ -93,6 +91,10 @@ class LightningLearner(NodeLearner):
 
     def get_parameters(self):
         return self.model.state_dict()
+
+    ####
+    # Training
+    ####
 
     def set_epochs(self, epochs):
         self.epochs = epochs
@@ -139,26 +141,29 @@ class LightningLearner(NodeLearner):
             logging.error(f"Something went wrong with pytorch lightning. {e}")
             return None
 
+    ####
+    # Logging
+    ####
+
+    def create_new_exp(self):
+        self.logger.create_new_exp()
+
     def log_validation_metrics(self, loss, metric, round=None, name=None):
         if self.logger is not None:
-            self.logger.log_scalar("test_loss", loss, round, name=name)
-            self.logger.log_scalar("test_metric", metric, round, name=name)
+            self.logger.log_round_metric("test_loss", loss, name=name, round=round)
+            self.logger.log_round_metric("test_metric", metric, name=name, round=round)
+
+    def get_logs(self, node=None, exp=None):
+        return self.logger.get_logs(node=node, exp=exp)
 
     def get_num_samples(self):
+        """
+        TODO: USE IT TO OBTAIN A MORE ACCURATE METRIC AGG
+        """
         return (
             len(self.data.train_dataloader().dataset),
             len(self.data.test_dataloader().dataset),
         )
-
-    def init(self):
-        self.close()
-        self.logger = (
-            None  # FederatedTensorboardLogger("training_logs", name=self.log_name)
-        )
-
-    def close(self):
-        if self.logger is not None:
-            self.logger.close()
 
     def finalize_round(self):
         if self.logger is not None:

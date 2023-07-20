@@ -151,18 +151,6 @@ class NodeLearner:
         """
         pass
 
-    def init(self):
-        """
-        Init the learner.
-        """
-        pass
-
-    def close(self):
-        """
-        Close the learner.
-        """
-        pass
-
     def finalize_round(self):
         """
         Determine the end of the round.

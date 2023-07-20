@@ -119,7 +119,9 @@ class Neighbors:
 
         except Exception as e:
             # Remove neighbor
-            logging.info(f"({self.__self_addr}) Cannot send model to {nei}. Error: {str(e)}")
+            logging.info(
+                f"({self.__self_addr}) Cannot send model to {nei}. Error: {str(e)}"
+            )
             self.remove(nei)
 
     ####

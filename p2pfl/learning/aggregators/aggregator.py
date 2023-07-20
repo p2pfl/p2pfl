@@ -20,6 +20,7 @@ import logging
 from p2pfl.settings import Settings
 from p2pfl.utils.observer import Events, Observable
 
+
 class Aggregator:
     """
     Class to manage the aggregation of models.
@@ -34,7 +35,7 @@ class Aggregator:
         self.daemon = True
         Observable.__init__(self)
         self.__train_set = []
-        self.__waiting_aggregated_model = False  # POCO ELEGANTE -> REVISARLO
+        self.__waiting_aggregated_model = False
         self.__models = {}
         self.__agg_lock = threading.Lock()
 
@@ -72,18 +73,17 @@ class Aggregator:
             pass
         self.__agg_lock.release()
 
-    """
-    UNICAMENTE RECIBIRÁ UN MODELO Y LUEGO LO DIFUNDIRÁ
-    """
-
     def set_waiting_aggregated_model(self):
         """
         Indicates that the node is waiting for an aggregation. It won't participate in aggregation process.
+
+        UNICAMENTE RECIBIRÁ UN MODELO Y LUEGO LO DIFUNDIRÁ
+
         """
         self.__waiting_aggregated_model = True
         self.__finish_aggregation_lock.acquire(
             timeout=Settings.AGGREGATION_TIMEOUT
-        )  # REVISAR
+        ) 
 
     def get_agregated_models(self):
         """
