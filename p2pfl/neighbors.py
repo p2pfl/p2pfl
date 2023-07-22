@@ -74,11 +74,13 @@ class Neighbors:
 
     def send_message(self, nei, msg):
         try:
-            self.__neighbors[nei][1].send_message(msg, timeout=Settings.GRPC_TIMEOUT)
+            res = self.__neighbors[nei][1].send_message(msg, timeout=Settings.GRPC_TIMEOUT)
+            if res.error:
+                logging.error(f"[{self.addr}] Error while sending a message: {msg.cmd} {msg.args}: {res.error}")                
+                self.remove(
+                    nei, disconnect_msg=True
+                ) 
         except Exception as e:
-            """
-            MAYBE ADD CUSTOM EXCEPTIONS -> direct disconnection
-            """
             # Remove neighbor
             logging.info(
                 f"({self.__self_addr}) Cannot send message {msg.cmd} to {nei}. Error: {str(e)}"
@@ -104,7 +106,7 @@ class Neighbors:
                 stub = node_pb2_grpc.NodeServicesStub(channel)
             else:
                 channel = None
-            stub.add_model(
+            res = stub.add_model(
                 node_pb2.Weights(
                     source=self.__self_addr,
                     round=round,
@@ -114,6 +116,12 @@ class Neighbors:
                 ),
                 timeout=Settings.GRPC_TIMEOUT,
             )
+            # Handling errors -> however error in agregation stops the other nodes (decoding/non-matching/unexpected)
+            if res.error:
+                logging.error(f"[{self.addr}] Error while sending a model: {res.error}")
+                self.remove(
+                    nei, disconnect_msg=True
+                )
             if not (channel is None):
                 channel.close()
 
@@ -131,7 +139,7 @@ class Neighbors:
     def add(self, addr, handshake_msg=True, non_direct=False):
         # Cannot add itself
         if addr == self.__self_addr:
-            logging.info(f"{self.addr} Cannot add itself")
+            logging.info(f"{self.__self_addr} Cannot add itself")
             return False
 
         # Cannot add duplicates
@@ -140,7 +148,7 @@ class Neighbors:
         self.__nei_lock.release()
         # Avoid adding if duplicated and not non_direct neighbor (otherwise, connect creating a channel)
         if duplicated and not non_direct:
-            logging.info(f"{self.addr} Cannot add duplicates")
+            logging.info(f"{self.__self_addr} Cannot add duplicates")
             return False
 
         # Add non direct connected neighbors
@@ -158,7 +166,8 @@ class Neighbors:
             # Handshake
             if handshake_msg:
                 res = stub.handshake(node_pb2.HandShakeRequest(addr=self.__self_addr), timeout=Settings.GRPC_TIMEOUT)
-                if not res.bool:
+                if res.error:
+                    logging.info(f"{self.__self_addr} Cannot add a neighbor: {res.error}")
                     channel.close()
                     return False
 

@@ -113,9 +113,12 @@ class BaseNode:
     #  GRPC - Remote Services  #
     ############################
 
-    def handshake(self, request, _):
-        s = self._neighbors.add(request.addr, handshake_msg=False)
-        return node_pb2.BoolMsg(bool=s)
+    def handshake(self, request, _):    
+        if self._neighbors.add(request.addr, handshake_msg=False):
+            return node_pb2.ResponseMessage()
+        else:
+            return node_pb2.ResponseMessage(error="Cannot add the node (duplicated or wrong direction)")
+
 
     def disconnect(self, request, _):
         self._neighbors.remove(request.addr, disconnect_msg=False)
@@ -128,16 +131,19 @@ class BaseNode:
             self._neighbors.gossip(request)
             # Process message
             if request.cmd in self.__msg_callbacks.keys():
-                self.__msg_callbacks[request.cmd](request)
+                try:
+                    self.__msg_callbacks[request.cmd](request)
+                except Exception as e:
+                    error_text = f"[{self.addr}] Error while processing command: {request.cmd} {request.args}: {e}"
+                    logging.error(error_text)
+                    return node_pb2.ResponseMessage(error=error_text)
             else:
                 # disconnect node
                 logging.error(
                     f"[{self.addr}] Unknown command: {request.cmd} from {request.source}"
                 )
-                self._neighbors.remove(
-                    request.source, disconnect_msg=True
-                )  # posible ataque de denegación de servicio
-        return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
+                return node_pb2.ResponseMessage(error=f"Unknown command: {request.cmd}")
+        return node_pb2.ResponseMessage()
 
     def add_model(self, request, context):
         raise NotImplementedError
@@ -152,4 +158,3 @@ class BaseNode:
     def __heartbeat_callback(self, request):
         time = float(request.args[0])
         self._neighbors.heartbeat(request.source, time)
-        return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()

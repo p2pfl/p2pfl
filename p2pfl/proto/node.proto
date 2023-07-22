@@ -43,13 +43,13 @@ message HandShakeRequest {
     string addr = 1; // puede no ser necesario si se usa channel._channel.target()
 }
 
-message BoolMsg {
-    bool bool = 1; 
+message ResponseMessage {
+    optional string error = 1; 
 }
 
 service NodeServices {
-    rpc handshake(HandShakeRequest) returns (BoolMsg);
+    rpc handshake(HandShakeRequest) returns (ResponseMessage);
     rpc disconnect(HandShakeRequest) returns (google.protobuf.Empty);
-    rpc send_message(Message) returns (google.protobuf.Empty);
-    rpc add_model(Weights) returns (google.protobuf.Empty);
+    rpc send_message(Message) returns (ResponseMessage);
+    rpc add_model(Weights) returns (ResponseMessage);
 }

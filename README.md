@@ -46,8 +46,8 @@ pip install p2pfl
 
 ## 🚀 TO DO
 
-- plantearse uso de excepciones propias (grpc) -> más control (tipos de errores en la comunicación -> EN UN BAD MSG QUE NO APAREZCA UN CONN CLOSED -> FACILITAR DEBUG AL USUARIO)
-- mensajes de paso de ronda para abortar entrenamientos de nodos rezagados
+- ¿excepciones propias (grpc)? optional err msg-> más control (tipos de errores en la comunicación -> EN UN BAD MSG QUE NO APAREZCA UN CONN CLOSED -> FACILITAR DEBUG AL USUARIO)
+- ¿mensajes de paso de ronda para abortar entrenamientos de nodos rezagados?
 - añadir comprobaciones adicionales en la agregación de modelos/metricas/votos
 - doc
 - pulir deploy: multiples versiones + actualizar a versiones recientes de pytorch + añadir tensorflow

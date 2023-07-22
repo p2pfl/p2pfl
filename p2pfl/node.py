@@ -140,7 +140,7 @@ class Node(BaseNode):
                 logging.error(
                     f"({self.addr}) Model Reception in a late round ({request.round} != {self.round})."
                 )
-                return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
+                return node_pb2.ResponseMessage()
 
             # Check moment (not init and invalid round)
             if (
@@ -150,7 +150,7 @@ class Node(BaseNode):
                 logging.error(
                     f"({self.addr}) Model Reception when there is no trainset"
                 )
-                return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
+                return node_pb2.ResponseMessage()
 
             try:
                 if not self.__model_initialized_lock.locked():
@@ -186,6 +186,7 @@ class Node(BaseNode):
                         # unlock unlocked lock
                         pass
 
+            # Warning: these stops can cause a denegation of service attack 
             except DecodingParamsError as e:
                 logging.error(f"({self.addr}) Error decoding parameters.")
                 self.stop()
@@ -204,14 +205,14 @@ class Node(BaseNode):
             )
 
         # Response
-        return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
+        return node_pb2.ResponseMessage()
 
     def handshake(self, request, _):
         if self.round is not None:
             logging.info(
                 f"({self.addr}) Cant connect to other nodes when learning is running."
             )
-            return node_pb2.BoolMsg(bool=False)
+            return node_pb2.ResponseMessage(error="Cant connect: learning is running")
         else:
             return super().handshake(request, _)
 
