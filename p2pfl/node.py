@@ -100,32 +100,35 @@ class Node(BaseNode):
         self.__nei_status[msg.source] = -1
 
     def __vote_train_set_callback(self, msg):
-        # build vote dict
-        votes = msg.args
-        tmp_votes = {}
-        for i in range(0, len(votes), 2):
-            tmp_votes[votes[i]] = int(votes[i + 1])
-        # set votes
-        self.__train_set_votes_lock.acquire()
-        self.__train_set_votes[msg.source] = tmp_votes
-        self.__train_set_votes_lock.release()
-        # Communicate to the training process that a vote has been received
-        try:
-            self.__wait_votes_ready_lock.release()
-        except:
-            pass
+        if msg.round == self.round:
+            # build vote dict
+            votes = msg.args
+            tmp_votes = {}
+            for i in range(0, len(votes), 2):
+                tmp_votes[votes[i]] = int(votes[i + 1])
+            # set votes
+            self.__train_set_votes_lock.acquire()
+            self.__train_set_votes[msg.source] = tmp_votes
+            self.__train_set_votes_lock.release()
+            # Communicate to the training process that a vote has been received
+            try:
+                self.__wait_votes_ready_lock.release()
+            except:
+                pass
 
     def __models_agregated_callback(self, msg):
-        self.__models_agregated[msg.source] = msg.args
+        if msg.round == self.round:
+            self.__models_agregated[msg.source] = msg.args
 
     def __models_ready_callback(self, msg):
-        self.__nei_status[msg.source] = int(msg.args[0])
+        if msg.round == self.round:
+            self.__nei_status[msg.source] = int(msg.args[0])
 
     def __metrics_callback(self, msg):
         name = msg.source
-        round, loss, metric = msg.args[0:3]
+        round = msg.round
+        loss, metric = msg.args[0:2]
         loss = float(loss)
-        round = int(round)
         self.learner.log_validation_metrics(loss, metric, round=round, name=name)
 
     ############################
@@ -275,10 +278,11 @@ class Node(BaseNode):
 
     def set_stop_learning(self):
         if self.round is not None:
-            # ------------------------------------------------ build_stop_learning_msg ------------------------------------------------
+            # send stop msg
             self._neighbors.broadcast_msg(
                 self._neighbors.build_msg(LearningNodeMessages.STOP_LEARNING)
             )
+            # stop learning
             self.__stop_learning()
         else:
             logging.info(f"({self.addr}) Learning already stopped")
@@ -387,8 +391,7 @@ class Node(BaseNode):
                     [self.addr],
                     self.learner.get_num_samples()[0],
                 )
-                # ------------------------------------------------ build_models_aggregated_msg ------------------------------------------------
-                # ESTO ES REDUNDANTE, EL PROPIO NODO HA DE TENER EL PROPIO MODELO AGREGADO
+                # send model added msg ---->> redundant (a node always owns its model)
                 self._neighbors.broadcast_msg(
                     self._neighbors.build_msg(
                         LearningNodeMessages.MODELS_AGGREGATED, models_added
@@ -436,7 +439,6 @@ class Node(BaseNode):
         # Send and wait for votes
         logging.info(f"({self.addr}) Sending train set vote.")
         logging.debug(f"({self.addr}) Self Vote: {votes}")
-        # ------------------------------------------------ build_vote_train_set_msg ------------------------------------------------
         self._neighbors.broadcast_msg(
             self._neighbors.build_msg(
                 LearningNodeMessages.VOTE_TRAIN_SET, list(sum(votes, tuple()))
@@ -530,10 +532,9 @@ class Node(BaseNode):
             )
             # Send metrics
             logging.info(f"({self.addr}) Broadcasting metrics.")
-            # ------------------------------------------------ build_metrics_msg ------------------------------------------------
             self._neighbors.broadcast_msg(
                 self._neighbors.build_msg(
-                    LearningNodeMessages.METRICS, [self.round, results[0], results[1]]
+                    LearningNodeMessages.METRICS, [results[0], results[1]], round=self.round
                 )
             )
 
@@ -687,7 +688,6 @@ class Node(BaseNode):
                 if model is not None:
                     logging.info(f"({self.addr}) Gossiping model to {nei}.")
                     encoded_model = self.learner.encode_parameters(params=model)
-                    # ------------------------------------------------ build_params_msg ------------------------------------------------
                     self._neighbors.send_model(
                         nei, self.round, encoded_model, contributors, weight
                     )

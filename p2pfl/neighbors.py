@@ -63,13 +63,13 @@ class Neighbors:
     # Message
     ####
 
-    def build_msg(self, cmd, args=[]):
+    def build_msg(self, cmd, args=[], round=None):
         hs = hash(
             str(cmd) + str(args) + str(datetime.now()) + str(random.randint(0, 100000))
         )
         args = [str(a) for a in args]
         return node_pb2.Message(
-            source=self.__self_addr, ttl=Settings.TTL, hash=hs, cmd=cmd, args=args
+            source=self.__self_addr, ttl=Settings.TTL, hash=hs, cmd=cmd, args=args, round=round
         )
 
     def send_message(self, nei, msg):

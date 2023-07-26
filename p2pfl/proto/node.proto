@@ -29,6 +29,7 @@ message Message {
     int64 hash = 3;
     string cmd = 4;
     repeated string args = 5;
+    optional int32 round = 6;
 }
 
 message Weights {
@@ -40,7 +41,7 @@ message Weights {
 }
 
 message HandShakeRequest {
-    string addr = 1; // puede no ser necesario si se usa channel._channel.target()
+    string addr = 1;
 }
 
 message ResponseMessage {
