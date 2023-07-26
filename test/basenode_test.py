@@ -185,7 +185,7 @@ def test_node_abrupt_down(four_nodes):
     wait_convergence(four_nodes, 3, only_direct=True)
 
     # n1 stops heartbeater
-    n1._neighbors.stop_heartbeater()
+    n1._neighbors._stop_heartbeater()
     wait_convergence([n2, n3, n4], 2, only_direct=True, wait=10)
     n1.stop()
 

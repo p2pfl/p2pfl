@@ -65,8 +65,8 @@ class Neighbors:
         """
         Stop the heartbeater and gossiper threads. Also, close all the connections.
         """
-        self.__stop_heartbeater()
-        self.__stop_gossiper()
+        self._stop_heartbeater()
+        self._stop_gossiper()
         self.clear_neis()
 
     ####
@@ -338,7 +338,7 @@ class Neighbors:
     def __start_heartbeater(self):
         threading.Thread(target=self.__heartbeater).start()
 
-    def __stop_heartbeater(self):
+    def _stop_heartbeater(self):
         self.__heartbeat_terminate_flag.set()
 
     def __heartbeater(
@@ -426,7 +426,7 @@ class Neighbors:
     def __start_gossiper(self):
         threading.Thread(target=self.__gossiper).start()
 
-    def __stop_gossiper(self):
+    def _stop_gossiper(self):
         self.__gossip_terminate_flag.set()
 
     def __gossiper(
