@@ -1,5 +1,6 @@
 from pytorch_lightning.loggers.base import LightningLoggerBase
 
+
 class FederatedLogger(LightningLoggerBase):
     def __init__(self, node_name):
         super().__init__()

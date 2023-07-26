@@ -33,7 +33,13 @@ class Settings:
     # GENERAL
     ######
     GRPC_TIMEOUT = 10
+    """
+    Maximum time (seconds) to wait for a gRPC request.
+    """
     LOG_LEVEL = "DEBUG"
+    """
+    Log level for the system.
+    """
 
     ######
     # HEARTBEAT

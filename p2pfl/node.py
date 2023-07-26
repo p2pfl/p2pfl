@@ -28,7 +28,26 @@ from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
 import p2pfl.proto.node_pb2 as node_pb2
 
+
 class Node(BaseNode):
+    """
+    Class based on a BaseNode that allows **p2p Federated Learning**.
+
+    Args:
+        model: Model to be learned. Careful, model should be compatible with data and the learner.
+        data: Dataset to be used in the learning process. Careful, model should be compatible with data and the learner.
+        host (str): Host where the node will be listening.
+        port (int): Port where the node will be listening.
+        learner (NodeLearner): Learner to be used in the learning process. Default: LightningLearner.
+        aggregator (Aggregator): Aggregator to be used in the learning process. Default: FedAvg.
+        simulation (bool): If True, the node will be created in simulation mode. Default: False.
+    Attributes:
+        round (int): Round of the learning process.
+        totalrounds (int): Total number of rounds of the learning process.
+        learner (NodeLearner): Learner to be used in the learning process.
+        aggregator (Aggregator): Aggregator to be used in the learning process.
+    """
+
     #####################
     #     Node Init     #
     #####################
@@ -39,9 +58,9 @@ class Node(BaseNode):
         data,
         host="127.0.0.1",
         port=None,
-        simulation=True,
         learner=LightningLearner,
         aggregator=FedAvg,
+        simulation=False,
     ):
         # Super init
         BaseNode.__init__(self, host, port, simulation)
@@ -85,6 +104,9 @@ class Node(BaseNode):
         self.__wait_votes_ready_lock = threading.Lock()
         self.__model_initialized_lock = threading.Lock()
         self.__model_initialized_lock.acquire()
+
+        if simulation:
+            raise NotImplementedError("Simulation not implemented yet")
 
     ######################
     #    Msg Handlers    #
@@ -136,6 +158,9 @@ class Node(BaseNode):
     ############################
 
     def add_model(self, request, _):
+        """
+        GRPC service to add a model to the node.
+        """
         # Check if Learning is running
         if self.round is not None:
             # Check source
@@ -189,7 +214,7 @@ class Node(BaseNode):
                         # unlock unlocked lock
                         pass
 
-            # Warning: these stops can cause a denegation of service attack 
+            # Warning: these stops can cause a denegation of service attack
             except DecodingParamsError as e:
                 logging.error(f"({self.addr}) Error decoding parameters.")
                 self.stop()
@@ -211,6 +236,9 @@ class Node(BaseNode):
         return node_pb2.ResponseMessage()
 
     def handshake(self, request, _):
+        """
+        GRPC service to handshake with a node.
+        """
         if self.round is not None:
             logging.info(
                 f"({self.addr}) Cant connect to other nodes when learning is running."
@@ -224,6 +252,15 @@ class Node(BaseNode):
     #########################
 
     def connect(self, addr):
+        """
+        Connects a node to another. If learning is running, connections are not allowed.
+
+        Args:
+            addr (str): Address of the node to connect to.
+
+        Returns:
+            bool: True if the connection was successful, False otherwise.
+        """
         # Check if learning is running
         if self.round is not None:
             logging.info(
@@ -234,6 +271,9 @@ class Node(BaseNode):
         return super().connect(addr)
 
     def stop(self):
+        """
+        Stops the node. If learning is running, the local learning process is interrupted.
+        """
         # Interrupt learning
         if self.round is not None:
             self.__stop_learning()
@@ -245,9 +285,21 @@ class Node(BaseNode):
     ##########################
 
     def set_data(self, data):
+        """
+        Set the data to be used in the learning process (by the learner).
+
+        Args:
+            data: Dataset to be used in the learning process.
+        """
         self.learner.set_data(data)
 
     def set_model(self, model):
+        """
+        Set the model to be used in the learning process (by the learner).
+
+        Args:
+            model: Model to be used in the learning process.
+        """
         self.learner.set_model(model)
 
     ###############################################
@@ -255,6 +307,13 @@ class Node(BaseNode):
     ###############################################
 
     def set_start_learning(self, rounds=1, epochs=1):
+        """
+        Start the learning process in the entire network.
+
+        Args:
+            rounds: Number of rounds of the learning process.
+            epochs: Number of epochs of the learning process.
+        """
         self.assert_running(True)
 
         if self.round is None:
@@ -277,6 +336,9 @@ class Node(BaseNode):
             logging.info(f"({self.addr}) Learning already started")
 
     def set_stop_learning(self):
+        """
+        Stop the learning process in the entire network.
+        """
         if self.round is not None:
             # send stop msg
             self._neighbors.broadcast_msg(
@@ -309,6 +371,9 @@ class Node(BaseNode):
             begin = time.time()
 
             # Wait and gossip model inicialization
+            logging.info(f"({self.addr}) Waiting initialization.")
+            self.__model_initialized_lock.acquire()
+            logging.info(f"({self.addr}) Gossiping model initialization.")
             self.__gossip_model_difusion(initialization=True)
 
             # Wait to guarantee new connection heartbeats convergence
@@ -534,7 +599,9 @@ class Node(BaseNode):
             logging.info(f"({self.addr}) Broadcasting metrics.")
             self._neighbors.broadcast_msg(
                 self._neighbors.build_msg(
-                    LearningNodeMessages.METRICS, [results[0], results[1]], round=self.round
+                    LearningNodeMessages.METRICS,
+                    [results[0], results[1]],
+                    round=self.round,
                 )
             )
 
@@ -569,29 +636,24 @@ class Node(BaseNode):
     #    Model Gossiping    #
     #########################
 
-    """
-    Cosas a cambiar: 
-        - meter todos diccionarios en aggregator (quien controla el estado de los modelos (los k faltan y los k estan))
-    """
-
     def get_agregated_models(self, node):
+        """
+        Get the models that have been aggregated by a given node in the actual round.
+
+        Args:
+            node (str): Node to get the aggregated models from.
+        """
         try:
             return self.__models_agregated[node]
         except KeyError:
             return []
 
-    # de momento métodos inventados
     def __gossip_model_aggregation(self):
         # Anonymous functions
-        candidate_condition = (
-            lambda node: node not in self.aggregator.get_agregated_models()
+        candidate_condition = lambda node: (
+            (node not in self.aggregator.get_agregated_models())
+            and (node in self.__train_set)
         )
-
-        def candidate_condition(node):
-            return (node not in self.aggregator.get_agregated_models()) and (
-                node in self.__train_set
-            )
-
         status_function = lambda node: (
             node,
             self.get_agregated_models(node),
@@ -604,17 +666,9 @@ class Node(BaseNode):
         self.__gossip_model(candidate_condition, status_function, model_function)
 
     def __gossip_model_difusion(self, initialization=False):
-        # ESTOS LOCKS SE PUEDEN MERGEAR? -> un solo lock de waiting model -> SIII!!! TRATAR DE MOVERLO DE SITIO
-
-        # Wait a model (init or aggregated) -
+        # Wait a model (init or aggregated)
         if initialization:
-            logging.info(f"({self.addr}) Waiting initialization.")
-            self.__model_initialized_lock.acquire()
-            logging.info(f"({self.addr}) Gossiping model initialization.")
-            candidate_condition = (
-                lambda node: node not in self.__nei_status.keys()
-            )  # UNA LISTA EN DONDE? EN EL NODO?
-
+            candidate_condition = lambda node: node not in self.__nei_status.keys()
         else:
             logging.info(f"({self.addr}) Gossiping aggregated model.")
             candidate_condition = lambda node: self.__nei_status[node] < self.round

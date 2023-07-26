@@ -113,12 +113,13 @@ class BaseNode:
     #  GRPC - Remote Services  #
     ############################
 
-    def handshake(self, request, _):    
+    def handshake(self, request, _):
         if self._neighbors.add(request.addr, handshake_msg=False):
             return node_pb2.ResponseMessage()
         else:
-            return node_pb2.ResponseMessage(error="Cannot add the node (duplicated or wrong direction)")
-
+            return node_pb2.ResponseMessage(
+                error="Cannot add the node (duplicated or wrong direction)"
+            )
 
     def disconnect(self, request, _):
         self._neighbors.remove(request.addr, disconnect_msg=False)

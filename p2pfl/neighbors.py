@@ -28,11 +28,15 @@ import logging
 
 class Neighbors:
     """
-    This class is to manage the neighbors of a node.
+    Class that manages the neighbors of a node (GRPC connections). It provides the following functionalities:
         - Add neighbors (check duplicates)
         - Remove neighbors
         - Get neighbors
         - Heartbeat: remove neighbors that not send a heartbeat in a period of time
+        - Gossip: resend messages to neighbors allowing communication between non-direct connected nodes
+
+    Args:
+        self_addr (str): Address of the node itself.
     """
 
     def __init__(self, self_addr):
@@ -51,12 +55,18 @@ class Neighbors:
         self.__processed_messages_lock = threading.Lock()
 
     def start(self):
-        self.start_heartbeater()
-        self.start_gossiper()
+        """
+        Start the heartbeater and gossiper threads.
+        """
+        self.__start_heartbeater()
+        self.__start_gossiper()
 
     def stop(self):
-        self.stop_heartbeater()
-        self.stop_gossiper()
+        """
+        Stop the heartbeater and gossiper threads. Also, close all the connections.
+        """
+        self.__stop_heartbeater()
+        self.__stop_gossiper()
         self.clear_neis()
 
     ####
@@ -64,22 +74,47 @@ class Neighbors:
     ####
 
     def build_msg(self, cmd, args=[], round=None):
+        """
+        Build a message to send to the neighbors.
+        
+        Args:
+            cmd (string): Command of the message.
+            args (list): Arguments of the message.
+            round (int): Round of the message.
+
+        Returns:
+            node_pb2.Message: Message to send.
+        """
         hs = hash(
             str(cmd) + str(args) + str(datetime.now()) + str(random.randint(0, 100000))
         )
         args = [str(a) for a in args]
         return node_pb2.Message(
-            source=self.__self_addr, ttl=Settings.TTL, hash=hs, cmd=cmd, args=args, round=round
+            source=self.__self_addr,
+            ttl=Settings.TTL,
+            hash=hs,
+            cmd=cmd,
+            args=args,
+            round=round,
         )
 
     def send_message(self, nei, msg):
+        """
+        Send a message to a neighbor.
+
+        Args:
+            nei (str): Address of the neighbor.
+            msg (node_pb2.Message): Message to send.
+        """
         try:
-            res = self.__neighbors[nei][1].send_message(msg, timeout=Settings.GRPC_TIMEOUT)
+            res = self.__neighbors[nei][1].send_message(
+                msg, timeout=Settings.GRPC_TIMEOUT
+            )
             if res.error:
-                logging.error(f"[{self.addr}] Error while sending a message: {msg.cmd} {msg.args}: {res.error}")                
-                self.remove(
-                    nei, disconnect_msg=True
-                ) 
+                logging.error(
+                    f"[{self.addr}] Error while sending a message: {msg.cmd} {msg.args}: {res.error}"
+                )
+                self.remove(nei, disconnect_msg=True)
         except Exception as e:
             # Remove neighbor
             logging.info(
@@ -88,6 +123,13 @@ class Neighbors:
             self.remove(nei)
 
     def broadcast_msg(self, msg, node_list=None):
+        """
+        Broadcast a message to all the neighbors.
+
+        Args:
+            msg (node_pb2.Message): Message to send.
+            node_list (list): List of neighbors to send the message. If None, send to all the neighbors.
+        """
         # Node list
         if node_list is not None:
             node_list = node_list
@@ -97,7 +139,17 @@ class Neighbors:
         for n in node_list:
             self.send_message(n, msg)
 
-    def send_model(self, nei, round, serialized_model, contributors=[], weight=0):
+    def send_model(self, nei, round, serialized_model, contributors=[], weight=1):
+        """
+        Send a model to a neighbor.
+
+        Args:
+            nei (str): Address of the neighbor.
+            round (int): Round of the model.
+            serialized_model (bytes): Serialized model.
+            contributors (list): List of contributors of the model.
+            weight (float): Weight of the model.
+        """
         try:
             stub = self.__neighbors[nei][1]
             # if not connected, create a temporal stub to send the message
@@ -116,12 +168,10 @@ class Neighbors:
                 ),
                 timeout=Settings.GRPC_TIMEOUT,
             )
-            # Handling errors -> however error in agregation stops the other nodes (decoding/non-matching/unexpected)
+            # Handling errors -> however errors in aggregation stops the other nodes and are not raised (decoding/non-matching/unexpected)
             if res.error:
                 logging.error(f"[{self.addr}] Error while sending a model: {res.error}")
-                self.remove(
-                    nei, disconnect_msg=True
-                )
+                self.remove(nei, disconnect_msg=True)
             if not (channel is None):
                 channel.close()
 
@@ -137,6 +187,17 @@ class Neighbors:
     ####
 
     def add(self, addr, handshake_msg=True, non_direct=False):
+        """
+        Add a neighbor if it is not itself or already added. It also sends a handshake message to check if the neighbor is available and create a bidirectional connection.
+        
+        Args:
+            addr (str): Address of the neighbor.
+            handshake_msg (bool): If True, send a handshake message to the neighbor.
+            non_direct (bool): If True, add a non-direct connected neighbor (without creating a direct GRPC connection).
+
+        Returns:
+            bool: True if the neighbor was added, False otherwise.
+        """
         # Cannot add itself
         if addr == self.__self_addr:
             logging.info(f"{self.__self_addr} Cannot add itself")
@@ -165,9 +226,14 @@ class Neighbors:
 
             # Handshake
             if handshake_msg:
-                res = stub.handshake(node_pb2.HandShakeRequest(addr=self.__self_addr), timeout=Settings.GRPC_TIMEOUT)
+                res = stub.handshake(
+                    node_pb2.HandShakeRequest(addr=self.__self_addr),
+                    timeout=Settings.GRPC_TIMEOUT,
+                )
                 if res.error:
-                    logging.info(f"{self.__self_addr} Cannot add a neighbor: {res.error}")
+                    logging.info(
+                        f"{self.__self_addr} Cannot add a neighbor: {res.error}"
+                    )
                     channel.close()
                     return False
 
@@ -187,6 +253,13 @@ class Neighbors:
             return False
 
     def remove(self, nei, disconnect_msg=True):
+        """
+        Remove a neighbor.
+
+        Args:
+            nei (str): Address of the neighbor.
+            disconnect_msg (bool): If True, send a disconnect message to the neighbor.
+        """
         logging.info(f"({self.__self_addr}) Removing {nei}")
         self.__nei_lock.acquire()
         try:
@@ -207,9 +280,27 @@ class Neighbors:
         self.__nei_lock.release()
 
     def get(self, nei):
+        """
+        Get a neighbor.
+
+        Args:
+            nei (str): Address of the neighbor.
+        
+        Returns:
+            node_pb2_grpc.NodeServicesStub: Stub of the neighbor.
+        """
         return self.__neighbors[nei][1]
 
     def get_all(self, only_direct=False):
+        """
+        Get all the neighbors (names).
+
+        Args:
+            only_direct (bool): If True, get only the direct connected neighbors.
+
+        Returns:
+            list: List of neighbor addresses.
+        """
         neis = self.__neighbors.copy()
         if only_direct:
             return [k for k, v in neis.items() if v[1] is not None]
@@ -225,6 +316,13 @@ class Neighbors:
     ####
 
     def heartbeat(self, nei, time):
+        """
+        Update the time of the last heartbeat of a neighbor. If the neighbor is not added, add it.
+
+        Args:
+            nei (str): Address of the neighbor. 
+            time (float): Time of the heartbeat.
+        """
         self.__nei_lock.acquire()
         if nei not in self.__neighbors.keys():
             self.__nei_lock.release()
@@ -237,10 +335,10 @@ class Neighbors:
                 self.__neighbors[nei][2] = time
             self.__nei_lock.release()
 
-    def start_heartbeater(self):
+    def __start_heartbeater(self):
         threading.Thread(target=self.__heartbeater).start()
 
-    def stop_heartbeater(self):
+    def __stop_heartbeater(self):
         self.__heartbeat_terminate_flag.set()
 
     def __heartbeater(
@@ -286,6 +384,15 @@ class Neighbors:
     ####
 
     def add_processed_msg(self, msg):
+        """
+        Add a message to the list of processed messages.
+
+        Args:
+            msg (node_pb2.Message): Message to add.
+
+        Returns:
+            bool: True if the message was added, False if it was already processed.
+        """
         self.__processed_messages_lock.acquire()
         # Check if message was already processed
         if msg in self.__processed_messages:
@@ -300,6 +407,12 @@ class Neighbors:
         return True
 
     def gossip(self, msg):
+        """
+        Add a message to the list of pending messages to gossip.
+        
+        Args:
+            msg (node_pb2.Message): Message to add.
+        """
         if msg.ttl > 1:
             # Update ttl and broadcast
             msg.ttl -= 1
@@ -310,10 +423,10 @@ class Neighbors:
             self.__pending_msgs.append((msg, pending_neis))
             self.__pending_msgs_lock.release()
 
-    def start_gossiper(self):
+    def __start_gossiper(self):
         threading.Thread(target=self.__gossiper).start()
 
-    def stop_gossiper(self):
+    def __stop_gossiper(self):
         self.__gossip_terminate_flag.set()
 
     def __gossiper(
@@ -321,9 +434,6 @@ class Neighbors:
         period=Settings.GOSSIP_PERIOD,
         messases_per_period=Settings.GOSSIP_MESSAGES_PER_PERIOD,
     ):
-        """
-        quizá añadir locks para evitar iteraciones
-        """
         while not self.__gossip_terminate_flag.is_set():
             t = time.time()
             messages_to_send = []

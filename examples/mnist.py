@@ -30,6 +30,7 @@ from p2pfl.node import Node
 import time
 import matplotlib.pyplot as plt
 
+
 def test_convergence(n, r):
     # Node Creation
     nodes = []

@@ -81,9 +81,7 @@ class Aggregator:
 
         """
         self.__waiting_aggregated_model = True
-        self.__finish_aggregation_lock.acquire(
-            timeout=Settings.AGGREGATION_TIMEOUT
-        ) 
+        self.__finish_aggregation_lock.acquire(timeout=Settings.AGGREGATION_TIMEOUT)
 
     def get_agregated_models(self):
         """

@@ -28,6 +28,7 @@ import logging
 #    LightningLearner     #
 ###########################
 
+
 class LightningLearner(NodeLearner):
     """
     Learner with PyTorch Lightning.
