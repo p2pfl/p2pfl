@@ -28,26 +28,44 @@ from p2pfl.messages import NodeMessages
 
 
 class BaseNode:
+    """
+    This class represents a base node in the network (without **FL**).
+
+    Args:
+        host (str): The host of the node.
+        port (int): The port of the node.
+        simulation (bool): If False, communication will be encrypted.
+
+    Attributes:
+        addr (str): The address of the node.
+        server (grpc.Server): The server of the node.
+    """
+        
     #####################
     #     Node Init     #
     #####################
 
-    def __init__(self, host="127.0.0.1", port=None, simulation=True):
-        # Set message handlers
+    def __init__(self, host="127.0.0.1", port=None, simulation=False):
+        # Message handlers
         self.__msg_callbacks = {}
         self.add_message_handler(NodeMessages.BEAT, self.__heartbeat_callback)
-        # Is running
-        self.__running = False
+       
         # Random port
         if port is None:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.bind(("", 0))
                 port = s.getsockname()[1]
         self.addr = f"{host}:{port}"
+              
         # Neighbors
         self._neighbors = Neighbors(self.addr)
+        if simulation:
+            raise NotImplementedError("Simulation not implemented yet")
+        
         # Server
+        self.__running = False
         self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
+       
         # Logging
         log_level = logging.getLevelName(Settings.LOG_LEVEL)
         logging.basicConfig(stream=sys.stdout, level=log_level)
@@ -57,11 +75,29 @@ class BaseNode:
     #######################################
 
     def assert_running(self, running):
+        """
+        Asserts that the node is running or not running.
+
+        Args:
+            running (bool): True if the node must be running, False otherwise.
+
+        Raises:
+            Exception: If the node is not running and running is True, or if the node is running and running is False.
+        """
         running_state = self.__running
         if running_state != running:
             raise Exception(f"Node is {'not ' if running_state else ''}running.")
 
     def start(self, wait=False):
+        """
+        Starts the node: server and neighbors(gossip and heartbeat).
+
+        Args:
+            wait (bool): If True, the function will wait until the server is terminated.
+
+        Raises:
+            Exception: If the node is already running.
+        """
         # Check not running
         self.assert_running(False)
         # Set running
@@ -78,6 +114,12 @@ class BaseNode:
             logging.info(f"({self.addr}) Server terminated.")
 
     def stop(self):
+        """
+        Stops the node: server and neighbors(gossip and heartbeat).
+
+        Raises:
+            Exception: If the node is not running.
+        """
         logging.info(f"({self.addr}) Stopping node...")
         # Check running
         self.assert_running(True)
@@ -93,6 +135,15 @@ class BaseNode:
     #############################
 
     def connect(self, addr):
+        """
+        Connects a node to another.
+
+        Args:
+            addr (str): The address of the node to connect to.
+
+        Returns:
+            bool: True if the node was connected, False otherwise.
+        """
         # Check running
         self.assert_running(True)
         # Connect
@@ -100,9 +151,24 @@ class BaseNode:
         return self._neighbors.add(addr, handshake_msg=True)
 
     def get_neighbors(self, only_direct=False):
+        """
+        Returns the neighbors of the node.
+
+        Args:
+            only_direct (bool): If True, only the direct neighbors will be returned.
+
+        Returns:
+            list: The list of neighbors.
+        """
         return self._neighbors.get_all(only_direct)
 
     def disconnect_from(self, addr):
+        """
+        Disconnects a node from another.
+
+        Args:
+            addr (str): The address of the node to disconnect from.
+        """
         # Check running
         self.assert_running(True)
         # Disconnect
@@ -114,6 +180,9 @@ class BaseNode:
     ############################
 
     def handshake(self, request, _):
+        """
+        GRPC service. It is called when a node connects to another.
+        """
         if self._neighbors.add(request.addr, handshake_msg=False):
             return node_pb2.ResponseMessage()
         else:
@@ -122,10 +191,16 @@ class BaseNode:
             )
 
     def disconnect(self, request, _):
+        """
+        GRPC service. It is called when a node disconnects from another.
+        """
         self._neighbors.remove(request.addr, disconnect_msg=False)
         return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
 
-    def send_message(self, request, context):
+    def send_message(self, request, _):
+        """
+        GRPC service. It is called when a node sends a message to another.
+        """
         # If not processed
         if self._neighbors.add_processed_msg(request.hash):
             # Gossip
@@ -146,7 +221,7 @@ class BaseNode:
                 return node_pb2.ResponseMessage(error=f"Unknown command: {request.cmd}")
         return node_pb2.ResponseMessage()
 
-    def add_model(self, request, context):
+    def add_model(self, request, _):
         raise NotImplementedError
 
     ####
@@ -154,6 +229,13 @@ class BaseNode:
     ####
 
     def add_message_handler(self, cmd, callback):
+        """
+        Adds a function callback to a message.
+        
+        Args:
+            cmd (str): The command of the message.
+            callback (function): The callback function.
+        """
         self.__msg_callbacks[cmd] = callback
 
     def __heartbeat_callback(self, request):

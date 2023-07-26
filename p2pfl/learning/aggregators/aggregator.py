@@ -18,8 +18,6 @@
 import threading
 import logging
 from p2pfl.settings import Settings
-from p2pfl.utils.observer import Events, Observable
-
 
 class Aggregator:
     """
@@ -31,15 +29,12 @@ class Aggregator:
 
     def __init__(self, node_name="unknown"):
         self.node_name = node_name
-        threading.Thread.__init__(self, name="aggregator-" + node_name)
-        self.daemon = True
-        Observable.__init__(self)
         self.__train_set = []
         self.__waiting_aggregated_model = False
         self.__models = {}
-        self.__agg_lock = threading.Lock()
 
-        # Wait lock
+        # Locks
+        self.__agg_lock = threading.Lock()
         self.__finish_aggregation_lock = threading.Lock()
 
     def aggregate(self, models):
@@ -54,6 +49,9 @@ class Aggregator:
 
         Args:
             l: List of nodes to aggregate. Empty for no aggregation.
+
+        Raises:
+            Exception: If the aggregation is running.
         """
         if not self.__finish_aggregation_lock.locked():
             self.__train_set = l
@@ -65,6 +63,9 @@ class Aggregator:
             )
 
     def clear(self):
+        """
+        Clear the aggregation (remove trainset and release locks).
+        """
         self.__agg_lock.acquire()
         self.__train_set = []
         try:
@@ -76,9 +77,7 @@ class Aggregator:
     def set_waiting_aggregated_model(self):
         """
         Indicates that the node is waiting for an aggregation. It won't participate in aggregation process.
-
-        UNICAMENTE RECIBIRÁ UN MODELO Y LUEGO LO DIFUNDIRÁ
-
+        The model only will receive a model and then it will be used as an aggregated model.
         """
         self.__waiting_aggregated_model = True
         self.__finish_aggregation_lock.acquire(timeout=Settings.AGGREGATION_TIMEOUT)
@@ -177,6 +176,15 @@ class Aggregator:
     def wait_and_get_aggregation(self, timeout=Settings.AGGREGATION_TIMEOUT):
         """
         Wait for aggregation to finish.
+
+        Args:
+            timeout (int): Timeout in seconds.
+
+        Returns:
+            Aggregated model.
+
+        Raises:
+            Exception: If waiting for an aggregated model and several models were received.
         """
 
         # Wait for aggregation to finish (then release the lock again)
@@ -210,6 +218,15 @@ class Aggregator:
         return self.aggregate(self.__models)
 
     def get_partial_aggregation(self, except_nodes):
+        """
+        Obtain a partial aggregation.
+
+        Args:
+            except_nodes (list): List of nodes to exclude from the aggregation.
+        
+        Returns:
+            Aggregated model, nodes aggregated and aggregation weight.
+        """
         dict_aux = {}
         nodes_aggregated = []
         aggregation_weight = 0

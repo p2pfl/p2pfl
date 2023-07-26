@@ -1,6 +1,6 @@
 class NodeMessages:
     """
-    ¿?¿?¿?¿?¿?¿?
+    Class that contains the messages exchanged between nodes.
     """
 
     BEAT = "beat"
@@ -8,9 +8,8 @@ class NodeMessages:
 
 class LearningNodeMessages(NodeMessages):
     """
-    ¿?¿?¿?¿?¿?¿?
+    Class that contains the messages exchanged between learning nodes.
     """
-
     START_LEARNING = "start_learning"
     STOP_LEARNING = "stop_learning"
     MODEL_INITIALIZED = "model_initialized"

@@ -105,9 +105,6 @@ class Node(BaseNode):
         self.__model_initialized_lock = threading.Lock()
         self.__model_initialized_lock.acquire()
 
-        if simulation:
-            raise NotImplementedError("Simulation not implemented yet")
-
     ######################
     #    Msg Handlers    #
     ######################
@@ -159,7 +156,7 @@ class Node(BaseNode):
 
     def add_model(self, request, _):
         """
-        GRPC service to add a model to the node.
+        GRPC service. It is called when a node wants to add a model to the network.
         """
         # Check if Learning is running
         if self.round is not None:
@@ -237,7 +234,7 @@ class Node(BaseNode):
 
     def handshake(self, request, _):
         """
-        GRPC service to handshake with a node.
+        GRPC service. It is called when a node connects to another.
         """
         if self.round is not None:
             logging.info(
@@ -431,11 +428,11 @@ class Node(BaseNode):
         # Set train set
         if self.round is not None:
             self.__train_set = self.__vote_train_set()
-            self.__validate_train_set()
+            self.__train_set = self.__validate_train_set(self.__train_set)
+            logging.info(f"{self.addr} Train set of {len(self.__train_set)} nodes: {self.__train_set}")
 
         # Determine if node is in the train set
-        is_train_set = self.addr in self.__train_set
-        if is_train_set:
+        if self.addr in self.__train_set:
             # Full connect train set
             if self.round is not None:
                 # Set Models To Aggregate
@@ -569,16 +566,13 @@ class Node(BaseNode):
             # Wait for votes or refresh every 2 seconds
             self.__wait_votes_ready_lock.acquire(timeout=2)
 
-    def __validate_train_set(self):
+    def __validate_train_set(self, train_set):
         # Verify if node set is valid (can happend that a node was down when the votes were being processed)
-        for tsn in self.__train_set:
+        for tsn in train_set:
             if tsn not in self.get_neighbors(only_direct=False):
                 if tsn != self.addr:
-                    self.__train_set.remove(tsn)
-
-        logging.info(
-            f"{self.addr} Train set of {len(self.__train_set)} nodes: {self.__train_set}"
-        )
+                    train_set.remove(tsn)
+        return train_set
 
     ############################
     #    Train and Evaluate    #
