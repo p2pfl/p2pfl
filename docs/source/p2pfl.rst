@@ -8,7 +8,6 @@ Subpackages
    :maxdepth: 4
 
    p2pfl.learning
-   p2pfl.utils
 
 Submodules
 ----------
@@ -21,42 +20,18 @@ p2pfl.base\_node module
    :undoc-members:
    :show-inheritance:
 
-p2pfl.command module
---------------------
-
-.. automodule:: p2pfl.command
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-p2pfl.communication\_protocol module
-------------------------------------
-
-.. automodule:: p2pfl.communication_protocol
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-p2pfl.encrypter module
-----------------------
-
-.. automodule:: p2pfl.encrypter
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-p2pfl.gossiper module
+p2pfl.messages module
 ---------------------
 
-.. automodule:: p2pfl.gossiper
+.. automodule:: p2pfl.messages
    :members:
    :undoc-members:
    :show-inheritance:
 
-p2pfl.heartbeater module
-------------------------
+p2pfl.neighbors module
+----------------------
 
-.. automodule:: p2pfl.heartbeater
+.. automodule:: p2pfl.neighbors
    :members:
    :undoc-members:
    :show-inheritance:
@@ -65,14 +40,6 @@ p2pfl.node module
 -----------------
 
 .. automodule:: p2pfl.node
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-p2pfl.node\_connection module
------------------------------
-
-.. automodule:: p2pfl.node_connection
    :members:
    :undoc-members:
    :show-inheritance:

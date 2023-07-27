@@ -40,8 +40,11 @@ project = "p2pfl"
 copyright = "2022, Pedro Guijas Bravo"
 author = "Pedro Guijas Bravo"
 
+html_logo = "logo.png"
+
+
 # The full version, including alpha/beta/rc tags
-release = "0.1"
+release = "0.2.0"
 
 
 # -- General configuration ---------------------------------------------------
@@ -78,4 +81,4 @@ html_theme = "furo"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
-html_title = "P2P FL"
+html_title = " "

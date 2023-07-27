@@ -190,7 +190,7 @@ def test_node_abrupt_down(four_nodes):
     n1.stop()
 
     # n2 stop server
-    n2.server.stop(0)
+    n2._BaseNode__server.stop(0)
     wait_convergence([n3, n4], 1, only_direct=True, wait=10)
     n2.stop()
 

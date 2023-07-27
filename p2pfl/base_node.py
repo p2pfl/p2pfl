@@ -27,7 +27,7 @@ from p2pfl.settings import Settings
 from p2pfl.messages import NodeMessages
 
 
-class BaseNode:
+class BaseNode(node_pb2_grpc.NodeServicesServicer):
     """
     This class represents a base node in the network (without **FL**).
 
@@ -38,7 +38,6 @@ class BaseNode:
 
     Attributes:
         addr (str): The address of the node.
-        server (grpc.Server): The server of the node.
     """
         
     #####################
@@ -64,7 +63,7 @@ class BaseNode:
         
         # Server
         self.__running = False
-        self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
+        self.__server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
        
         # Logging
         log_level = logging.getLevelName(Settings.LOG_LEVEL)
@@ -105,12 +104,12 @@ class BaseNode:
         # Heartbeat and Gossip
         self._neighbors.start()
         # Server
-        node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.server)
-        self.server.add_insecure_port(self.addr)
-        self.server.start()
+        node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.__server)
+        self.__server.add_insecure_port(self.addr)
+        self.__server.start()
         logging.info(f"({self.addr}) Server started.")
         if wait:
-            self.server.wait_for_termination()
+            self.__server.wait_for_termination()
             logging.info(f"({self.addr}) Server terminated.")
 
     def stop(self):
@@ -124,7 +123,7 @@ class BaseNode:
         # Check running
         self.assert_running(True)
         # Stop server
-        self.server.stop(0)
+        self.__server.stop(0)
         # Stop neighbors
         self._neighbors.stop()
         # Set not running

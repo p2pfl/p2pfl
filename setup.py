@@ -21,7 +21,7 @@ from pathlib import Path
 HERE = Path(__file__).parent
 
 PACKAGE_NAME = "p2pfl"
-VERSION = "0.1.7"
+VERSION = "0.2.0"
 AUTHOR = "Pedro Guijas"
 AUTHOR_EMAIL = "pguijas@gmail.com"
 URL = "https://pguijas.github.io/federated_learning_p2p/"
