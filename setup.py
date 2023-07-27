@@ -28,16 +28,14 @@ URL = "https://pguijas.github.io/federated_learning_p2p/"
 DESCRIPTION = "p2p Federated Learning framework"
 LONG_DESCRIPTION = (HERE / "README.md").read_text(encoding="utf-8")
 LONG_DESC_TYPE = "text/markdown"
-LICENSE = "MIT"
+LICENSE = "GPLv3"
 
 INSTALL_REQUIRES = [
+    "pytorch-lightning==1.6.5",
+    "torchvision==0.12.0",
     "torch==1.11.0",
-    "tensorboard",
-    "pytorch-lightning",
-    "torchvision",
-    "pycryptodome",
-]  # dependencias
-
+    "torchmetrics==0.7.3",
+]
 
 setup(
     name=PACKAGE_NAME,

@@ -21,4 +21,4 @@ torchmetrics = "==0.7.3"
 torch-tb-profiler = "*"
 
 [requires]
-python_version = "*"
+python_version = "3.9"
