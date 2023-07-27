@@ -1,17 +1,17 @@
-# 
+#
 # This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).
 # Copyright (c) 2022 Pedro Guijas Bravo.
-# 
-# This program is free software: you can redistribute it and/or modify  
-# it under the terms of the GNU General Public License as published by  
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
 #
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranty of 
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 # General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License 
+# You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
@@ -21,20 +21,17 @@ import threading
 import logging
 import time
 from p2pfl.base_node import BaseNode
-from p2pfl.command import *
-from p2pfl.communication_protocol import CommunicationProtocol
+from p2pfl.messages import LearningNodeMessages
 from p2pfl.settings import Settings
+from p2pfl.learning.pytorch.lightninglearner import LightningLearner
 from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
-from p2pfl.learning.pytorch.lightninglearner import LightningLearner
-from p2pfl.utils.observer import Events, Observer
+import p2pfl.proto.node_pb2 as node_pb2
 
 
 class Node(BaseNode):
     """
-    Class based on a base node that allows **p2p Federated Learning**.
-
-    Metrics will be saved under a folder with the name of the node.
+    Class based on a BaseNode that allows **p2p Federated Learning**.
 
     Args:
         model: Model to be learned. Careful, model should be compatible with data and the learner.
@@ -43,8 +40,7 @@ class Node(BaseNode):
         port (int): Port where the node will be listening.
         learner (NodeLearner): Learner to be used in the learning process. Default: LightningLearner.
         aggregator (Aggregator): Aggregator to be used in the learning process. Default: FedAvg.
-        simulation (bool): If False, node will share metrics and communication will be encrypted. Default: True.
-
+        simulation (bool): If True, the node will be created in simulation mode. Default: False.
     Attributes:
         round (int): Round of the learning process.
         totalrounds (int): Total number of rounds of the learning process.
@@ -64,75 +60,221 @@ class Node(BaseNode):
         port=None,
         learner=LightningLearner,
         aggregator=FedAvg,
-        simulation=True,
+        simulation=False,
     ):
         # Super init
         BaseNode.__init__(self, host, port, simulation)
-        Observer.__init__(self)
+
+        # Add message handlers
+        self.add_message_handler(
+            LearningNodeMessages.START_LEARNING, self.__start_learning_callback
+        )
+        self.add_message_handler(
+            LearningNodeMessages.STOP_LEARNING, self.__stop_learning_callback
+        )
+        self.add_message_handler(
+            LearningNodeMessages.MODEL_INITIALIZED, self.__model_initialized_callback
+        )
+        self.add_message_handler(
+            LearningNodeMessages.VOTE_TRAIN_SET, self.__vote_train_set_callback
+        )
+        self.add_message_handler(
+            LearningNodeMessages.MODELS_AGGREGATED, self.__models_agregated_callback
+        )
+        self.add_message_handler(
+            LearningNodeMessages.MODELS_READY, self.__models_ready_callback
+        )
+        self.add_message_handler(LearningNodeMessages.METRICS, self.__metrics_callback)
 
         # Learning
         self.round = None
         self.totalrounds = None
-        self.__model_initialized = False
-        self.__initial_neighbors = []
-        self.__start_thread_lock = threading.Lock()
-
-        # Learner
-        self.learner = learner(model, data, log_name=self.get_name())
-
-        # Aggregator
-        self.aggregator = aggregator(node_name=self.get_name())
-        self.aggregator.add_observer(self)
+        self.__train_set = []
+        self.__models_agregated = {}
+        self.__nei_status = {}
+        self.learner = learner(model, data, self.addr)
+        self.aggregator = aggregator(node_name=self.addr)
 
         # Train Set Votes
-        self.__train_set = []
         self.__train_set_votes = {}
         self.__train_set_votes_lock = threading.Lock()
 
         # Locks
+        self.__start_thread_lock = threading.Lock()
         self.__wait_votes_ready_lock = threading.Lock()
-        self.__finish_aggregation_lock = threading.Lock()
-        self.__finish_aggregation_lock.acquire()
-        self.__wait_init_model_lock = threading.Lock()
-        self.__wait_init_model_lock.acquire()
+        self.__model_initialized_lock = threading.Lock()
+        self.__model_initialized_lock.acquire()
+
+    ######################
+    #    Msg Handlers    #
+    ######################
+
+    def __start_learning_callback(self, msg):
+        self.__start_learning_thread(int(msg.args[0]), int(msg.args[1]))
+
+    def __stop_learning_callback(self, _):
+        self.__stop_learning()
+
+    def __model_initialized_callback(self, msg):
+        self.__nei_status[msg.source] = -1
+
+    def __vote_train_set_callback(self, msg):
+        if msg.round == self.round:
+            # build vote dict
+            votes = msg.args
+            tmp_votes = {}
+            for i in range(0, len(votes), 2):
+                tmp_votes[votes[i]] = int(votes[i + 1])
+            # set votes
+            self.__train_set_votes_lock.acquire()
+            self.__train_set_votes[msg.source] = tmp_votes
+            self.__train_set_votes_lock.release()
+            # Communicate to the training process that a vote has been received
+            try:
+                self.__wait_votes_ready_lock.release()
+            except:
+                pass
+
+    def __models_agregated_callback(self, msg):
+        if msg.round == self.round:
+            self.__models_agregated[msg.source] = msg.args
+
+    def __models_ready_callback(self, msg):
+        if msg.round == self.round:
+            self.__nei_status[msg.source] = int(msg.args[0])
+
+    def __metrics_callback(self, msg):
+        name = msg.source
+        round = msg.round
+        loss, metric = msg.args[0:2]
+        loss = float(loss)
+        self.learner.log_validation_metrics(loss, metric, round=round, name=name)
+
+    ############################
+    #  GRPC - Remote Services  #
+    ############################
+
+    def add_model(self, request, _):
+        """
+        GRPC service. It is called when a node wants to add a model to the network.
+        """
+        # Check if Learning is running
+        if self.round is not None:
+            # Check source
+            if request.round != self.round:
+                logging.error(
+                    f"({self.addr}) Model Reception in a late round ({request.round} != {self.round})."
+                )
+                return node_pb2.ResponseMessage()
+
+            # Check moment (not init and invalid round)
+            if (
+                not self.__model_initialized_lock.locked()
+                and len(self.__train_set) == 0
+            ):
+                logging.error(
+                    f"({self.addr}) Model Reception when there is no trainset"
+                )
+                return node_pb2.ResponseMessage()
+
+            try:
+                if not self.__model_initialized_lock.locked():
+                    # Add model to aggregator
+                    decoded_model = self.learner.decode_parameters(request.weights)
+                    if self.learner.check_parameters(decoded_model):
+                        models_added = self.aggregator.add_model(
+                            decoded_model, request.contributors, request.weight
+                        )
+                        if models_added is not None:
+                            # Communicate Aggregation
+                            self._neighbors.broadcast_msg(
+                                self._neighbors.build_msg(
+                                    LearningNodeMessages.MODELS_AGGREGATED, models_added
+                                )
+                            )
+                    else:
+                        raise ModelNotMatchingError("Not matching models")
+                else:
+                    # Initialize model (try to handle concurrent initializations)
+                    try:
+                        self.__model_initialized_lock.release()
+                        model = self.learner.decode_parameters(request.weights)
+                        self.learner.set_parameters(model)
+                        logging.info(f"({self.addr}) Model Weights Initialized")
+                        # Communicate Initialization
+                        self._neighbors.broadcast_msg(
+                            self._neighbors.build_msg(
+                                LearningNodeMessages.MODEL_INITIALIZED
+                            )
+                        )
+                    except RuntimeError:
+                        # unlock unlocked lock
+                        pass
+
+            # Warning: these stops can cause a denegation of service attack
+            except DecodingParamsError as e:
+                logging.error(f"({self.addr}) Error decoding parameters.")
+                self.stop()
+
+            except ModelNotMatchingError as e:
+                logging.error(f"({self.addr}) Models not matching.")
+                self.stop()
+
+            except Exception as e:
+                logging.error(f"({self.addr}) Unknown error adding model: {e}")
+                self.stop()
+
+        else:
+            logging.debug(
+                f"({self.addr}) Tried to add a model while learning is not running"
+            )
+
+        # Response
+        return node_pb2.ResponseMessage()
+
+    def handshake(self, request, _):
+        """
+        GRPC service. It is called when a node connects to another.
+        """
+        if self.round is not None:
+            logging.info(
+                f"({self.addr}) Cant connect to other nodes when learning is running."
+            )
+            return node_pb2.ResponseMessage(error="Cant connect: learning is running")
+        else:
+            return super().handshake(request, _)
 
     #########################
     #    Node Management    #
     #########################
 
-    def connect_to(self, h, p, full=False, force=False):
-        """ "
-        Connects a node to another. If learning is running, connections are not allowed (it should be forced).
-        Careful, if connection is forced with a new node, it will produce timeouts in the network.
+    def connect(self, addr):
+        """
+        Connects a node to another. If learning is running, connections are not allowed.
 
         Args:
-            h (str): The host of the node.
-            p (int): The port of the node.
-            full (bool): If True, the node will be connected to the entire network.
-            force (bool): If True, the node will be connected even though it should not be.
+            addr (str): Address of the node to connect to.
 
         Returns:
-            node: The node that has been connected to.
+            bool: True if the connection was successful, False otherwise.
         """
         # Check if learning is running
-        if self.round is not None and not force:
+        if self.round is not None:
             logging.info(
-                "({}) Cant connect to other nodes when learning is running.".format(
-                    self.get_name()
-                )
+                f"({self.addr}) Cant connect to other nodes when learning is running."
             )
-            return None
-
+            return False
         # Connect
-        return super().connect_to(h, p, full, force)
+        return super().connect(addr)
 
     def stop(self):
         """
-        Stop the node and the learning if it is running.
+        Stops the node. If learning is running, the local learning process is interrupted.
         """
+        # Interrupt learning
         if self.round is not None:
             self.__stop_learning()
-        self.learner.close()
+        # Close node
         super().stop()
 
     ##########################
@@ -141,7 +283,7 @@ class Node(BaseNode):
 
     def set_data(self, data):
         """
-        Set the data to be used in the learning process (learner).
+        Set the data to be used in the learning process (by the learner).
 
         Args:
             data: Dataset to be used in the learning process.
@@ -149,12 +291,11 @@ class Node(BaseNode):
         self.learner.set_data(data)
 
     def set_model(self, model):
-        """ "
-        Set the model to use.
-        Carefully, model, not only weights.
+        """
+        Set the model to be used in the learning process (by the learner).
 
         Args:
-            model: Model to be learned.
+            model: Model to be used in the learning process.
         """
         self.learner.set_model(model)
 
@@ -170,37 +311,40 @@ class Node(BaseNode):
             rounds: Number of rounds of the learning process.
             epochs: Number of epochs of the learning process.
         """
-        if self._terminate_flag.is_set():
-            logging.info(
-                "({}) Node must be running to start learning".format(self.get_name())
-            )
-            return
+        self.assert_running(True)
+
         if self.round is None:
-            # Start Learning
-            logging.info("({}) Broadcasting start learning...".format(self.get_name()))
-            self.broadcast(
-                CommunicationProtocol.build_start_learning_msg(rounds, epochs)
+            # Broadcast start Learning
+            logging.info(f"({self.addr}) Broadcasting start learning...")
+            self._neighbors.broadcast_msg(
+                self._neighbors.build_msg(
+                    LearningNodeMessages.START_LEARNING, [rounds, epochs]
+                )
             )
-            # Initialize model
-            self.broadcast(CommunicationProtocol.build_model_initialized_msg())
-            self.__wait_init_model_lock.release()
-            self.__model_initialized = (
-                True  # esto seguramente sobre, con locks es suficiente
+            # Set model initializated
+            self.__model_initialized_lock.release()
+            # Broadcast initialize model
+            self._neighbors.broadcast_msg(
+                self._neighbors.build_msg(LearningNodeMessages.MODEL_INITIALIZED)
             )
             # Learning Thread
             self.__start_learning_thread(rounds, epochs)
         else:
-            logging.info("({}) Learning already started".format(self.get_name()))
+            logging.info(f"({self.addr}) Learning already started")
 
     def set_stop_learning(self):
         """
         Stop the learning process in the entire network.
         """
         if self.round is not None:
-            self.broadcast(CommunicationProtocol.build_stop_learning_msg())
+            # send stop msg
+            self._neighbors.broadcast_msg(
+                self._neighbors.build_msg(LearningNodeMessages.STOP_LEARNING)
+            )
+            # stop learning
             self.__stop_learning()
         else:
-            logging.info("({}) Learning already stopped".format(self.get_name()))
+            logging.info(f"({self.addr}) Learning already stopped")
 
     ##################################
     #         Local Learning         #
@@ -210,55 +354,44 @@ class Node(BaseNode):
         learning_thread = threading.Thread(
             target=self.__start_learning, args=(rounds, epochs)
         )
-        learning_thread.name = "learning_thread-" + self.get_name()
+        learning_thread.name = "learning_thread-" + self.addr
         learning_thread.daemon = True
         learning_thread.start()
 
     def __start_learning(self, rounds, epochs):
-        """
-        Start the learning process in the local node.
-
-        Args:
-            rounds: Number of rounds of the learning process.
-            epochs: Number of epochs of the learning process.
-        """
         self.__start_thread_lock.acquire()  # Used to avoid create duplicated training threads
         if self.round is None:
             self.round = 0
             self.totalrounds = rounds
-            self.learner.init()
+            self.learner.create_new_exp()
             self.__start_thread_lock.release()
-
             begin = time.time()
 
             # Wait and gossip model inicialization
+            logging.info(f"({self.addr}) Waiting initialization.")
+            self.__model_initialized_lock.acquire()
+            logging.info(f"({self.addr}) Gossiping model initialization.")
             self.__gossip_model_difusion(initialization=True)
 
-            # Wait to guarantee new connection heartbeats convergence and fix neighbors
+            # Wait to guarantee new connection heartbeats convergence
             wait_time = Settings.WAIT_HEARTBEATS_CONVERGENCE - (time.time() - begin)
             if wait_time > 0:
                 time.sleep(wait_time)
-            self.__initial_neighbors = (
-                self.get_neighbors()
-            )  # used to restore the original list of neighbors after the learning round
 
             # Train
             self.learner.set_epochs(epochs)
             self.__train_step()
+        else:
+            self.__start_thread_lock.release()
 
     def __stop_learning(self):
-        """
-        Stop the learning process in the local node. Interrupts learning process if its running.
-        """
-        logging.info("({}) Stopping learning".format(self.get_name()))
+        logging.info(f"({self.addr}) Stopping learning")
         # Rounds
         self.round = None
         self.totalrounds = None
         # Leraner
         self.learner.interrupt_fit()
         # Aggregator
-        self.aggregator.check_and_run_aggregation(force=True)
-        self.aggregator.set_nodes_to_aggregate([])
         self.aggregator.clear()
         # Try to free wait locks
         try:
@@ -266,87 +399,44 @@ class Node(BaseNode):
         except:
             pass
 
-    ####################################
-    #         Model Aggregation         #
-    ####################################
-
-    def add_model(self, m):
-        """
-        Add a model. If the model isn't inicializated, the recieved model is used for it. Otherwise, the model is aggregated using the **aggregator**.
-
-        Args:
-            m: Encoded model. Contains model and their contributors
-        """
-        # Check if Learning is running
-        if self.round is not None:
-            try:
-                if self.__model_initialized:
-                    # Add model to aggregator
-                    (
-                        decoded_model,
-                        contributors,
-                        weight,
-                    ) = self.learner.decode_parameters(m)
-                    if self.learner.check_parameters(decoded_model):
-                        models_added = self.aggregator.add_model(
-                            decoded_model, contributors, weight
-                        )
-                        if models_added is not None:
-                            # CAREFUL RARE BUG at MACBOOCK: When CPU is high, only new nodes will be sent.
-                            self.broadcast(
-                                CommunicationProtocol.build_models_aggregated_msg(
-                                    models_added
-                                )
-                            )
-                    else:
-                        raise ModelNotMatchingError("Not matching models")
-                else:
-                    # Initialize model
-                    model, _, _ = self.learner.decode_parameters(m)
-                    self.learner.set_parameters(model)
-                    self.__model_initialized = True
-                    logging.info(
-                        "({}) Initialicing Model Weights".format(self.get_name())
-                    )
-                    self.__wait_init_model_lock.release()
-                    self.broadcast(CommunicationProtocol.build_model_initialized_msg())
-
-            except DecodingParamsError as e:
-                logging.error("({}) Error decoding parameters".format(self.get_name()))
-                self.stop()
-
-            except ModelNotMatchingError as e:
-                logging.error("({}) Models not matching.".format(self.get_name()))
-                self.stop()
-
-            except Exception as e:
-                self.stop()
-                raise (e)
-        else:
-            logging.error(
-                "({}) Tried to add a model while learning is not running".format(
-                    self.get_name()
-                )
-            )
-
     #######################
     #    Trainig Steps    #
     #######################
 
-    def __train_step(self):
+    def __wait_aggregated_model(self):
+        logging.info(f"({self.addr}) Waiting aregation.")
 
+        params = self.aggregator.wait_and_get_aggregation()
+
+        # Set parameters and communate it to the training process
+        if params is not None:
+            self.learner.set_parameters(params)
+            logging.debug(
+                f"({self.addr}) Broadcast aggregation done for round {self.round}"
+            )
+            # Share that aggregation is done
+            self._neighbors.broadcast_msg(
+                self._neighbors.build_msg(
+                    LearningNodeMessages.MODELS_READY, [self.round]
+                )
+            )
+        else:
+            logging.error(f"({self.addr}) Aggregation finished with no parameters")
+            self.stop()
+
+    def __train_step(self):
         # Set train set
         if self.round is not None:
             self.__train_set = self.__vote_train_set()
-            self.__validate_train_set()
+            self.__train_set = self.__validate_train_set(self.__train_set)
+            logging.info(f"{self.addr} Train set of {len(self.__train_set)} nodes: {self.__train_set}")
 
         # Determine if node is in the train set
-        is_train_set = self.get_name() in self.__train_set
-        if is_train_set:
-
+        if self.addr in self.__train_set:
             # Full connect train set
             if self.round is not None:
-                self.__connect_and_set_aggregator()
+                # Set Models To Aggregate
+                self.aggregator.set_nodes_to_aggregate(self.__train_set)
 
             # Evaluate and send metrics
             if self.round is not None:
@@ -358,22 +448,26 @@ class Node(BaseNode):
 
             # Aggregate Model
             if self.round is not None:
-                self.aggregator.add_model(
+                models_added = self.aggregator.add_model(
                     self.learner.get_parameters(),
-                    [self.get_name()],
+                    [self.addr],
                     self.learner.get_num_samples()[0],
                 )
-                self.broadcast(
-                    CommunicationProtocol.build_models_aggregated_msg([self.get_name()])
-                )  # Notify aggregation
+                # send model added msg ---->> redundant (a node always owns its model)
+                self._neighbors.broadcast_msg(
+                    self._neighbors.build_msg(
+                        LearningNodeMessages.MODELS_AGGREGATED, models_added
+                    )
+                )
                 self.__gossip_model_aggregation()
-        else:
 
+        else:
             # Set Models To Aggregate
             self.aggregator.set_waiting_aggregated_model()
 
         # Gossip aggregated model (also syncrhonizes nodes)
         if self.round is not None:
+            self.__wait_aggregated_model()
             self.__gossip_model_difusion()
 
         # Finish round
@@ -385,14 +479,11 @@ class Node(BaseNode):
     ################
 
     def __vote_train_set(self):
-
-        # Vote
-        candidates = self.get_network_nodes()  # al least himself
-        logging.debug(
-            "({}) {} candidates to train set".format(self.get_name(), len(candidates))
-        )
-        if self.get_name() not in candidates:
-            candidates.append(self.get_name())
+        # Vote (at least itself)
+        candidates = list(self.get_neighbors(only_direct=False))
+        if self.addr not in candidates:
+            candidates.append(self.addr)
+        logging.debug(f"({self.addr}) {len(candidates)} candidates to train set")
 
         # Send vote
         samples = min(Settings.TRAIN_SET_SIZE, len(candidates))
@@ -404,16 +495,18 @@ class Node(BaseNode):
 
         # Adding votes
         self.__train_set_votes_lock.acquire()
-        self.__train_set_votes[self.get_name()] = dict(votes)
+        self.__train_set_votes[self.addr] = dict(votes)
         self.__train_set_votes_lock.release()
 
         # Send and wait for votes
-        logging.info("({}) Sending train set vote.".format(self.get_name()))
-        logging.debug("({}) Self Vote: {}".format(self.get_name(), votes))
-        self.broadcast(
-            CommunicationProtocol.build_vote_train_set_msg(self.get_name(), votes)
+        logging.info(f"({self.addr}) Sending train set vote.")
+        logging.debug(f"({self.addr}) Self Vote: {votes}")
+        self._neighbors.broadcast_msg(
+            self._neighbors.build_msg(
+                LearningNodeMessages.VOTE_TRAIN_SET, list(sum(votes, tuple()))
+            )
         )
-        logging.debug("({}) Waiting other node votes.".format(self.get_name()))
+        logging.debug(f"({self.addr}) Waiting other node votes.")
 
         # Get time
         count = 0
@@ -422,9 +515,7 @@ class Node(BaseNode):
         while True:
             # If the trainning has been interrupted, stop waiting
             if self.round is None:
-                logging.info(
-                    "({}) Stopping on_round_finished process.".format(self.get_name())
-                )
+                logging.info(f"({self.addr}) Stopping on_round_finished process.")
                 return []
 
             # Update time counters (timeout)
@@ -442,12 +533,9 @@ class Node(BaseNode):
             # Determine if all votes are received
             votes_ready = set(candidates) == set(nc_votes.keys())
             if votes_ready or timeout:
-
                 if timeout and not votes_ready:
                     logging.info(
-                        "({}) Timeout for vote aggregation. Missing votes from {}".format(
-                            self.get_name(), set(candidates) - set(nc_votes.keys())
-                        )
+                        f"({self.addr}) Timeout for vote aggregation. Missing votes from {set(candidates) - set(nc_votes.keys())}"
                     )
 
                 results = {}
@@ -472,126 +560,60 @@ class Node(BaseNode):
 
                 # Clear votes
                 self.__train_set_votes = {}
-                logging.info(
-                    "({}) Computed {} votes.".format(self.get_name(), len(nc_votes))
-                )
+                logging.info(f"({self.addr}) Computed {len(nc_votes)} votes.")
                 return votes
 
             # Wait for votes or refresh every 2 seconds
             self.__wait_votes_ready_lock.acquire(timeout=2)
 
-    def __validate_train_set(self):
+    def __validate_train_set(self, train_set):
         # Verify if node set is valid (can happend that a node was down when the votes were being processed)
-        for tsn in self.__train_set:
-            if tsn not in self.get_network_nodes():
-                if tsn != self.get_name():
-                    self.__train_set.remove(tsn)
-
-        logging.info(
-            "{} Train set of {} nodes: {}".format(
-                self.get_name(), len(self.__train_set), self.__train_set
-            )
-        )
-
-    ##########################
-    #    Connect Trainset    #
-    ##########################
-
-    def __connect_and_set_aggregator(self):
-        # Set Models To Aggregate
-        self.aggregator.set_nodes_to_aggregate(self.__train_set)
-
-        # Connect Train Set Nodes
-        for node in self.__train_set:
-            if node != self.get_name():
-                h, p = node.split(":")
-                if p.isdigit():
-                    nc = self.get_neighbor(h, int(p))
-                    # If the node is not connected, connect it (to avoid duplicated connections only a node connects to the other)
-                    if nc is None and self.get_name() > node:
-                        self.connect_to(h, int(p), force=True)
-                else:
-                    logging.info(
-                        "({}) Node {} has a valid port".format(
-                            self.get_name(), node.split(":")
-                        )
-                    )
-
-        # Wait connections
-        count = 0
-        begin = time.time()
-        while True:
-            count = count + (time.time() - begin)
-            if count > Settings.TRAIN_SET_CONNECT_TIMEOUT:
-                logging.info(
-                    "({}) Timeout for train set connections.".format(self.get_name())
-                )
-                break
-            if (
-                len(self.__train_set)
-                == len(
-                    [
-                        nc
-                        for nc in self.get_neighbors()
-                        if nc.get_name() in self.__train_set
-                    ]
-                )
-                + 1
-            ):
-                break
-            time.sleep(0.1)
+        for tsn in train_set:
+            if tsn not in self.get_neighbors(only_direct=False):
+                if tsn != self.addr:
+                    train_set.remove(tsn)
+        return train_set
 
     ############################
     #    Train and Evaluate    #
     ############################
 
     def __train(self):
-        logging.info("({}) Training...".format(self.get_name()))
+        logging.info(f"({self.addr}) Training...")
         self.learner.fit()
 
     def __evaluate(self):
-        logging.info("({}) Evaluating...".format(self.get_name()))
+        logging.info(f"({self.addr}) Evaluating...")
         results = self.learner.evaluate()
         if results is not None:
             logging.info(
-                "({}) Evaluated. Losss: {}, Metric: {}. (Check tensorboard for more info)".format(
-                    self.get_name(), results[0], results[1]
-                )
+                f"({self.addr}) Evaluated. Losss: {results[0]}, Metric: {results[1]}."
             )
             # Send metrics
-            if not self.simulation:
-                logging.info(
-                    "({}) Broadcasting metrics.".format(
-                        self.get_name(), len(self.get_neighbors())
-                    )
+            logging.info(f"({self.addr}) Broadcasting metrics.")
+            self._neighbors.broadcast_msg(
+                self._neighbors.build_msg(
+                    LearningNodeMessages.METRICS,
+                    [results[0], results[1]],
+                    round=self.round,
                 )
-                encoded_msgs = CommunicationProtocol.build_metrics_msg(
-                    self.get_name(), self.round, results[0], results[1]
-                )
-                self.broadcast(encoded_msgs)
+            )
 
     ######################
     #    Round finish    #
     ######################
 
     def __on_round_finished(self):
-        # Remove trainset connections
-        for nc in self.get_neighbors():
-            if nc not in self.__initial_neighbors:
-                self.rm_neighbor(nc)
         # Set Next Round
         self.aggregator.clear()
         self.learner.finalize_round()  # revisar x si esto pueiera quedar mejor
         self.round = self.round + 1
         # Clear node aggregation
-        for nc in self.get_neighbors():
-            nc.clear_models_aggregated()
+        self.__models_agregated = {}
 
         # Next Step or Finish
         logging.info(
-            "({}) Round {} of {} finished.".format(
-                self.get_name(), self.round, self.totalrounds
-            )
+            f"({self.addr}) Round {self.round} of {self.totalrounds} finished."
         )
         if self.round < self.totalrounds:
             self.__train_step()
@@ -601,25 +623,37 @@ class Node(BaseNode):
             # Finish
             self.round = None
             self.totalrounds = None
-            self.__model_initialized = False
-            logging.info(
-                "({}) Training finished!!.".format(
-                    self.get_name(), self.round, self.totalrounds
-                )
-            )
+            self.__model_initialized_lock.acquire()
+            logging.info(f"({self.addr}) Training finished!!.")
 
     #########################
     #    Model Gossiping    #
     #########################
 
+    def get_agregated_models(self, node):
+        """
+        Get the models that have been aggregated by a given node in the actual round.
+
+        Args:
+            node (str): Node to get the aggregated models from.
+        """
+        try:
+            return self.__models_agregated[node]
+        except KeyError:
+            return []
+
     def __gossip_model_aggregation(self):
         # Anonymous functions
-        candidate_condition = lambda nc: nc.get_name() in self.__train_set and len(
-            nc.get_models_aggregated()
-        ) < len(self.__train_set)
-        status_function = lambda nc: (nc.get_name(), len(nc.get_models_aggregated()))
-        model_function = lambda nc: self.aggregator.get_partial_aggregation(
-            nc.get_models_aggregated()
+        candidate_condition = lambda node: (
+            (node not in self.aggregator.get_agregated_models())
+            and (node in self.__train_set)
+        )
+        status_function = lambda node: (
+            node,
+            self.get_agregated_models(node),
+        )
+        model_function = lambda node: self.aggregator.get_partial_aggregation(
+            self.get_agregated_models(node)
         )
 
         # Gossip
@@ -628,64 +662,57 @@ class Node(BaseNode):
     def __gossip_model_difusion(self, initialization=False):
         # Wait a model (init or aggregated)
         if initialization:
-            logging.info("({}) Waiting initialization.".format(self.get_name()))
-            self.__wait_init_model_lock.acquire()
-            logging.info(
-                "({}) Gossiping model initialization.".format(
-                    self.get_name(), len(self.get_neighbors())
-                )
-            )
-            candidate_condition = lambda nc: not nc.get_model_initialized()
+            candidate_condition = lambda node: node not in self.__nei_status.keys()
         else:
-            logging.info("({}) Waiting aregation.".format(self.get_name()))
-            self.__finish_aggregation_lock.acquire()
-            logging.info(
-                "({}) Gossiping aggregated model.".format(
-                    self.get_name(), len(self.get_neighbors())
-                )
-            )
-            candidate_condition = lambda nc: nc.get_model_ready_status() < self.round
+            logging.info(f"({self.addr}) Gossiping aggregated model.")
+            candidate_condition = lambda node: self.__nei_status[node] < self.round
 
-        # Anonymous functions
-        status_function = lambda nc: nc.get_name()
+        # Status fn
+        status_function = lambda nc: nc
+        # Model fn -> At diffusion, contributors are not relevant
         model_function = lambda _: (
             self.learner.get_parameters(),
-            None,
-            None,
-        )  # At diffusion, contributors are not relevant
+            self.aggregator.get_agregated_models(),
+            1,
+        )
 
         # Gossip
         self.__gossip_model(candidate_condition, status_function, model_function)
 
-    def __gossip_model(self, candidate_condition, status_function, model_function):
+    def __gossip_model(
+        self,
+        candidate_condition,
+        status_function,
+        model_function,
+        period=Settings.GOSSIP_MODELS_PERIOD,
+    ):
         # Initialize list with status of nodes in the last X iterations
         last_x_status = []
         j = 0
 
         while True:
             # Get time to calculate frequency
-            begin = time.time()
+            t = time.time()
 
             # If the trainning has been interrupted, stop waiting
             if self.round is None:
-                logging.info(
-                    "({}) Stopping model gossip process.".format(self.get_name())
-                )
+                logging.info(f"({self.addr}) Stopping model gossip process.")
                 return
 
             # Get nodes wich need models
-            nei = [nc for nc in self.get_neighbors() if candidate_condition(nc)]
+            neis = [n for n in self.get_neighbors() if candidate_condition(n)]
+            logging.debug(f"({self.addr} Gossip remaining nodes: {neis}")
 
             # Determine end of gossip
-            if nei == []:
-                logging.info("({}) Gossip finished.".format(self.get_name()))
+            if neis == []:
+                logging.info(f"({self.addr}) Gossip finished.")
                 return
 
             # Save state of neighbors. If nodes are not responding gossip will stop
             if len(last_x_status) != Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS:
-                last_x_status.append([status_function(nc) for nc in nei])
+                last_x_status.append([status_function(n) for n in neis])
             else:
-                last_x_status[j] = str([status_function(nc) for nc in nei])
+                last_x_status[j] = str([status_function(n) for n in neis])
                 j = (j + 1) % Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS
 
                 # Check if las messages are the same
@@ -693,105 +720,26 @@ class Node(BaseNode):
                     if last_x_status[i] != last_x_status[i + 1]:
                         break
                     logging.info(
-                        "({}) Gossiping exited for {} equal reounds.".format(
-                            self.get_name(), Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS
-                        )
+                        f"({self.addr}) Gossiping exited for {Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS} equal reounds."
                     )
                     return
 
             # Select a random subset of neighbors
-            samples = min(Settings.GOSSIP_MODELS_PER_ROUND, len(nei))
-            nei = random.sample(nei, samples)
+            samples = min(Settings.GOSSIP_MODELS_PER_ROUND, len(neis))
+            neis = random.sample(neis, samples)
 
             # Generate and Send Model Partial Aggregations (model, node_contributors)
-            for nc in nei:
-                model, contributors, weights = model_function(nc)
+            for nei in neis:
+                model, contributors, weight = model_function(nei)
 
                 # Send Partial Aggregation
                 if model is not None:
-                    logging.info(
-                        "({}) Gossiping model to {}.".format(
-                            self.get_name(), nc.get_name()
-                        )
+                    logging.info(f"({self.addr}) Gossiping model to {nei}.")
+                    encoded_model = self.learner.encode_parameters(params=model)
+                    self._neighbors.send_model(
+                        nei, self.round, encoded_model, contributors, weight
                     )
-                    encoded_model = self.learner.encode_parameters(
-                        params=model, contributors=contributors, weight=weights
-                    )
-                    encoded_msgs = CommunicationProtocol.build_params_msg(encoded_model)
-                    # Send Fragments
-                    for msg in encoded_msgs:
-                        nc.send(msg)
 
-            # Wait to guarantee the frequency of gossipping
-            time_diff = time.time() - begin
-            time_sleep = 1 / Settings.GOSSIP_MODELS_FREC - time_diff
-            if time_sleep > 0:
-                time.sleep(time_sleep)
-
-    ###########################
-    #     Observer Events     #
-    ###########################
-
-    def update(self, event, obj):
-        """
-        Observer update method. Used to handle events that can occur in the different components and connections of the node.
-
-        Args:
-            event (Events): Event that has occurred.
-            obj: Object that has been updated.
-        """
-        if event == Events.NODE_CONNECTED_EVENT:
-            n, force = obj
-            if self.round is not None and not force:
-                logging.info(
-                    "({}) Cant connect to other nodes when learning is running. (however, other nodes can be connected to the node.)".format(
-                        self.get_name()
-                    )
-                )
-                n.stop()
-                return
-
-        elif event == Events.AGGREGATION_FINISHED_EVENT:
-            # Set parameters and communate it to the training process
-            if obj is not None:
-                self.learner.set_parameters(obj)
-                # Share that aggregation is done
-                self.broadcast(CommunicationProtocol.build_models_ready_msg(self.round))
-            else:
-                logging.error(
-                    "({}) Aggregation finished with no parameters".format(
-                        self.get_name()
-                    )
-                )
-                self.stop()
-            try:
-                self.__finish_aggregation_lock.release()
-            except:
-                pass
-
-        elif event == Events.START_LEARNING_EVENT:
-            self.__start_learning_thread(obj[0], obj[1])
-
-        elif event == Events.STOP_LEARNING_EVENT:
-            self.__stop_learning()
-
-        elif event == Events.PARAMS_RECEIVED_EVENT:
-            self.add_model(obj)
-
-        elif event == Events.METRICS_RECEIVED_EVENT:
-            name, round, loss, metric = obj
-            self.learner.log_validation_metrics(loss, metric, round=round, name=name)
-
-        elif event == Events.TRAIN_SET_VOTE_RECEIVED_EVENT:
-            node, votes = obj
-            self.__train_set_votes_lock.acquire()
-            self.__train_set_votes[node] = votes
-            self.__train_set_votes_lock.release()
-            # Communicate to the training process that a vote has been received
-            try:
-                self.__wait_votes_ready_lock.release()
-            except:
-                pass
-
-        # Execute BaseNode update
-        super().update(event, obj)
+            # Sleep to allow periodicity
+            sleep_time = max(0, period - (t - time.time()))
+            time.sleep(sleep_time)

@@ -11,14 +11,6 @@
 
 P2PFL is a general-purpose open-source library for the execution (simulated and in real environments) of Decentralized Federated Learning systems, specifically making use of P2P networks and the Gossisp protocol.
 
-## 📚 Documentation
-
-- [Documentation](https://pguijas.github.io/federated_learning_p2p/).
-
-- [Report of the end-of-degree project](other/memoria.pdf).
-
-- [Report for the award for the best open source end-of-degree project](other/memoria-open-source.pdf).
-
 ## ✅ Features
 
 - Easy to use and extend
@@ -30,15 +22,55 @@ P2PFL is a general-purpose open-source library for the execution (simulated and 
 
 ## 📥 Installation
 
+> **Note**
+> We recommend using Python 3.9 or lower. We have found some compatibility issues with Python 3.10 and PyTorch.
+
+### 👨🏼‍💻 For users
+
 To install the library, you can simply run:
 
 ```bash
 pip install p2pfl
 ```
 
-## 🚀 Roadmap
+Or you can install it from source:
 
-![Roadmap](other/roadmap.png)
+```bash
+git clone https://github.com/pguijas/p2pfl.git
+cd p2pfl
+pip install -e .
+```
+
+### 👨🏼‍🔧 For developers
+
+To install the library for development we recommend using a virtual environment. For example, with `pipenv`:
+
+```bash
+pipenv install --requirements requirements.txt
+```
+
+## 📚 Documentation
+
+- [Documentation](https://pguijas.github.io/federated_learning_p2p/).
+
+- [Report of the end-of-degree project](other/memoria.pdf).
+
+- [Report for the award for the best open source end-of-degree project](other/memoria-open-source.pdf).
+
+## 🚀 TO DO
+
+> **Note**
+> Don't be shy, share your ideas with us!
+
+- Agnostic installation with variants for different frameworks (include TensorFlow)
+- Add secure channels and node authentication
+- Improved simulation environment
+- Control panel
+- add FEMNIST example
+- add typing
+- New aggregation methods
+- Hot node inclusion
+- Secure aggregation
 
 ## 👫 Contributing
 

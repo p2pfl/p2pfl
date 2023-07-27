@@ -24,7 +24,6 @@ class CNN(pl.LightningModule):
         lr_rate=0.001,
         seed=None,
     ):
-
         # Set seed for reproducibility iniciialization
         if seed is not None:
             torch.manual_seed(seed)

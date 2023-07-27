@@ -1,132 +1,123 @@
-# 
-# This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).
-# Copyright (c) 2022 Pedro Guijas Bravo.
-# 
-# This program is free software: you can redistribute it and/or modify  
-# it under the terms of the GNU General Public License as published by  
-# the Free Software Foundation, version 3.
-#
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranty of 
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License 
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
+from pytorch_lightning.loggers.base import LightningLoggerBase
 
-import os
-from pytorch_lightning.loggers.base import LightningLoggerBase, rank_zero_experiment
-from pytorch_lightning.utilities.distributed import rank_zero_only
-from torch.utils.tensorboard import SummaryWriter
-import torch
-
-
-class FederatedTensorboardLogger(LightningLoggerBase):
+class FederatedLogger(LightningLoggerBase):
     """
-    Logger for PyTorch Lightning in federated learning.
-    It is made to save the information of the different trainings (in the different rounds) in the same graph.
-
-    End of round determined with `finalize_round`
-
+    Logger for Federated Learning
+    
     Args:
-        dir (str): Directory where the logs will be saved.
-        name (str): Name of the node.
-        version (int): Version of the experiment.
+        node_name (str): Name of the node
+
+    Attributes:
+        self_name (str): Name of the node
+        exp_dicts (list): List of experiments
+        actual_exp (int): Actual experiment
+        round (int): Actual round
+        local_step (int): Actual local step
+        global_step (int): Actual global step
     """
-
-    def __init__(self, dir, name=None, version=0, **kwargs):
+    def __init__(self, node_name):
         super().__init__()
-        self._name = "unknown_node"
-        self._version = version
-        if name is not None:
-            self._name = name
+        self.self_name = node_name
 
-        # Create log directory
-        dir = os.path.join(dir, self._name)
-        # If exist the experiment, increment the version
-        while os.path.exists(os.path.join(dir, "experiment_" + str(version))):
-            version += 1
-        # Create the writer
-        self.writer = SummaryWriter(os.path.join(dir, "experiment_" + str(version)))
+        # Create a dict
+        self.exp_dicts = []
+        self.actual_exp = -1
 
         # FL information
         self.round = 0
         self.local_step = 0
         self.global_step = 0
 
-        self.writer.add_scalar("fl_round", self.round, self.global_step)
+    def create_new_exp(self):
+        """
+        Create a new experiment
+        """
+        self.exp_dicts.append({self.self_name: {}})
+        self.actual_exp += 1
 
     @property
     def name(self):
-        """ """
-        return self._name
+        pass
 
     @property
     def version(self):
-        """ """
-        return self._version
-
-    @rank_zero_only
-    def log_hyperparams(self, params):
-        """ """
-        # params is an argparse.Namespace
-        # your code to record hyperparameters goes here
         pass
 
-    @rank_zero_only
-    def log_metrics(self, metrics, step):
-        """ """
+    def log_hyperparams(self, params):
+        pass
+
+    def get_logs(self, node=None, exp=None):
+        """
+        Obtain logs.
+
+        Args:
+            node (str): Node name
+            exp (int): Experiment number
+
+        Returns:
+            Logs
+        """
+        if exp is None and node is None:
+            return self.exp_dicts
+        if node is None:
+            return self.exp_dicts[exp]
+        if exp is None:
+            return self.exp_dicts[:][node]
+
+        return self.exp_dicts[exp][node]
+
+    def __add_log(self, metric, node, val, step):
+        # Create node entry if needed
+        if node not in self.exp_dicts[self.actual_exp].keys():
+            self.exp_dicts[self.actual_exp][node] = {}
+        # Create metric entry if needed
+        if metric not in self.exp_dicts[self.actual_exp][node].keys():
+            self.exp_dicts[self.actual_exp][node][metric] = [(step, val)]
+        else:
+            self.exp_dicts[self.actual_exp][node][metric].append((step, val))
+
+    def log_metrics(self, metrics, step, name=None):
+        """
+        Log metrics (in a pytorch format).
+        """
+        if name is None:
+            name = self.self_name
 
         # FL round information
         self.local_step = step
         __step = self.global_step + self.local_step
 
-        # Log Round
-        self.writer.add_scalar("fl_round", self.round, __step)
+        # Log FL-Round by Step
+        self.__add_log("fl_round", name, self.round, __step)
 
+        # metrics -> dictionary of metric names and values
         for k, v in metrics.items():
-            if isinstance(v, torch.Tensor):
-                v = v.item()
+            self.__add_log(k, name, v, __step)
 
-            if isinstance(v, dict):
-                self.writer.add_scalars(k, v, __step)
-            else:
-                try:
-                    self.writer.add_scalar(k, v, __step)
-                # todo: specify the possible exception
-                except Exception as ex:
-                    m = f"\n you tried to log {v} which is currently not supported. Try a dict or a scalar/tensor."
-                    raise ValueError(m) from ex
+    def log_round_metric(self, metric, value, round=None, name=None):
+        """
+        Log a metric for a round.
+        """
+        if name is None:
+            name = self.self_name
 
-    def log_scalar(self, key, value, round=None, name=None):
-        """ """
         if round is None:
             round = self.round
 
-        if name is None:
-            self.writer.add_scalar(key, value, round)
-        else:
-            self.writer.add_scalars(key, {name: value}, round)
+        self.__add_log(metric, name, value, round)
 
-    @rank_zero_only
     def save(self):
-        """ """
         # Optional. Any code necessary to save logger data goes here
         pass
 
     def finalize(self, status):
-        """ """
         pass
 
     def finalize_round(self):
+        """
+        Finalize a round: update global step, local step and round.
+        """
         # Finish Round
         self.global_step = self.global_step + self.local_step
         self.local_step = 0
         self.round = self.round + 1
-
-    def close(self):
-        try:
-            self.writer.close()
-        except:
-            pass

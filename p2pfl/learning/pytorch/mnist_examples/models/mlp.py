@@ -18,7 +18,6 @@ class MLP(pl.LightningModule):
     def __init__(
         self, metric=Accuracy, out_channels=10, lr_rate=0.001, seed=None
     ):  # low lr to avoid overfitting
-
         # Set seed for reproducibility iniciialization
         if seed is not None:
             torch.manual_seed(seed)

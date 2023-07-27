@@ -1,36 +1,35 @@
-# 
+#
 # This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).
 # Copyright (c) 2022 Pedro Guijas Bravo.
-# 
-# This program is free software: you can redistribute it and/or modify  
-# it under the terms of the GNU General Public License as published by  
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
 #
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranty of 
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 # General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License 
+# You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import socket
-import threading
 import logging
 import sys
-from p2pfl.communication_protocol import CommunicationProtocol
-from p2pfl.encrypter import AESCipher, RSACipher
-from p2pfl.gossiper import Gossiper
+import grpc
+import socket
+from concurrent import futures
+from p2pfl.proto import node_pb2
+from p2pfl.proto import node_pb2_grpc
+from p2pfl.neighbors import Neighbors
 from p2pfl.settings import Settings
-from p2pfl.node_connection import NodeConnection
-from p2pfl.heartbeater import Heartbeater
-from p2pfl.utils.observer import Events, Observer
+from p2pfl.messages import NodeMessages
 
 
-class BaseNode(threading.Thread, Observer):
+class BaseNode:
     """
-    This class represents a base node in the network (without **FL**). It is a thread, so it's going to process all messages in a background thread using the CommunicationProtocol.
+    This class represents a base node in the network (without **FL**).
 
     Args:
         host (str): The host of the node.
@@ -38,408 +37,207 @@ class BaseNode(threading.Thread, Observer):
         simulation (bool): If False, communication will be encrypted.
 
     Attributes:
-        host (str): The host of the node.
-        port (int): The port of the node.
-        simulation (bool): If the node is in simulation mode or not. Basically, simulation nodes don't have encryption and metrics aren't sent to network nodes.
-        heartbeater (Heartbeater): The heartbeater of the node.
-        gossiper (Gossiper): The gossiper of the node.
+        addr (str): The address of the node.
+        server (grpc.Server): The server of the node.
     """
-
+        
     #####################
     #     Node Init     #
     #####################
 
-    def __init__(self, host="127.0.0.1", port=None, simulation=True):
-        # Node Atributes
-        self.host = socket.gethostbyname(host)
-        self.port = port
-        self.simulation = simulation
-
-        # Super init
-        threading.Thread.__init__(self, name="node-" + self.get_name())
-        self._terminate_flag = threading.Event()
-
-        # Setting Up Node Socket (listening)
-        self.__node_socket = socket.socket(
-            socket.AF_INET, socket.SOCK_STREAM
-        )  # TCP Socket
-        if port == None:
-            self.__node_socket.bind((host, 0))  # gets a random free port
-            self.port = self.__node_socket.getsockname()[1]
-        else:
-            self.__node_socket.bind((host, port))
-        self.__node_socket.listen(50)  # no more than 50 connections at queue
-
+    def __init__(self, host="127.0.0.1", port=None, simulation=False):
+        # Message handlers
+        self.__msg_callbacks = {}
+        self.add_message_handler(NodeMessages.BEAT, self.__heartbeat_callback)
+       
+        # Random port
+        if port is None:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(("", 0))
+                port = s.getsockname()[1]
+        self.addr = f"{host}:{port}"
+              
         # Neighbors
-        self.__neighbors = []  # private to avoid concurrency issues
-        self.__nei_lock = threading.Lock()
-
+        self._neighbors = Neighbors(self.addr)
+        if simulation:
+            raise NotImplementedError("Simulation not implemented yet")
+        
+        # Server
+        self.__running = False
+        self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
+       
         # Logging
-        logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+        log_level = logging.getLevelName(Settings.LOG_LEVEL)
+        logging.basicConfig(stream=sys.stdout, level=log_level)
 
-        # Heartbeater and Gossiper
-        self.gossiper = None
-        self.heartbeater = None
+    #######################################
+    #   Node Management (servicer loop)   #
+    #######################################
 
-    def get_addr(self):
+    def assert_running(self, running):
         """
-        Returns:
-            tuple: The address of the node.
-        """
-        return self.host, self.port
+        Asserts that the node is running or not running.
 
-    def get_name(self):
-        """
-        Returns:
-            str: The name of the node.
-        """
-        return str(self.get_addr()[0]) + ":" + str(self.get_addr()[1])
+        Args:
+            running (bool): True if the node must be running, False otherwise.
 
-    #######################
-    #   Node Management   #
-    #######################
-
-    def start(self):
+        Raises:
+            Exception: If the node is not running and running is True, or if the node is running and running is False.
         """
-        Starts the node (node loop in a thread). It will listen for new connections and process them. Heartbeater and Gossiper will be started too.
+        running_state = self.__running
+        if running_state != running:
+            raise Exception(f"Node is {'not ' if running_state else ''}running.")
 
-        Note that a node is a thread, so an instance can only be started once.
+    def start(self, wait=False):
         """
-        # Main Loop
-        super().start()
-        # Heartbeater and Gossiper
-        self.heartbeater = Heartbeater(self.get_name())
-        self.gossiper = Gossiper(
-            self.get_name(), self.__neighbors
-        )  # thread safe, only read
-        self.heartbeater.add_observer(self)
-        self.gossiper.add_observer(self)
-        self.heartbeater.start()
-        self.gossiper.start()
+        Starts the node: server and neighbors(gossip and heartbeat).
+
+        Args:
+            wait (bool): If True, the function will wait until the server is terminated.
+
+        Raises:
+            Exception: If the node is already running.
+        """
+        # Check not running
+        self.assert_running(False)
+        # Set running
+        self.__running = True
+        # Heartbeat and Gossip
+        self._neighbors.start()
+        # Server
+        node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.server)
+        self.server.add_insecure_port(self.addr)
+        self.server.start()
+        logging.info(f"({self.addr}) Server started.")
+        if wait:
+            self.server.wait_for_termination()
+            logging.info(f"({self.addr}) Server terminated.")
 
     def stop(self):
         """
-        Stops the node. Heartbeater and Gossiper will be stopped too.
+        Stops the node: server and neighbors(gossip and heartbeat).
+
+        Raises:
+            Exception: If the node is not running.
         """
-        self._terminate_flag.set()
-        try:
-            # Send a self message to the loop to avoid the wait of the next recv
-            self.__send(self.host, self.port, b"")
-        except:
-            pass
-
-    ########################
-    #   Main Thread Loop   #
-    ########################
-
-    def run(self):
-        """
-        Main loop of the node, when a node is running, this method is being executed. It will listen for new connections and process them.
-        """
-        # Process new connections loop
-        logging.info("({}) Node started".format(self.get_name()))
-        while not self._terminate_flag.is_set():
-            try:
-                (ns, _) = self.__node_socket.accept()
-                msg = ns.recv(Settings.BLOCK_SIZE)
-
-                # Process new connection
-                if msg:
-                    msg = msg.decode("UTF-8")
-                    callback = lambda h, p, fu, fc: self.__process_new_connection(
-                        ns, h, p, fu, fc
-                    )
-                    if not CommunicationProtocol.process_connection(msg, callback):
-                        ns.close()
-            except Exception as e:
-                logging.exception(e)
-
-        # Stop Heartbeater and Gossiper
-        self.heartbeater.stop()
-        self.gossiper.stop()
-
-        # Stop Node
-        logging.info(
-            "({}) Stopping node. Disconnecting from {} nodos".format(
-                self.get_name(), len(self.__neighbors)
-            )
-        )
-        nei_copy_list = self.get_neighbors()
-        for n in nei_copy_list:
-            n.stop()
-        self.__node_socket.close()
-
-    def __process_new_connection(self, node_socket, h, p, full, force):
-        try:
-            # Check if connection with the node already exist
-            self.__nei_lock.acquire()
-            if self.get_neighbor(h, p, thread_safe=False) == None:
-
-                # Check if ip and port are correct
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.settimeout(2)
-                result = s.connect_ex((h, p))
-                s.close()
-
-                # Encryption
-                aes_cipher = None
-                if not self.simulation:
-                    # Asymmetric
-                    rsa = RSACipher()
-                    node_socket.sendall(rsa.get_key())
-                    rsa.load_pair_public_key(node_socket.recv(len(rsa.get_key())))
-
-                    # Symmetric
-                    aes_cipher = AESCipher()
-                    node_socket.sendall(aes_cipher.get_key())
-
-                # Add neighboor
-                if result == 0:
-                    logging.info(
-                        "{} Connection accepted with {}:{}".format(
-                            self.get_name(), h, p
-                        )
-                    )
-                    nc = NodeConnection(
-                        self.get_name(), node_socket, (h, p), aes_cipher
-                    )
-                    nc.add_observer(self)
-                    self.__neighbors.append(nc)
-                    nc.start(force=force)
-
-                    if full:
-                        self.broadcast(
-                            CommunicationProtocol.build_connect_to_msg(h, p),
-                            exc=[nc],
-                            thread_safe=False,
-                        )
-            else:
-                node_socket.close()
-
-            self.__nei_lock.release()
-
-        except Exception as e:
-            logging.debug(
-                "({}) Connection refused with {}:{}".format(self.get_name(), h, p)
-            )
-            self.__nei_lock.release()
-            node_socket.close()
-            self.rm_neighbor(nc)
+        logging.info(f"({self.addr}) Stopping node...")
+        # Check running
+        self.assert_running(True)
+        # Stop server
+        self.server.stop(0)
+        # Stop neighbors
+        self._neighbors.stop()
+        # Set not running
+        self.__running = False
 
     #############################
     #  Neighborhood management  #
     #############################
 
-    # Create a tcp socket and send data
-    def __send(self, h, p, data, persist=False):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((h, p))
-        s.sendall(data)
-        if persist:
-            return s
-        else:
-            s.close()
-            return None
-
-    def connect_to(self, h, p, full=False, force=False):
-        """ "
+    def connect(self, addr):
+        """
         Connects a node to another.
 
         Args:
-            h (str): The host of the node.
-            p (int): The port of the node.
-            full (bool): If True, the node will be connected to the entire network.
-            force (bool): If True, the node will be connected even though it should not be.
+            addr (str): The address of the node to connect to.
 
         Returns:
-            node: The node that has been connected to.
+            bool: True if the node was connected, False otherwise.
         """
-        if full:
-            full = "1"
+        # Check running
+        self.assert_running(True)
+        # Connect
+        logging.info(f"({self.addr}) connecting to {addr}...")
+        return self._neighbors.add(addr, handshake_msg=True)
+
+    def get_neighbors(self, only_direct=False):
+        """
+        Returns the neighbors of the node.
+
+        Args:
+            only_direct (bool): If True, only the direct neighbors will be returned.
+
+        Returns:
+            list: The list of neighbors.
+        """
+        return self._neighbors.get_all(only_direct)
+
+    def disconnect_from(self, addr):
+        """
+        Disconnects a node from another.
+
+        Args:
+            addr (str): The address of the node to disconnect from.
+        """
+        # Check running
+        self.assert_running(True)
+        # Disconnect
+        logging.info(f"({self.addr}) removing {addr}...")
+        self._neighbors.remove(addr, disconnect_msg=True)
+
+    ############################
+    #  GRPC - Remote Services  #
+    ############################
+
+    def handshake(self, request, _):
+        """
+        GRPC service. It is called when a node connects to another.
+        """
+        if self._neighbors.add(request.addr, handshake_msg=False):
+            return node_pb2.ResponseMessage()
         else:
-            full = "0"
-
-        if force:
-            force = "1"
-        else:
-            force = "0"
-
-        try:
-            # Check if connection with the node already exist
-            h = socket.gethostbyname(h)
-            self.__nei_lock.acquire()
-            if self.get_neighbor(h, p, thread_safe=False) == None:
-
-                # Send connection request
-                msg = CommunicationProtocol.build_connect_msg(
-                    self.host, self.port, full, force
-                )
-                s = self.__send(h, p, msg, persist=True)
-
-                # Encryption
-                aes_cipher = None
-                if not self.simulation:
-                    # Asymetric
-                    rsa = RSACipher()
-                    rsa.load_pair_public_key(s.recv(len(rsa.get_key())))
-                    s.sendall(rsa.get_key())
-                    # Symetric
-                    aes_cipher = AESCipher(key=s.recv(AESCipher.key_len()))
-
-                # Add socket to neighbors
-                logging.info("{} Connected to {}:{}".format(self.get_name(), h, p))
-                nc = NodeConnection(self.get_name(), s, (h, p), aes_cipher)
-                nc.add_observer(self)
-                self.__neighbors.append(nc)
-                nc.start(force=force)
-                self.__nei_lock.release()
-                return nc
-
-            else:
-                logging.info(
-                    "{} Already connected to {}:{}".format(self.get_name(), h, p)
-                )
-                self.__nei_lock.release()
-                return None
-
-        except Exception as e:
-            logging.info(
-                "{} Can't connect to the node {}:{}".format(self.get_name(), h, p)
+            return node_pb2.ResponseMessage(
+                error="Cannot add the node (duplicated or wrong direction)"
             )
-            logging.exception(e)
-            try:
-                self.__nei_lock.release()
-            except:
-                pass
-            return None
 
-    def disconnect_from(self, h, p):
+    def disconnect(self, request, _):
         """
-        Disconnects from a node.
+        GRPC service. It is called when a node disconnects from another.
+        """
+        self._neighbors.remove(request.addr, disconnect_msg=False)
+        return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
 
+    def send_message(self, request, _):
+        """
+        GRPC service. It is called when a node sends a message to another.
+        """
+        # If not processed
+        if self._neighbors.add_processed_msg(request.hash):
+            # Gossip
+            self._neighbors.gossip(request)
+            # Process message
+            if request.cmd in self.__msg_callbacks.keys():
+                try:
+                    self.__msg_callbacks[request.cmd](request)
+                except Exception as e:
+                    error_text = f"[{self.addr}] Error while processing command: {request.cmd} {request.args}: {e}"
+                    logging.error(error_text)
+                    return node_pb2.ResponseMessage(error=error_text)
+            else:
+                # disconnect node
+                logging.error(
+                    f"[{self.addr}] Unknown command: {request.cmd} from {request.source}"
+                )
+                return node_pb2.ResponseMessage(error=f"Unknown command: {request.cmd}")
+        return node_pb2.ResponseMessage()
+
+    def add_model(self, request, _):
+        raise NotImplementedError
+
+    ####
+    # Message Handlers
+    ####
+
+    def add_message_handler(self, cmd, callback):
+        """
+        Adds a function callback to a message.
+        
         Args:
-            h (str): The host of the node.
-            p (int): The port of the node.
+            cmd (str): The command of the message.
+            callback (function): The callback function.
         """
-        self.get_neighbor(h, p).stop()
+        self.__msg_callbacks[cmd] = callback
 
-    def get_neighbor(self, h, p, thread_safe=True):
-        """
-        Get a ``NodeConnection`` from the neighbors list.
-
-        Args:
-            h (str): The host of the node.
-            p (int): The port of the node.
-
-        Returns:
-            NodeConnection: The connection with the node.
-        """
-        if thread_safe:
-            self.__nei_lock.acquire()
-
-        return_node = None
-        for n in self.__neighbors:
-            if n.get_addr() == (h, p):
-                return_node = n
-                break
-
-        if thread_safe:
-            self.__nei_lock.release()
-
-        return return_node
-
-    def get_neighbors(self):
-        """
-        Returns:
-            list: The neighbors of the node.
-        """
-        self.__nei_lock.acquire()
-        n = self.__neighbors.copy()
-        self.__nei_lock.release()
-        return n
-
-    def rm_neighbor(self, n):
-        """
-        Removes a neighboor from the neighbors list.
-
-        Args:
-            n (NodeConnection): The neighboor to be removed.
-        """
-        self.__nei_lock.acquire()
-        try:
-            self.__neighbors.remove(n)
-            n.stop()
-        except:
-            pass
-        self.__nei_lock.release()
-
-    def get_network_nodes(self):
-        """
-        Returns:
-            list: The nodes of the network.
-        """
-        return self.heartbeater.get_nodes()
-
-    ##########################
-    #     Msg management     #
-    ##########################
-
-    def broadcast(self, msg, exc=[], thread_safe=True):
-        """
-        Broadcasts a message to all the neighbors.
-
-        Args:
-            msg (str): The message to be broadcasted.
-            exc (list): The neighbors to be excluded.
-            thread_safe (bool): If True, the broadcast will access the neighbors list in a thread safe mode.
-
-        """
-        if thread_safe:
-            self.__nei_lock.acquire()
-
-        for n in self.__neighbors:
-            if not (n in exc):
-                n.send(msg)
-
-        if thread_safe:
-            self.__nei_lock.release()
-
-    ###########################
-    #     Observer Events     #
-    ###########################
-
-    def update(self, event, obj):
-        """
-        Observer update method. Used to handle events that can occur with the different components and connections of the node.
-
-        Args:
-            event (Events): Event that has occurred.
-            obj: Information about the change or event.
-        """
-        if event == Events.END_CONNECTION_EVENT:
-            self.rm_neighbor(obj)
-
-        elif event == Events.NODE_CONNECTED_EVENT:
-            n, _ = obj
-            n.send(CommunicationProtocol.build_beat_msg(self.get_name()))
-
-        elif event == Events.CONN_TO_EVENT:
-            self.connect_to(obj[0], obj[1], full=False)
-
-        elif event == Events.SEND_BEAT_EVENT:
-            self.broadcast(CommunicationProtocol.build_beat_msg(self.get_name()))
-
-        elif event == Events.GOSSIP_BROADCAST_EVENT:
-            self.broadcast(obj[0], exc=obj[1])
-
-        elif event == Events.PROCESSED_MESSAGES_EVENT:
-            node, msgs = obj
-            # Comunicate to connections the new messages processed
-            for nc in self.__neighbors:
-                if nc != node:
-                    nc.add_processed_messages(list(msgs.keys()))
-            # Gossip the new messages
-            self.gossiper.add_messages(list(msgs.values()), node)
-
-        elif event == Events.BEAT_RECEIVED_EVENT:
-            self.heartbeater.add_node(obj)
+    def __heartbeat_callback(self, request):
+        time = float(request.args[0])
+        self._neighbors.heartbeat(request.source, time)

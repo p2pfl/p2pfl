@@ -1,29 +1,29 @@
-# 
+#
 # This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).
 # Copyright (c) 2022 Pedro Guijas Bravo.
-# 
-# This program is free software: you can redistribute it and/or modify  
-# it under the terms of the GNU General Public License as published by  
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
 #
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranty of 
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 # General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License 
+# You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from test.utils import set_test_settings
+
+set_test_settings()
 from p2pfl.node import Node
 from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.learning.pytorch.lightninglearner import LightningLearner
 from collections import OrderedDict
 import torch
-from test.utils import set_test_settings
-
-set_test_settings()
 
 ###############################################################################
 #    Test things related to the learning process (not the learning process)   #
@@ -35,7 +35,7 @@ def test_encoding():
     encoded_params = nl1.encode_parameters()
 
     nl2 = LightningLearner(MLP(), None)
-    decoded_params, _, _ = nl2.decode_parameters(encoded_params)
+    decoded_params = nl2.decode_parameters(encoded_params)
     nl2.set_parameters(decoded_params)
 
     encoded_params == nl2.encode_parameters()
