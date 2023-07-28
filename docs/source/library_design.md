@@ -1,4 +1,4 @@
-# Library Design
+# 🏛️ Library Design
 
 This document describes the design of the library.
 

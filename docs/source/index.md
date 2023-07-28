@@ -2,15 +2,15 @@
 
 P2PFL is a general-purpose open-source library for the execution (simulated and in real environments) of Decentralized Federated Learning systems, specifically making use of P2P networks and the Gossisp protocol.
 
-## Installation
+## 📥 Installation
 
 See [Installation](installation.md) for instructions on how to install P2PFL.
 
-## Quickstart
+## 🎬 Quickstart
 
 See [Quickstart](quickstart.md) for a quick introduction to P2PFL.
 
-## Contributing
+## 👫 Contributing
 
 See [Contributing](contributing.md) for instructions on how to contribute to P2PFL.
 
@@ -21,7 +21,7 @@ sphinx-apidoc -F -o tmp ../p2pfl
 ```
 -->
 
-## Index
+## 📋 Index
 
 ```{eval-rst}
 .. toctree::

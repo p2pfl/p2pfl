@@ -1,4 +1,4 @@
-# Quickstart
+# 🎬 Quickstart
 
 **P2P Federated Learning (p2pfl)** is a library focused on the easy creation of federated learning systems.
 
