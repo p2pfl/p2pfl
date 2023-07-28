@@ -1,4 +1,4 @@
-# Library Design
+# 🏛️ Library Design
 
 This document describes the design of the library.
 
@@ -8,36 +8,10 @@ First of all, its important to keep in mind some design principles that were fol
 
 ## General Overview
 
-The library has been structured, in general, following a design in which the node has different components.
+The library has been structured following 2 implementations of the node: the first one allows p2p communication using GRPC and the next one extends the first one to allow node learning.
 
-The class diagrams of the different parts of the library are shown below.
+Since a p2p architecture is followed, the `BaseNode` will be a service provider as well as a consumer (using the `Neighbors` class). As for `Node`, its modular operation related to federated learning will depend on the `Aggregator` and `NodeLearner` components. These, thanks to the template pattern and strategy, will allow an easy extension of the library, as well as an agnostic character to the implementation of the learning algorithms.
 
-### Node without learning
+Note that the `send_message` remote call will be used for message passing (not including model exchange), following a similar approach to the command pattern but using callbacks.
 
-![class diagram 1](class1.png)
-
-### Node with learning
-
-![class diagram 2](class2.png)
-
-### Gosspip protocol
-
-![class diagram 4](class4.png)
-
-### Encryption
-
-![class diagram 6](class6.png)
-
-## Design Patterns
-
-The library has been structured following some design patterns. The most important ones are:
-
-- **Observer pattern**: Used to manage the communication between the different components of the node and the node.
-
-- **Command pattern**: Used to create the communication protocol.
-
-- **Template pattern**: Used to make the library extremely extensible.
-
-## Communication Protocol
-
-To know more about the communication protocol, see the `communication_protocol module` at [documentation](p2pfl.rst).
+![class diagram 1](class.png)

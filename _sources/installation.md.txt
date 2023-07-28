@@ -1,25 +1,28 @@
-# Installation
+# 📥 Installation
 
-``` {warning}
-   PyTorch version 1.11.0 is required.
-```
+> **Note**
+> We recommend using Python 3.9 or lower. We have found some compatibility issues with Python 3.10 and PyTorch.
 
-## Install using pip
+## For users
 
-Stable releases are available on [PyPI](https://pypi.org/project/p2pfl/):
+To install the library, you can simply run:
 
 ```bash
 pip install p2pfl
 ```
 
-## Create a virtual environment
+Or you can install it from source:
 
 ```bash
-pipenv install p2pfl
+git clone https://github.com/pguijas/p2pfl.git
+cd p2pfl
+pip install -e .
 ```
 
-## Dockerized installation
+## For developers
 
-``` {note}
-   not available yet
+To install the library for development we recommend using a virtual environment. For example, with `pipenv`:
+
+```bash
+pipenv install --requirements requirements.txt
 ```
