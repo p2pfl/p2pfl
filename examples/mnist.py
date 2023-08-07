@@ -4,7 +4,7 @@ from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.node import Node
 import time
 
-def mnist_execution(n,start,simulation,conntect_to=None, iid=True):
+def mnist_execution(n,r,start,simulation,conntect_to=None, iid=True):
 
     # Node Creation
     nodes = []
@@ -31,7 +31,7 @@ def mnist_execution(n,start,simulation,conntect_to=None, iid=True):
 
     # Start Learning
     if start:
-        nodes[0].set_start_learning(rounds=10,epochs=2)
+        nodes[0].set_start_learning(rounds=r,epochs=1)
     else:
         time.sleep(20)
 
@@ -50,7 +50,9 @@ def mnist_execution(n,start,simulation,conntect_to=None, iid=True):
 
 
 if __name__ == '__main__':
-    for _ in range(50):
-        mnist_execution(1,True,True)
-        break
+    # Record time
+    start_time = time.time()
+    mnist_execution(10,50,True,True)
+    # Print time in minutes
+    print("--- %s minutes ---" % ((time.time() - start_time)/60))
  
