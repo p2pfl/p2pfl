@@ -76,7 +76,7 @@ class Neighbors:
     def build_msg(self, cmd, args=[], round=None):
         """
         Build a message to send to the neighbors.
-        
+
         Args:
             cmd (string): Command of the message.
             args (list): Arguments of the message.
@@ -89,6 +89,7 @@ class Neighbors:
             str(cmd) + str(args) + str(datetime.now()) + str(random.randint(0, 100000))
         )
         args = [str(a) for a in args]
+
         return node_pb2.Message(
             source=self.__self_addr,
             ttl=Settings.TTL,
@@ -189,7 +190,7 @@ class Neighbors:
     def add(self, addr, handshake_msg=True, non_direct=False):
         """
         Add a neighbor if it is not itself or already added. It also sends a handshake message to check if the neighbor is available and create a bidirectional connection.
-        
+
         Args:
             addr (str): Address of the neighbor.
             handshake_msg (bool): If True, send a handshake message to the neighbor.
@@ -285,7 +286,7 @@ class Neighbors:
 
         Args:
             nei (str): Address of the neighbor.
-        
+
         Returns:
             node_pb2_grpc.NodeServicesStub: Stub of the neighbor.
         """
@@ -320,9 +321,13 @@ class Neighbors:
         Update the time of the last heartbeat of a neighbor. If the neighbor is not added, add it.
 
         Args:
-            nei (str): Address of the neighbor. 
+            nei (str): Address of the neighbor.
             time (float): Time of the heartbeat.
         """
+        # Check if it is itself
+        if nei == self.__self_addr:
+            return
+        # Add / update
         self.__nei_lock.acquire()
         if nei not in self.__neighbors.keys():
             self.__nei_lock.release()
@@ -362,13 +367,13 @@ class Neighbors:
 
             # Send heartbeat
             nei_copy = self.__neighbors.copy()
+            msg = self.build_msg(NodeMessages.BEAT, args=[str(time.time())])
+            self.add_processed_msg(msg)
             for nei, (_, stub, _) in nei_copy.items():
                 if stub is None:
                     continue
                 try:
-                    stub.send_message(
-                        self.build_msg(NodeMessages.BEAT, args=[str(time.time())])
-                    )
+                    stub.send_message(msg, timeout=Settings.GRPC_TIMEOUT)
                 except Exception as e:
                     logging.info(
                         f"({self.__self_addr}) Cannot send heartbeat to {nei}. Error: {str(e)}"
@@ -409,7 +414,7 @@ class Neighbors:
     def gossip(self, msg):
         """
         Add a message to the list of pending messages to gossip.
-        
+
         Args:
             msg (node_pb2.Message): Message to add.
         """

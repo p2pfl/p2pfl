@@ -19,6 +19,7 @@ import threading
 import logging
 from p2pfl.settings import Settings
 
+
 class Aggregator:
     """
     Class to manage the aggregation of models.
@@ -55,12 +56,19 @@ class Aggregator:
         """
         if not self.__finish_aggregation_lock.locked():
             self.__train_set = l
-            self.__models = {}
-            self.__finish_aggregation_lock.acquire()
+            self.__finish_aggregation_lock.acquire(timeout=Settings.AGGREGATION_TIMEOUT)
         else:
             raise Exception(
                 "It is not possible to set nodes to aggregate when the aggregation is running."
             )
+
+    def set_waiting_aggregated_model(self, nodes):
+        """
+        Indicates that the node is waiting for an aggregation. It won't participate in aggregation process.
+        The model only will receive a model and then it will be used as an aggregated model.
+        """
+        self.set_nodes_to_aggregate(nodes)
+        self.__waiting_aggregated_model = True
 
     def clear(self):
         """
@@ -68,19 +76,12 @@ class Aggregator:
         """
         self.__agg_lock.acquire()
         self.__train_set = []
+        self.__models = {}
         try:
             self.__finish_aggregation_lock.release()
         except:
             pass
         self.__agg_lock.release()
-
-    def set_waiting_aggregated_model(self):
-        """
-        Indicates that the node is waiting for an aggregation. It won't participate in aggregation process.
-        The model only will receive a model and then it will be used as an aggregated model.
-        """
-        self.__waiting_aggregated_model = True
-        self.__finish_aggregation_lock.acquire(timeout=Settings.AGGREGATION_TIMEOUT)
 
     def get_agregated_models(self):
         """
@@ -117,11 +118,13 @@ class Aggregator:
 
         # Diffusion / Aggregation
         if self.__waiting_aggregated_model and self.__models == {}:
-            logging.info(f"({self.node_name}) Received an aggregated model.")
-            self.__models = {}
-            self.__models = {" ".join(nodes): (model, 1)}
-            self.__finish_aggregation_lock.release()  # REVISAR ------
-            return None
+            if set(contributors) == set(self.__train_set):
+                logging.info(f"({self.node_name}) Received an aggregated model.")
+                self.__models = {}
+                self.__models = {" ".join(nodes): (model, 1)}
+                self.__waiting_aggregated_model = False
+                self.__finish_aggregation_lock.release()
+                return contributors
 
         else:
             self.__agg_lock.acquire()
@@ -198,8 +201,12 @@ class Aggregator:
         if self.__waiting_aggregated_model:
             if len(self.__models) == 1:
                 return list(self.__models.values())[0][0]
+            elif len(self.__models) == 0:
+                logging.info(
+                    f"({self.node_name}) Timeout reached by waiting for an aggregated model. Continuing with the local model."
+                )
             raise Exception(
-                "Waiting for an an aggregated but several models were received."
+                f"Waiting for an an aggregated but several models were received: {self.__models.keys()}"
             )
         # Start aggregation
         n_model_aggregated = sum(
@@ -223,7 +230,7 @@ class Aggregator:
 
         Args:
             except_nodes (list): List of nodes to exclude from the aggregation.
-        
+
         Returns:
             Aggregated model, nodes aggregated and aggregation weight.
         """

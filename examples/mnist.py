@@ -20,9 +20,6 @@ from test.utils import (
     set_test_settings,
     wait_4_results,
 )
-import numpy as np
-
-set_test_settings()
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
@@ -31,7 +28,7 @@ import time
 import matplotlib.pyplot as plt
 
 
-def test_convergence(n, r):
+def test_convergence(n, r, epochs=2):
     # Node Creation
     nodes = []
     for i in range(n):
@@ -46,7 +43,7 @@ def test_convergence(n, r):
     wait_convergence(nodes, n - 1, only_direct=False)
 
     # Start Learning
-    nodes[0].set_start_learning(rounds=r, epochs=2)
+    nodes[0].set_start_learning(rounds=r, epochs=epochs)
 
     # Wait and check
     wait_4_results(nodes)
@@ -65,4 +62,7 @@ def test_convergence(n, r):
 
 
 if __name__ == "__main__":
-    test_convergence(2, 2)
+    # Settings
+    set_test_settings()
+    # Launch experiment
+    test_convergence(2, 2, epochs=0)

@@ -119,7 +119,11 @@ class Node(BaseNode):
         self.__nei_status[msg.source] = -1
 
     def __vote_train_set_callback(self, msg):
-        if msg.round == self.round:
+        # check moment: round or round + 1 because of node async
+        ########################################################
+        ### try to improve clarity in message moment check
+        ########################################################
+        if msg.round in [self.round, self.round + 1]:
             # build vote dict
             votes = msg.args
             tmp_votes = {}
@@ -134,14 +138,25 @@ class Node(BaseNode):
                 self.__wait_votes_ready_lock.release()
             except:
                 pass
+        else:
+            logging.error(
+                f"({self.addr}) Vote received in a late round. Ignored. {msg.round} != {self.round} / {self.round+1}"
+            )
 
     def __models_agregated_callback(self, msg):
         if msg.round == self.round:
             self.__models_agregated[msg.source] = msg.args
 
     def __models_ready_callback(self, msg):
-        if msg.round == self.round:
+        ########################################################
+        ### try to improve clarity in message moment check
+        ########################################################
+        if msg.round in [self.round - 1, self.round]:
             self.__nei_status[msg.source] = int(msg.args[0])
+        else:
+            logging.error(
+                f"({self.addr}) Models ready in a late round. Ignored. {msg.round} != {self.round} / {self.round-1}"
+            )
 
     def __metrics_callback(self, msg):
         name = msg.source
@@ -404,8 +419,6 @@ class Node(BaseNode):
     #######################
 
     def __wait_aggregated_model(self):
-        logging.info(f"({self.addr}) Waiting aregation.")
-
         params = self.aggregator.wait_and_get_aggregation()
 
         # Set parameters and communate it to the training process
@@ -429,7 +442,9 @@ class Node(BaseNode):
         if self.round is not None:
             self.__train_set = self.__vote_train_set()
             self.__train_set = self.__validate_train_set(self.__train_set)
-            logging.info(f"{self.addr} Train set of {len(self.__train_set)} nodes: {self.__train_set}")
+            logging.info(
+                f"{self.addr} Train set of {len(self.__train_set)} nodes: {self.__train_set}"
+            )
 
         # Determine if node is in the train set
         if self.addr in self.__train_set:
@@ -463,7 +478,8 @@ class Node(BaseNode):
 
         else:
             # Set Models To Aggregate
-            self.aggregator.set_waiting_aggregated_model()
+            logging.info(f"({self.addr}) Waiting aregation.")
+            self.aggregator.set_waiting_aggregated_model(self.__train_set)
 
         # Gossip aggregated model (also syncrhonizes nodes)
         if self.round is not None:
@@ -503,7 +519,9 @@ class Node(BaseNode):
         logging.debug(f"({self.addr}) Self Vote: {votes}")
         self._neighbors.broadcast_msg(
             self._neighbors.build_msg(
-                LearningNodeMessages.VOTE_TRAIN_SET, list(sum(votes, tuple()))
+                LearningNodeMessages.VOTE_TRAIN_SET,
+                list(sum(votes, tuple())),
+                round=self.round,
             )
         )
         logging.debug(f"({self.addr}) Waiting other node votes.")

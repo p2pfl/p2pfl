@@ -1,9 +1,10 @@
 from pytorch_lightning.loggers.base import LightningLoggerBase
 
+
 class FederatedLogger(LightningLoggerBase):
     """
     Logger for Federated Learning
-    
+
     Args:
         node_name (str): Name of the node
 
@@ -15,6 +16,7 @@ class FederatedLogger(LightningLoggerBase):
         local_step (int): Actual local step
         global_step (int): Actual global step
     """
+
     def __init__(self, node_name):
         super().__init__()
         self.self_name = node_name

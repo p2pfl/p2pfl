@@ -60,7 +60,7 @@ class Settings:
     """
     Period (seconds) for the gossip protocol.
     """
-    TTL = 3
+    TTL = 10
     """
     Time to live (TTL) for a message in the gossip protocol.
     """
@@ -96,7 +96,7 @@ class Settings:
     """
     Timeout (seconds) for a node to wait for a vote.
     """
-    AGGREGATION_TIMEOUT = 20
+    AGGREGATION_TIMEOUT = 300
     """
     Timeout (seconds) for a node to wait for other models. Timeout starts when the first model is added.
     """

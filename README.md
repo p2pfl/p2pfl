@@ -16,7 +16,7 @@ P2PFL is a general-purpose open-source library for the execution (simulated and 
 - Easy to use and extend
 - Fault tolerant
 - Decentralized and Scalable
-- Simulated and real environments
+- Simulated (**to-do, changed in 0.2.0**) and real environments
 - Privacy-preserving
 - Framework agnostic
 

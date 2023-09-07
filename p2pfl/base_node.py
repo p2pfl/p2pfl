@@ -39,7 +39,7 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
     Attributes:
         addr (str): The address of the node.
     """
-        
+
     #####################
     #     Node Init     #
     #####################
@@ -48,23 +48,23 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         # Message handlers
         self.__msg_callbacks = {}
         self.add_message_handler(NodeMessages.BEAT, self.__heartbeat_callback)
-       
+
         # Random port
         if port is None:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.bind(("", 0))
                 port = s.getsockname()[1]
         self.addr = f"{host}:{port}"
-              
+
         # Neighbors
         self._neighbors = Neighbors(self.addr)
         if simulation:
             raise NotImplementedError("Simulation not implemented yet")
-        
+
         # Server
         self.__running = False
         self.__server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
-       
+
         # Logging
         log_level = logging.getLevelName(Settings.LOG_LEVEL)
         logging.basicConfig(stream=sys.stdout, level=log_level)
@@ -218,6 +218,7 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
                     f"[{self.addr}] Unknown command: {request.cmd} from {request.source}"
                 )
                 return node_pb2.ResponseMessage(error=f"Unknown command: {request.cmd}")
+
         return node_pb2.ResponseMessage()
 
     def add_model(self, request, _):
@@ -230,7 +231,7 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
     def add_message_handler(self, cmd, callback):
         """
         Adds a function callback to a message.
-        
+
         Args:
             cmd (str): The command of the message.
             callback (function): The callback function.
