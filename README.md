@@ -72,6 +72,7 @@ pipenv install --requirements requirements.txt
 - Hot node inclusion
 - Secure aggregation
 - Non trainable nodes (gossip nodes) to increase the efficiency of the network
+- gossip learning option
 
 ## 👫 Contributing
 
