@@ -51,7 +51,7 @@ pipenv install --requirements requirements.txt
 
 ## 📚 Documentation
 
-- [Documentation](https://pguijas.github.io/federated_learning_p2p/).
+- [Documentation](https://pguijas.github.io/p2pfl/). 
 
 - [Report of the end-of-degree project](other/memoria.pdf).
 
