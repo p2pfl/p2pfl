@@ -31,10 +31,10 @@ import torch
 
 
 def test_encoding():
-    nl1 = LightningLearner(MLP(), None)
+    nl1 = LightningLearner(MLP(), None, "")
     encoded_params = nl1.encode_parameters()
 
-    nl2 = LightningLearner(MLP(), None)
+    nl2 = LightningLearner(MLP(), None, "")
     decoded_params = nl2.decode_parameters(encoded_params)
     nl2.set_parameters(decoded_params)
 
@@ -66,7 +66,7 @@ def test_avg_simple():
 
 def test_avg_complex():
     aggregator = FedAvg()
-    nl1 = LightningLearner(MLP(), None)
+    nl1 = LightningLearner(MLP(), None, "")
     params = nl1.get_parameters()
     params1 = nl1.get_parameters()
     params2 = nl1.get_parameters()

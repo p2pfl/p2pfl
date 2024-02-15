@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "p2pfl"
+version = "0.2.2"
+description = "A p2p federated learning framework"
+authors = ["Pedro Guijas <pguijas@gmail.com>"]
+license = "GPL-3.0-only"
+readme = "README.md"
+homepage = "https://pguijas.github.io/p2pfl/"
+repository = "https://github.com/pguijas/p2pfl"
+documentation = "https://pguijas.github.io/p2pfl/doc"
+keywords = ["federated learning", "fl", "peer to peer", "p2p", "decentralized", "data privacy", "data security", "pytorch"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+torch = { version = "1.11.0", optional = false }            # set to true when multiple frameworks are supported
+torchvision = { version = "0.12.0", optional = false }
+torchmetrics = { version = "0.7.3", optional = false }
+pytorch-lightning = { version = "1.6.5", optional = false }
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-cov = "^4.1.0"
+black = "^24.2.0"
+
+[tool.poetry.group.docs.dependencies]
+Sphinx = "^7.2.6"
+myst-parser = "^2.0.0"
+furo = "^2024.1.29"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+#[tool.poetry.extras]
+#torch = ["torch", "torchvision", "torchmetrics", "pytorch-lightning"]
