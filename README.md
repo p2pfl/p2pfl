@@ -33,20 +33,27 @@ To install the library, you can simply run:
 pip install p2pfl
 ```
 
-Or you can install it from source:
+Or you can install it from source. This installation method is recommended for developers (detailed in the next section).
+
+### 👨🏼‍🔧 For developers
+
+#### 🐍 Python
+
+To install the library for development we recommend using a virtual environment. We use [Poetry](https://python-poetry.org/) for this purpose.
 
 ```bash
 git clone https://github.com/pguijas/p2pfl.git
 cd p2pfl
-pip install -e .
+poetry init # CHECK!!!!
+poetry install
 ```
 
-### 👨🏼‍🔧 For developers
+#### 🐳 Docker
 
-To install the library for development we recommend using a virtual environment. For example, with `pipenv`:
+You can also use the library with Docker. We provide a Docker image with the library installed. You can use it as follows:
 
 ```bash
-pipenv install --requirements requirements.txt
+docker ... # TODO
 ```
 
 ## 📚 Documentation
@@ -78,9 +85,9 @@ pipenv install --requirements requirements.txt
 
 Contributions are always welcome!
 
-See `CONTRIBUTING.md` for ways to get started.
+See `CONTRIBUTING.md` ([CONTRIBUTING](CONTRIBUTING.md)) for ways to get started.
 
-Please adhere to this project's code of conduct specified in `CODE_OF_CONDUCT.md`.
+Please adhere to this project's code of conduct specified in `CODE_OF_CONDUCT.md` ([CODE_OF_CONDUCT](CODE_OF_CONDUCT.md)).
 
 ## 💬 Google Group
 

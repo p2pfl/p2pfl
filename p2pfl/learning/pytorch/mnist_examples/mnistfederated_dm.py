@@ -1,5 +1,6 @@
 #
-# This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -69,33 +70,39 @@ class MnistFederatedDM(LightningDataModule):
                 "", train=True, download=True, transform=transforms.ToTensor()
             )
             if not iid:
-                sorted_indexes = MnistFederatedDM.mnist_train.targets.sort()[1]
+                sorted_indexes = MnistFederatedDM.mnist_train.targets.sort()[
+                    1
+                ]
                 MnistFederatedDM.mnist_train.targets = (
                     MnistFederatedDM.mnist_train.targets[sorted_indexes]
                 )
-                MnistFederatedDM.mnist_train.data = MnistFederatedDM.mnist_train.data[
-                    sorted_indexes
-                ]
+                MnistFederatedDM.mnist_train.data = (
+                    MnistFederatedDM.mnist_train.data[sorted_indexes]
+                )
         if MnistFederatedDM.mnist_val is None:
             MnistFederatedDM.mnist_val = MNIST(
-                "", train=False, download=True, transform=transforms.ToTensor()
+                "",
+                train=False,
+                download=True,
+                transform=transforms.ToTensor(),
             )
             if not iid:
                 sorted_indexes = MnistFederatedDM.mnist_val.targets.sort()[1]
-                MnistFederatedDM.mnist_val.targets = MnistFederatedDM.mnist_val.targets[
-                    sorted_indexes
-                ]
-                MnistFederatedDM.mnist_val.data = MnistFederatedDM.mnist_val.data[
-                    sorted_indexes
-                ]
+                MnistFederatedDM.mnist_val.targets = (
+                    MnistFederatedDM.mnist_val.targets[sorted_indexes]
+                )
+                MnistFederatedDM.mnist_val.data = (
+                    MnistFederatedDM.mnist_val.data[sorted_indexes]
+                )
         if self.sub_id + 1 > self.number_sub:
-            raise (f"Not exist the subset {self.sub_id}")
+            raise ValueError(f"Not exist the subset {self.sub_id}")
 
         # Training / validation set
         trainset = MnistFederatedDM.mnist_train
         rows_by_sub = floor(len(trainset) / self.number_sub)
         tr_subset = Subset(
-            trainset, range(self.sub_id * rows_by_sub, (self.sub_id + 1) * rows_by_sub)
+            trainset,
+            range(self.sub_id * rows_by_sub, (self.sub_id + 1) * rows_by_sub),
         )
         mnist_train, mnist_val = random_split(
             tr_subset,
@@ -109,11 +116,12 @@ class MnistFederatedDM(LightningDataModule):
         testset = MnistFederatedDM.mnist_val
         rows_by_sub = floor(len(testset) / self.number_sub)
         te_subset = Subset(
-            testset, range(self.sub_id * rows_by_sub, (self.sub_id + 1) * rows_by_sub)
+            testset,
+            range(self.sub_id * rows_by_sub, (self.sub_id + 1) * rows_by_sub),
         )
 
         if len(testset) < self.number_sub:
-            raise ("Too much partitions")
+            raise ValueError("Too much partitions")
 
         # DataLoaders
         self.train_loader = DataLoader(

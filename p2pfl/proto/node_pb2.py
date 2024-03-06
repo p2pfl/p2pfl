@@ -30,7 +30,7 @@ Message = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _MESSAGE,
-        "__module__": "node_pb2"
+        "__module__": "node_pb2",
         # @@protoc_insertion_point(class_scope:node.Message)
     },
 )
@@ -41,7 +41,7 @@ Weights = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _WEIGHTS,
-        "__module__": "node_pb2"
+        "__module__": "node_pb2",
         # @@protoc_insertion_point(class_scope:node.Weights)
     },
 )
@@ -52,7 +52,7 @@ HandShakeRequest = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _HANDSHAKEREQUEST,
-        "__module__": "node_pb2"
+        "__module__": "node_pb2",
         # @@protoc_insertion_point(class_scope:node.HandShakeRequest)
     },
 )
@@ -63,7 +63,7 @@ ResponseMessage = _reflection.GeneratedProtocolMessageType(
     (_message.Message,),
     {
         "DESCRIPTOR": _RESPONSEMESSAGE,
-        "__module__": "node_pb2"
+        "__module__": "node_pb2",
         # @@protoc_insertion_point(class_scope:node.ResponseMessage)
     },
 )

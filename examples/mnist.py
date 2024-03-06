@@ -1,5 +1,6 @@
 #
-# This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,7 +21,9 @@ from test.utils import (
     set_test_settings,
     wait_4_results,
 )
-from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
+from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
+    MnistFederatedDM,
+)
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
 from p2pfl.node import Node

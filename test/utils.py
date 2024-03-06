@@ -1,5 +1,6 @@
 #
-# This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -50,7 +51,10 @@ def wait_convergence(nodes, n_neis, wait=5, only_direct=False):
     while True:
         begin = time.time()
         if all(
-            [len(n.get_neighbors(only_direct=only_direct)) == n_neis for n in nodes]
+            [
+                len(n.get_neighbors(only_direct=only_direct)) == n_neis
+                for n in nodes
+            ]
         ):
             break
         time.sleep(0.1)
@@ -86,5 +90,7 @@ def check_equal_models(nodes):
             # compare layers with a tolerance
             for layer in model:
                 assert np.allclose(
-                    model[layer], node.learner.get_parameters()[layer], atol=1e-1
+                    model[layer],
+                    node.learner.get_parameters()[layer],
+                    atol=1e-1,
                 )

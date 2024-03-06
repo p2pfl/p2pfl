@@ -1,5 +1,6 @@
 #
-# This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -85,7 +86,9 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         """
         running_state = self.__running
         if running_state != running:
-            raise Exception(f"Node is {'not ' if running_state else ''}running.")
+            raise Exception(
+                f"Node is {'not ' if running_state else ''}running."
+            )
 
     def start(self, wait=False):
         """
@@ -217,7 +220,9 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
                 logging.error(
                     f"[{self.addr}] Unknown command: {request.cmd} from {request.source}"
                 )
-                return node_pb2.ResponseMessage(error=f"Unknown command: {request.cmd}")
+                return node_pb2.ResponseMessage(
+                    error=f"Unknown command: {request.cmd}"
+                )
 
         return node_pb2.ResponseMessage()
 

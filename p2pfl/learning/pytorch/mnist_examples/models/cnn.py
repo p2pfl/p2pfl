@@ -1,6 +1,5 @@
 import torch
 from torch import nn
-from torch.nn import functional as F
 import pytorch_lightning as pl
 from torchmetrics import Accuracy
 
@@ -20,7 +19,7 @@ class CNN(pl.LightningModule):
         self,
         in_channels=1,
         out_channels=10,
-        metric=Accuracy(),
+        metric=Accuracy,
         lr_rate=0.001,
         seed=None,
     ):
@@ -30,16 +29,22 @@ class CNN(pl.LightningModule):
             torch.cuda.manual_seed_all(seed)
 
         super().__init__()
-        self.metric = metric
+        self.metric = metric()
         self.lr_rate = lr_rate
 
         self.conv1 = nn.Conv2d(
-            in_channels=in_channels, out_channels=32, kernel_size=(5, 5), padding="same"
+            in_channels=in_channels,
+            out_channels=32,
+            kernel_size=(5, 5),
+            padding="same",
         )
         self.relu = nn.ReLU()
         self.pool1 = nn.MaxPool2d(kernel_size=(2, 2), stride=2)
         self.conv2 = nn.Conv2d(
-            in_channels=32, out_channels=64, kernel_size=(5, 5), padding="same"
+            in_channels=32,
+            out_channels=64,
+            kernel_size=(5, 5),
+            padding="same",
         )
         self.pool2 = nn.MaxPool2d(kernel_size=(2, 2), stride=2)
         self.l1 = nn.Linear(7 * 7 * 64, 2048)

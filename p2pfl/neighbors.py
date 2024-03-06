@@ -1,5 +1,6 @@
 #
-# This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -73,7 +74,7 @@ class Neighbors:
     # Message
     ####
 
-    def build_msg(self, cmd, args=[], round=None):
+    def build_msg(self, cmd, args=None, round=None):
         """
         Build a message to send to the neighbors.
 
@@ -85,8 +86,13 @@ class Neighbors:
         Returns:
             node_pb2.Message: Message to send.
         """
+        if args is None:
+            args = []
         hs = hash(
-            str(cmd) + str(args) + str(datetime.now()) + str(random.randint(0, 100000))
+            str(cmd)
+            + str(args)
+            + str(datetime.now())
+            + str(random.randint(0, 100000))
         )
         args = [str(a) for a in args]
 
@@ -140,7 +146,9 @@ class Neighbors:
         for n in node_list:
             self.send_message(n, msg)
 
-    def send_model(self, nei, round, serialized_model, contributors=[], weight=1):
+    def send_model(
+        self, nei, round, serialized_model, contributors=None, weight=1
+    ):
         """
         Send a model to a neighbor.
 
@@ -151,6 +159,8 @@ class Neighbors:
             contributors (list): List of contributors of the model.
             weight (float): Weight of the model.
         """
+        if contributors is None:
+            contributors = []
         try:
             stub = self.__neighbors[nei][1]
             # if not connected, create a temporal stub to send the message
@@ -171,7 +181,9 @@ class Neighbors:
             )
             # Handling errors -> however errors in aggregation stops the other nodes and are not raised (decoding/non-matching/unexpected)
             if res.error:
-                logging.error(f"[{self.addr}] Error while sending a model: {res.error}")
+                logging.error(
+                    f"[{self.addr}] Error while sending a model: {res.error}"
+                )
                 self.remove(nei, disconnect_msg=True)
             if not (channel is None):
                 channel.close()
@@ -245,11 +257,13 @@ class Neighbors:
             return True
 
         except Exception as e:
-            logging.info(f"{self.__self_addr} Crash while adding a neighbor: {e}")
+            logging.info(
+                f"{self.__self_addr} Crash while adding a neighbor: {e}"
+            )
             # Try to remove neighbor
             try:
                 self.remove(addr)
-            except:
+            except BaseException:
                 pass
             return False
 
@@ -272,11 +286,11 @@ class Neighbors:
                     )
                 # Close channel
                 self.__neighbors[nei][0].close()
-            except:
+            except BaseException:
                 pass
             # Remove neighbor
             del self.__neighbors[nei]
-        except:
+        except BaseException:
             pass
         self.__nei_lock.release()
 
@@ -347,7 +361,9 @@ class Neighbors:
         self.__heartbeat_terminate_flag.set()
 
     def __heartbeater(
-        self, period=Settings.HEARTBEAT_PERIOD, timeout=Settings.HEARTBEAT_TIMEOUT
+        self,
+        period=Settings.HEARTBEAT_PERIOD,
+        timeout=Settings.HEARTBEAT_TIMEOUT,
     ):
         toggle = False
         while not self.__heartbeat_terminate_flag.is_set():
@@ -404,7 +420,10 @@ class Neighbors:
             self.__processed_messages_lock.release()
             return False
         # If there are more than X messages, remove the oldest one
-        if len(self.__processed_messages) > Settings.AMOUNT_LAST_MESSAGES_SAVED:
+        if (
+            len(self.__processed_messages)
+            > Settings.AMOUNT_LAST_MESSAGES_SAVED
+        ):
             self.__processed_messages.pop(0)
         # Add message
         self.__processed_messages.append(msg)
@@ -424,7 +443,9 @@ class Neighbors:
 
             # Add to pending messages
             self.__pending_msgs_lock.acquire()
-            pending_neis = [n for n in self.__neighbors.keys() if n != msg.source]
+            pending_neis = [
+                n for n in self.__neighbors.keys() if n != msg.source
+            ]
             self.__pending_msgs.append((msg, pending_neis))
             self.__pending_msgs_lock.release()
 
@@ -458,7 +479,9 @@ class Neighbors:
                     self.__pending_msgs.pop(0)
                 else:
                     # Select only the first neis
-                    messages_to_send.append((head_msg[0], head_msg[1][:messages_left]))
+                    messages_to_send.append(
+                        (head_msg[0], head_msg[1][:messages_left])
+                    )
                     # Remove from pending
                     self.__pending_msgs[0][1] = self.__pending_msgs[0][1][
                         messages_left:

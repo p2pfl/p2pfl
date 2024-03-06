@@ -1,5 +1,6 @@
 #
-# This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,7 +21,10 @@ import pickle
 import torch
 from pytorch_lightning import Trainer
 from p2pfl.learning.learner import NodeLearner
-from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
+from p2pfl.learning.exceptions import (
+    DecodingParamsError,
+    ModelNotMatchingError,
+)
 from p2pfl.learning.pytorch.logger import FederatedLogger
 import logging
 
@@ -69,9 +73,11 @@ class LightningLearner(NodeLearner):
 
     def decode_parameters(self, data):
         try:
-            params_dict = zip(self.model.state_dict().keys(), pickle.loads(data))
+            params_dict = zip(
+                self.model.state_dict().keys(), pickle.loads(data)
+            )
             return OrderedDict({k: torch.tensor(v) for k, v in params_dict})
-        except:
+        except BaseException:
             raise DecodingParamsError("Error decoding parameters")
 
     def check_parameters(self, params):
@@ -87,7 +93,7 @@ class LightningLearner(NodeLearner):
     def set_parameters(self, params):
         try:
             self.model.load_state_dict(params)
-        except:
+        except BaseException:
             raise ModelNotMatchingError("Not matching models")
 
     def get_parameters(self):
@@ -130,7 +136,9 @@ class LightningLearner(NodeLearner):
                     log_every_n_steps=0,
                     enable_checkpointing=False,
                 )
-                results = self.__trainer.test(self.model, self.data, verbose=False)
+                results = self.__trainer.test(
+                    self.model, self.data, verbose=False
+                )
                 loss = results[0]["test_loss"]
                 metric = results[0]["test_metric"]
                 self.__trainer = None
@@ -151,8 +159,12 @@ class LightningLearner(NodeLearner):
 
     def log_validation_metrics(self, loss, metric, round=None, name=None):
         if self.logger is not None:
-            self.logger.log_round_metric("test_loss", loss, name=name, round=round)
-            self.logger.log_round_metric("test_metric", metric, name=name, round=round)
+            self.logger.log_round_metric(
+                "test_loss", loss, name=name, round=round
+            )
+            self.logger.log_round_metric(
+                "test_metric", metric, name=name, round=round
+            )
 
     def get_logs(self, node=None, exp=None):
         return self.logger.get_logs(node=node, exp=exp)

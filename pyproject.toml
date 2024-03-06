@@ -16,6 +16,9 @@ torch = { version = "1.11.0", optional = false }            # set to true when m
 torchvision = { version = "0.12.0", optional = false }
 torchmetrics = { version = "0.7.3", optional = false }
 pytorch-lightning = { version = "1.6.5", optional = false }
+flake8 = "^7.0.0"
+flake8-bugbear = "^24.2.6"
+mypy = "^1.8.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
