@@ -73,9 +73,7 @@ class LightningLearner(NodeLearner):
 
     def decode_parameters(self, data):
         try:
-            params_dict = zip(
-                self.model.state_dict().keys(), pickle.loads(data)
-            )
+            params_dict = zip(self.model.state_dict().keys(), pickle.loads(data))
             return OrderedDict({k: torch.tensor(v) for k, v in params_dict})
         except BaseException:
             raise DecodingParamsError("Error decoding parameters")
@@ -136,9 +134,7 @@ class LightningLearner(NodeLearner):
                     log_every_n_steps=0,
                     enable_checkpointing=False,
                 )
-                results = self.__trainer.test(
-                    self.model, self.data, verbose=False
-                )
+                results = self.__trainer.test(self.model, self.data, verbose=False)
                 loss = results[0]["test_loss"]
                 metric = results[0]["test_metric"]
                 self.__trainer = None
@@ -159,12 +155,8 @@ class LightningLearner(NodeLearner):
 
     def log_validation_metrics(self, loss, metric, round=None, name=None):
         if self.logger is not None:
-            self.logger.log_round_metric(
-                "test_loss", loss, name=name, round=round
-            )
-            self.logger.log_round_metric(
-                "test_metric", metric, name=name, round=round
-            )
+            self.logger.log_round_metric("test_loss", loss, name=name, round=round)
+            self.logger.log_round_metric("test_metric", metric, name=name, round=round)
 
     def get_logs(self, node=None, exp=None):
         return self.logger.get_logs(node=node, exp=exp)

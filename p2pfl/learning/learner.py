@@ -157,3 +157,9 @@ class NodeLearner:
         Determine the end of the round.
         """
         pass
+
+    def create_new_exp(self):
+        """
+        Create a new experiment.
+        """
+        pass

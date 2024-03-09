@@ -24,7 +24,10 @@ class MLP(pl.LightningModule):
 
         super().__init__()
         self.lr_rate = lr_rate
-        self.metric = metric()
+        if out_channels == 1:
+            self.metric = metric(task="binary")
+        else:
+            self.metric = metric(task="multiclass", num_classes=out_channels)
 
         self.l1 = torch.nn.Linear(28 * 28, 256)
         self.l2 = torch.nn.Linear(256, 128)

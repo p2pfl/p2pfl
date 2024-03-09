@@ -23,9 +23,9 @@ from math import floor
 from pytorch_lightning import LightningDataModule
 
 # To Avoid Crashes with a lot of nodes
-import torch.multiprocessing
-
-torch.multiprocessing.set_sharing_strategy("file_system")
+# import torch.multiprocessing
+# type: ignore
+# torch.multiprocessing.set_sharing_strategy("file_system")
 
 #######################################
 #    FederatedDataModule for MNIST    #
@@ -70,15 +70,13 @@ class MnistFederatedDM(LightningDataModule):
                 "", train=True, download=True, transform=transforms.ToTensor()
             )
             if not iid:
-                sorted_indexes = MnistFederatedDM.mnist_train.targets.sort()[
-                    1
-                ]
+                sorted_indexes = MnistFederatedDM.mnist_train.targets.sort()[1]
                 MnistFederatedDM.mnist_train.targets = (
                     MnistFederatedDM.mnist_train.targets[sorted_indexes]
                 )
-                MnistFederatedDM.mnist_train.data = (
-                    MnistFederatedDM.mnist_train.data[sorted_indexes]
-                )
+                MnistFederatedDM.mnist_train.data = MnistFederatedDM.mnist_train.data[
+                    sorted_indexes
+                ]
         if MnistFederatedDM.mnist_val is None:
             MnistFederatedDM.mnist_val = MNIST(
                 "",
@@ -88,12 +86,12 @@ class MnistFederatedDM(LightningDataModule):
             )
             if not iid:
                 sorted_indexes = MnistFederatedDM.mnist_val.targets.sort()[1]
-                MnistFederatedDM.mnist_val.targets = (
-                    MnistFederatedDM.mnist_val.targets[sorted_indexes]
-                )
-                MnistFederatedDM.mnist_val.data = (
-                    MnistFederatedDM.mnist_val.data[sorted_indexes]
-                )
+                MnistFederatedDM.mnist_val.targets = MnistFederatedDM.mnist_val.targets[
+                    sorted_indexes
+                ]
+                MnistFederatedDM.mnist_val.data = MnistFederatedDM.mnist_val.data[
+                    sorted_indexes
+                ]
         if self.sub_id + 1 > self.number_sub:
             raise ValueError(f"Not exist the subset {self.sub_id}")
 

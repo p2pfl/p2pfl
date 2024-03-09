@@ -29,7 +29,10 @@ class CNN(pl.LightningModule):
             torch.cuda.manual_seed_all(seed)
 
         super().__init__()
-        self.metric = metric()
+        if out_channels == 1:
+            self.metric = metric(task="binary")
+        else:
+            self.metric = metric(task="multiclass", num_classes=out_channels)
         self.lr_rate = lr_rate
 
         self.conv1 = nn.Conv2d(

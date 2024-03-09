@@ -57,9 +57,7 @@ class Aggregator:
         """
         if not self.__finish_aggregation_lock.locked():
             self.__train_set = l
-            self.__finish_aggregation_lock.acquire(
-                timeout=Settings.AGGREGATION_TIMEOUT
-            )
+            self.__finish_aggregation_lock.acquire(timeout=Settings.AGGREGATION_TIMEOUT)
         else:
             raise Exception(
                 "It is not possible to set nodes to aggregate when the aggregation is running."
@@ -86,7 +84,7 @@ class Aggregator:
             pass
         self.__agg_lock.release()
 
-    def get_agregated_models(self):
+    def get_aggregated_models(self):
         """
         Get the list of aggregated models.
 
@@ -96,9 +94,7 @@ class Aggregator:
         # Get a list of nodes added
         models_added = [n.split() for n in list(self.__models.keys())]
         # Flatten list
-        models_added = [
-            element for sublist in models_added for element in sublist
-        ]
+        models_added = [element for sublist in models_added for element in sublist]
         return models_added
 
     def add_model(self, model, contributors, weight):
@@ -124,9 +120,7 @@ class Aggregator:
         # Diffusion / Aggregation
         if self.__waiting_aggregated_model and self.__models == {}:
             if set(contributors) == set(self.__train_set):
-                logging.info(
-                    f"({self.node_name}) Received an aggregated model."
-                )
+                logging.info(f"({self.node_name}) Received an aggregated model.")
                 self.__models = {}
                 self.__models = {" ".join(nodes): (model, 1)}
                 self.__waiting_aggregated_model = False
@@ -153,9 +147,7 @@ class Aggregator:
                         self.__agg_lock.release()
                         return self.get_agregated_models()
 
-                    elif all(
-                        [n not in self.get_agregated_models() for n in nodes]
-                    ):
+                    elif all([n not in self.get_agregated_models() for n in nodes]):
                         # Aggregate model
                         self.__models[" ".join(nodes)] = (model, weight)
                         logging.info(
@@ -163,9 +155,7 @@ class Aggregator:
                         )
 
                         # Check if all models were added
-                        if len(self.get_agregated_models()) >= len(
-                            self.__train_set
-                        ):
+                        if len(self.get_agregated_models()) >= len(self.__train_set):
                             self.__finish_aggregation_lock.release()
 
                         # Unloock and Return

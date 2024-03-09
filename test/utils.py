@@ -51,10 +51,7 @@ def wait_convergence(nodes, n_neis, wait=5, only_direct=False):
     while True:
         begin = time.time()
         if all(
-            [
-                len(n.get_neighbors(only_direct=only_direct)) == n_neis
-                for n in nodes
-            ]
+            [len(n.get_neighbors(only_direct=only_direct)) == n_neis for n in nodes]
         ):
             break
         time.sleep(0.1)

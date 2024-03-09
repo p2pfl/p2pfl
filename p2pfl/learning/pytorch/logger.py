@@ -1,7 +1,7 @@
-from pytorch_lightning.loggers.base import LightningLoggerBase
+from pytorch_lightning.loggers.logger import Logger
 
 
-class FederatedLogger(LightningLoggerBase):
+class FederatedLogger(Logger):
     """
     Logger for Federated Learning
 
