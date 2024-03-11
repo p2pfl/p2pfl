@@ -144,7 +144,7 @@ class Node(BaseNode):
     def __vote_train_set_callback(self, msg: node_pb2.Message) -> None:
         # check moment: round or round + 1 because of node async
         ########################################################
-        ### try to improve clarity in message moment check
+        # try to improve clarity in message moment check
         ########################################################
         if self.round is not None:
             if msg.round in [self.round, self.round + 1]:
@@ -160,7 +160,7 @@ class Node(BaseNode):
                 # Communicate to the training process that a vote has been received
                 try:
                     self.__wait_votes_ready_lock.release()
-                except BaseException:
+                except Exception:
                     pass
             else:
                 logging.error(
@@ -450,7 +450,7 @@ class Node(BaseNode):
         # Try to free wait locks
         try:
             self.__wait_votes_ready_lock.release()
-        except BaseException:
+        except Exception:
             pass
 
     #######################

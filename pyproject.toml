@@ -40,8 +40,3 @@ build-backend = "poetry.core.masonry.api"
 
 #[tool.poetry.extras]
 #torch = ["torch", "torchvision", "torchmetrics", "pytorch-lightning"]
-
-[tool.mypy]
-ignore_missing_imports = true
-strict = false
-plugins = "numpy.typing.mypy_plugin"

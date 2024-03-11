@@ -283,7 +283,7 @@ class Neighbors:
             # Try to remove neighbor
             try:
                 self.remove(addr)
-            except BaseException:
+            except Exception:
                 pass
             return False
 
@@ -311,7 +311,7 @@ class Neighbors:
                     node_channel.close()
             # Remove neighbor
             del self.__neighbors[nei]
-        except BaseException:
+        except Exception:
             pass
         self.__nei_lock.release()
 

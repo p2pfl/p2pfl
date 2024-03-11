@@ -18,7 +18,7 @@
 
 from collections import OrderedDict
 import pickle
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple
 import torch
 from pytorch_lightning import Trainer
 from p2pfl.learning.learner import NodeLearner
@@ -30,7 +30,6 @@ from p2pfl.learning.exceptions import (
 import logging
 from pytorch_lightning import LightningDataModule
 import pytorch_lightning as pl
-from torch.utils.data import DataLoader
 
 ###########################
 #    LightningLearner     #
@@ -83,7 +82,7 @@ class LightningLearner(NodeLearner):
         try:
             params_dict = zip(self.get_parameters().keys(), pickle.loads(data))
             return OrderedDict({k: torch.tensor(v) for k, v in params_dict})
-        except BaseException:
+        except Exception:
             raise DecodingParamsError("Error decoding parameters")
 
     def check_parameters(self, params: OrderedDict[str, torch.Tensor]) -> bool:
@@ -99,7 +98,7 @@ class LightningLearner(NodeLearner):
     def set_parameters(self, params: OrderedDict[str, torch.Tensor]) -> None:
         try:
             self.model.load_state_dict(params)
-        except BaseException:
+        except Exception:
             raise ModelNotMatchingError("Not matching models")
 
     def get_parameters(self) -> Dict[str, torch.Tensor]:

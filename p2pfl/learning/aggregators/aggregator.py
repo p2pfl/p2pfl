@@ -83,7 +83,7 @@ class Aggregator:
         self.__models = {}
         try:
             self.__finish_aggregation_lock.release()
-        except BaseException:
+        except Exception:
             pass
         self.__agg_lock.release()
 
@@ -201,7 +201,7 @@ class Aggregator:
         self.__finish_aggregation_lock.acquire(timeout=timeout)
         try:
             self.__finish_aggregation_lock.release()
-        except BaseException:
+        except Exception:
             pass
 
         # If awaiting for an aggregated model, return it
