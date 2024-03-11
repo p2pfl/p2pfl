@@ -28,6 +28,10 @@ from p2pfl.messages import NodeMessages
 import logging
 
 
+class NeighborNotConnectedError(Exception):
+    pass
+
+
 class Neighbors:
     """
     Class that manages the neighbors of a node (GRPC connections). It provides the following functionalities:
@@ -119,9 +123,13 @@ class Neighbors:
             msg (node_pb2.Message): Message to send.
         """
         try:
-            res = self.__neighbors[nei][1].send_message(
-                msg, timeout=Settings.GRPC_TIMEOUT
-            )
+            node_stub = self.__neighbors[nei][1]
+            if node_stub is not None:
+                res = node_stub.send_message(msg, timeout=Settings.GRPC_TIMEOUT)
+            else:
+                raise NeighborNotConnectedError(
+                    f"Neighbor {nei} not directly connected (Stub not defined)."
+                )
             if res.error:
                 logging.error(
                     f"[{self.__self_addr}] Error while sending a message: {msg.cmd} {msg.args}: {res.error}"
@@ -290,16 +298,17 @@ class Neighbors:
         logging.info(f"({self.__self_addr}) Removing {nei}")
         self.__nei_lock.acquire()
         try:
-            try:
-                # If the other node still connected, disconnect
-                if disconnect_msg:
-                    self.__neighbors[nei][1].disconnect(
+            # If the other node still connected, disconnect
+            if disconnect_msg:
+                node_stub = self.__neighbors[nei][1]
+                if node_stub is not None:
+                    node_stub.disconnect(
                         node_pb2.HandShakeRequest(addr=self.__self_addr)
                     )
                 # Close channel
-                self.__neighbors[nei][0].close()
-            except BaseException:
-                pass
+                node_channel = self.__neighbors[nei][0]
+                if node_channel is not None:
+                    node_channel.close()
             # Remove neighbor
             del self.__neighbors[nei]
         except BaseException:

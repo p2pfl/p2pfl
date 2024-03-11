@@ -16,6 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from typing import Optional
 from torch.utils.data import DataLoader, Subset, random_split
 from torchvision import transforms
 from torchvision.datasets import MNIST
@@ -45,18 +46,18 @@ class MnistFederatedDM(LightningDataModule):
     """
 
     # Singleton
-    mnist_train = None
-    mnist_val = None
+    mnist_train: Optional[MNIST] = None
+    mnist_val: Optional[MNIST] = None
 
     def __init__(
         self,
-        sub_id=0,
-        number_sub=1,
-        batch_size=32,
-        num_workers=4,
-        val_percent=0.1,
-        iid=True,
-    ):
+        sub_id: int = 0,
+        number_sub: int = 1,
+        batch_size: int = 32,
+        num_workers: int = 4,
+        val_percent: float = 0.1,
+        iid: bool = True,
+    ) -> None:
         super().__init__()
         self.sub_id = sub_id
         self.number_sub = number_sub
@@ -142,14 +143,14 @@ class MnistFederatedDM(LightningDataModule):
         )
         # print(f"Train: {len(mnist_train)} Val:{len(mnist_val)} Test:{len(te_subset)}")
 
-    def train_dataloader(self):
+    def train_dataloader(self) -> DataLoader:
         """ """
         return self.train_loader
 
-    def val_dataloader(self):
+    def val_dataloader(self) -> DataLoader:
         """ """
         return self.val_loader
 
-    def test_dataloader(self):
+    def test_dataloader(self) -> DataLoader:
         """ """
         return self.test_loader

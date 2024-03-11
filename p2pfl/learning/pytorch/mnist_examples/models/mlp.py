@@ -1,7 +1,8 @@
+from typing import Optional, Tuple
 import torch
 from torch.nn import functional as F
 import pytorch_lightning as pl
-from torchmetrics import Accuracy
+from torchmetrics import Metric, Accuracy
 
 
 ###############################
@@ -15,8 +16,13 @@ class MLP(pl.LightningModule):
     """
 
     def __init__(
-        self, metric=Accuracy, out_channels=10, lr_rate=0.001, seed=None
-    ):  # low lr to avoid overfitting
+        self,
+        out_channels: int = 10,
+        metric: type[Metric] = Accuracy,
+        lr_rate: float = 0.001,
+        seed: Optional[int] = None,
+    ) -> None:
+        # low lr to avoid overfitting
         # Set seed for reproducibility iniciialization
         if seed is not None:
             torch.manual_seed(seed)
@@ -33,7 +39,7 @@ class MLP(pl.LightningModule):
         self.l2 = torch.nn.Linear(256, 128)
         self.l3 = torch.nn.Linear(128, out_channels)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """ """
         batch_size, channels, width, height = x.size()
 
@@ -47,18 +53,22 @@ class MLP(pl.LightningModule):
         x = torch.log_softmax(x, dim=1)
         return x
 
-    def configure_optimizers(self):
+    def configure_optimizers(self) -> torch.optim.Optimizer:
         """ """
         return torch.optim.Adam(self.parameters(), lr=self.lr_rate)
 
-    def training_step(self, batch, batch_id):
+    def training_step(
+        self, batch: Tuple[torch.Tensor, torch.Tensor], batch_id: int
+    ) -> torch.Tensor:
         """ """
         x, y = batch
         loss = F.cross_entropy(self(x), y)
         self.log("train_loss", loss, prog_bar=True)
         return loss
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(
+        self, batch: Tuple[torch.Tensor, torch.Tensor], batch_id: int
+    ) -> torch.Tensor:
         """ """
         x, y = batch
         logits = self(x)
@@ -69,7 +79,9 @@ class MLP(pl.LightningModule):
         self.log("val_metric", metric, prog_bar=True)
         return loss
 
-    def test_step(self, batch, batch_idx):
+    def test_step(
+        self, batch: Tuple[torch.Tensor, torch.Tensor], batch_id: int
+    ) -> torch.Tensor:
         """ """
         x, y = batch
         logits = self(x)

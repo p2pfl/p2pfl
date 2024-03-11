@@ -144,27 +144,30 @@ class Node(BaseNode):
     def __vote_train_set_callback(self, msg: node_pb2.Message) -> None:
         # check moment: round or round + 1 because of node async
         ########################################################
-        # try to improve clarity in message moment check
+        ### try to improve clarity in message moment check
         ########################################################
-        if msg.round in [self.round, self.round + 1]:
-            # build vote dict
-            votes = msg.args
-            tmp_votes = {}
-            for i in range(0, len(votes), 2):
-                tmp_votes[votes[i]] = int(votes[i + 1])
-            # set votes
-            self.__train_set_votes_lock.acquire()
-            self.__train_set_votes[msg.source] = tmp_votes
-            self.__train_set_votes_lock.release()
-            # Communicate to the training process that a vote has been received
-            try:
-                self.__wait_votes_ready_lock.release()
-            except BaseException:
-                pass
+        if self.round is not None:
+            if msg.round in [self.round, self.round + 1]:
+                # build vote dict
+                votes = msg.args
+                tmp_votes = {}
+                for i in range(0, len(votes), 2):
+                    tmp_votes[votes[i]] = int(votes[i + 1])
+                # set votes
+                self.__train_set_votes_lock.acquire()
+                self.__train_set_votes[msg.source] = tmp_votes
+                self.__train_set_votes_lock.release()
+                # Communicate to the training process that a vote has been received
+                try:
+                    self.__wait_votes_ready_lock.release()
+                except BaseException:
+                    pass
+            else:
+                logging.error(
+                    f"({self.addr}) Vote received in a late round. Ignored. {msg.round} != {self.round} / {self.round+1}"
+                )
         else:
-            logging.error(
-                f"({self.addr}) Vote received in a late round. Ignored. {msg.round} != {self.round} / {self.round+1}"
-            )
+            logging.error(f"({self.addr}) Vote received when learning is not running")
 
     def __models_agregated_callback(self, msg: node_pb2.Message) -> None:
         if msg.round == self.round:
@@ -174,18 +177,24 @@ class Node(BaseNode):
         ########################################################
         # try to improve clarity in message moment check
         ########################################################
-        if msg.round in [self.round - 1, self.round]:
-            self.__nei_status[msg.source] = int(msg.args[0])
+        if self.round is not None:
+            if msg.round in [self.round - 1, self.round]:
+                self.__nei_status[msg.source] = int(msg.args[0])
+            else:
+                # Ignored
+                logging.error(
+                    f"({self.addr}) Models ready in a late round. Ignored. {msg.round} != {self.round} / {self.round-1}"
+                )
         else:
             logging.error(
-                f"({self.addr}) Models ready in a late round. Ignored. {msg.round} != {self.round} / {self.round-1}"
+                f"({self.addr}) Models ready received when learning is not running"
             )
 
     def __metrics_callback(self, msg: node_pb2.Message) -> None:
         name = msg.source
         round = msg.round
         loss = float(msg.args[0])
-        metric = msg.args[1]
+        metric = float(msg.args[1])
         self.learner.log_validation_metrics(loss, metric, round=round, name=name)
 
     ############################
@@ -224,7 +233,7 @@ class Node(BaseNode):
                     if self.learner.check_parameters(decoded_model):
                         models_added = self.aggregator.add_model(
                             decoded_model,
-                            request.contributors,
+                            list(request.contributors),
                             request.weight,
                         )
                         if models_added is not None:
@@ -642,7 +651,7 @@ class Node(BaseNode):
             self._neighbors.broadcast_msg(
                 self._neighbors.build_msg(
                     LearningNodeMessages.METRICS,
-                    [results[0], results[1]],
+                    [str(results[0]), str(results[1])],
                     round=self.round,
                 )
             )
@@ -652,10 +661,15 @@ class Node(BaseNode):
     ######################
 
     def __on_round_finished(self) -> None:
+        # Check if learning is running
+        if self.round is None or self.totalrounds is None:
+            raise Exception("Round finished when learning is not running")
+
         # Set Next Round
         self.aggregator.clear()
         self.learner.finalize_round()  # revisar x si esto pueiera quedar mejor
         self.round = self.round + 1
+
         # Clear node aggregation
         self.__models_agregated = {}
 
@@ -709,6 +723,10 @@ class Node(BaseNode):
         self.__gossip_model(candidate_condition, status_function, model_function)
 
     def __gossip_model_difusion(self, initialization: bool = False) -> None:
+        # Check if learning is running
+        if self.round is None:
+            raise Exception("Gossiping model when learning is not running")
+
         # Wait a model (init or aggregated)
         if initialization:
 
@@ -717,9 +735,10 @@ class Node(BaseNode):
 
         else:
             logging.info(f"({self.addr}) Gossiping aggregated model.")
+            fixed_round = self.round
 
             def candidate_condition(node: str) -> bool:
-                return self.__nei_status[node] < self.round
+                return self.__nei_status[node] < fixed_round
 
         # Status fn
         def status_function(nc: str) -> Any:

@@ -18,15 +18,19 @@
 
 from collections import OrderedDict
 import pickle
+from typing import Dict, List, Optional, Tuple, Union
 import torch
 from pytorch_lightning import Trainer
 from p2pfl.learning.learner import NodeLearner
+from p2pfl.learning.pytorch.logger import FederatedLogger, LogsUnionType
 from p2pfl.learning.exceptions import (
     DecodingParamsError,
     ModelNotMatchingError,
 )
-from p2pfl.learning.pytorch.logger import FederatedLogger
 import logging
+from pytorch_lightning import LightningDataModule
+import pytorch_lightning as pl
+from torch.utils.data import DataLoader
 
 ###########################
 #    LightningLearner     #
@@ -45,66 +49,70 @@ class LightningLearner(NodeLearner):
         logger: Logger.
     """
 
-    def __init__(self, model, data, self_addr):
+    def __init__(
+        self, model: pl.LightningModule, data: LightningDataModule, self_addr: str
+    ):
         self.model = model
         self.data = data
         self.logger = FederatedLogger(self_addr)
-        self.__trainer = None
+        self.__trainer: Optional[Trainer] = None
         self.epochs = 1
         self.__self_addr = self_addr
         # To avoid GPU/TPU printings
         logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
 
-    def set_model(self, model):
+    def set_model(self, model: pl.LightningModule) -> None:
         self.model = model
 
-    def set_data(self, data):
+    def set_data(self, data: LightningDataModule) -> None:
         self.data = data
 
     ####
     # Model weights
     ####
 
-    def encode_parameters(self, params=None):
+    def encode_parameters(
+        self, params: Optional[Dict[str, torch.Tensor]] = None
+    ) -> bytes:
         if params is None:
-            params = self.model.state_dict()
+            params = self.get_parameters()
         array = [val.cpu().numpy() for _, val in params.items()]
         return pickle.dumps(array)
 
-    def decode_parameters(self, data):
+    def decode_parameters(self, data: bytes) -> Dict[str, torch.Tensor]:
         try:
-            params_dict = zip(self.model.state_dict().keys(), pickle.loads(data))
+            params_dict = zip(self.get_parameters().keys(), pickle.loads(data))
             return OrderedDict({k: torch.tensor(v) for k, v in params_dict})
         except BaseException:
             raise DecodingParamsError("Error decoding parameters")
 
-    def check_parameters(self, params):
+    def check_parameters(self, params: OrderedDict[str, torch.Tensor]) -> bool:
         # Check ordered dict keys
-        if set(params.keys()) != set(self.model.state_dict().keys()):
+        if set(params.keys()) != set(self.get_parameters().keys()):
             return False
         # Check tensor shapes
         for key, value in params.items():
-            if value.shape != self.model.state_dict()[key].shape:
+            if value.shape != self.get_parameters()[key].shape:
                 return False
         return True
 
-    def set_parameters(self, params):
+    def set_parameters(self, params: OrderedDict[str, torch.Tensor]) -> None:
         try:
             self.model.load_state_dict(params)
         except BaseException:
             raise ModelNotMatchingError("Not matching models")
 
-    def get_parameters(self):
+    def get_parameters(self) -> Dict[str, torch.Tensor]:
         return self.model.state_dict()
 
     ####
     # Training
     ####
 
-    def set_epochs(self, epochs):
+    def set_epochs(self, epochs: int) -> None:
         self.epochs = epochs
 
-    def fit(self):
+    def fit(self) -> None:
         try:
             if self.epochs > 0:
                 self.__trainer = Trainer(
@@ -119,18 +127,18 @@ class LightningLearner(NodeLearner):
         except Exception as e:
             logging.error(f"Something went wrong with pytorch lightning. {e}")
 
-    def interrupt_fit(self):
+    def interrupt_fit(self) -> None:
         if self.__trainer is not None:
             self.__trainer.should_stop = True
             self.__trainer = None
 
-    def evaluate(self):
+    def evaluate(self) -> Optional[tuple[float, float]]:
         try:
             if self.epochs > 0:
                 self.__trainer = Trainer(
                     max_epochs=self.epochs,
                     accelerator="auto",
-                    logger=None,
+                    logger=False,
                     log_every_n_steps=0,
                     enable_checkpointing=False,
                 )
@@ -144,32 +152,39 @@ class LightningLearner(NodeLearner):
                 return None
         except Exception as e:
             logging.error(f"Something went wrong with pytorch lightning. {e}")
-            return None
+            raise e
 
     ####
     # Logging
     ####
 
-    def create_new_exp(self):
+    def create_new_exp(self) -> None:
         self.logger.create_new_exp()
 
-    def log_validation_metrics(self, loss, metric, round=None, name=None):
+    def log_validation_metrics(
+        self,
+        loss: float,
+        metric: float,
+        round: Optional[int] = None,
+        name: Optional[str] = None,
+    ) -> None:
         if self.logger is not None:
             self.logger.log_round_metric("test_loss", loss, name=name, round=round)
             self.logger.log_round_metric("test_metric", metric, name=name, round=round)
 
-    def get_logs(self, node=None, exp=None):
+    def get_logs(
+        self, node: Optional[str] = None, exp: Optional[str] = None
+    ) -> LogsUnionType:
         return self.logger.get_logs(node=node, exp=exp)
 
-    def get_num_samples(self):
+    def get_num_samples(self) -> Tuple[int, int]:
         """
         TODO: USE IT TO OBTAIN A MORE ACCURATE METRIC AGG
         """
-        return (
-            len(self.data.train_dataloader().dataset),
-            len(self.data.test_dataloader().dataset),
-        )
+        train_len = len(self.data.train_dataloader().dataset)  # type: ignore
+        test_len = len(self.data.test_dataloader().dataset)  # type: ignore
+        return (train_len, test_len)
 
-    def finalize_round(self):
+    def finalize_round(self) -> None:
         if self.logger is not None:
             self.logger.finalize_round()
