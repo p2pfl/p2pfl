@@ -16,7 +16,7 @@
 //
 
 // compile command:
-// python -m grpc_tools.protoc -I=p2pfl/proto --python_out=p2pfl/proto --grpc_python_out=p2pfl/proto p2pfl/proto/node.proto
+// python -m grpc_tools.protoc -I=p2pfl/proto --python_out=p2pfl/proto --grpc_python_out=p2pfl/proto p2pfl/proto/node.proto --mypy_out=p2pfl/proto
 
 syntax = "proto3";
 import "google/protobuf/empty.proto";

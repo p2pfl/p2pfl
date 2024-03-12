@@ -1,5 +1,6 @@
 #
-# This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,7 +18,14 @@
 
 import threading
 import logging
+from typing import Dict, List, Tuple, Union
+
+import torch
 from p2pfl.settings import Settings
+
+
+class NoModelsToAggregateError(Exception):
+    pass
 
 
 class Aggregator:
@@ -28,23 +36,23 @@ class Aggregator:
         node_name: (str): String with the name of the node.
     """
 
-    def __init__(self, node_name="unknown"):
+    def __init__(self, node_name: str = "unknown") -> None:
         self.node_name = node_name
-        self.__train_set = []
+        self.__train_set: List[str] = []
         self.__waiting_aggregated_model = False
-        self.__models = {}
+        self.__models: Dict[str, Tuple[Dict[str, torch.Tensor], int]] = {}
 
         # Locks
         self.__agg_lock = threading.Lock()
         self.__finish_aggregation_lock = threading.Lock()
 
-    def aggregate(self, models):
+    def aggregate(self, models: Dict[str, Tuple[Dict[str, torch.Tensor], int]]):
         """
         Aggregate the models.
         """
-        print("Not implemented")
+        raise NotImplementedError
 
-    def set_nodes_to_aggregate(self, l):
+    def set_nodes_to_aggregate(self, l: List[str]) -> None:
         """
         List with the name of nodes to aggregate. Be careful, by setting new nodes, the actual aggregation will be lost.
 
@@ -62,7 +70,7 @@ class Aggregator:
                 "It is not possible to set nodes to aggregate when the aggregation is running."
             )
 
-    def set_waiting_aggregated_model(self, nodes):
+    def set_waiting_aggregated_model(self, nodes: List[str]) -> None:
         """
         Indicates that the node is waiting for an aggregation. It won't participate in aggregation process.
         The model only will receive a model and then it will be used as an aggregated model.
@@ -70,7 +78,7 @@ class Aggregator:
         self.set_nodes_to_aggregate(nodes)
         self.__waiting_aggregated_model = True
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Clear the aggregation (remove trainset and release locks).
         """
@@ -79,11 +87,11 @@ class Aggregator:
         self.__models = {}
         try:
             self.__finish_aggregation_lock.release()
-        except:
+        except Exception:
             pass
         self.__agg_lock.release()
 
-    def get_agregated_models(self):
+    def get_aggregated_models(self) -> List[str]:
         """
         Get the list of aggregated models.
 
@@ -93,10 +101,11 @@ class Aggregator:
         # Get a list of nodes added
         models_added = [n.split() for n in list(self.__models.keys())]
         # Flatten list
-        models_added = [element for sublist in models_added for element in sublist]
-        return models_added
+        return [element for sublist in models_added for element in sublist]
 
-    def add_model(self, model, contributors, weight):
+    def add_model(
+        self, model: Dict[str, torch.Tensor], contributors: List[str], weight: int
+    ) -> List[str]:
         """
         Add a model. The first model to be added starts the `run` method (timeout).
 
@@ -114,7 +123,7 @@ class Aggregator:
                 f"({self.node_name}) Received a model without a list of contributors."
             )
             self.__agg_lock.release()
-            return None
+            return []
 
         # Diffusion / Aggregation
         if self.__waiting_aggregated_model and self.__models == {}:
@@ -130,7 +139,7 @@ class Aggregator:
             self.__agg_lock.acquire()
 
             # Check if aggregation is needed
-            if len(self.__train_set) > len(self.get_agregated_models()):
+            if len(self.__train_set) > len(self.get_aggregated_models()):
                 # Check if all nodes are in the train_set
                 if all([n in self.__train_set for n in nodes]):
                     # Check if the model is a full/partial aggregation
@@ -138,28 +147,28 @@ class Aggregator:
                         self.__models = {}
                         self.__models[" ".join(nodes)] = (model, weight)
                         logging.info(
-                            f"({self.node_name}) Model added ({str(len(self.get_agregated_models()))}/{ str(len(self.__train_set))}) from {str(nodes)}"
+                            f"({self.node_name}) Model added ({str(len(self.get_aggregated_models()))}/{ str(len(self.__train_set))}) from {str(nodes)}"
                         )
                         # Finish agg
                         self.__finish_aggregation_lock.release()
                         # Unloock and Return
                         self.__agg_lock.release()
-                        return self.get_agregated_models()
+                        return self.get_aggregated_models()
 
-                    elif all([n not in self.get_agregated_models() for n in nodes]):
+                    elif all([n not in self.get_aggregated_models() for n in nodes]):
                         # Aggregate model
                         self.__models[" ".join(nodes)] = (model, weight)
                         logging.info(
-                            f"({self.node_name}) Model added ({str(len(self.get_agregated_models()))}/{ str(len(self.__train_set))}) from {str(nodes)}"
+                            f"({self.node_name}) Model added ({str(len(self.get_aggregated_models()))}/{ str(len(self.__train_set))}) from {str(nodes)}"
                         )
 
                         # Check if all models were added
-                        if len(self.get_agregated_models()) >= len(self.__train_set):
+                        if len(self.get_aggregated_models()) >= len(self.__train_set):
                             self.__finish_aggregation_lock.release()
 
                         # Unloock and Return
                         self.__agg_lock.release()
-                        return self.get_agregated_models()
+                        return self.get_aggregated_models()
 
                     else:
                         logging.debug(
@@ -174,9 +183,11 @@ class Aggregator:
                     f"({self.node_name}) Received a model when is not needed."
                 )
             self.__agg_lock.release()
-            return None
+        return []
 
-    def wait_and_get_aggregation(self, timeout=Settings.AGGREGATION_TIMEOUT):
+    def wait_and_get_aggregation(
+        self, timeout: int = Settings.AGGREGATION_TIMEOUT
+    ) -> Union[dict, None]:
         """
         Wait for aggregation to finish.
 
@@ -194,7 +205,7 @@ class Aggregator:
         self.__finish_aggregation_lock.acquire(timeout=timeout)
         try:
             self.__finish_aggregation_lock.release()
-        except:
+        except Exception:
             pass
 
         # If awaiting for an aggregated model, return it
@@ -224,7 +235,9 @@ class Aggregator:
         # Notify node
         return self.aggregate(self.__models)
 
-    def get_partial_aggregation(self, except_nodes):
+    def get_partial_aggregation(
+        self, except_nodes: List[str]
+    ) -> Tuple[Union[dict, None], Union[List[str], None], Union[int, None]]:
         """
         Obtain a partial aggregation.
 
@@ -247,6 +260,12 @@ class Aggregator:
 
         # If there are no models to aggregate
         if len(dict_aux) == 0:
-            return None, None, None
+            raise NoModelsToAggregateError(
+                "Imposible to get a partial aggregation, no models to aggregate."
+            )
 
-        return (self.aggregate(dict_aux), nodes_aggregated, aggregation_weight)
+        return (
+            self.aggregate(dict_aux),
+            nodes_aggregated,
+            aggregation_weight,
+        )

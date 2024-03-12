@@ -1,5 +1,6 @@
 #
-# This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -32,11 +33,11 @@ class Settings:
     ######
     # GENERAL
     ######
-    GRPC_TIMEOUT = 10
+    GRPC_TIMEOUT: int = 10
     """
     Maximum time (seconds) to wait for a gRPC request.
     """
-    LOG_LEVEL = "DEBUG"
+    LOG_LEVEL: str = "DEBUG"
     """
     Log level for the system.
     """
@@ -44,11 +45,11 @@ class Settings:
     ######
     # HEARTBEAT
     ######
-    HEARTBEAT_PERIOD = 2
+    HEARTBEAT_PERIOD: int = 2
     """
     Period (seconds) to send heartbeats.
     """
-    HEARTBEAT_TIMEOUT = 5
+    HEARTBEAT_TIMEOUT: int = 5
     """
     Timeout (seconds) for a node to be considered dead.
     """
@@ -56,15 +57,15 @@ class Settings:
     ######
     # GOSSIP
     ######
-    GOSSIP_PERIOD = 0.1
+    GOSSIP_PERIOD: float = 0.1
     """
     Period (seconds) for the gossip protocol.
     """
-    TTL = 10
+    TTL: int = 10
     """
     Time to live (TTL) for a message in the gossip protocol.
     """
-    GOSSIP_MESSAGES_PER_PERIOD = 100
+    GOSSIP_MESSAGES_PER_PERIOD: int = 100
     """
     Number of messages to send in each gossip period.
     """
@@ -72,15 +73,15 @@ class Settings:
     """
     Number of last messages saved in the gossip protocol (avoid multiple message processing).
     """
-    GOSSIP_MODELS_PERIOD = 1
+    GOSSIP_MODELS_PERIOD: int = 1
     """
     Period of gossiping models (times by second).
     """
-    GOSSIP_MODELS_PER_ROUND = 2
+    GOSSIP_MODELS_PER_ROUND: int = 2
     """
     Amount of equal rounds to exit gossiping. Careful, a low value can cause an early stop of gossiping.
     """
-    GOSSIP_EXIT_ON_X_EQUAL_ROUNDS = 10
+    GOSSIP_EXIT_ON_X_EQUAL_ROUNDS: int = 10
     """
     Amount of equal rounds to exit gossiping. Careful, a low value can cause an early stop of gossiping.
     """
@@ -88,19 +89,19 @@ class Settings:
     ######
     # TRAINING
     ######
-    TRAIN_SET_SIZE = 4
+    TRAIN_SET_SIZE: int = 4
     """
     Size of the training set.
     """
-    VOTE_TIMEOUT = 60
+    VOTE_TIMEOUT: int = 60
     """
     Timeout (seconds) for a node to wait for a vote.
     """
-    AGGREGATION_TIMEOUT = 300
+    AGGREGATION_TIMEOUT: int = 300
     """
     Timeout (seconds) for a node to wait for other models. Timeout starts when the first model is added.
     """
-    WAIT_HEARTBEATS_CONVERGENCE = 0.2 * HEARTBEAT_TIMEOUT
+    WAIT_HEARTBEATS_CONVERGENCE: float = 0.2 * HEARTBEAT_TIMEOUT
     """
     Time (seconds) to wait for the heartbeats to converge before a learning round starts.
     """

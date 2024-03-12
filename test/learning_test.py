@@ -1,5 +1,6 @@
 #
-# This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -31,10 +32,10 @@ import torch
 
 
 def test_encoding():
-    nl1 = LightningLearner(MLP(), None)
+    nl1 = LightningLearner(MLP(), None, "")
     encoded_params = nl1.encode_parameters()
 
-    nl2 = LightningLearner(MLP(), None)
+    nl2 = LightningLearner(MLP(), None, "")
     decoded_params = nl2.decode_parameters(encoded_params)
     nl2.set_parameters(decoded_params)
 
@@ -66,7 +67,7 @@ def test_avg_simple():
 
 def test_avg_complex():
     aggregator = FedAvg()
-    nl1 = LightningLearner(MLP(), None)
+    nl1 = LightningLearner(MLP(), None, "")
     params = nl1.get_parameters()
     params1 = nl1.get_parameters()
     params2 = nl1.get_parameters()

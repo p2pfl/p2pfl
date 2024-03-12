@@ -1,5 +1,6 @@
 #
-# This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,12 +21,22 @@
 ################################
 
 
+from typing import Any, Optional, Tuple
+
+
+class ZeroEpochsError(Exception):
+    pass
+
+
 class NodeLearner:
     """
     Template to implement learning processes, including metric monitoring during training.
     """
 
-    def set_model(self, model):
+    def __init__(self, mode, data, self_addr: str):
+        raise NotImplementedError
+
+    def set_model(self, model: Any) -> None:
         """
         Set the model of the learner. (not wheights)
 
@@ -35,18 +46,18 @@ class NodeLearner:
         Raises:
             ModelNotMatchingError: If the model is not matching the learner.
         """
-        pass
+        raise NotImplementedError
 
-    def set_data(self, data):
+    def set_data(self, data: Any) -> None:
         """
         Set the data of the learner. It is used to fit the model.
 
         Args:
             data: The data of the learner.
         """
-        pass
+        raise NotImplementedError
 
-    def encode_parameters(self, params=None):
+    def encode_parameters(self, params: Optional[Any] = None) -> bytes:
         """
         Encode the parameters of the model. (binary)
         If params are not provided, self parameters are encoded.
@@ -57,11 +68,11 @@ class NodeLearner:
             weight: The weight of the model.
 
         Returns:
-            The encoded parameters of the model (params, contributors, weight).
+            The encoded parameters of the model.
         """
-        pass
+        raise NotImplementedError
 
-    def decode_parameters(self, data):
+    def decode_parameters(self, data: bytes) -> Any:
         """
         Decode the parameters of the model. (binary)
 
@@ -69,14 +80,14 @@ class NodeLearner:
             data: The encoded parameters of the model.
 
         Returns:
-            The decoded parameters of the model. (params, contributors, weight)
+            The decoded parameters of the model.
 
         Raises:
             DecodingParamsError: If the decoding of the parameters fails.
         """
-        pass
+        raise NotImplementedError
 
-    def check_parameters(self, params):
+    def check_parameters(self, params: Any) -> bool:
         """
         Check if the parameters are compatible with the model.
 
@@ -86,9 +97,9 @@ class NodeLearner:
         Returns:
             True if the parameters are compatible with the model.
         """
-        pass
+        raise NotImplementedError
 
-    def set_parameters(self, params):
+    def set_parameters(self, params: Any) -> None:
         """
         Set the parameters of the model.
 
@@ -98,61 +109,76 @@ class NodeLearner:
         Raises:
             ModelNotMatchingError: If the model is not matching the learner.
         """
-        pass
+        raise NotImplementedError
 
-    def get_parameters(self):
+    def get_parameters(self) -> Any:
         """
         Get the parameters of the model.
 
         Returns:
             The parameters of the model. (non-binary)
         """
-        pass
+        raise NotImplementedError
 
-    def set_epochs(self, epochs):
+    def set_epochs(self, epochs: int) -> None:
         """
         Set the number of epochs of the model.
 
         Args:
             epochs: The number of epochs of the model.
         """
-        pass
+        raise NotImplementedError
 
-    def fit(self):
+    def fit(self) -> None:
         """
         Fit the model.
         """
-        pass
+        raise NotImplementedError
 
-    def interrupt_fit(self):
+    def interrupt_fit(self) -> None:
         """
         Interrupt the fit process.
         """
-        pass
+        raise NotImplementedError
 
-    def evaluate(self):
+    def evaluate(self) -> Tuple[float, float]:
         """
         Evaluate the model with actual parameters.
-        """
-        pass
 
-    def log_validation_metrics(self, loss, metric, round=None, name=None):
+        Raises:
+            ZeroEpochsError: If the number of epochs is zero.
+        """
+        raise NotImplementedError
+
+    def log_validation_metrics(
+        self,
+        loss: float,
+        metric: float,
+        round: Optional[int] = None,
+        name: Optional[str] = None,
+    ) -> None:
         """
         Log the validation metrics. It also can be used to log the other node metrics.
         """
-        pass
+        raise NotImplementedError
 
-    def get_num_samples(self):
+    def get_num_samples(self) -> Tuple[int, int]:
         """
         Get the number of samples of the model.
 
         Returns:
             The number of samples of the model.
         """
-        pass
+        raise NotImplementedError
 
-    def finalize_round(self):
+    def finalize_round(self) -> None:
         """
         Determine the end of the round.
         """
-        pass
+        raise NotImplementedError
+
+    def create_new_exp(self) -> None:
+        """
+        Create a new experiment.
+        """
+        raise NotImplementedError

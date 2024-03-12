@@ -1,5 +1,6 @@
 #
-# This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -15,9 +16,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import logging
+from typing import Dict, Tuple
 import torch
-from p2pfl.learning.aggregators.aggregator import Aggregator
+from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
 
 
 class FedAvg(Aggregator):
@@ -29,7 +30,9 @@ class FedAvg(Aggregator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def aggregate(self, models):
+    def aggregate(
+        self, models: Dict[str, Tuple[Dict[str, torch.Tensor], int]]
+    ) -> Dict[str, torch.Tensor]:
         """
         Ponderated average of the models.
 
@@ -39,23 +42,22 @@ class FedAvg(Aggregator):
 
         # Check if there are models to aggregate
         if len(models) == 0:
-            logging.error(
+            raise NoModelsToAggregateError(
                 f"({self.node_name}) Trying to aggregate models when there is no models"
             )
-            return None
 
-        models = list(models.values())
+        models_list = list(models.values())
 
         # Total Samples
-        total_samples = sum([y for _, y in models])
+        total_samples = sum([y for _, y in models_list])
 
         # Create a Zero Model
-        accum = (models[-1][0]).copy()
+        accum = (models_list[-1][0]).copy()
         for layer in accum:
             accum[layer] = torch.zeros_like(accum[layer])
 
         # Add weighteds models
-        for m, w in models:
+        for m, w in models_list:
             for layer in m:
                 accum[layer] = accum[layer] + m[layer] * w
 

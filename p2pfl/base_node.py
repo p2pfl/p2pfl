@@ -17,11 +17,13 @@
 
 import logging
 import sys
+from typing import Callable, Dict, List, Optional
 import grpc
 import socket
 from concurrent import futures
 from p2pfl.proto import node_pb2
 from p2pfl.proto import node_pb2_grpc
+import google.protobuf.empty_pb2
 from p2pfl.neighbors import Neighbors
 from p2pfl.settings import Settings
 from p2pfl.messages import NodeMessages
@@ -44,9 +46,14 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
     #     Node Init     #
     #####################
 
-    def __init__(self, host="127.0.0.1", port=None, simulation=False):
+    def __init__(
+        self,
+        host: str = "127.0.0.1",
+        port: Optional[int] = None,
+        simulation: bool = False,
+    ) -> None:
         # Message handlers
-        self.__msg_callbacks = {}
+        self.__msg_callbacks: Dict[str, Callable] = {}
         self.add_message_handler(NodeMessages.BEAT, self.__heartbeat_callback)
 
         # Random port
@@ -73,7 +80,7 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
     #   Node Management (servicer loop)   #
     #######################################
 
-    def assert_running(self, running):
+    def assert_running(self, running: bool) -> None:
         """
         Asserts that the node is running or not running.
 
@@ -87,7 +94,7 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         if running_state != running:
             raise Exception(f"Node is {'not ' if running_state else ''}running.")
 
-    def start(self, wait=False):
+    def start(self, wait: bool = False) -> None:
         """
         Starts the node: server and neighbors(gossip and heartbeat).
 
@@ -112,7 +119,7 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
             self.__server.wait_for_termination()
             logging.info(f"({self.addr}) Server terminated.")
 
-    def stop(self):
+    def stop(self) -> None:
         """
         Stops the node: server and neighbors(gossip and heartbeat).
 
@@ -133,7 +140,7 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
     #  Neighborhood management  #
     #############################
 
-    def connect(self, addr):
+    def connect(self, addr: str) -> bool:
         """
         Connects a node to another.
 
@@ -149,7 +156,7 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         logging.info(f"({self.addr}) connecting to {addr}...")
         return self._neighbors.add(addr, handshake_msg=True)
 
-    def get_neighbors(self, only_direct=False):
+    def get_neighbors(self, only_direct: bool = False) -> List[str]:
         """
         Returns the neighbors of the node.
 
@@ -161,7 +168,7 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         """
         return self._neighbors.get_all(only_direct)
 
-    def disconnect_from(self, addr):
+    def disconnect_from(self, addr: str) -> None:
         """
         Disconnects a node from another.
 
@@ -178,7 +185,9 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
     #  GRPC - Remote Services  #
     ############################
 
-    def handshake(self, request, _):
+    def handshake(
+        self, request: node_pb2.HandShakeRequest, _: grpc.ServicerContext
+    ) -> node_pb2.ResponseMessage:
         """
         GRPC service. It is called when a node connects to another.
         """
@@ -189,14 +198,18 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
                 error="Cannot add the node (duplicated or wrong direction)"
             )
 
-    def disconnect(self, request, _):
+    def disconnect(
+        self, request: node_pb2.HandShakeRequest, _: grpc.ServicerContext
+    ) -> google.protobuf.empty_pb2.Empty:
         """
         GRPC service. It is called when a node disconnects from another.
         """
         self._neighbors.remove(request.addr, disconnect_msg=False)
-        return node_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
+        return google.protobuf.empty_pb2.Empty()
 
-    def send_message(self, request, _):
+    def send_message(
+        self, request: node_pb2.Message, _: grpc.ServicerContext
+    ) -> node_pb2.ResponseMessage:
         """
         GRPC service. It is called when a node sends a message to another.
         """
@@ -221,23 +234,25 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
 
         return node_pb2.ResponseMessage()
 
-    def add_model(self, request, _):
+    def add_model(
+        self, request: node_pb2.Weights, _: grpc.ServicerContext
+    ) -> node_pb2.ResponseMessage:
         raise NotImplementedError
 
     ####
     # Message Handlers
     ####
 
-    def add_message_handler(self, cmd, callback):
+    def add_message_handler(self, cmd: str, callback: Callable) -> None:
         """
         Adds a function callback to a message.
 
         Args:
             cmd (str): The command of the message.
-            callback (function): The callback function.
+            callback (callable): The callback function.
         """
         self.__msg_callbacks[cmd] = callback
 
-    def __heartbeat_callback(self, request):
+    def __heartbeat_callback(self, request: node_pb2.Message) -> None:
         time = float(request.args[0])
         self._neighbors.heartbeat(request.source, time)

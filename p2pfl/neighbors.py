@@ -1,5 +1,6 @@
 #
-# This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -19,11 +20,16 @@ import threading
 import time
 import random
 from datetime import datetime
+from typing import Dict, List, Optional, Tuple
 import grpc
 from p2pfl.settings import Settings
 from p2pfl.proto import node_pb2, node_pb2_grpc
 from p2pfl.messages import NodeMessages
 import logging
+
+
+class NeighborNotConnectedError(Exception):
+    pass
 
 
 class Neighbors:
@@ -39,29 +45,34 @@ class Neighbors:
         self_addr (str): Address of the node itself.
     """
 
-    def __init__(self, self_addr):
+    def __init__(self, self_addr: str):
         self.__self_addr = self_addr
-        self.__neighbors = {}  # private to avoid concurrency issues
+        self.__neighbors: Dict[
+            str,
+            Tuple[
+                Optional[grpc.Channel], Optional[node_pb2_grpc.NodeServicesStub], float
+            ],
+        ] = {}  # private to avoid concurrency issues
         self.__nei_lock = threading.Lock()
 
         # Heartbeat
         self.__heartbeat_terminate_flag = threading.Event()
 
         # Gossip
-        self.__pending_msgs = []
+        self.__pending_msgs: List[Tuple[node_pb2.Message, List[str]]] = []
         self.__pending_msgs_lock = threading.Lock()
         self.__gossip_terminate_flag = threading.Event()
-        self.__processed_messages = []
+        self.__processed_messages: List[int] = []
         self.__processed_messages_lock = threading.Lock()
 
-    def start(self):
+    def start(self) -> None:
         """
         Start the heartbeater and gossiper threads.
         """
         self.__start_heartbeater()
         self.__start_gossiper()
 
-    def stop(self):
+    def stop(self) -> None:
         """
         Stop the heartbeater and gossiper threads. Also, close all the connections.
         """
@@ -73,7 +84,9 @@ class Neighbors:
     # Message
     ####
 
-    def build_msg(self, cmd, args=[], round=None):
+    def build_msg(
+        self, cmd: str, args: Optional[List[str]] = None, round: Optional[int] = None
+    ) -> node_pb2.Message:
         """
         Build a message to send to the neighbors.
 
@@ -85,6 +98,8 @@ class Neighbors:
         Returns:
             node_pb2.Message: Message to send.
         """
+        if args is None:
+            args = []
         hs = hash(
             str(cmd) + str(args) + str(datetime.now()) + str(random.randint(0, 100000))
         )
@@ -99,7 +114,7 @@ class Neighbors:
             round=round,
         )
 
-    def send_message(self, nei, msg):
+    def send_message(self, nei: str, msg: node_pb2.Message) -> None:
         """
         Send a message to a neighbor.
 
@@ -108,12 +123,16 @@ class Neighbors:
             msg (node_pb2.Message): Message to send.
         """
         try:
-            res = self.__neighbors[nei][1].send_message(
-                msg, timeout=Settings.GRPC_TIMEOUT
-            )
+            node_stub = self.__neighbors[nei][1]
+            if node_stub is not None:
+                res = node_stub.send_message(msg, timeout=Settings.GRPC_TIMEOUT)
+            else:
+                raise NeighborNotConnectedError(
+                    f"Neighbor {nei} not directly connected (Stub not defined)."
+                )
             if res.error:
                 logging.error(
-                    f"[{self.addr}] Error while sending a message: {msg.cmd} {msg.args}: {res.error}"
+                    f"[{self.__self_addr}] Error while sending a message: {msg.cmd} {msg.args}: {res.error}"
                 )
                 self.remove(nei, disconnect_msg=True)
         except Exception as e:
@@ -123,7 +142,9 @@ class Neighbors:
             )
             self.remove(nei)
 
-    def broadcast_msg(self, msg, node_list=None):
+    def broadcast_msg(
+        self, msg: node_pb2.Message, node_list: Optional[List[str]] = None
+    ) -> None:
         """
         Broadcast a message to all the neighbors.
 
@@ -140,7 +161,14 @@ class Neighbors:
         for n in node_list:
             self.send_message(n, msg)
 
-    def send_model(self, nei, round, serialized_model, contributors=[], weight=1):
+    def send_model(
+        self,
+        nei: str,
+        round: int,
+        serialized_model: bytes,
+        contributors: Optional[List[str]] = None,
+        weight: int = 1,
+    ) -> None:
         """
         Send a model to a neighbor.
 
@@ -151,6 +179,8 @@ class Neighbors:
             contributors (list): List of contributors of the model.
             weight (float): Weight of the model.
         """
+        if contributors is None:
+            contributors = []
         try:
             stub = self.__neighbors[nei][1]
             # if not connected, create a temporal stub to send the message
@@ -171,7 +201,9 @@ class Neighbors:
             )
             # Handling errors -> however errors in aggregation stops the other nodes and are not raised (decoding/non-matching/unexpected)
             if res.error:
-                logging.error(f"[{self.addr}] Error while sending a model: {res.error}")
+                logging.error(
+                    f"[{self.__self_addr}] Error while sending a model: {res.error}"
+                )
                 self.remove(nei, disconnect_msg=True)
             if not (channel is None):
                 channel.close()
@@ -187,7 +219,9 @@ class Neighbors:
     # Neighbors management
     ####
 
-    def add(self, addr, handshake_msg=True, non_direct=False):
+    def add(
+        self, addr: str, handshake_msg: bool = True, non_direct: bool = False
+    ) -> bool:
         """
         Add a neighbor if it is not itself or already added. It also sends a handshake message to check if the neighbor is available and create a bidirectional connection.
 
@@ -216,7 +250,7 @@ class Neighbors:
         # Add non direct connected neighbors
         if non_direct:
             self.__nei_lock.acquire()
-            self.__neighbors[addr] = [None, None, time.time()]
+            self.__neighbors[addr] = (None, None, time.time())
             self.__nei_lock.release()
             return True
 
@@ -240,7 +274,7 @@ class Neighbors:
 
             # Add neighbor
             self.__nei_lock.acquire()
-            self.__neighbors[addr] = [channel, stub, time.time()]
+            self.__neighbors[addr] = (channel, stub, time.time())
             self.__nei_lock.release()
             return True
 
@@ -249,11 +283,11 @@ class Neighbors:
             # Try to remove neighbor
             try:
                 self.remove(addr)
-            except:
+            except Exception:
                 pass
             return False
 
-    def remove(self, nei, disconnect_msg=True):
+    def remove(self, nei: str, disconnect_msg: bool = True) -> None:
         """
         Remove a neighbor.
 
@@ -264,23 +298,24 @@ class Neighbors:
         logging.info(f"({self.__self_addr}) Removing {nei}")
         self.__nei_lock.acquire()
         try:
-            try:
-                # If the other node still connected, disconnect
-                if disconnect_msg:
-                    self.__neighbors[nei][1].disconnect(
+            # If the other node still connected, disconnect
+            if disconnect_msg:
+                node_stub = self.__neighbors[nei][1]
+                if node_stub is not None:
+                    node_stub.disconnect(
                         node_pb2.HandShakeRequest(addr=self.__self_addr)
                     )
                 # Close channel
-                self.__neighbors[nei][0].close()
-            except:
-                pass
+                node_channel = self.__neighbors[nei][0]
+                if node_channel is not None:
+                    node_channel.close()
             # Remove neighbor
             del self.__neighbors[nei]
-        except:
+        except Exception:
             pass
         self.__nei_lock.release()
 
-    def get(self, nei):
+    def get(self, nei: str) -> Optional[node_pb2_grpc.NodeServicesStub]:
         """
         Get a neighbor.
 
@@ -292,7 +327,7 @@ class Neighbors:
         """
         return self.__neighbors[nei][1]
 
-    def get_all(self, only_direct=False):
+    def get_all(self, only_direct: bool = False) -> List[str]:
         """
         Get all the neighbors (names).
 
@@ -307,7 +342,7 @@ class Neighbors:
             return [k for k, v in neis.items() if v[1] is not None]
         return list(neis.keys())
 
-    def clear_neis(self):
+    def clear_neis(self) -> None:
         nei_copy = self.__neighbors.copy()
         for nei in nei_copy.keys():
             self.remove(nei)
@@ -316,7 +351,7 @@ class Neighbors:
     # Heartbeating
     ####
 
-    def heartbeat(self, nei, time):
+    def heartbeat(self, nei: str, time: float) -> None:
         """
         Update the time of the last heartbeat of a neighbor. If the neighbor is not added, add it.
 
@@ -337,18 +372,24 @@ class Neighbors:
         else:
             # Update time
             if self.__neighbors[nei][2] < time:
-                self.__neighbors[nei][2] = time
+                self.__neighbors[nei] = (
+                    self.__neighbors[nei][0],
+                    self.__neighbors[nei][1],
+                    time,
+                )
             self.__nei_lock.release()
 
-    def __start_heartbeater(self):
+    def __start_heartbeater(self) -> None:
         threading.Thread(target=self.__heartbeater).start()
 
-    def _stop_heartbeater(self):
+    def _stop_heartbeater(self) -> None:
         self.__heartbeat_terminate_flag.set()
 
     def __heartbeater(
-        self, period=Settings.HEARTBEAT_PERIOD, timeout=Settings.HEARTBEAT_TIMEOUT
-    ):
+        self,
+        period: float = Settings.HEARTBEAT_PERIOD,
+        timeout: float = Settings.HEARTBEAT_TIMEOUT,
+    ) -> None:
         toggle = False
         while not self.__heartbeat_terminate_flag.is_set():
             t = time.time()
@@ -368,7 +409,7 @@ class Neighbors:
             # Send heartbeat
             nei_copy = self.__neighbors.copy()
             msg = self.build_msg(NodeMessages.BEAT, args=[str(time.time())])
-            self.add_processed_msg(msg)
+            self.add_processed_msg(msg.hash)
             for nei, (_, stub, _) in nei_copy.items():
                 if stub is None:
                     continue
@@ -388,30 +429,30 @@ class Neighbors:
     # Gossping
     ####
 
-    def add_processed_msg(self, msg):
+    def add_processed_msg(self, msg_hash: int) -> bool:
         """
         Add a message to the list of processed messages.
 
         Args:
-            msg (node_pb2.Message): Message to add.
+            msg_hash (int): Message to add.
 
         Returns:
             bool: True if the message was added, False if it was already processed.
         """
         self.__processed_messages_lock.acquire()
         # Check if message was already processed
-        if msg in self.__processed_messages:
+        if msg_hash in self.__processed_messages:
             self.__processed_messages_lock.release()
             return False
         # If there are more than X messages, remove the oldest one
         if len(self.__processed_messages) > Settings.AMOUNT_LAST_MESSAGES_SAVED:
             self.__processed_messages.pop(0)
         # Add message
-        self.__processed_messages.append(msg)
+        self.__processed_messages.append(msg_hash)
         self.__processed_messages_lock.release()
         return True
 
-    def gossip(self, msg):
+    def gossip(self, msg: node_pb2.Message) -> None:
         """
         Add a message to the list of pending messages to gossip.
 
@@ -428,21 +469,21 @@ class Neighbors:
             self.__pending_msgs.append((msg, pending_neis))
             self.__pending_msgs_lock.release()
 
-    def __start_gossiper(self):
+    def __start_gossiper(self) -> None:
         threading.Thread(target=self.__gossiper).start()
 
-    def _stop_gossiper(self):
+    def _stop_gossiper(self) -> None:
         self.__gossip_terminate_flag.set()
 
     def __gossiper(
         self,
-        period=Settings.GOSSIP_PERIOD,
-        messases_per_period=Settings.GOSSIP_MESSAGES_PER_PERIOD,
-    ):
+        period: float = Settings.GOSSIP_PERIOD,
+        messages_per_period: int = Settings.GOSSIP_MESSAGES_PER_PERIOD,
+    ) -> None:
         while not self.__gossip_terminate_flag.is_set():
             t = time.time()
             messages_to_send = []
-            messages_left = messases_per_period
+            messages_left = messages_per_period
 
             # Lock
             self.__pending_msgs_lock.acquire()
@@ -460,9 +501,10 @@ class Neighbors:
                     # Select only the first neis
                     messages_to_send.append((head_msg[0], head_msg[1][:messages_left]))
                     # Remove from pending
-                    self.__pending_msgs[0][1] = self.__pending_msgs[0][1][
-                        messages_left:
-                    ]
+                    self.__pending_msgs[0] = (
+                        self.__pending_msgs[0][0],
+                        self.__pending_msgs[0][1][messages_left:],
+                    )
 
             # Unlock
             self.__pending_msgs_lock.release()
@@ -480,5 +522,5 @@ class Neighbors:
             sleep_time = max(0, period - (t - time.time()))
             time.sleep(sleep_time)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.__neighbors.keys())
