@@ -16,10 +16,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import logging
-from typing import Dict, Union, Tuple
+from typing import Dict, Tuple
 import torch
-from p2pfl.learning.aggregators.aggregator import Aggregator
+from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
 
 
 class FedAvg(Aggregator):
@@ -33,7 +32,7 @@ class FedAvg(Aggregator):
 
     def aggregate(
         self, models: Dict[str, Tuple[Dict[str, torch.Tensor], int]]
-    ) -> Union[Dict[str, torch.Tensor], None]:
+    ) -> Dict[str, torch.Tensor]:
         """
         Ponderated average of the models.
 
@@ -43,10 +42,9 @@ class FedAvg(Aggregator):
 
         # Check if there are models to aggregate
         if len(models) == 0:
-            logging.error(
+            raise NoModelsToAggregateError(
                 f"({self.node_name}) Trying to aggregate models when there is no models"
             )
-            return None
 
         models_list = list(models.values())
 

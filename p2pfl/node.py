@@ -24,8 +24,8 @@ import time
 from typing import Callable, Dict, List, Optional, Tuple, Any, Type
 import grpc
 from p2pfl.base_node import BaseNode
-from p2pfl.learning.aggregators.aggregator import Aggregator
-from p2pfl.learning.learner import NodeLearner
+from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
+from p2pfl.learning.learner import NodeLearner, ZeroEpochsError
 from p2pfl.messages import LearningNodeMessages
 from p2pfl.settings import Settings
 from p2pfl.learning.pytorch.lightninglearner import LightningLearner
@@ -42,11 +42,6 @@ StatusFunction = Callable[[str], Any]
 ModelFunction = Callable[[str], Tuple[Any, List[str], int]]
 
 
-# Typing todos:
-#   - ModelFunction parameters type (a more specific type than any)
-#   - Model and data, maybe remove this from the constructor (just set allow modifications via nodelearner)
-
-
 class Node(BaseNode):
     """
     Class based on a BaseNode that allows **p2p Federated Learning**.
@@ -55,13 +50,13 @@ class Node(BaseNode):
         model: Model to be learned. Careful, model should be compatible with data and the learner.
         data: Dataset to be used in the learning process. Careful, model should be compatible with data and the learner.
         host (str): Host where the node will be listening.
-        port (int): Port where the node will be listening.
+        port (Optional[int]): Port where the node will be listening.
         learner (NodeLearner): Learner to be used in the learning process. Default: LightningLearner.
         aggregator (Aggregator): Aggregator to be used in the learning process. Default: FedAvg.
         simulation (bool): If True, the node will be created in simulation mode. Default: False.
     Attributes:
-        round (int): Round of the learning process.
-        totalrounds (int): Total number of rounds of the learning process.
+        round (Optional[int]): Round of the learning process.
+        totalrounds (Optional[int]): Total number of rounds of the learning process.
         learner (NodeLearner): Learner to be used in the learning process.
         aggregator (Aggregator): Aggregator to be used in the learning process.
     """
@@ -72,8 +67,8 @@ class Node(BaseNode):
 
     def __init__(
         self,
-        model,  # GENERIC TYPE TODO
-        data,  # GENERIC TYPE TODO
+        model,
+        data,
         host: str = "127.0.0.1",
         port: Optional[int] = None,
         learner: Type[NodeLearner] = LightningLearner,
@@ -236,7 +231,7 @@ class Node(BaseNode):
                             list(request.contributors),
                             request.weight,
                         )
-                        if models_added is not None:
+                        if models_added != []:
                             # Communicate Aggregation
                             self._neighbors.broadcast_msg(
                                 self._neighbors.build_msg(
@@ -641,8 +636,8 @@ class Node(BaseNode):
 
     def __evaluate(self) -> None:
         logging.info(f"({self.addr}) Evaluating...")
-        results = self.learner.evaluate()
-        if results is not None:
+        try:
+            results = self.learner.evaluate()
             logging.info(
                 f"({self.addr}) Evaluated. Losss: {results[0]}, Metric: {results[1]}."
             )
@@ -655,6 +650,8 @@ class Node(BaseNode):
                     round=self.round,
                 )
             )
+        except ZeroEpochsError:
+            pass
 
     ######################
     #    Round finish    #
@@ -806,15 +803,18 @@ class Node(BaseNode):
 
             # Generate and Send Model Partial Aggregations (model, node_contributors)
             for nei in neis:
-                model, contributors, weight = model_function(nei)
-
-                # Send Partial Aggregation
-                if model is not None:
+                try:
+                    # Send Partial Aggregation
                     logging.info(f"({self.addr}) Gossiping model to {nei}.")
+                    model, contributors, weight = model_function(nei)
                     encoded_model = self.learner.encode_parameters(params=model)
                     self._neighbors.send_model(
                         nei, self.round, encoded_model, contributors, weight
                     )
+
+                except NoModelsToAggregateError:
+                    logging.debug(f"({self.addr}) No models to send to {nei}.")
+                    pass
 
             # Sleep to allow periodicity
             sleep_time = max(0, period - (t - time.time()))

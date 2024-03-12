@@ -24,6 +24,10 @@ import torch
 from p2pfl.settings import Settings
 
 
+class NoModelsToAggregateError(Exception):
+    pass
+
+
 class Aggregator:
     """
     Class to manage the aggregation of models.
@@ -101,7 +105,7 @@ class Aggregator:
 
     def add_model(
         self, model: Dict[str, torch.Tensor], contributors: List[str], weight: int
-    ) -> Union[List[str], None]:
+    ) -> List[str]:
         """
         Add a model. The first model to be added starts the `run` method (timeout).
 
@@ -119,7 +123,7 @@ class Aggregator:
                 f"({self.node_name}) Received a model without a list of contributors."
             )
             self.__agg_lock.release()
-            return None
+            return []
 
         # Diffusion / Aggregation
         if self.__waiting_aggregated_model and self.__models == {}:
@@ -179,7 +183,7 @@ class Aggregator:
                     f"({self.node_name}) Received a model when is not needed."
                 )
             self.__agg_lock.release()
-        return None
+        return []
 
     def wait_and_get_aggregation(
         self, timeout: int = Settings.AGGREGATION_TIMEOUT
@@ -256,7 +260,9 @@ class Aggregator:
 
         # If there are no models to aggregate
         if len(dict_aux) == 0:
-            return None, None, None
+            raise NoModelsToAggregateError(
+                "Imposible to get a partial aggregation, no models to aggregate."
+            )
 
         return (
             self.aggregate(dict_aux),

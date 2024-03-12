@@ -21,7 +21,7 @@ import pickle
 from typing import Dict, Optional, Tuple
 import torch
 from pytorch_lightning import Trainer
-from p2pfl.learning.learner import NodeLearner
+from p2pfl.learning.learner import NodeLearner, ZeroEpochsError
 from p2pfl.learning.pytorch.logger import FederatedLogger, LogsUnionType
 from p2pfl.learning.exceptions import (
     DecodingParamsError,
@@ -131,7 +131,7 @@ class LightningLearner(NodeLearner):
             self.__trainer.should_stop = True
             self.__trainer = None
 
-    def evaluate(self) -> Optional[tuple[float, float]]:
+    def evaluate(self) -> Tuple[float, float]:
         try:
             if self.epochs > 0:
                 self.__trainer = Trainer(
@@ -148,9 +148,10 @@ class LightningLearner(NodeLearner):
                 self.log_validation_metrics(loss, metric)
                 return loss, metric
             else:
-                return None
+                raise ZeroEpochsError("Zero epochs to evaluate.")
         except Exception as e:
-            logging.error(f"Something went wrong with pytorch lightning. {e}")
+            if not isinstance(e, ZeroEpochsError):
+                logging.error(f"Something went wrong with pytorch lightning. {e}")
             raise e
 
     ####

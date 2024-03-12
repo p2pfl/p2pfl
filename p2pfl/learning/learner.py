@@ -24,6 +24,10 @@
 from typing import Any, Optional, Tuple
 
 
+class ZeroEpochsError(Exception):
+    pass
+
+
 class NodeLearner:
     """
     Template to implement learning processes, including metric monitoring during training.
@@ -137,9 +141,12 @@ class NodeLearner:
         """
         raise NotImplementedError
 
-    def evaluate(self) -> Optional[tuple[float, float]]:
+    def evaluate(self) -> Tuple[float, float]:
         """
         Evaluate the model with actual parameters.
+
+        Raises:
+            ZeroEpochsError: If the number of epochs is zero.
         """
         raise NotImplementedError
 
