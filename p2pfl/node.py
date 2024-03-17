@@ -108,7 +108,7 @@ class Node(BaseNode):
         self.round: Optional[int] = None
         self.totalrounds: Optional[int] = None
         self.__train_set: List[str] = []
-        self.__models_agregated: Dict[str, List[str]] = {}
+        self.__models_aggregated: Dict[str, List[str]] = {}
         self.__nei_status: Dict[str, int] = {}
         self.learner = learner(model, data, self.addr)
         self.aggregator = aggregator(node_name=self.addr)
@@ -166,7 +166,7 @@ class Node(BaseNode):
 
     def __models_agregated_callback(self, msg: node_pb2.Message) -> None:
         if msg.round == self.round:
-            self.__models_agregated[msg.source] = list(msg.args)
+            self.__models_aggregated[msg.source] = list(msg.args)
 
     def __models_ready_callback(self, msg: node_pb2.Message) -> None:
         ########################################################
@@ -370,7 +370,7 @@ class Node(BaseNode):
                     LearningNodeMessages.START_LEARNING, [str(rounds), str(epochs)]
                 )
             )
-            # Set model initializated
+            # Set model initialized
             self.__model_initialized_lock.release()
             # Broadcast initialize model
             self._neighbors.broadcast_msg(
@@ -448,9 +448,9 @@ class Node(BaseNode):
         except Exception:
             pass
 
-    #######################
-    #    Trainig Steps    #
-    #######################
+    ########################
+    #    Training Steps    #
+    ########################
 
     def __wait_aggregated_model(self) -> None:
         params = self.aggregator.wait_and_get_aggregation()
@@ -668,7 +668,7 @@ class Node(BaseNode):
         self.round = self.round + 1
 
         # Clear node aggregation
-        self.__models_agregated = {}
+        self.__models_aggregated = {}
 
         # Next Step or Finish
         logging.info(
@@ -697,7 +697,7 @@ class Node(BaseNode):
             node (str): Node to get the aggregated models from.
         """
         try:
-            return self.__models_agregated[node]
+            return self.__models_aggregated[node]
         except KeyError:
             return []
 

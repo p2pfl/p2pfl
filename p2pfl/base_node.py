@@ -108,16 +108,16 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         self.assert_running(False)
         # Set running
         self.__running = True
-        # Heartbeat and Gossip
-        self._neighbors.start()
         # Server
         node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.__server)
         self.__server.add_insecure_port(self.addr)
         self.__server.start()
-        logging.info(f"({self.addr}) Server started.")
+        logging.info(f"({self.addr}) gRPC started")
+        # Heartbeat and Gossip
+        self._neighbors.start()
         if wait:
             self.__server.wait_for_termination()
-            logging.info(f"({self.addr}) Server terminated.")
+            logging.info(f"({self.addr}) gRPC terminated.")
 
     def stop(self) -> None:
         """
@@ -215,6 +215,7 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         """
         # If not processed
         if self._neighbors.add_processed_msg(request.hash):
+            logging.debug(f"({self.addr}) received message from {request.source} > {request.cmd} {request.args}")
             # Gossip
             self._neighbors.gossip(request)
             # Process message

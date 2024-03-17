@@ -73,7 +73,7 @@ class Aggregator:
     def set_waiting_aggregated_model(self, nodes: List[str]) -> None:
         """
         Indicates that the node is waiting for an aggregation. It won't participate in aggregation process.
-        The model only will receive a model and then it will be used as an aggregated model.
+        The node only will receive a model and then it will be used as an aggregated model.
         """
         self.set_nodes_to_aggregate(nodes)
         self.__waiting_aggregated_model = True
@@ -151,7 +151,7 @@ class Aggregator:
                         )
                         # Finish agg
                         self.__finish_aggregation_lock.release()
-                        # Unloock and Return
+                        # Unlock and Return
                         self.__agg_lock.release()
                         return self.get_aggregated_models()
 

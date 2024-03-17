@@ -380,9 +380,11 @@ class Neighbors:
             self.__nei_lock.release()
 
     def __start_heartbeater(self) -> None:
+        logging.info(f"({self.__self_addr}) Starting heartbeater...")
         threading.Thread(target=self.__heartbeater).start()
 
     def _stop_heartbeater(self) -> None:
+        logging.info(f"({self.__self_addr}) Stopping heartbeater...")
         self.__heartbeat_terminate_flag.set()
 
     def __heartbeater(
@@ -426,7 +428,7 @@ class Neighbors:
             time.sleep(sleep_time)
 
     ####
-    # Gossping
+    # Gossiping
     ####
 
     def add_processed_msg(self, msg_hash: int) -> bool:
@@ -470,9 +472,11 @@ class Neighbors:
             self.__pending_msgs_lock.release()
 
     def __start_gossiper(self) -> None:
+        logging.info(f"({self.__self_addr}) Starting gossiper...")
         threading.Thread(target=self.__gossiper).start()
 
     def _stop_gossiper(self) -> None:
+        logging.info(f"({self.__self_addr}) Stopping gossiper...")
         self.__gossip_terminate_flag.set()
 
     def __gossiper(
@@ -512,7 +516,7 @@ class Neighbors:
             # Send messages
             for msg, neis in messages_to_send:
                 for nei in neis:
-                    # send only if direct connected (also add a try to deal with desconnections)
+                    # send only if direct connected (also add a try to deal with disconnections)
                     try:
                         if self.__neighbors[nei][1] is not None:
                             self.send_message(nei, msg)
