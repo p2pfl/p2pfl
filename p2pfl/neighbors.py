@@ -28,7 +28,6 @@ from p2pfl.messages import NodeMessages
 from p2pfl.management.logger import logger
 
 
-
 class NeighborNotConnectedError(Exception):
     pass
 
@@ -382,7 +381,7 @@ class Neighbors:
 
     def __start_heartbeater(self) -> None:
         logger.info(self.__self_addr, "Starting heartbeater...")
-        threading.Thread(target=self.__heartbeater).start()
+        threading.Thread(target=self.__heartbeater, name=f"heartbeater-thread-{self.__self_addr}").start()
 
     def _stop_heartbeater(self) -> None:
         logger.info(self.__self_addr, "Stopping heartbeater...")
@@ -476,7 +475,7 @@ class Neighbors:
 
     def __start_gossiper(self) -> None:
         logger.info(self.__self_addr, "Starting gossiper...")
-        threading.Thread(target=self.__gossiper).start()
+        threading.Thread(target=self.__gossiper, name=f"gossiper-thread-{self.__self_addr}").start()
 
     def _stop_gossiper(self) -> None:
         logger.info(self.__self_addr, "Stopping gossiper...")

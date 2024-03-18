@@ -18,6 +18,8 @@
 
 import logging
 import os
+from typing import Optional
+from p2pfl.management.p2pfl_web_services import P2pflWebServices
 from p2pfl.settings import Settings
 from logging.handlers import QueueHandler, QueueListener
 import queue
@@ -47,6 +49,39 @@ class ColoredFormatter(logging.Formatter):
         return super().format(record)
 
 
+class DictFormatter(logging.Formatter):
+    def __init__(self):
+        super().__init__()
+        self.datefmt = "%Y-%m-%d %H:%M:%S"
+
+    def format(self, record):
+        log_dict = {
+            "timestamp": self.formatTime(record),
+            "level": record.levelname,
+            "node": record.node,
+            "message": record.getMessage(),
+        }
+        return log_dict
+
+
+class P2pflWebHandler(logging.Handler):
+    def __init__(self, p2pfl_web: P2pflWebServices):
+        super().__init__()
+        self.p2pfl_web = p2pfl_web
+        self.formatter = DictFormatter()  # Instantiate the custom formatter
+
+    def emit(self, record):
+        # Format the log record using the custom formatter
+        log_message = self.formatter.format(record)
+        # Send log entry to the API
+        self.p2pfl_web.send_log(
+            log_message["timestamp"],
+            log_message["node"],
+            log_message["level"],
+            log_message["message"],
+        )
+
+
 # METER UI LOGGING COMO HANDLER
 """
 class RemoteLogger(HANDLER):
@@ -62,7 +97,23 @@ class Logger:
 
     __instance = None
 
-    def __init__(self) -> None:
+    @staticmethod
+    def init(p2pfl_web: Optional[P2pflWebServices] = None) -> None:
+        """
+        Initialize the logger.
+
+        Args:
+            p2pfl_web (P2pflWebServices): The p2pfl web services.
+        """
+        # Remove the instance if it already exists
+        if Logger.__instance is not None:
+            Logger.__instance.queue_listener.stop()
+            Logger.__instance = None
+
+        # Create the instance
+        Logger.__instance = Logger(p2pfl_web)
+
+    def __init__(self, p2pfl_web: Optional[P2pflWebServices] = None) -> None:
         # Remote logging
         self.remote_logging = None
 
@@ -70,16 +121,24 @@ class Logger:
         self.logger = logging.getLogger("p2pfl")
         self.logger.propagate = False
         self.logger.setLevel(logging.getLevelName(Settings.LOG_LEVEL))
+        handlers = []
 
-        # STDOUT
-        self.stream_handler = logging.StreamHandler()
+        # WEB - Handler
+        if p2pfl_web is not None:
+            web_handler = P2pflWebHandler(p2pfl_web)
+            self.logger.addHandler(web_handler)
+            handlers.append(web_handler)
+
+        # STDOUT - Handler
+        stream_handler = logging.StreamHandler()
         cmd_formatter = ColoredFormatter(
             f"{GRAY}[ {YELLOW}%(asctime)s {GRAY}| {CYAN}%(node)s {GRAY}| %(levelname)s{GRAY} ]:{RESET} %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
-        self.stream_handler.setFormatter(cmd_formatter)
+        stream_handler.setFormatter(cmd_formatter)
+        handlers.append(stream_handler)
 
-        # FILE
+        # FILE - Handler
         if not os.path.exists(Settings.LOG_DIR):
             os.makedirs(Settings.LOG_DIR)
         file_handler = logging.handlers.RotatingFileHandler(
@@ -90,14 +149,13 @@ class Logger:
             datefmt="%Y-%m-%d %H:%M:%S",
         )
         file_handler.setFormatter(file_formatter)
+        handlers.append(file_handler)
 
         # Asynchronous logging (queue handler)
         log_queue: queue.Queue[logging.LogRecord] = queue.Queue()
         queue_handler = QueueHandler(log_queue)
         self.logger.addHandler(queue_handler)
-        self.queue_listener = QueueListener(
-            log_queue, file_handler, self.stream_handler
-        )
+        self.queue_listener = QueueListener(log_queue, *handlers)
         self.queue_listener.start()
 
     @staticmethod
@@ -111,18 +169,6 @@ class Logger:
         if Logger.__instance is None:
             Logger.__instance = Logger()
         return Logger.__instance
-
-    @staticmethod
-    def configure_remote_logging(url: str, key: str) -> None:
-        """
-        Configure remote logging.
-
-        Args:
-            url (str): The remote logging URL.
-            key (str): The remote logging key.
-        """
-        raise NotImplementedError("Remote logging not implemented yet")
-        # Logger.get_instance().remote_logging = RemoteLogger(url, key)
 
     @staticmethod
     def set_level(level: int) -> None:
@@ -228,13 +274,8 @@ class Logger:
         if Logger.get_instance().remote_logging is not None:
             raise NotImplementedError("Remote logging not implemented yet")
 
-    @staticmethod
-    def stop():
-        """
-        Stop the logger.
-        """
-        # Stop the queue listener
-        Logger.get_instance().queue_listener.stop()
+    def __del__(self):
+        self.queue_listener.stop()
 
 
 logger = Logger

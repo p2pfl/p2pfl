@@ -70,9 +70,6 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         self.__running = False
         self.__server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
 
-        # Logging
-        # logger.configure_remote_logging("http://localhost:777", "AAAAA")
-
     #######################################
     #   Node Management (servicer loop)   #
     #######################################
@@ -107,7 +104,10 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         self.__running = True
         # Server
         node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.__server)
-        self.__server.add_insecure_port(self.addr)
+        try:
+            self.__server.add_insecure_port(self.addr)
+        except Exception as e:
+            raise Exception(f"Cannot bind the address ({self.addr}): {e}")
         self.__server.start()
         logger.info(self.addr, "gRPC started")
         # Heartbeat and Gossip

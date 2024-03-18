@@ -16,6 +16,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from p2pfl.management.logger import logger
+from p2pfl.management.p2pfl_web_services import P2pflWebServices
 from p2pfl.node import Node
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
     MnistFederatedDM,
@@ -24,14 +26,17 @@ from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 import sys
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python3 nodo1.py <self_port>")
+    if len(sys.argv) != 1:
+        print("Usage: python3 p2pfl_web.py")
         sys.exit(1)
 
+    # Set the logger
+    logger.init(P2pflWebServices("https://b3e4b102-69aa-42b0-9d2d-ca48e7d553f2.mock.pstmn.io", "1234"))
+    
+    # Node Creation
     node = Node(
         MLP(),
-        MnistFederatedDM(sub_id=0, number_sub=2),
-        port=int(sys.argv[1]),
+        MnistFederatedDM(sub_id=0, number_sub=2)
     )
     node.start()
 

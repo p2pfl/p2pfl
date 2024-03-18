@@ -23,7 +23,6 @@ from p2pfl.settings import Settings
 from p2pfl.management.logger import logger
 
 
-
 class NoModelsToAggregateError(Exception):
     pass
 

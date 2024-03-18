@@ -74,11 +74,11 @@ class Node(BaseNode):
         port: Optional[int] = None,
         learner: Type[NodeLearner] = LightningLearner,
         aggregator: Type[Aggregator] = FedAvg,
-        simulation: bool = False,
+        **kwargs,
     ) -> None:
 
         # Super init
-        BaseNode.__init__(self, host, port, simulation)
+        BaseNode.__init__(self, host, port, **kwargs)
 
         # Add message handlers
         self.add_message_handler(
