@@ -25,7 +25,6 @@ from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
     MnistFederatedDM,
 )
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
-from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
 from p2pfl.node import Node
 import time
 import matplotlib.pyplot as plt
@@ -34,7 +33,7 @@ import matplotlib.pyplot as plt
 def test_convergence(n, r, epochs=2):
     # Node Creation
     nodes = []
-    for i in range(n):
+    for _ in range(n):
         node = Node(MLP(), MnistFederatedDM())
         node.start()
         nodes.append(node)
@@ -52,7 +51,10 @@ def test_convergence(n, r, epochs=2):
     wait_4_results(nodes)
 
     # Get logs
-    logs = nodes[0].learner.get_logs()[0]
+    logs = nodes[0].learner.get_logs()
+    # Get first experiment
+    logs = list(logs.values())[0]
+    # Plot experiment metrics
     for node_name, node_metrics in logs.items():
         for metric, values in node_metrics.items():
             v = zip(*values)

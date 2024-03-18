@@ -19,11 +19,12 @@
 import math
 import random
 import threading
-import logging
 import time
 from typing import Callable, Dict, List, Optional, Tuple, Any, Type
 import grpc
 from p2pfl.base_node import BaseNode
+from p2pfl.management.logger import logger
+
 from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
 from p2pfl.learning.learner import NodeLearner, ZeroEpochsError
 from p2pfl.messages import LearningNodeMessages
@@ -158,11 +159,12 @@ class Node(BaseNode):
                 except Exception:
                     pass
             else:
-                logging.error(
-                    f"({self.addr}) Vote received in a late round. Ignored. {msg.round} != {self.round} / {self.round+1}"
+                logger.error(
+                    self.addr,
+                    f"Vote received in a late round. Ignored. {msg.round} != {self.round} / {self.round+1}",
                 )
         else:
-            logging.error(f"({self.addr}) Vote received when learning is not running")
+            logger.error(self.addr, "Vote received when learning is not running")
 
     def __models_agregated_callback(self, msg: node_pb2.Message) -> None:
         if msg.round == self.round:
@@ -177,12 +179,13 @@ class Node(BaseNode):
                 self.__nei_status[msg.source] = int(msg.args[0])
             else:
                 # Ignored
-                logging.error(
-                    f"({self.addr}) Models ready in a late round. Ignored. {msg.round} != {self.round} / {self.round-1}"
+                logger.error(
+                    self.addr,
+                    f"Models ready in a late round. Ignored. {msg.round} != {self.round} / {self.round-1}",
                 )
         else:
-            logging.error(
-                f"({self.addr}) Models ready received when learning is not running"
+            logger.error(
+                self.addr, "Models ready received when learning is not running"
             )
 
     def __metrics_callback(self, msg: node_pb2.Message) -> None:
@@ -206,8 +209,9 @@ class Node(BaseNode):
         if self.round is not None:
             # Check source
             if request.round != self.round:
-                logging.error(
-                    f"({self.addr}) Model Reception in a late round ({request.round} != {self.round})."
+                logger.error(
+                    self.addr,
+                    f"Model Reception in a late round ({request.round} != {self.round}).",
                 )
                 return node_pb2.ResponseMessage()
 
@@ -216,9 +220,7 @@ class Node(BaseNode):
                 not self.__model_initialized_lock.locked()
                 and len(self.__train_set) == 0
             ):
-                logging.error(
-                    f"({self.addr}) Model Reception when there is no trainset"
-                )
+                logger.error(self.addr, "Model Reception when there is no trainset")
                 return node_pb2.ResponseMessage()
 
             try:
@@ -247,7 +249,7 @@ class Node(BaseNode):
                         self.__model_initialized_lock.release()
                         model = self.learner.decode_parameters(request.weights)
                         self.learner.set_parameters(model)
-                        logging.info(f"({self.addr}) Model Weights Initialized")
+                        logger.info(self.addr, "Model Weights Initialized")
                         # Communicate Initialization
                         self._neighbors.broadcast_msg(
                             self._neighbors.build_msg(
@@ -260,20 +262,20 @@ class Node(BaseNode):
 
             # Warning: these stops can cause a denegation of service attack
             except DecodingParamsError:
-                logging.error(f"({self.addr}) Error decoding parameters.")
+                logger.error(self.addr, "Error decoding parameters.")
                 self.stop()
 
             except ModelNotMatchingError:
-                logging.error(f"({self.addr}) Models not matching.")
+                logger.error(self.addr, "Models not matching.")
                 self.stop()
 
             except Exception as e:
-                logging.error(f"({self.addr}) Unknown error adding model: {e}")
+                logger.error(self.addr, f"Unknown error adding model: {e}")
                 self.stop()
 
         else:
-            logging.debug(
-                f"({self.addr}) Tried to add a model while learning is not running"
+            logger.debug(
+                self.addr, "Tried to add a model while learning is not running"
             )
 
         # Response
@@ -286,8 +288,8 @@ class Node(BaseNode):
         GRPC service. It is called when a node connects to another.
         """
         if self.round is not None:
-            logging.info(
-                f"({self.addr}) Cant connect to other nodes when learning is running."
+            logger.info(
+                self.addr, "Cant connect to other nodes when learning is running."
             )
             return node_pb2.ResponseMessage(error="Cant connect: learning is running")
         else:
@@ -309,8 +311,8 @@ class Node(BaseNode):
         """
         # Check if learning is running
         if self.round is not None:
-            logging.info(
-                f"({self.addr}) Cant connect to other nodes when learning is running."
+            logger.info(
+                self.addr, "Cant connect to other nodes when learning is running."
             )
             return False
         # Connect
@@ -364,7 +366,7 @@ class Node(BaseNode):
 
         if self.round is None:
             # Broadcast start Learning
-            logging.info(f"({self.addr}) Broadcasting start learning...")
+            logger.info(self.addr, "Broadcasting start learning...")
             self._neighbors.broadcast_msg(
                 self._neighbors.build_msg(
                     LearningNodeMessages.START_LEARNING, [str(rounds), str(epochs)]
@@ -379,7 +381,7 @@ class Node(BaseNode):
             # Learning Thread
             self.__start_learning_thread(rounds, epochs)
         else:
-            logging.info(f"({self.addr}) Learning already started")
+            logger.info(self.addr, "Learning already started")
 
     def set_stop_learning(self) -> None:
         """
@@ -393,7 +395,7 @@ class Node(BaseNode):
             # stop learning
             self.__stop_learning()
         else:
-            logging.info(f"({self.addr}) Learning already stopped")
+            logger.info(self.addr, "Learning already stopped")
 
     ##################################
     #         Local Learning         #
@@ -417,9 +419,9 @@ class Node(BaseNode):
             begin = time.time()
 
             # Wait and gossip model inicialization
-            logging.info(f"({self.addr}) Waiting initialization.")
+            logger.info(self.addr, "Waiting initialization.")
             self.__model_initialized_lock.acquire()
-            logging.info(f"({self.addr}) Gossiping model initialization.")
+            logger.info(self.addr, "Gossiping model initialization.")
             self.__gossip_model_difusion(initialization=True)
 
             # Wait to guarantee new connection heartbeats convergence
@@ -434,7 +436,7 @@ class Node(BaseNode):
             self.__start_thread_lock.release()
 
     def __stop_learning(self) -> None:
-        logging.info(f"({self.addr}) Stopping learning")
+        logger.info(self.addr, "Stopping learning")
         # Rounds
         self.round = None
         self.totalrounds = None
@@ -458,8 +460,8 @@ class Node(BaseNode):
         # Set parameters and communate it to the training process
         if params is not None:
             self.learner.set_parameters(params)
-            logging.debug(
-                f"({self.addr}) Broadcast aggregation done for round {self.round}"
+            logger.debug(
+                self.addr, f"Broadcast aggregation done for round {self.round}"
             )
             # Share that aggregation is done
             self._neighbors.broadcast_msg(
@@ -468,7 +470,7 @@ class Node(BaseNode):
                 )
             )
         else:
-            logging.error(f"({self.addr}) Aggregation finished with no parameters")
+            logger.error(self.addr, "Aggregation finished with no parameters")
             self.stop()
 
     def __train_step(self) -> None:
@@ -476,8 +478,9 @@ class Node(BaseNode):
         if self.round is not None:
             self.__train_set = self.__vote_train_set()
             self.__train_set = self.__validate_train_set(self.__train_set)
-            logging.info(
-                f"{self.addr} Train set of {len(self.__train_set)} nodes: {self.__train_set}"
+            logger.info(
+                self.addr,
+                f"Train set of {len(self.__train_set)} nodes: {self.__train_set}",
             )
 
         # Determine if node is in the train set
@@ -512,7 +515,7 @@ class Node(BaseNode):
 
         else:
             # Set Models To Aggregate
-            logging.info(f"({self.addr}) Waiting aregation.")
+            logger.info(self.addr, "Waiting aregation.")
             self.aggregator.set_waiting_aggregated_model(self.__train_set)
 
         # Gossip aggregated model (also syncrhonizes nodes)
@@ -533,7 +536,7 @@ class Node(BaseNode):
         candidates = list(self.get_neighbors(only_direct=False))
         if self.addr not in candidates:
             candidates.append(self.addr)
-        logging.debug(f"({self.addr}) {len(candidates)} candidates to train set")
+        logger.debug(self.addr, f"{len(candidates)} candidates to train set")
 
         # Send vote
         samples = min(Settings.TRAIN_SET_SIZE, len(candidates))
@@ -549,8 +552,8 @@ class Node(BaseNode):
         self.__train_set_votes_lock.release()
 
         # Send and wait for votes
-        logging.info(f"({self.addr}) Sending train set vote.")
-        logging.debug(f"({self.addr}) Self Vote: {votes}")
+        logger.info(self.addr, "Sending train set vote.")
+        logger.debug(self.addr, f"Self Vote: {votes}")
         self._neighbors.broadcast_msg(
             self._neighbors.build_msg(
                 LearningNodeMessages.VOTE_TRAIN_SET,
@@ -558,7 +561,7 @@ class Node(BaseNode):
                 round=self.round,
             )
         )
-        logging.debug(f"({self.addr}) Waiting other node votes.")
+        logger.debug(self.addr, "Waiting other node votes.")
 
         # Get time
         count = 0.0
@@ -567,7 +570,7 @@ class Node(BaseNode):
         while True:
             # If the trainning has been interrupted, stop waiting
             if self.round is None:
-                logging.info(f"({self.addr}) Stopping on_round_finished process.")
+                logger.info(self.addr, "Stopping on_round_finished process.")
                 return []
 
             # Update time counters (timeout)
@@ -586,8 +589,9 @@ class Node(BaseNode):
             votes_ready = set(candidates) == set(nc_votes.keys())
             if votes_ready or timeout:
                 if timeout and not votes_ready:
-                    logging.info(
-                        f"({self.addr}) Timeout for vote aggregation. Missing votes from {set(candidates) - set(nc_votes.keys())}"
+                    logger.info(
+                        self.addr,
+                        f"Timeout for vote aggregation. Missing votes from {set(candidates) - set(nc_votes.keys())}",
                     )
 
                 results: Dict[str, int] = {}
@@ -612,7 +616,7 @@ class Node(BaseNode):
 
                 # Clear votes
                 self.__train_set_votes = {}
-                logging.info(f"({self.addr}) Computed {len(nc_votes)} votes.")
+                logger.info(self.addr, f"Computed {len(nc_votes)} votes.")
                 return [i[0] for i in results_ordered]
 
             # Wait for votes or refresh every 2 seconds
@@ -631,18 +635,18 @@ class Node(BaseNode):
     ############################
 
     def __train(self) -> None:
-        logging.info(f"({self.addr}) Training...")
+        logger.info(self.addr, "Training...")
         self.learner.fit()
 
     def __evaluate(self) -> None:
-        logging.info(f"({self.addr}) Evaluating...")
+        logger.info(self.addr, "Evaluating...")
         try:
             results = self.learner.evaluate()
-            logging.info(
-                f"({self.addr}) Evaluated. Losss: {results[0]}, Metric: {results[1]}."
+            logger.info(
+                self.addr, f"Evaluated. Losss: {results[0]}, Metric: {results[1]}."
             )
             # Send metrics
-            logging.info(f"({self.addr}) Broadcasting metrics.")
+            logger.info(self.addr, "Broadcasting metrics.")
             self._neighbors.broadcast_msg(
                 self._neighbors.build_msg(
                     LearningNodeMessages.METRICS,
@@ -671,9 +675,7 @@ class Node(BaseNode):
         self.__models_aggregated = {}
 
         # Next Step or Finish
-        logging.info(
-            f"({self.addr}) Round {self.round} of {self.totalrounds} finished."
-        )
+        logger.info(self.addr, f"Round {self.round} of {self.totalrounds} finished.")
         if self.round < self.totalrounds:
             self.__train_step()
         else:
@@ -683,7 +685,7 @@ class Node(BaseNode):
             self.round = None
             self.totalrounds = None
             self.__model_initialized_lock.acquire()
-            logging.info(f"({self.addr}) Training finished!!.")
+            logger.info(self.addr, "Training finished!!.")
 
     #########################
     #    Model Gossiping    #
@@ -731,7 +733,7 @@ class Node(BaseNode):
                 return node not in self.__nei_status.keys()
 
         else:
-            logging.info(f"({self.addr}) Gossiping aggregated model.")
+            logger.info(self.addr, "Gossiping aggregated model.")
             fixed_round = self.round
 
             def candidate_condition(node: str) -> bool:
@@ -769,16 +771,16 @@ class Node(BaseNode):
 
             # If the trainning has been interrupted, stop waiting
             if self.round is None:
-                logging.info(f"({self.addr}) Stopping model gossip process.")
+                logger.info(self.addr, "Stopping model gossip process.")
                 return
 
             # Get nodes wich need models
             neis = [n for n in self.get_neighbors() if candidate_condition(n)]
-            logging.debug(f"({self.addr} Gossip remaining nodes: {neis}")
+            logger.debug(self.addr, f"Gossip remaining nodes: {neis}")
 
             # Determine end of gossip
             if neis == []:
-                logging.info(f"({self.addr}) Gossip finished.")
+                logger.info(self.addr, "Gossip finished.")
                 return
 
             # Save state of neighbors. If nodes are not responding gossip will stop
@@ -792,8 +794,9 @@ class Node(BaseNode):
                 for i in range(len(last_x_status) - 1):
                     if last_x_status[i] != last_x_status[i + 1]:
                         break
-                    logging.info(
-                        f"({self.addr}) Gossiping exited for {Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS} equal reounds."
+                    logger.info(
+                        self.addr,
+                        f"Gossiping exited for {Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS} equal reounds.",
                     )
                     return
 
@@ -805,7 +808,7 @@ class Node(BaseNode):
             for nei in neis:
                 try:
                     # Send Partial Aggregation
-                    logging.info(f"({self.addr}) Gossiping model to {nei}.")
+                    logger.info(self.addr, f"Gossiping model to {nei}.")
                     model, contributors, weight = model_function(nei)
                     encoded_model = self.learner.encode_parameters(params=model)
                     self._neighbors.send_model(
@@ -813,7 +816,7 @@ class Node(BaseNode):
                     )
 
                 except NoModelsToAggregateError:
-                    logging.debug(f"({self.addr}) No models to send to {nei}.")
+                    logger.debug(self.addr, f"No models to send to {nei}.")
                     pass
 
             # Sleep to allow periodicity
