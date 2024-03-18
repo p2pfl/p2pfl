@@ -30,7 +30,6 @@ RED = "\033[91m"
 YELLOW = "\033[93m"
 GREEN = "\033[92m"
 BLUE = "\033[94m"
-MAGENTA = "\033[95m"
 CYAN = "\033[96m"
 RESET = "\033[0m"
 
@@ -80,13 +79,6 @@ class P2pflWebHandler(logging.Handler):
             log_message["level"],
             log_message["message"],
         )
-
-
-# METER UI LOGGING COMO HANDLER
-"""
-class RemoteLogger(HANDLER):
-"""
-
 
 class Logger:
     """
