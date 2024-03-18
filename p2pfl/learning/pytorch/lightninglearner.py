@@ -27,6 +27,8 @@ from p2pfl.learning.exceptions import (
     DecodingParamsError,
     ModelNotMatchingError,
 )
+from p2pfl.management.logger import logger
+
 import logging
 from pytorch_lightning import LightningDataModule
 import pytorch_lightning as pl
@@ -34,6 +36,10 @@ import pytorch_lightning as pl
 ###########################
 #    LightningLearner     #
 ###########################
+
+"""
+---------->  Add information of the node that owns the learner.  <----------
+"""
 
 
 class LightningLearner(NodeLearner):
@@ -124,7 +130,9 @@ class LightningLearner(NodeLearner):
                 self.__trainer.fit(self.model, self.data)
                 self.__trainer = None
         except Exception as e:
-            logging.error(f"Something went wrong with pytorch lightning. {e}")
+            logger.error(
+                "LightningLearner", f"Something went wrong with pytorch lightning. {e}"
+            )
 
     def interrupt_fit(self) -> None:
         if self.__trainer is not None:
@@ -151,7 +159,10 @@ class LightningLearner(NodeLearner):
                 raise ZeroEpochsError("Zero epochs to evaluate.")
         except Exception as e:
             if not isinstance(e, ZeroEpochsError):
-                logging.error(f"Something went wrong with pytorch lightning. {e}")
+                logger.error(
+                    "LightningLearner",
+                    f"Something went wrong with pytorch lightning. {e}",
+                )
             raise e
 
     ####

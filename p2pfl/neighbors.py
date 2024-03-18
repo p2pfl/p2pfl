@@ -25,7 +25,7 @@ import grpc
 from p2pfl.settings import Settings
 from p2pfl.proto import node_pb2, node_pb2_grpc
 from p2pfl.messages import NodeMessages
-import logging
+from p2pfl.management.logger import logger
 
 
 class NeighborNotConnectedError(Exception):
@@ -131,14 +131,16 @@ class Neighbors:
                     f"Neighbor {nei} not directly connected (Stub not defined)."
                 )
             if res.error:
-                logging.error(
-                    f"[{self.__self_addr}] Error while sending a message: {msg.cmd} {msg.args}: {res.error}"
+                logger.error(
+                    self.__self_addr,
+                    f"Error while sending a message: {msg.cmd} {msg.args}: {res.error}",
                 )
                 self.remove(nei, disconnect_msg=True)
         except Exception as e:
             # Remove neighbor
-            logging.info(
-                f"({self.__self_addr}) Cannot send message {msg.cmd} to {nei}. Error: {str(e)}"
+            logger.info(
+                self.__self_addr,
+                f"Cannot send message {msg.cmd} to {nei}. Error: {str(e)}",
             )
             self.remove(nei)
 
@@ -201,8 +203,8 @@ class Neighbors:
             )
             # Handling errors -> however errors in aggregation stops the other nodes and are not raised (decoding/non-matching/unexpected)
             if res.error:
-                logging.error(
-                    f"[{self.__self_addr}] Error while sending a model: {res.error}"
+                logger.error(
+                    self.__self_addr, f"Error while sending a model: {res.error}"
                 )
                 self.remove(nei, disconnect_msg=True)
             if not (channel is None):
@@ -210,8 +212,8 @@ class Neighbors:
 
         except Exception as e:
             # Remove neighbor
-            logging.info(
-                f"({self.__self_addr}) Cannot send model to {nei}. Error: {str(e)}"
+            logger.info(
+                self.__self_addr, f"Cannot send model to {nei}. Error: {str(e)}"
             )
             self.remove(nei)
 
@@ -235,7 +237,7 @@ class Neighbors:
         """
         # Cannot add itself
         if addr == self.__self_addr:
-            logging.info(f"{self.__self_addr} Cannot add itself")
+            logger.info(self.__self_addr, "Cannot add itself")
             return False
 
         # Cannot add duplicates
@@ -244,7 +246,7 @@ class Neighbors:
         self.__nei_lock.release()
         # Avoid adding if duplicated and not non_direct neighbor (otherwise, connect creating a channel)
         if duplicated and not non_direct:
-            logging.info(f"{self.__self_addr} Cannot add duplicates")
+            logger.info(self.__self_addr, "Cannot add duplicates")
             return False
 
         # Add non direct connected neighbors
@@ -266,9 +268,7 @@ class Neighbors:
                     timeout=Settings.GRPC_TIMEOUT,
                 )
                 if res.error:
-                    logging.info(
-                        f"{self.__self_addr} Cannot add a neighbor: {res.error}"
-                    )
+                    logger.info(self.__self_addr, f"Cannot add a neighbor: {res.error}")
                     channel.close()
                     return False
 
@@ -279,7 +279,7 @@ class Neighbors:
             return True
 
         except Exception as e:
-            logging.info(f"{self.__self_addr} Crash while adding a neighbor: {e}")
+            logger.info(self.__self_addr, f"Crash while adding a neighbor: {e}")
             # Try to remove neighbor
             try:
                 self.remove(addr)
@@ -295,7 +295,7 @@ class Neighbors:
             nei (str): Address of the neighbor.
             disconnect_msg (bool): If True, send a disconnect message to the neighbor.
         """
-        logging.info(f"({self.__self_addr}) Removing {nei}")
+        logger.info(self.__self_addr, f"Removing {nei}")
         self.__nei_lock.acquire()
         try:
             # If the other node still connected, disconnect
@@ -380,11 +380,11 @@ class Neighbors:
             self.__nei_lock.release()
 
     def __start_heartbeater(self) -> None:
-        logging.info(f"({self.__self_addr}) Starting heartbeater...")
-        threading.Thread(target=self.__heartbeater).start()
+        logger.info(self.__self_addr, "Starting heartbeater...")
+        threading.Thread(target=self.__heartbeater, name=f"heartbeater-thread-{self.__self_addr}").start()
 
     def _stop_heartbeater(self) -> None:
-        logging.info(f"({self.__self_addr}) Stopping heartbeater...")
+        logger.info(self.__self_addr, "Stopping heartbeater...")
         self.__heartbeat_terminate_flag.set()
 
     def __heartbeater(
@@ -401,8 +401,9 @@ class Neighbors:
                 nei_copy = self.__neighbors.copy()
                 for nei in nei_copy.keys():
                     if t - nei_copy[nei][2] > timeout:
-                        logging.info(
-                            f"({self.__self_addr}) Heartbeat timeout for {nei} ({t - nei_copy[nei][2]}). Removing..."
+                        logger.info(
+                            self.__self_addr,
+                            f"Heartbeat timeout for {nei} ({t - nei_copy[nei][2]}). Removing...",
                         )
                         self.remove(nei)
             else:
@@ -418,8 +419,9 @@ class Neighbors:
                 try:
                     stub.send_message(msg, timeout=Settings.GRPC_TIMEOUT)
                 except Exception as e:
-                    logging.info(
-                        f"({self.__self_addr}) Cannot send heartbeat to {nei}. Error: {str(e)}"
+                    logger.info(
+                        self.__self_addr,
+                        f"Cannot send heartbeat to {nei}. Error: {str(e)}",
                     )
                     self.remove(nei)
 
@@ -472,11 +474,11 @@ class Neighbors:
             self.__pending_msgs_lock.release()
 
     def __start_gossiper(self) -> None:
-        logging.info(f"({self.__self_addr}) Starting gossiper...")
-        threading.Thread(target=self.__gossiper).start()
+        logger.info(self.__self_addr, "Starting gossiper...")
+        threading.Thread(target=self.__gossiper, name=f"gossiper-thread-{self.__self_addr}").start()
 
     def _stop_gossiper(self) -> None:
-        logging.info(f"({self.__self_addr}) Stopping gossiper...")
+        logger.info(self.__self_addr, "Stopping gossiper...")
         self.__gossip_terminate_flag.set()
 
     def __gossiper(

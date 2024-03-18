@@ -15,8 +15,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import logging
-import sys
 from typing import Callable, Dict, List, Optional
 import grpc
 import socket
@@ -25,8 +23,8 @@ from p2pfl.proto import node_pb2
 from p2pfl.proto import node_pb2_grpc
 import google.protobuf.empty_pb2
 from p2pfl.neighbors import Neighbors
-from p2pfl.settings import Settings
 from p2pfl.messages import NodeMessages
+from p2pfl.management.logger import logger
 
 
 class BaseNode(node_pb2_grpc.NodeServicesServicer):
@@ -72,10 +70,6 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         self.__running = False
         self.__server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
 
-        # Logging
-        log_level = logging.getLevelName(Settings.LOG_LEVEL)
-        logging.basicConfig(stream=sys.stdout, level=log_level)
-
     #######################################
     #   Node Management (servicer loop)   #
     #######################################
@@ -110,14 +104,17 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         self.__running = True
         # Server
         node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.__server)
-        self.__server.add_insecure_port(self.addr)
+        try:
+            self.__server.add_insecure_port(self.addr)
+        except Exception as e:
+            raise Exception(f"Cannot bind the address ({self.addr}): {e}")
         self.__server.start()
-        logging.info(f"({self.addr}) gRPC started")
+        logger.info(self.addr, "gRPC started")
         # Heartbeat and Gossip
         self._neighbors.start()
         if wait:
             self.__server.wait_for_termination()
-            logging.info(f"({self.addr}) gRPC terminated.")
+            logger.info(self.addr, "gRPC terminated.")
 
     def stop(self) -> None:
         """
@@ -126,7 +123,7 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         Raises:
             Exception: If the node is not running.
         """
-        logging.info(f"({self.addr}) Stopping node...")
+        logger.info(self.addr, "Stopping node...")
         # Check running
         self.assert_running(True)
         # Stop server
@@ -153,7 +150,7 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         # Check running
         self.assert_running(True)
         # Connect
-        logging.info(f"({self.addr}) connecting to {addr}...")
+        logger.info(self.addr, f"Connecting to {addr}...")
         return self._neighbors.add(addr, handshake_msg=True)
 
     def get_neighbors(self, only_direct: bool = False) -> List[str]:
@@ -178,7 +175,7 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         # Check running
         self.assert_running(True)
         # Disconnect
-        logging.info(f"({self.addr}) removing {addr}...")
+        logger.info(self.addr, f"Removing {addr}...")
         self._neighbors.remove(addr, disconnect_msg=True)
 
     ############################
@@ -215,7 +212,10 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         """
         # If not processed
         if self._neighbors.add_processed_msg(request.hash):
-            logging.debug(f"({self.addr}) received message from {request.source} > {request.cmd} {request.args}")
+            logger.debug(
+                self.addr,
+                f"Received message from {request.source} > {request.cmd} {request.args}",
+            )
             # Gossip
             self._neighbors.gossip(request)
             # Process message
@@ -223,13 +223,13 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
                 try:
                     self.__msg_callbacks[request.cmd](request)
                 except Exception as e:
-                    error_text = f"[{self.addr}] Error while processing command: {request.cmd} {request.args}: {e}"
-                    logging.error(error_text)
+                    error_text = f"Error while processing command: {request.cmd} {request.args}: {e}"
+                    logger.error(self.addr, error_text)
                     return node_pb2.ResponseMessage(error=error_text)
             else:
                 # disconnect node
-                logging.error(
-                    f"[{self.addr}] Unknown command: {request.cmd} from {request.source}"
+                logger.error(
+                    self.addr, f"Unknown command: {request.cmd} from {request.source}"
                 )
                 return node_pb2.ResponseMessage(error=f"Unknown command: {request.cmd}")
 

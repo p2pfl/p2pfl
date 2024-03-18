@@ -37,9 +37,13 @@ class Settings:
     """
     Maximum time (seconds) to wait for a gRPC request.
     """
-    LOG_LEVEL: str = "DEBUG"
+    LOG_LEVEL: str = "INFO"
     """
     Log level for the system.
+    """
+    LOG_DIR: str = "logs"
+    """
+    Directory to save logs.
     """
 
     ######
