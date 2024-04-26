@@ -1,8 +1,29 @@
 import requests
+import datetime
+
+##################################
+#    P2PFL Web Services (API)    #
+##################################
+
+##
+#
+# Note: Needs to implement batch sending.
+#
+##
 
 
 class P2pflWebServices:
+    '''
+    Class that manages the communication with the p2pfl-web services.
+    '''
     def __init__(self, url: str, key: str) -> None:
+        """
+        Initialize the p2pfl web services.
+
+        Args:
+            url (str): The URL of the p2pfl-web services.
+            key (str): The key to access the services.
+        """
         self.__url = url
         # http warning
         if not url.startswith("https://"):
@@ -10,27 +31,97 @@ class P2pflWebServices:
                 "P2pflWebServices Warning: Connection must be over https, traffic will not be encrypted"
             )
         self.__key = key
+        self.node_id = {}
 
-    def send_log(self, time: str, node: str, level: int, message: str):
-        data = {"time": time, "node": node, "level": level, "message": message}
+    def build_headers(self):
         headers = {"Content-Type": "application/json"}
-        headers["Authorization"] = f"Bearer {self.__key}"
+        headers["x-api-key"] = self.__key
+        return headers
+
+    def register_node(self, node: str, is_simulated: bool):
+        """
+        Register a node.
+
+        Args:
+            node (str): The node address.
+            is_simulated (bool): If the node is simulated.
+        """
+        # Send request
+        data = {"address": node, "is_simulated": is_simulated, "creation_date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         try:
             response = requests.post(
-                self.__url + "/log", json=data, headers=headers, timeout=5
+                self.__url + "/node", json=data, headers=self.build_headers(), timeout=5
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            print(node, f"Error logging message: {e}")
+            print(node, f"Error registering node: {e}")
+            raise e
+        # Get node id
+        self.node_id[node] = response.json()["node_id"]
+        
+    def unregister_node(self, node: str):
+        """
+        Unregister a node.
+
+        Args:
+            node (str): The node address.
+        """
+        print("NOT IMPLEMENTED YET")
+
+    def send_log(self, time: datetime.datetime, node: str, level: int, message: str):
+        """
+        Send a log message.
+
+        Args:
+            time (str): The time of the message.
+            node (str): The node address.
+            level (int): The log level.
+            message (str): The message.
+        """
+        # get node id
+        if node not in self.node_id:
+            raise ValueError(f"Node {node} not registered")
+        node_id = self.node_id[node]
+
+        # Send request
+        data = {"time": time.strftime("%Y-%m-%d %H:%M:%S"), "node_id": node_id, "level": level, "message": message}
+        try:
+            response = requests.post(
+                self.__url + "/node-log", json=data, headers=self.build_headers(), timeout=5
+            )
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(node, f"Error logging message: {message}")
+            if hasattr(e, 'response') and e.response.status_code == 401:
+                print("Please check the API key or the node registration in the p2pfl-web services.")
             raise e
 
-    def send_metric(self, node: str, metric: str, value: float):
+    def send_metric(self, node: str, metric: str, time: str, value: float):
         """
-        TODO:
-            - kpis
-            - model logs
+        Send a metric.
+
+        Args:
+            node (str): The node address.
+            metric (str): The metric.
+            value (float): The value.
         """
-        raise NotImplementedError
+        # get node id
+        if node not in self.node_id:
+            raise ValueError(f"Node {node} not registered")
+        node_id = self.node_id[node]
+
+        # Send request
+        data = {"node_id": node_id, "metric_name": metric, "metric_time": time, "metric_value": value}
+        try:
+            response = requests.post(
+                self.__url + "/node-metric", json=data, headers=self.build_headers(), timeout=5
+            )
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(node, f"Error logging the metric: {metric}")
+            if hasattr(e, 'response') and e.response.status_code == 401:
+                print("Please check the API key or the node registration in the p2pfl-web services.")
+            raise e
 
     def get_pending_actions(self):
         raise NotImplementedError

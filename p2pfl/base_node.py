@@ -63,12 +63,13 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
 
         # Neighbors
         self._neighbors = Neighbors(self.addr)
+        self.simulation = simulation
         if simulation:
             raise NotImplementedError("Simulation not implemented yet")
 
         # Server
         self.__running = False
-        self.__server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
+        self.__server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))  #interceptors=[ThroughputInterceptor(self.addr)]
 
     #######################################
     #   Node Management (servicer loop)   #
@@ -102,6 +103,8 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         self.assert_running(False)
         # Set running
         self.__running = True
+        # P2PFL Web Services
+        logger.register_node(self.addr, self.simulation)
         # Server
         node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.__server)
         try:
@@ -132,6 +135,8 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         self._neighbors.stop()
         # Set not running
         self.__running = False
+        # Unregister node
+        logger.unregister_node(self.addr)
 
     #############################
     #  Neighborhood management  #

@@ -18,44 +18,26 @@
 
 import logging
 import os
-from typing import Optional
-from p2pfl.management.p2pfl_web_services import P2pflWebServices
+from typing import List, Optional
 from p2pfl.settings import Settings
 from logging.handlers import QueueHandler, QueueListener
-import queue
+import multiprocessing
+import datetime
+from p2pfl.management.p2pfl_web_services import P2pflWebServices
+from p2pfl.management.node_monitor import NodeMonitor
 
-# COLORS
-GRAY = "\033[90m"
-RED = "\033[91m"
-YELLOW = "\033[93m"
-GREEN = "\033[92m"
-BLUE = "\033[94m"
-CYAN = "\033[96m"
-RESET = "\033[0m"
-
-
-class ColoredFormatter(logging.Formatter):
-    def format(self, record):
-        # Warn level color
-        if record.levelname == "DEBUG":
-            record.levelname = BLUE + record.levelname + RESET
-        elif record.levelname == "INFO":
-            record.levelname = GREEN + record.levelname + RESET
-        elif record.levelname == "WARNING":
-            record.levelname = YELLOW + record.levelname + RESET
-        elif record.levelname == "ERROR" or record.levelname == "CRITICAL":
-            record.levelname = RED + record.levelname + RESET
-        return super().format(record)
+#########################################
+#    Logging handler (transmit logs)    #
+#########################################
 
 
 class DictFormatter(logging.Formatter):
     def __init__(self):
         super().__init__()
-        self.datefmt = "%Y-%m-%d %H:%M:%S"
 
     def format(self, record):
         log_dict = {
-            "timestamp": self.formatTime(record),
+            "timestamp": datetime.datetime.fromtimestamp(record.created),
             "level": record.levelname,
             "node": record.node,
             "message": record.getMessage(),
@@ -63,7 +45,7 @@ class DictFormatter(logging.Formatter):
         return log_dict
 
 
-class P2pflWebHandler(logging.Handler):
+class P2pflWebLogHandler(logging.Handler):
     def __init__(self, p2pfl_web: P2pflWebServices):
         super().__init__()
         self.p2pfl_web = p2pfl_web
@@ -80,6 +62,44 @@ class P2pflWebHandler(logging.Handler):
             log_message["message"],
         )
 
+
+#########################
+#    Colored logging    #
+#########################
+
+# COLORS
+GRAY = "\033[90m"
+RED = "\033[91m"
+YELLOW = "\033[93m"
+GREEN = "\033[92m"
+BLUE = "\033[94m"
+CYAN = "\033[96m"
+RESET = "\033[0m"
+
+
+class ColoredFormatter(logging.Formatter):
+
+    def format(self, record):
+        # Warn level color
+        if record.levelname == "DEBUG":
+            record.levelname = BLUE + record.levelname + RESET
+        elif record.levelname == "INFO":
+            record.levelname = GREEN + record.levelname + RESET
+        elif record.levelname == "WARNING":
+            record.levelname = YELLOW + record.levelname + RESET
+        elif record.levelname == "ERROR" or record.levelname == "CRITICAL":
+            record.levelname = RED + record.levelname + RESET
+        return super().format(record)
+
+
+################
+#    Logger    #
+################
+
+
+# AL SER ARINCRONO, AL FINALIZAR EL PROGRAMA NO SE TERMINAN DE EJECTUAR LOS LOGS
+
+
 class Logger:
     """
     Class that contains node logging.
@@ -87,38 +107,37 @@ class Logger:
     Singleton class.
     """
 
+    ######
+    # Singleton and instance management
+    ######
+
     __instance = None
 
     @staticmethod
-    def init(p2pfl_web: Optional[P2pflWebServices] = None) -> None:
-        """
-        Initialize the logger.
-
-        Args:
-            p2pfl_web (P2pflWebServices): The p2pfl web services.
-        """
+    def connect_web(url: str, key: str) -> None:
         # Remove the instance if it already exists
         if Logger.__instance is not None:
             Logger.__instance.queue_listener.stop()
             Logger.__instance = None
 
         # Create the instance
-        Logger.__instance = Logger(p2pfl_web)
+        p2pfl_web = P2pflWebServices(url, key)
+        Logger.__instance = Logger(p2pfl_web_services=p2pfl_web)
 
-    def __init__(self, p2pfl_web: Optional[P2pflWebServices] = None) -> None:
-        # Remote logging
-        self.remote_logging = None
+        print("al setear el web services, se debe iniciar el node status reporter")
+
+    def __init__(self, p2pfl_web_services: Optional[P2pflWebServices] = None) -> None:
 
         # Python logging
         self.logger = logging.getLogger("p2pfl")
         self.logger.propagate = False
         self.logger.setLevel(logging.getLevelName(Settings.LOG_LEVEL))
-        handlers = []
+        handlers: List[logging.Handler] = []
 
-        # WEB - Handler
-        if p2pfl_web is not None:
-            web_handler = P2pflWebHandler(p2pfl_web)
-            self.logger.addHandler(web_handler)
+        # P2PFL Web Services
+        self.p2pfl_web_services = p2pfl_web_services
+        if p2pfl_web_services is not None:
+            web_handler = P2pflWebLogHandler(p2pfl_web_services)
             handlers.append(web_handler)
 
         # STDOUT - Handler
@@ -128,7 +147,7 @@ class Logger:
             datefmt="%Y-%m-%d %H:%M:%S",
         )
         stream_handler.setFormatter(cmd_formatter)
-        handlers.append(stream_handler)
+        self.logger.addHandler(stream_handler)  # not async
 
         # FILE - Handler
         if not os.path.exists(Settings.LOG_DIR):
@@ -144,7 +163,7 @@ class Logger:
         handlers.append(file_handler)
 
         # Asynchronous logging (queue handler)
-        log_queue: queue.Queue[logging.LogRecord] = queue.Queue()
+        log_queue: multiprocessing.Queue[logging.LogRecord] = multiprocessing.Queue()
         queue_handler = QueueHandler(log_queue)
         self.logger.addHandler(queue_handler)
         self.queue_listener = QueueListener(log_queue, *handlers)
@@ -161,6 +180,42 @@ class Logger:
         if Logger.__instance is None:
             Logger.__instance = Logger()
         return Logger.__instance
+
+    ######
+    # Node registration
+    ######
+
+    @staticmethod
+    def register_node(node: str, simulation: bool) -> None:
+        """
+        Register a node.
+
+        Args:
+            node (str): The node address.
+            simulation (bool): If the node is simulated.
+        """
+        if Logger.__instance.p2pfl_web_services is not None:
+            # Register the node
+            Logger.__instance.p2pfl_web_services.register_node(node, simulation)
+            # Start the node status reporter
+            NodeMonitor(node, Logger.__instance.log_metric).start()
+
+    @staticmethod
+    def unregister_node(node: str) -> None:
+        """
+        Unregister a node.
+
+        Args:
+            node (str): The node address.
+        """
+        if Logger.__instance.p2pfl_web_services is not None:
+            Logger.__instance.p2pfl_web_services.unregister_node(node)
+        print("not implemented")
+        # NO ESTA SIENDO LLAMADO, NECESARIO PARA SABER EL ESTADO DEL NODO
+
+    ######
+    # Application logging
+    ######
 
     @staticmethod
     def set_level(level: int) -> None:
@@ -181,7 +236,7 @@ class Logger:
             node (str): The node name.
             message (str): The message to log.
         """
-        Logger.get_instance().log(logging.INFO, node, message)
+        Logger.__instance.log(logging.INFO, node, message)
 
     @staticmethod
     def debug(node: str, message: str) -> None:
@@ -192,7 +247,7 @@ class Logger:
             node (str): The node name.
             message (str): The message to log.
         """
-        Logger.get_instance().log(logging.DEBUG, node, message)
+        Logger.__instance.log(logging.DEBUG, node, message)
 
     @staticmethod
     def warning(node: str, message: str) -> None:
@@ -203,7 +258,7 @@ class Logger:
             node (str): The node name.
             message (str): The message to log.
         """
-        Logger.get_instance().log(logging.WARNING, node, message)
+        Logger.__instance.log(logging.WARNING, node, message)
 
     @staticmethod
     def error(node: str, message: str) -> None:
@@ -214,7 +269,7 @@ class Logger:
             node (str): The node name.
             message (str): The message to log.
         """
-        Logger.get_instance().log(logging.ERROR, node, message)
+        Logger.__instance.log(logging.ERROR, node, message)
 
     @staticmethod
     def critical(node: str, message: str) -> None:
@@ -225,7 +280,7 @@ class Logger:
             node (str): The node name.
             message (str): The message to log.
         """
-        Logger.get_instance().log(logging.CRITICAL, node, message)
+        Logger.__instance.log(logging.CRITICAL, node, message)
 
     def log(self, level: int, node: str, message: str) -> None:
         """
@@ -250,24 +305,27 @@ class Logger:
         else:
             raise ValueError(f"Invalid level: {level}")
 
-        # Remote logging
-        if self.remote_logging is not None:
-            raise NotImplementedError("Remote logging not implemented yet")
+    ######
+    # Metrics
+    ######
 
     @staticmethod
-    def log_metric(node: str, metric: str, value: float) -> None:
+    def log_metric(node: str, metric: str, value: float, time: str) -> None:
         """
         Log a metric.
 
         Args:
-            metric (str): The metric name.
-            value (float): The metric value.
+            node (str): The node name.
+            metric (str): The metric to log.
+            value (float): The value.
         """
-        if Logger.get_instance().remote_logging is not None:
-            raise NotImplementedError("Remote logging not implemented yet")
+        if Logger.__instance.p2pfl_web_services is not None:
+            Logger.__instance.p2pfl_web_services.send_metric(node, metric, time, value)
 
-    def __del__(self):
-        self.queue_listener.stop()
+    @staticmethod
+    def wait_stop():
+        # Stop the queue listener
+        Logger.__instance.queue_listener.stop()
 
 
 logger = Logger

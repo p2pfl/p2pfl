@@ -27,6 +27,7 @@ from p2pfl.management.logger import logger
 
 from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
 from p2pfl.learning.learner import NodeLearner, ZeroEpochsError
+from p2pfl.management.p2pfl_web_services import P2pflWebServices
 from p2pfl.messages import LearningNodeMessages
 from p2pfl.settings import Settings
 from p2pfl.learning.pytorch.lightninglearner import LightningLearner
@@ -78,7 +79,7 @@ class Node(BaseNode):
     ) -> None:
 
         # Super init
-        BaseNode.__init__(self, host, port, **kwargs)
+        BaseNode.__init__(self, host=host, port=port, **kwargs)
 
         # Add message handlers
         self.add_message_handler(
