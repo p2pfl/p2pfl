@@ -150,35 +150,11 @@ class NodeLearner:
         """
         raise NotImplementedError
 
-    def log_validation_metrics(
-        self,
-        loss: float,
-        metric: float,
-        round: Optional[int] = None,
-        name: Optional[str] = None,
-    ) -> None:
-        """
-        Log the validation metrics. It also can be used to log the other node metrics.
-        """
-        raise NotImplementedError
-
     def get_num_samples(self) -> Tuple[int, int]:
         """
         Get the number of samples of the model.
 
         Returns:
             The number of samples of the model.
-        """
-        raise NotImplementedError
-
-    def finalize_round(self) -> None:
-        """
-        Determine the end of the round.
-        """
-        raise NotImplementedError
-
-    def create_new_exp(self) -> None:
-        """
-        Create a new experiment.
         """
         raise NotImplementedError

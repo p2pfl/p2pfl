@@ -26,6 +26,7 @@ from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
 )
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.node import Node
+from p2pfl.management.logger import logger
 import time
 import matplotlib.pyplot as plt
 
@@ -34,7 +35,10 @@ def test_convergence(n, r, epochs=2):
     # Node Creation
     nodes = []
     for _ in range(n):
-        node = Node(MLP(), MnistFederatedDM())
+        node = Node(
+            MLP(),
+            MnistFederatedDM(sub_id=0, number_sub=20)  # sampling for increase speed
+        )
         node.start()
         nodes.append(node)
 
@@ -50,17 +54,40 @@ def test_convergence(n, r, epochs=2):
     # Wait and check
     wait_4_results(nodes)
 
-    # Get logs
-    logs = nodes[0].learner.get_logs()
-    # Get first experiment
-    logs = list(logs.values())[0]
-    # Plot experiment metrics
-    for node_name, node_metrics in logs.items():
-        for metric, values in node_metrics.items():
-            v = zip(*values)
-            plt.plot(*v)
-            plt.title(f"{node_name} - {metric}")
-            plt.show()
+    # Local Logs
+    local_logs = logger.get_local_logs()
+    if local_logs != {}:
+        logs = list(local_logs.items())[0][1]
+        #  Plot experiment metrics
+        for round_num, round_metrics in logs.items():
+            for node_name, node_metrics in round_metrics.items():
+                for metric, values in node_metrics.items():
+                    x, y = zip(*values)
+                    plt.plot(x, y, label=metric)
+                    # Add a red point to the last data point
+                    plt.scatter(x[-1], y[-1], color='red')
+                    plt.title(f"Round {round_num} - {node_name}")
+                    plt.xlabel('Epoch')
+                    plt.ylabel(metric)
+                    plt.legend()
+                    plt.show()
+
+    # Global Logs
+    global_logs = logger.get_global_logs()
+    if global_logs != {}:
+        logs = list(global_logs.items())[0][1]  # Accessing the nested dictionary directly
+        # Plot experiment metrics
+        for node_name, node_metrics in logs.items():
+            for metric, values in node_metrics.items():
+                x, y = zip(*values)
+                plt.plot(x, y, label=metric)
+                # Add a red point to the last data point
+                plt.scatter(x[-1], y[-1], color='red')
+                plt.title(f"{node_name} - {metric}")
+                plt.xlabel('Epoch')
+                plt.ylabel(metric)
+                plt.legend()
+                plt.show()
 
     # Stop Nodes
     [n.stop() for n in nodes]

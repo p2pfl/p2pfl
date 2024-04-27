@@ -17,6 +17,7 @@
 #
 
 from test.utils import (
+    wait_4_results,
     wait_convergence,
     set_test_settings,
 )
@@ -28,9 +29,6 @@ from p2pfl.node import Node
 from p2pfl.management.logger import logger
 import time
 
-# Set the logger
-logger.connect_web("http://localhost:3000/api/v1", "bd33a05e-0cef-4d1a-b36f-e4ddcef4487f")
-
 
 def test_convergence(n, r, epochs=2):
     # Node Creation
@@ -38,7 +36,7 @@ def test_convergence(n, r, epochs=2):
     for _ in range(n):
         node = Node(
             MLP(),
-            MnistFederatedDM(),
+            MnistFederatedDM(sub_id=0, number_sub=20),  # sampling for increase speed
         )
         node.start()
         nodes.append(node)
@@ -52,21 +50,17 @@ def test_convergence(n, r, epochs=2):
     # Start Learning
     nodes[0].set_start_learning(rounds=r, epochs=epochs)
 
-    # Wait enter to stop
-    while True:
-        i = input("Press Enter to stop learning (logging is async!)...")
-        if i == "":
-            break
+    # Wait
+    wait_4_results(nodes)
 
     # Stop Nodes
     [n.stop() for n in nodes]
 
-    # Wait for the logger (async)
-    logger.wait_stop()
-
 
 if __name__ == "__main__":
+    # Set the logger
+    logger.connect_web("http://localhost:3000/api/v1", "bd33a05e-0cef-4d1a-b36f-e4ddcef4487f")
     # Settings
     set_test_settings()
     # Launch experiment
-    test_convergence(2, 2, epochs=0)
+    test_convergence(1, 1, epochs=1)

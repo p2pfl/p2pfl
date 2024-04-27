@@ -259,7 +259,7 @@ class Neighbors:
         try:
             # Create channel and stub
             channel = grpc.insecure_channel(addr)
-            #intercepted_channel = grpc.intercept_channel(channel, ThroughputInterceptor(self.__self_addr))
+            # intercepted_channel = grpc.intercept_channel(channel, ThroughputInterceptor(self.__self_addr))
             stub = node_pb2_grpc.NodeServicesStub(channel)
 
             # Handshake
@@ -382,7 +382,9 @@ class Neighbors:
 
     def __start_heartbeater(self) -> None:
         logger.info(self.__self_addr, "Starting heartbeater...")
-        threading.Thread(target=self.__heartbeater, name=f"heartbeater-thread-{self.__self_addr}").start()
+        threading.Thread(
+            target=self.__heartbeater, name=f"heartbeater-thread-{self.__self_addr}"
+        ).start()
 
     def _stop_heartbeater(self) -> None:
         logger.info(self.__self_addr, "Stopping heartbeater...")
@@ -476,7 +478,9 @@ class Neighbors:
 
     def __start_gossiper(self) -> None:
         logger.info(self.__self_addr, "Starting gossiper...")
-        threading.Thread(target=self.__gossiper, name=f"gossiper-thread-{self.__self_addr}").start()
+        threading.Thread(
+            target=self.__gossiper, name=f"gossiper-thread-{self.__self_addr}"
+        ).start()
 
     def _stop_gossiper(self) -> None:
         logger.info(self.__self_addr, "Stopping gossiper...")

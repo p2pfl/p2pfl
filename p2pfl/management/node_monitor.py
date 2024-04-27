@@ -36,15 +36,13 @@ class NodeMonitor(threading.Thread):
         super().__init__()
         self.name = "resource-monitor-thread-" + self.node_addr
         self.daemon = True
-        
+
     def run(self) -> None:
         while True:
             # Sys Resources
+            timestamp = int(datetime.datetime.now().timestamp())
             for key, value in self.report_system_resources().items():
-                self.metric_report_callback(self.node_addr, key, value, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-
-            #self.report_status()
-
+                self.metric_report_callback(self.node_addr, key, value, timestamp)
             time.sleep(self.period)
 
     def report_system_resources(self) -> Dict[str, float]:
@@ -53,11 +51,15 @@ class NodeMonitor(threading.Thread):
         res["cpu"] = psutil.cpu_percent()
         # RAM
         res["ram"] = psutil.virtual_memory().percent
-        # NetWork 
+        # NetWork
         net_stat = psutil.net_io_counters()
         if self.last_net_in != -1 and self.last_net_out != -1:
-            res["net_in"] = (net_stat.bytes_recv - self.last_net_in) / self.period / (2**20)
-            res["net_out"] = (net_stat.bytes_sent - self.last_net_out) / self.period / (2**20)
+            res["net_in"] = (
+                (net_stat.bytes_recv - self.last_net_in) / self.period / (2**20)
+            )
+            res["net_out"] = (
+                (net_stat.bytes_sent - self.last_net_out) / self.period / (2**20)
+            )
         self.last_net_in = net_stat.bytes_recv
         self.last_net_out = net_stat.bytes_sent
 

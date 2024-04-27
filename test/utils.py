@@ -69,8 +69,7 @@ def wait_4_results(nodes):
     while True:
         time.sleep(1)
         finish = True
-        print(f" FINALIZANDO PROGRAMA ANTES DE LO DEBIDO {[node.round for node in nodes]}")
-        for f in [node.round is None for node in nodes]:
+        for f in [node.state.round is None for node in nodes]:
             finish = finish and f
 
         if finish:

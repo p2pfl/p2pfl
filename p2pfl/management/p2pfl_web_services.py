@@ -13,9 +13,10 @@ import datetime
 
 
 class P2pflWebServices:
-    '''
+    """
     Class that manages the communication with the p2pfl-web services.
-    '''
+    """
+
     def __init__(self, url: str, key: str) -> None:
         """
         Initialize the p2pfl web services.
@@ -47,7 +48,11 @@ class P2pflWebServices:
             is_simulated (bool): If the node is simulated.
         """
         # Send request
-        data = {"address": node, "is_simulated": is_simulated, "creation_date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+        data = {
+            "address": node,
+            "is_simulated": is_simulated,
+            "creation_date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
         try:
             response = requests.post(
                 self.__url + "/node", json=data, headers=self.build_headers(), timeout=5
@@ -58,7 +63,7 @@ class P2pflWebServices:
             raise e
         # Get node id
         self.node_id[node] = response.json()["node_id"]
-        
+
     def unregister_node(self, node: str):
         """
         Unregister a node.
@@ -84,16 +89,26 @@ class P2pflWebServices:
         node_id = self.node_id[node]
 
         # Send request
-        data = {"time": time.strftime("%Y-%m-%d %H:%M:%S"), "node_id": node_id, "level": level, "message": message}
+        data = {
+            "time": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "node_id": node_id,
+            "level": level,
+            "message": message,
+        }
         try:
             response = requests.post(
-                self.__url + "/node-log", json=data, headers=self.build_headers(), timeout=5
+                self.__url + "/node-log",
+                json=data,
+                headers=self.build_headers(),
+                timeout=5,
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
             print(node, f"Error logging message: {message}")
-            if hasattr(e, 'response') and e.response.status_code == 401:
-                print("Please check the API key or the node registration in the p2pfl-web services.")
+            if hasattr(e, "response") and e.response.status_code == 401:
+                print(
+                    "Please check the API key or the node registration in the p2pfl-web services."
+                )
             raise e
 
     def send_metric(self, node: str, metric: str, time: str, value: float):
@@ -111,16 +126,26 @@ class P2pflWebServices:
         node_id = self.node_id[node]
 
         # Send request
-        data = {"node_id": node_id, "metric_name": metric, "metric_time": time, "metric_value": value}
+        data = {
+            "node_id": node_id,
+            "metric_name": metric,
+            "metric_time": time,
+            "metric_value": value,
+        }
         try:
             response = requests.post(
-                self.__url + "/node-metric", json=data, headers=self.build_headers(), timeout=5
+                self.__url + "/node-metric",
+                json=data,
+                headers=self.build_headers(),
+                timeout=5,
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
             print(node, f"Error logging the metric: {metric}")
-            if hasattr(e, 'response') and e.response.status_code == 401:
-                print("Please check the API key or the node registration in the p2pfl-web services.")
+            if hasattr(e, "response") and e.response.status_code == 401:
+                print(
+                    "Please check the API key or the node registration in the p2pfl-web services."
+                )
             raise e
 
     def get_pending_actions(self):
