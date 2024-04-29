@@ -59,7 +59,7 @@ def test_convergence(n, r, epochs=2):
 
 if __name__ == "__main__":
     # Set the logger
-    logger.connect_web("http://localhost:3000/api/v1", "bd33a05e-0cef-4d1a-b36f-e4ddcef4487f")
+    logger.connect_web("http://localhost:3000/api/v1", "6ef7c882-acbe-4911-b649-2611ed2d9795")
     # Settings
     set_test_settings()
     # Launch experiment

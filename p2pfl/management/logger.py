@@ -125,8 +125,6 @@ class Logger:
         p2pfl_web = P2pflWebServices(url, key)
         Logger.__instance = Logger(p2pfl_web_services=p2pfl_web)
 
-        print("al setear el web services, se debe iniciar el node status reporter")
-
     def __init__(self, p2pfl_web_services: Optional[P2pflWebServices] = None) -> None:
         # Node States
         self.nodes: Dict[str, Tuple[NodeMonitor, BaseNodeState]] = {}
@@ -326,34 +324,41 @@ class Logger:
         if round is None:
             round = Logger.get_instance().nodes[node][1].round
         if round is None:
-            raise Exception("No round provided. Needed for local metrics.")
+            raise Exception("No round provided. Needed for training metrics.")
 
         # Get Experiment Name
         exp = Logger.get_instance().nodes[node][1].actual_exp_name
         if exp is None:
-            raise Exception("No experiment name provided. Needed for local metrics.")
+            raise Exception("No experiment name provided. Needed for training metrics.")
 
         # Local storage
         if step is None:
-            # Local Metrics
+            # Global Metrics
             Logger.get_instance().global_metrics.add_log(
                 exp, round, metric, node, value
             )
         else:
-            # Global Metrics
+            # Local Metrics
             Logger.get_instance().local_metrics.add_log(
                 exp, round, metric, node, value, step
             )
 
         # Web
         if Logger.get_instance().p2pfl_web_services is not None:
-            print("loguear en una table metrics - completar info que usamos localmente")
-            Logger.get_instance().p2pfl_web_services.send_metric(
-                node, metric, round, step, value
-            )
+            if step is None:
+                # Global Metrics
+                Logger.get_instance().p2pfl_web_services.send_global_metric(
+                    exp, round, metric, node, value
+                )
+            else:
+                # Local Metrics
+                Logger.get_instance().p2pfl_web_services.send_local_metric(
+                    exp, round, metric, node, value, step
+                )
+
 
     @staticmethod
-    def log_system_metric(node: str, metric: str, value: float) -> None:
+    def log_system_metric(node: str, metric: str, value: float, time: datetime) -> None:
         """
         Log a system metric. Only on web.
 
@@ -362,13 +367,10 @@ class Logger:
             metric (str): The metric to log.
             value (float): The value.
         """
-
         # Web
         if Logger.get_instance().p2pfl_web_services is not None:
-            print("not implemented yet")
-            pass
             Logger.get_instance().p2pfl_web_services.send_system_metric(
-                node, metric, round, value
+                node, metric, value, time
             )
 
     @staticmethod

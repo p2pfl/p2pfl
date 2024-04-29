@@ -259,7 +259,6 @@ class Neighbors:
         try:
             # Create channel and stub
             channel = grpc.insecure_channel(addr)
-            # intercepted_channel = grpc.intercept_channel(channel, ThroughputInterceptor(self.__self_addr))
             stub = node_pb2_grpc.NodeServicesStub(channel)
 
             # Handshake

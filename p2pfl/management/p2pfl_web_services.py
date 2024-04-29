@@ -12,6 +12,13 @@ import datetime
 ##
 
 
+class P2pflWebServicesError(Exception):
+    def __init__(self, code, message):
+        self.code = code
+        self.message = message
+        super().__init__(f'Error {code}: {message}')
+
+
 class P2pflWebServices:
     """
     Class that manages the communication with the p2pfl-web services.
@@ -111,10 +118,82 @@ class P2pflWebServices:
                 )
             raise e
 
-    def send_metric(self, node: str, metric: str, time: str, value: float):
+    def send_local_metric(self, exp: str, round: int, metric: str, node: str, value: float, step: int):
+        """
+        Send a local metric.
+
+        Args:
+            node (str): The node address.
+            metric (str): The metric.
+            value (float): The value.
+        """
+        # get node id
+        if node not in self.node_id:
+            raise ValueError(f"Node {node} not registered")
+        node_id = self.node_id[node]
+
+        # get experiment id
+        # ------- NOT IMPLEMENTED ----------
+
+        # Send request
+        data = {
+            "node_id": node_id,
+            "exp_id": exp,
+            "metric_name": metric,
+            "round": round,
+            "step": step,
+            "value": value,
+        }
+        try:
+            response = requests.post(
+                self.__url + "/node-metric/local",
+                json=data,
+                headers=self.build_headers(),
+                timeout=5,
+            )
+            response.raise_for_status()
+        except Exception:
+            raise P2pflWebServicesError(response.status_code, response.text)
+
+    def send_global_metric(self, exp: str, round: int, metric: str, node: str, value: float):
+        """
+        Send a local metric.
+
+        Args:
+            node (str): The node address.
+            metric (str): The metric.
+            value (float): The value.
+        """
+        # get node id
+        if node not in self.node_id:
+            raise ValueError(f"Node {node} not registered")
+        node_id = self.node_id[node]
+
+        # get experiment id
+        # ------- NOT IMPLEMENTED ----------
+
+        # Send request
+        data = {
+            "node_id": node_id,
+            "exp_id": exp,
+            "metric_name": metric,
+            "round": round,
+            "value": value,
+        }
+        try:
+            response = requests.post(
+                self.__url + "/node-metric/global",
+                json=data,
+                headers=self.build_headers(),
+                timeout=5,
+            )
+            response.raise_for_status()
+        except Exception:
+            raise P2pflWebServicesError(response.status_code, response.text)
+            
+    def send_system_metric(self, node: str, metric: str, value: float, time: datetime,):
         """
         Send a metric.
-
         Args:
             node (str): The node address.
             metric (str): The metric.
@@ -129,24 +208,19 @@ class P2pflWebServices:
         data = {
             "node_id": node_id,
             "metric_name": metric,
-            "metric_time": time,
-            "metric_value": value,
+            "time": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "value": value,
         }
         try:
             response = requests.post(
-                self.__url + "/node-metric",
+                self.__url + "/node-metric/system",
                 json=data,
                 headers=self.build_headers(),
                 timeout=5,
             )
             response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            print(node, f"Error logging the metric: {metric}")
-            if hasattr(e, "response") and e.response.status_code == 401:
-                print(
-                    "Please check the API key or the node registration in the p2pfl-web services."
-                )
-            raise e
+        except Exception:
+            raise P2pflWebServicesError(response.status_code, response.text)
 
     def get_pending_actions(self):
         raise NotImplementedError

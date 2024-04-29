@@ -40,9 +40,9 @@ class NodeMonitor(threading.Thread):
     def run(self) -> None:
         while True:
             # Sys Resources
-            timestamp = int(datetime.datetime.now().timestamp())
+            time_now = datetime.datetime.now()
             for key, value in self.report_system_resources().items():
-                self.metric_report_callback(self.node_addr, key, value, timestamp)
+                self.metric_report_callback(self.node_addr, key, value, time_now)
             time.sleep(self.period)
 
     def report_system_resources(self) -> Dict[str, float]:

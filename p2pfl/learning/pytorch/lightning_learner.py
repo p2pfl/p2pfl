@@ -161,8 +161,6 @@ class LightningLearner(NodeLearner):
                     enable_checkpointing=False,
                 )
                 results = self.__trainer.test(self.model, self.data, verbose=False)[0]
-
-                print(f"Results=============: {results}")
                 self.__trainer = None
                 # Log metrics
                 for k, v in results.items():
