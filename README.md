@@ -44,7 +44,6 @@ To install the library for development we recommend using a virtual environment.
 ```bash
 git clone https://github.com/pguijas/p2pfl.git
 cd p2pfl
-poetry init # CHECK!!!!
 poetry install
 ```
 
