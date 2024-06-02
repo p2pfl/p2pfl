@@ -24,6 +24,7 @@ torch = "^2.2.1"
 torchvision = "^0.17.1"
 torchmetrics = "^1.3.1"
 matplotlib = "^3.8.3"
+psutil = "^5.9.8"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

@@ -22,16 +22,17 @@ from typing import Dict, Optional, Tuple
 import torch
 from pytorch_lightning import Trainer
 from p2pfl.learning.learner import NodeLearner, ZeroEpochsError
-from p2pfl.learning.pytorch.logger import FederatedLogger, LogsUnionType
+from p2pfl.learning.pytorch.lightning_logger import FederatedLogger
 from p2pfl.learning.exceptions import (
     DecodingParamsError,
     ModelNotMatchingError,
 )
 from p2pfl.management.logger import logger
-
 import logging
 from pytorch_lightning import LightningDataModule
 import pytorch_lightning as pl
+
+torch.set_num_threads(1)
 
 ###########################
 #    LightningLearner     #
@@ -59,10 +60,11 @@ class LightningLearner(NodeLearner):
     ):
         self.model = model
         self.data = data
-        self.logger = FederatedLogger(self_addr)
         self.__trainer: Optional[Trainer] = None
         self.epochs = 1
         self.__self_addr = self_addr
+        # Start logging
+        self.logger = FederatedLogger(self_addr)
         # To avoid GPU/TPU printings
         logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
 
@@ -71,6 +73,14 @@ class LightningLearner(NodeLearner):
 
     def set_data(self, data: LightningDataModule) -> None:
         self.data = data
+
+    def get_num_samples(self) -> Tuple[int, int]:
+        """
+        TODO: USE IT TO OBTAIN A MORE ACCURATE METRIC AGG
+        """
+        train_len = len(self.data.train_dataloader().dataset)  # type: ignore
+        test_len = len(self.data.test_dataloader().dataset)  # type: ignore
+        return (train_len, test_len)
 
     ####
     # Model weights
@@ -131,7 +141,8 @@ class LightningLearner(NodeLearner):
                 self.__trainer = None
         except Exception as e:
             logger.error(
-                "LightningLearner", f"Something went wrong with pytorch lightning. {e}"
+                self.__self_addr,
+                f"Fit error. Something went wrong with pytorch lightning. {e}",
             )
 
     def interrupt_fit(self) -> None:
@@ -139,7 +150,7 @@ class LightningLearner(NodeLearner):
             self.__trainer.should_stop = True
             self.__trainer = None
 
-    def evaluate(self) -> Tuple[float, float]:
+    def evaluate(self) -> Dict[str, float]:
         try:
             if self.epochs > 0:
                 self.__trainer = Trainer(
@@ -149,53 +160,18 @@ class LightningLearner(NodeLearner):
                     log_every_n_steps=0,
                     enable_checkpointing=False,
                 )
-                results = self.__trainer.test(self.model, self.data, verbose=False)
-                loss = results[0]["test_loss"]
-                metric = results[0]["test_metric"]
+                results = self.__trainer.test(self.model, self.data, verbose=False)[0]
                 self.__trainer = None
-                self.log_validation_metrics(loss, metric)
-                return loss, metric
+                # Log metrics
+                for k, v in results.items():
+                    logger.log_metric(self.__self_addr, k, v)
+                return results
             else:
                 raise ZeroEpochsError("Zero epochs to evaluate.")
         except Exception as e:
             if not isinstance(e, ZeroEpochsError):
                 logger.error(
-                    "LightningLearner",
-                    f"Something went wrong with pytorch lightning. {e}",
+                    self.__self_addr,
+                    f"Evaluation error. Something went wrong with pytorch lightning. {e}",
                 )
             raise e
-
-    ####
-    # Logging
-    ####
-
-    def create_new_exp(self) -> None:
-        self.logger.create_new_exp()
-
-    def log_validation_metrics(
-        self,
-        loss: float,
-        metric: float,
-        round: Optional[int] = None,
-        name: Optional[str] = None,
-    ) -> None:
-        if self.logger is not None:
-            self.logger.log_round_metric("test_loss", loss, name=name, round=round)
-            self.logger.log_round_metric("test_metric", metric, name=name, round=round)
-
-    def get_logs(
-        self, node: Optional[str] = None, exp: Optional[str] = None
-    ) -> LogsUnionType:
-        return self.logger.get_logs(node=node, exp=exp)
-
-    def get_num_samples(self) -> Tuple[int, int]:
-        """
-        TODO: USE IT TO OBTAIN A MORE ACCURATE METRIC AGG
-        """
-        train_len = len(self.data.train_dataloader().dataset)  # type: ignore
-        test_len = len(self.data.test_dataloader().dataset)  # type: ignore
-        return (train_len, test_len)
-
-    def finalize_round(self) -> None:
-        if self.logger is not None:
-            self.logger.finalize_round()

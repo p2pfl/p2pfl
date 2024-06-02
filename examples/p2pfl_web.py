@@ -16,30 +16,51 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from p2pfl.management.logger import logger
-from p2pfl.management.p2pfl_web_services import P2pflWebServices
-from p2pfl.node import Node
+from test.utils import (
+    wait_4_results,
+    wait_convergence,
+    set_test_settings,
+)
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
     MnistFederatedDM,
 )
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
-import sys
+from p2pfl.node import Node
+from p2pfl.management.logger import logger
+import time
+
+
+def test_convergence(n, r, epochs=2):
+    # Node Creation
+    nodes = []
+    for _ in range(n):
+        node = Node(
+            MLP(),
+            MnistFederatedDM(sub_id=0, number_sub=20),  # sampling for increase speed
+        )
+        node.start()
+        nodes.append(node)
+
+    # Node Connection
+    for i in range(len(nodes) - 1):
+        nodes[i + 1].connect(nodes[i].addr)
+        time.sleep(0.1)
+    wait_convergence(nodes, n - 1, only_direct=False)
+
+    # Start Learning
+    nodes[0].set_start_learning(rounds=r, epochs=epochs)
+
+    # Wait
+    wait_4_results(nodes)
+
+    # Stop Nodes
+    [n.stop() for n in nodes]
+
 
 if __name__ == "__main__":
-    if len(sys.argv) != 1:
-        print("Usage: python3 p2pfl_web.py")
-        sys.exit(1)
-
     # Set the logger
-    logger.init(P2pflWebServices("https://b3e4b102-69aa-42b0-9d2d-ca48e7d553f2.mock.pstmn.io", "1234"))
-    
-    # Node Creation
-    node = Node(
-        MLP(),
-        MnistFederatedDM(sub_id=0, number_sub=2)
-    )
-    node.start()
-
-    input("Press any key to stop\n")
-
-    node.stop()
+    logger.connect_web("http://localhost:3000/api/v1", "6ef7c882-acbe-4911-b649-2611ed2d9795")
+    # Settings
+    set_test_settings()
+    # Launch experiment
+    test_convergence(1, 1, epochs=1)

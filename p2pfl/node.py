@@ -24,18 +24,18 @@ from typing import Callable, Dict, List, Optional, Tuple, Any, Type
 import grpc
 from p2pfl.base_node import BaseNode
 from p2pfl.management.logger import logger
-
 from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
 from p2pfl.learning.learner import NodeLearner, ZeroEpochsError
 from p2pfl.messages import LearningNodeMessages
 from p2pfl.settings import Settings
-from p2pfl.learning.pytorch.lightninglearner import LightningLearner
+from p2pfl.learning.pytorch.lightning_learner import LightningLearner
 from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.exceptions import (
     DecodingParamsError,
     ModelNotMatchingError,
 )
 import p2pfl.proto.node_pb2 as node_pb2
+from p2pfl.node_state import NodeState
 
 # Define type aliases for clarity
 CandidateCondition = Callable[[str], bool]
@@ -78,7 +78,7 @@ class Node(BaseNode):
     ) -> None:
 
         # Super init
-        BaseNode.__init__(self, host, port, **kwargs)
+        BaseNode.__init__(self, host=host, port=port, **kwargs)
 
         # Add message handlers
         self.add_message_handler(
@@ -106,15 +106,25 @@ class Node(BaseNode):
         self.add_message_handler(LearningNodeMessages.METRICS, self.__metrics_callback)
 
         # Learning
-        self.round: Optional[int] = None
-        self.totalrounds: Optional[int] = None
-        self.__train_set: List[str] = []
-        self.__models_aggregated: Dict[str, List[str]] = {}
-        self.__nei_status: Dict[str, int] = {}
-        self.learner = learner(model, data, self.addr)
-        self.aggregator = aggregator(node_name=self.addr)
+        self.data = data
+        self.model = model
+        self.learner = None
+        self.learner_class = learner
 
-        # Train Set Votes
+        # Aggregator
+        self.aggregator = aggregator(node_name=self.addr)
+        self.__models_aggregated: Dict[str, List[str]] = (
+            {}
+        )  # SE PODRÁ USAR EL ESTADO DEL AGG DIRECTAMENTE?
+
+        # Public State
+        self.state = NodeState()
+
+        # Other neis state (only round)
+        self.__nei_status: Dict[str, int] = {}
+
+        # Train Set
+        self.__train_set: List[str] = []
         self.__train_set_votes: Dict[str, Dict[str, int]] = {}
         self.__train_set_votes_lock = threading.Lock()
 
@@ -142,8 +152,8 @@ class Node(BaseNode):
         ########################################################
         # try to improve clarity in message moment check
         ########################################################
-        if self.round is not None:
-            if msg.round in [self.round, self.round + 1]:
+        if self.learner is not None:
+            if msg.round in [self.state.round, self.state.round + 1]:
                 # build vote dict
                 votes = msg.args
                 tmp_votes = {}
@@ -161,27 +171,27 @@ class Node(BaseNode):
             else:
                 logger.error(
                     self.addr,
-                    f"Vote received in a late round. Ignored. {msg.round} != {self.round} / {self.round+1}",
+                    f"Vote received in a late round. Ignored. {msg.round} != {self.state.round} / {self.state.round+1}",
                 )
         else:
             logger.error(self.addr, "Vote received when learning is not running")
 
     def __models_agregated_callback(self, msg: node_pb2.Message) -> None:
-        if msg.round == self.round:
+        if msg.round == self.state.round:
             self.__models_aggregated[msg.source] = list(msg.args)
 
     def __models_ready_callback(self, msg: node_pb2.Message) -> None:
         ########################################################
         # try to improve clarity in message moment check
         ########################################################
-        if self.round is not None:
-            if msg.round in [self.round - 1, self.round]:
+        if self.learner is not None:
+            if msg.round in [self.state.round - 1, self.state.round]:
                 self.__nei_status[msg.source] = int(msg.args[0])
             else:
                 # Ignored
                 logger.error(
                     self.addr,
-                    f"Models ready in a late round. Ignored. {msg.round} != {self.round} / {self.round-1}",
+                    f"Models ready in a late round. Ignored. {msg.round} != {self.state.round} / {self.state.round-1}",
                 )
         else:
             logger.error(
@@ -191,9 +201,12 @@ class Node(BaseNode):
     def __metrics_callback(self, msg: node_pb2.Message) -> None:
         name = msg.source
         round = msg.round
-        loss = float(msg.args[0])
-        metric = float(msg.args[1])
-        self.learner.log_validation_metrics(loss, metric, round=round, name=name)
+        logger.info(self.addr, f"Metrics received from {name}. (ojito duplicados)")
+        # process metrics
+        for i in range(0, len(msg.args), 2):
+            key = msg.args[i]
+            value = float(msg.args[i + 1])
+            logger.log_metric(name, key, value, round=round)
 
     ############################
     #  GRPC - Remote Services  #
@@ -206,12 +219,12 @@ class Node(BaseNode):
         GRPC service. It is called when a node wants to add a model to the network.
         """
         # Check if Learning is running
-        if self.round is not None:
+        if self.learner is not None:
             # Check source
-            if request.round != self.round:
+            if request.round != self.state.round:
                 logger.error(
                     self.addr,
-                    f"Model Reception in a late round ({request.round} != {self.round}).",
+                    f"Model Reception in a late round ({request.round} != {self.state.round}).",
                 )
                 return node_pb2.ResponseMessage()
 
@@ -287,7 +300,7 @@ class Node(BaseNode):
         """
         GRPC service. It is called when a node connects to another.
         """
-        if self.round is not None:
+        if self.learner is not None:
             logger.info(
                 self.addr, "Cant connect to other nodes when learning is running."
             )
@@ -310,7 +323,7 @@ class Node(BaseNode):
             bool: True if the connection was successful, False otherwise.
         """
         # Check if learning is running
-        if self.round is not None:
+        if self.learner is not None:
             logger.info(
                 self.addr, "Cant connect to other nodes when learning is running."
             )
@@ -323,7 +336,7 @@ class Node(BaseNode):
         Stops the node. If learning is running, the local learning process is interrupted.
         """
         # Interrupt learning
-        if self.round is not None:
+        if self.learner is not None:
             self.__stop_learning()
         # Close node
         super().stop()
@@ -339,6 +352,7 @@ class Node(BaseNode):
         Args:
             data: Dataset to be used in the learning process.
         """
+        self.data = data
         self.learner.set_data(data)
 
     def set_model(self, model) -> None:
@@ -348,6 +362,7 @@ class Node(BaseNode):
         Args:
             model: Model to be used in the learning process.
         """
+        self.model = model
         self.learner.set_model(model)
 
     ###############################################
@@ -364,7 +379,7 @@ class Node(BaseNode):
         """
         self.assert_running(True)
 
-        if self.round is None:
+        if self.learner is None:
             # Broadcast start Learning
             logger.info(self.addr, "Broadcasting start learning...")
             self._neighbors.broadcast_msg(
@@ -387,7 +402,7 @@ class Node(BaseNode):
         """
         Stop the learning process in the entire network.
         """
-        if self.round is not None:
+        if self.learner is not None:
             # send stop msg
             self._neighbors.broadcast_msg(
                 self._neighbors.build_msg(LearningNodeMessages.STOP_LEARNING)
@@ -403,18 +418,20 @@ class Node(BaseNode):
 
     def __start_learning_thread(self, rounds: int, epochs: int) -> None:
         learning_thread = threading.Thread(
-            target=self.__start_learning, args=(rounds, epochs)
+            target=self.__start_learning,
+            args=(rounds, epochs),
+            name="learning_thread-" + self.addr,
         )
-        learning_thread.name = "learning_thread-" + self.addr
         learning_thread.daemon = True
         learning_thread.start()
 
     def __start_learning(self, rounds: int, epochs: int) -> None:
         self.__start_thread_lock.acquire()  # Used to avoid create duplicated training threads
-        if self.round is None:
-            self.round = 0
-            self.totalrounds = rounds
-            self.learner.create_new_exp()
+        if self.learner is None:
+            # Init
+            self.state.set_experiment("experiment", rounds)
+            logger.experiment_started(self.addr)
+            self.learner = self.learner_class(self.model, self.data, self.addr)
             self.__start_thread_lock.release()
             begin = time.time()
 
@@ -437,13 +454,14 @@ class Node(BaseNode):
 
     def __stop_learning(self) -> None:
         logger.info(self.addr, "Stopping learning")
-        # Rounds
-        self.round = None
-        self.totalrounds = None
         # Leraner
         self.learner.interrupt_fit()
+        self.learner = None
         # Aggregator
         self.aggregator.clear()
+        # State
+        self.state.clear()
+        logger.experiment_finished(self.addr)
         # Try to free wait locks
         try:
             self.__wait_votes_ready_lock.release()
@@ -461,12 +479,12 @@ class Node(BaseNode):
         if params is not None:
             self.learner.set_parameters(params)
             logger.debug(
-                self.addr, f"Broadcast aggregation done for round {self.round}"
+                self.addr, f"Broadcast aggregation done for round {self.state.round}"
             )
             # Share that aggregation is done
             self._neighbors.broadcast_msg(
                 self._neighbors.build_msg(
-                    LearningNodeMessages.MODELS_READY, [str(self.round)]
+                    LearningNodeMessages.MODELS_READY, [str(self.state.round)]
                 )
             )
         else:
@@ -475,7 +493,7 @@ class Node(BaseNode):
 
     def __train_step(self) -> None:
         # Set train set
-        if self.round is not None:
+        if self.learner is not None:
             self.__train_set = self.__vote_train_set()
             self.__train_set = self.__validate_train_set(self.__train_set)
             logger.info(
@@ -486,20 +504,20 @@ class Node(BaseNode):
         # Determine if node is in the train set
         if self.addr in self.__train_set:
             # Full connect train set
-            if self.round is not None:
+            if self.learner is not None:
                 # Set Models To Aggregate
                 self.aggregator.set_nodes_to_aggregate(self.__train_set)
 
             # Evaluate and send metrics
-            if self.round is not None:
+            if self.learner is not None:
                 self.__evaluate()
 
             # Train
-            if self.round is not None:
+            if self.learner is not None:
                 self.__train()
 
             # Aggregate Model
-            if self.round is not None:
+            if self.learner is not None:
                 models_added = self.aggregator.add_model(
                     self.learner.get_parameters(),
                     [self.addr],
@@ -519,12 +537,12 @@ class Node(BaseNode):
             self.aggregator.set_waiting_aggregated_model(self.__train_set)
 
         # Gossip aggregated model (also syncrhonizes nodes)
-        if self.round is not None:
+        if self.learner is not None:
             self.__wait_aggregated_model()
             self.__gossip_model_difusion()
 
         # Finish round
-        if self.round is not None:
+        if self.learner is not None:
             self.__on_round_finished()
 
     ################
@@ -558,7 +576,7 @@ class Node(BaseNode):
             self._neighbors.build_msg(
                 LearningNodeMessages.VOTE_TRAIN_SET,
                 list(map(str, list(sum(votes, tuple())))),
-                round=self.round,
+                round=self.state.round,
             )
         )
         logger.debug(self.addr, "Waiting other node votes.")
@@ -569,7 +587,7 @@ class Node(BaseNode):
 
         while True:
             # If the trainning has been interrupted, stop waiting
-            if self.round is None:
+            if self.learner is None:
                 logger.info(self.addr, "Stopping on_round_finished process.")
                 return []
 
@@ -642,16 +660,15 @@ class Node(BaseNode):
         logger.info(self.addr, "Evaluating...")
         try:
             results = self.learner.evaluate()
-            logger.info(
-                self.addr, f"Evaluated. Losss: {results[0]}, Metric: {results[1]}."
-            )
+            logger.info(self.addr, f"Evaluated. Results: {results}")
             # Send metrics
             logger.info(self.addr, "Broadcasting metrics.")
+            flattened_metrics = [item for pair in results.items() for item in pair]
             self._neighbors.broadcast_msg(
                 self._neighbors.build_msg(
                     LearningNodeMessages.METRICS,
-                    [str(results[0]), str(results[1])],
-                    round=self.round,
+                    flattened_metrics,
+                    round=self.state.round,
                 )
             )
         except ZeroEpochsError:
@@ -663,27 +680,29 @@ class Node(BaseNode):
 
     def __on_round_finished(self) -> None:
         # Check if learning is running
-        if self.round is None or self.totalrounds is None:
+        if self.learner is None:
             raise Exception("Round finished when learning is not running")
 
         # Set Next Round
         self.aggregator.clear()
-        self.learner.finalize_round()  # revisar x si esto pueiera quedar mejor
-        self.round = self.round + 1
+        self.state.increase_round()
+        logger.round_finished(self.addr)
 
         # Clear node aggregation
         self.__models_aggregated = {}
 
         # Next Step or Finish
-        logger.info(self.addr, f"Round {self.round} of {self.totalrounds} finished.")
-        if self.round < self.totalrounds:
+        logger.info(
+            self.addr,
+            f"Round {self.state.round} of {self.state.total_rounds} finished.",
+        )
+        if self.state.round < self.state.total_rounds:
             self.__train_step()
         else:
             # At end, all nodes compute metrics
             self.__evaluate()
             # Finish
-            self.round = None
-            self.totalrounds = None
+            self.state.clear()
             self.__model_initialized_lock.acquire()
             logger.info(self.addr, "Training finished!!.")
 
@@ -723,7 +742,7 @@ class Node(BaseNode):
 
     def __gossip_model_difusion(self, initialization: bool = False) -> None:
         # Check if learning is running
-        if self.round is None:
+        if self.learner is None:
             raise Exception("Gossiping model when learning is not running")
 
         # Wait a model (init or aggregated)
@@ -734,7 +753,7 @@ class Node(BaseNode):
 
         else:
             logger.info(self.addr, "Gossiping aggregated model.")
-            fixed_round = self.round
+            fixed_round = self.state.round
 
             def candidate_condition(node: str) -> bool:
                 return self.__nei_status[node] < fixed_round
@@ -770,7 +789,7 @@ class Node(BaseNode):
             t = time.time()
 
             # If the trainning has been interrupted, stop waiting
-            if self.round is None:
+            if self.learner is None:
                 logger.info(self.addr, "Stopping model gossip process.")
                 return
 
@@ -812,7 +831,7 @@ class Node(BaseNode):
                     model, contributors, weight = model_function(nei)
                     encoded_model = self.learner.encode_parameters(params=model)
                     self._neighbors.send_model(
-                        nei, self.round, encoded_model, contributors, weight
+                        nei, self.state.round, encoded_model, contributors, weight
                     )
 
                 except NoModelsToAggregateError:

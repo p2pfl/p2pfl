@@ -19,6 +19,7 @@ from typing import Callable, Dict, List, Optional
 import grpc
 import socket
 from concurrent import futures
+from p2pfl.node_state import BaseNodeState
 from p2pfl.proto import node_pb2
 from p2pfl.proto import node_pb2_grpc
 import google.protobuf.empty_pb2
@@ -63,12 +64,16 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
 
         # Neighbors
         self._neighbors = Neighbors(self.addr)
+        self.simulation = simulation
         if simulation:
             raise NotImplementedError("Simulation not implemented yet")
 
         # Server
         self.__running = False
         self.__server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
+
+        # State
+        self.state = BaseNodeState()
 
     #######################################
     #   Node Management (servicer loop)   #
@@ -102,6 +107,8 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         self.assert_running(False)
         # Set running
         self.__running = True
+        # P2PFL Web Services
+        logger.register_node(self.addr, self.state, self.simulation)
         # Server
         node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.__server)
         try:
@@ -132,6 +139,8 @@ class BaseNode(node_pb2_grpc.NodeServicesServicer):
         self._neighbors.stop()
         # Set not running
         self.__running = False
+        # Unregister node
+        logger.unregister_node(self.addr)
 
     #############################
     #  Neighborhood management  #

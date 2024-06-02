@@ -109,3 +109,11 @@ class Settings:
     """
     Time (seconds) to wait for the heartbeats to converge before a learning round starts.
     """
+
+    ######
+    # WEB
+    ######
+    RESOURCE_MONITOR_PERIOD: int = 1
+    """
+    Period (seconds) to send resource monitor information.
+    """
