@@ -49,10 +49,18 @@ poetry install
 
 #### 🐳 Docker
 
-You can also use the library with Docker. We provide a Docker image with the library installed. You can use it as follows:
+You can also use the library with Docker. We provide a Docker image with the library installed. A virtual link (in the /app folder) is created between the Docker container and the host machine to facilitate easy access to project files. You can configure the image as follows:
 
 ```bash
-docker ... # TODO
+git clone https://github.com/pguijas/p2pfl.git
+cd p2pfl
+docker build -t p2pfl .
+docker run -it -p 8000:8000 --gpus=all -v .:/app/ p2pfl
+```
+
+Once the container is configured and launched you can access a terminal with the command below:
+```bash
+docker exec -it <container_id> /bin/bash
 ```
 
 ## 📚 Documentation
