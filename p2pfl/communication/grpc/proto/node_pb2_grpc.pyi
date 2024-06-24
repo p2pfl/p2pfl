@@ -40,7 +40,7 @@ class NodeServicesStub:
         node_pb2.Message,
         node_pb2.ResponseMessage,
     ]
-    add_model: grpc.UnaryUnaryMultiCallable[
+    send_weights: grpc.UnaryUnaryMultiCallable[
         node_pb2.Weights,
         node_pb2.ResponseMessage,
     ]
@@ -58,7 +58,7 @@ class NodeServicesAsyncStub:
         node_pb2.Message,
         node_pb2.ResponseMessage,
     ]
-    add_model: grpc.aio.UnaryUnaryMultiCallable[
+    send_weights: grpc.aio.UnaryUnaryMultiCallable[
         node_pb2.Weights,
         node_pb2.ResponseMessage,
     ]
@@ -90,7 +90,7 @@ class NodeServicesServicer(metaclass=abc.ABCMeta):
         node_pb2.ResponseMessage, collections.abc.Awaitable[node_pb2.ResponseMessage]
     ]: ...
     @abc.abstractmethod
-    def add_model(
+    def send_weights(
         self,
         request: node_pb2.Weights,
         context: _ServicerContext,

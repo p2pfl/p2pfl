@@ -17,18 +17,17 @@
 #
 
 from p2pfl.settings import Settings
-from test.utils import set_test_settings, wait_convergence, full_connection
-
+from p2pfl.utils import set_test_settings, wait_convergence, full_connection
 set_test_settings()
 import pytest
-from p2pfl.base_node import BaseNode
+from p2pfl.node import Node
 import time
 
 
 @pytest.fixture
 def two_nodes():
-    n1 = BaseNode()
-    n2 = BaseNode()
+    n1 = Node(None, None)
+    n2 = Node(None, None)
     n1.start()
     n2.start()
 
@@ -40,10 +39,10 @@ def two_nodes():
 
 @pytest.fixture
 def four_nodes():
-    n1 = BaseNode()
-    n2 = BaseNode()
-    n3 = BaseNode()
-    n4 = BaseNode()
+    n1 = Node(None, None)
+    n2 = Node(None, None)
+    n3 = Node(None, None)
+    n4 = Node(None, None)
     n1.start()
     n2.start()
     n3.start()
@@ -56,9 +55,8 @@ def four_nodes():
 #  Tests Infraestructure  #
 ###########################
 
-
 def test_connect_invalid_node():
-    n = BaseNode()
+    n = Node(None, None)
     n.start()
     n.connect("google.es:80")
     n.connect("holadani.holaenrique")
@@ -79,8 +77,7 @@ def test_basic_node_paring(two_nodes):
     )
 
     # Disconnect
-    n2.disconnect_from(n1.addr)
-    # Direct disconnection are practically instantaneous, network nodes needs to wait timeout.
+    n2.disconnect(n1.addr)
     time.sleep((Settings.HEARTBEAT_PERIOD * 2) + 1)
     assert (
         len(n1.get_neighbors(only_direct=True))
@@ -164,8 +161,7 @@ def test_bad_msg(two_nodes):
     time.sleep(0.1)
 
     # Create an error message
-    msg = n1._neighbors.build_msg("BAD_MSG")
-    n1._neighbors.send_message(n2.addr, msg)
+    n1._communication_protocol.broadcast(n1._communication_protocol.build_msg("BAD_MSG"))
     time.sleep(1)
     assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == 0
 
@@ -186,12 +182,12 @@ def test_node_abrupt_down(four_nodes):
     wait_convergence(four_nodes, 3, only_direct=True)
 
     # n1 stops heartbeater
-    n1._neighbors._stop_heartbeater()
+    n1._communication_protocol._heartbeater.stop()
     wait_convergence([n2, n3, n4], 2, only_direct=True, wait=10)
     n1.stop()
 
     # n2 stop server
-    n2._BaseNode__server.stop(0)
+    n2._communication_protocol._server.stop()
     wait_convergence([n3, n4], 1, only_direct=True, wait=10)
     n2.stop()
 

@@ -21,7 +21,7 @@ import pickle
 from typing import Dict, Optional, Tuple
 import torch
 from pytorch_lightning import Trainer
-from p2pfl.learning.learner import NodeLearner, ZeroEpochsError
+from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.pytorch.lightning_logger import FederatedLogger
 from p2pfl.learning.exceptions import (
     DecodingParamsError,
@@ -42,6 +42,29 @@ torch.set_num_threads(1)
 ---------->  Add information of the node that owns the learner.  <----------
 """
 
+"""
+        decoded_model = self.learner.decode_parameters(weights)
+        if self.learner.check_parameters(decoded_model):
+            models_added = self.aggregator.add_model(
+                decoded_model,
+                list(contributors),
+                weight,
+            )
+            if models_added != []:
+                # Communicate Aggregation
+                self._neighbors.broadcast_msg(
+                    self._neighbors.build_msg(
+                        LearningNodeMessages.MODELS_AGGREGATED,
+                        models_added,
+                    )
+                )
+        else:
+            raise ModelNotMatchingError(
+                "Not matching models"
+            )  # esta excepción mejor tenerla en add_model (así nos ahorramos in if raise que no aporta robustez en el método que importa)
+
+"""
+
 
 class LightningLearner(NodeLearner):
     """
@@ -56,12 +79,12 @@ class LightningLearner(NodeLearner):
     """
 
     def __init__(
-        self, model: pl.LightningModule, data: LightningDataModule, self_addr: str
+        self, model: pl.LightningModule, data: LightningDataModule, self_addr: str, epochs: int
     ):
         self.model = model
         self.data = data
         self.__trainer: Optional[Trainer] = None
-        self.epochs = 1
+        self.epochs = epochs
         self.__self_addr = self_addr
         # Start logging
         self.logger = FederatedLogger(self_addr)
@@ -101,6 +124,7 @@ class LightningLearner(NodeLearner):
         except Exception:
             raise DecodingParamsError("Error decoding parameters")
 
+    """es esto realmente necesario?
     def check_parameters(self, params: OrderedDict[str, torch.Tensor]) -> bool:
         # Check ordered dict keys
         if set(params.keys()) != set(self.get_parameters().keys()):
@@ -110,6 +134,7 @@ class LightningLearner(NodeLearner):
             if value.shape != self.get_parameters()[key].shape:
                 return False
         return True
+    """
 
     def set_parameters(self, params: OrderedDict[str, torch.Tensor]) -> None:
         try:
@@ -144,6 +169,7 @@ class LightningLearner(NodeLearner):
                 self.__self_addr,
                 f"Fit error. Something went wrong with pytorch lightning. {e}",
             )
+            raise e
 
     def interrupt_fit(self) -> None:
         if self.__trainer is not None:
@@ -167,11 +193,10 @@ class LightningLearner(NodeLearner):
                     logger.log_metric(self.__self_addr, k, v)
                 return results
             else:
-                raise ZeroEpochsError("Zero epochs to evaluate.")
+                return {}
         except Exception as e:
-            if not isinstance(e, ZeroEpochsError):
-                logger.error(
-                    self.__self_addr,
-                    f"Evaluation error. Something went wrong with pytorch lightning. {e}",
-                )
+            logger.error(
+                self.__self_addr,
+                f"Evaluation error. Something went wrong with pytorch lightning. {e}",
+            )
             raise e

@@ -16,7 +16,7 @@ class P2pflWebServicesError(Exception):
     def __init__(self, code, message):
         self.code = code
         self.message = message
-        super().__init__(f'Error {code}: {message}')
+        super().__init__(f"Error {code}: {message}")
 
 
 class P2pflWebServices:
@@ -118,7 +118,9 @@ class P2pflWebServices:
                 )
             raise e
 
-    def send_local_metric(self, exp: str, round: int, metric: str, node: str, value: float, step: int):
+    def send_local_metric(
+        self, exp: str, round: int, metric: str, node: str, value: float, step: int
+    ):
         """
         Send a local metric.
 
@@ -155,7 +157,9 @@ class P2pflWebServices:
         except Exception:
             raise P2pflWebServicesError(response.status_code, response.text)
 
-    def send_global_metric(self, exp: str, round: int, metric: str, node: str, value: float):
+    def send_global_metric(
+        self, exp: str, round: int, metric: str, node: str, value: float
+    ):
         """
         Send a local metric.
 
@@ -190,8 +194,14 @@ class P2pflWebServices:
             response.raise_for_status()
         except Exception:
             raise P2pflWebServicesError(response.status_code, response.text)
-            
-    def send_system_metric(self, node: str, metric: str, value: float, time: datetime,):
+
+    def send_system_metric(
+        self,
+        node: str,
+        metric: str,
+        value: float,
+        time: datetime,
+    ):
         """
         Send a metric.
         Args:

@@ -3,7 +3,7 @@
 import grpc
 
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
-import p2pfl.proto.node_pb2 as node__pb2
+from p2pfl.communication.grpc.proto import node_pb2 as node__pb2
 
 
 class NodeServicesStub(object):
@@ -30,8 +30,8 @@ class NodeServicesStub(object):
             request_serializer=node__pb2.Message.SerializeToString,
             response_deserializer=node__pb2.ResponseMessage.FromString,
         )
-        self.add_model = channel.unary_unary(
-            "/node.NodeServices/add_model",
+        self.send_weights = channel.unary_unary(
+            "/node.NodeServices/send_weights",
             request_serializer=node__pb2.Weights.SerializeToString,
             response_deserializer=node__pb2.ResponseMessage.FromString,
         )
@@ -58,7 +58,7 @@ class NodeServicesServicer(object):
         context.set_details("Method not implemented!")
         raise NotImplementedError("Method not implemented!")
 
-    def add_model(self, request, context):
+    def send_weights(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details("Method not implemented!")
@@ -82,8 +82,8 @@ def add_NodeServicesServicer_to_server(servicer, server):
             request_deserializer=node__pb2.Message.FromString,
             response_serializer=node__pb2.ResponseMessage.SerializeToString,
         ),
-        "add_model": grpc.unary_unary_rpc_method_handler(
-            servicer.add_model,
+        "send_weights": grpc.unary_unary_rpc_method_handler(
+            servicer.send_weights,
             request_deserializer=node__pb2.Weights.FromString,
             response_serializer=node__pb2.ResponseMessage.SerializeToString,
         ),
@@ -186,7 +186,7 @@ class NodeServices(object):
         )
 
     @staticmethod
-    def add_model(
+    def send_weights(
         request,
         target,
         options=(),
@@ -201,7 +201,7 @@ class NodeServices(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            "/node.NodeServices/add_model",
+            "/node.NodeServices/send_weights",
             node__pb2.Weights.SerializeToString,
             node__pb2.ResponseMessage.FromString,
             options,

@@ -20,7 +20,7 @@ import logging
 import os
 from typing import Dict, List, Optional, Tuple
 from p2pfl.management.metric_storage import GlobalMetricStorage, LocalMetricStorage
-from p2pfl.node_state import BaseNodeState
+from p2pfl.node_state import NodeState
 from p2pfl.settings import Settings
 from logging.handlers import QueueHandler, QueueListener
 import multiprocessing
@@ -127,7 +127,7 @@ class Logger:
 
     def __init__(self, p2pfl_web_services: Optional[P2pflWebServices] = None) -> None:
         # Node States
-        self.nodes: Dict[str, Tuple[NodeMonitor, BaseNodeState]] = {}
+        self.nodes: Dict[str, Tuple[NodeMonitor, NodeState]] = {}
 
         # Experiment Metrics
         self.local_metrics = LocalMetricStorage()
@@ -356,7 +356,6 @@ class Logger:
                     exp, round, metric, node, value, step
                 )
 
-
     @staticmethod
     def log_system_metric(node: str, metric: str, value: float, time: datetime) -> None:
         """
@@ -406,7 +405,7 @@ class Logger:
     ######
 
     @staticmethod
-    def register_node(node: str, state: BaseNodeState, simulation: bool) -> None:
+    def register_node(node: str, state: NodeState, simulation: bool) -> None:
         """
         Register a node.
 

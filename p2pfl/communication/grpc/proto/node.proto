@@ -38,6 +38,7 @@ message Weights {
     bytes weights = 3;
     repeated string contributors = 4;
     int32 weight = 5;
+    string cmd = 6;
 }
 
 message HandShakeRequest {
@@ -52,5 +53,5 @@ service NodeServices {
     rpc handshake(HandShakeRequest) returns (ResponseMessage);
     rpc disconnect(HandShakeRequest) returns (google.protobuf.Empty);
     rpc send_message(Message) returns (ResponseMessage);
-    rpc add_model(Weights) returns (ResponseMessage);
+    rpc send_weights(Weights) returns (ResponseMessage);
 }

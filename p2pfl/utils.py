@@ -81,13 +81,13 @@ def check_equal_models(nodes):
     first = True
     for node in nodes:
         if first:
-            model = node.learner.get_parameters()
+            model = node.state.learner.get_parameters()
             first = False
         else:
             # compare layers with a tolerance
             for layer in model:
                 assert np.allclose(
                     model[layer],
-                    node.learner.get_parameters()[layer],
+                    node.state.learner.get_parameters()[layer],
                     atol=1e-1,
                 )

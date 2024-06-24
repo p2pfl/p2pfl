@@ -5,7 +5,7 @@ if __name__ == "__main__":
     # python -m grpc_tools.protoc -I=p2pfl/proto --python_out=p2pfl/proto --grpc_python_out=p2pfl/proto --mypy_out=p2pfl/proto p2pfl/proto/node.proto
 
     GRPC_PATH = grpc_tools.__path__[0]
-    PROTO_PATH = "p2pfl/proto"
+    PROTO_PATH = "p2pfl/communication/grpc/proto"
     PROTO_FILE = "node.proto"
 
     command = [

@@ -16,7 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from test.utils import (
+from p2pfl.utils import (
     wait_convergence,
     set_test_settings,
     wait_4_results,
@@ -31,13 +31,27 @@ import time
 import matplotlib.pyplot as plt
 
 
+def wait_convergence(nodes, n_neis, wait=5, only_direct=False):
+    acum = 0
+    while True:
+        begin = time.time()
+        if all(
+            [len(n.get_neighbors(only_direct=only_direct)) == n_neis for n in nodes]
+        ):
+            break
+        time.sleep(0.1)
+        acum += time.time() - begin
+        if acum > wait:
+            assert False
+
+
 def test_convergence(n, r, epochs=2):
     # Node Creation
     nodes = []
     for _ in range(n):
         node = Node(
             MLP(),
-            MnistFederatedDM(sub_id=0, number_sub=20)  # sampling for increase speed
+            MnistFederatedDM(sub_id=0, number_sub=20),  # sampling for increase speed
         )
         node.start()
         nodes.append(node)
@@ -65,9 +79,9 @@ def test_convergence(n, r, epochs=2):
                     x, y = zip(*values)
                     plt.plot(x, y, label=metric)
                     # Add a red point to the last data point
-                    plt.scatter(x[-1], y[-1], color='red')
+                    plt.scatter(x[-1], y[-1], color="red")
                     plt.title(f"Round {round_num} - {node_name}")
-                    plt.xlabel('Epoch')
+                    plt.xlabel("Epoch")
                     plt.ylabel(metric)
                     plt.legend()
                     plt.show()
@@ -75,16 +89,18 @@ def test_convergence(n, r, epochs=2):
     # Global Logs
     global_logs = logger.get_global_logs()
     if global_logs != {}:
-        logs = list(global_logs.items())[0][1]  # Accessing the nested dictionary directly
+        logs = list(global_logs.items())[0][
+            1
+        ]  # Accessing the nested dictionary directly
         # Plot experiment metrics
         for node_name, node_metrics in logs.items():
             for metric, values in node_metrics.items():
                 x, y = zip(*values)
                 plt.plot(x, y, label=metric)
                 # Add a red point to the last data point
-                plt.scatter(x[-1], y[-1], color='red')
+                plt.scatter(x[-1], y[-1], color="red")
                 plt.title(f"{node_name} - {metric}")
-                plt.xlabel('Epoch')
+                plt.xlabel("Epoch")
                 plt.ylabel(metric)
                 plt.legend()
                 plt.show()

@@ -88,6 +88,7 @@ class Weights(google.protobuf.message.Message):
     WEIGHTS_FIELD_NUMBER: builtins.int
     CONTRIBUTORS_FIELD_NUMBER: builtins.int
     WEIGHT_FIELD_NUMBER: builtins.int
+    CMD_FIELD_NUMBER: builtins.int
     source: builtins.str
     round: builtins.int
     weights: builtins.bytes
@@ -98,6 +99,7 @@ class Weights(google.protobuf.message.Message):
         builtins.str
     ]: ...
     weight: builtins.int
+    cmd: builtins.str
     def __init__(
         self,
         *,
@@ -106,10 +108,13 @@ class Weights(google.protobuf.message.Message):
         weights: builtins.bytes = ...,
         contributors: collections.abc.Iterable[builtins.str] | None = ...,
         weight: builtins.int = ...,
+        cmd: builtins.str = ...,
     ) -> None: ...
     def ClearField(
         self,
         field_name: typing_extensions.Literal[
+            "cmd",
+            b"cmd",
             "contributors",
             b"contributors",
             "round",

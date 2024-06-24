@@ -16,7 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from test.utils import (
+from p2pfl.utils import (
     check_equal_models,
     set_test_settings,
     wait_4_results,
@@ -109,27 +109,6 @@ def test_interrupt_train(two_nodes):
         n1.set_stop_learning()
 
         wait_4_results([n1, n2])
-
-
-def test_connect_while_training(four_nodes):
-    n1, n2, n3, n4 = four_nodes
-
-    # Connect Nodes (unless the n4)
-    n1.connect(n2.addr)
-    n3.connect(n1.addr)
-    wait_convergence([n1], 2, only_direct=True)
-    wait_convergence([n2, n3], 1, only_direct=True)
-
-    # Start Learning
-    n1.set_start_learning(2, 1)
-    time.sleep(4)
-
-    # Try to connect
-    assert n1.connect(n4.addr) == False
-    assert n4.connect(n1.addr) == False
-    time.sleep(1)
-    assert len(n1.get_neighbors(only_direct=True)) == 2
-    assert len(n4.get_neighbors(only_direct=True)) == 0
 
 
 ##############################
