@@ -50,10 +50,11 @@ def test_convergence(n, r, epochs=2):
 
     # Node Creation
     nodes = []
-    for _ in range(n):
+    for i in range(n):
         node = Node(
             MLP(),
             MnistFederatedDM(sub_id=0, number_sub=20),  # sampling for increase speed
+            address=f"unix:///tmp/test{i}.sock",
         )
         node.start()
         nodes.append(node)
@@ -111,7 +112,6 @@ def test_convergence(n, r, epochs=2):
     [n.stop() for n in nodes]
 
     print("--- %s seconds ---" % (time.time() - start_time))
-
 
 if __name__ == "__main__":
     # Settings

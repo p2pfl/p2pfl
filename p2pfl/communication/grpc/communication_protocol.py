@@ -16,7 +16,7 @@
 #
 
 from typing import List, Optional, Union
-import socket
+import socket, os
 from p2pfl.communication.grpc.gossiper import Gossiper
 from p2pfl.communication.grpc.heartbeater import Heartbeater
 from p2pfl.communication.grpc.neightbors import GrpcNeighbors
@@ -26,19 +26,27 @@ from p2pfl.communication.grpc.server import GrpcServer
 from p2pfl.communication.communication_protocol import CommunicationProtocol
 from p2pfl.commands.command import Command
 from p2pfl.commands.heartbeat_command import HeartbeatCommand
-
+from p2pfl.communication.grpc.address import AddressParser
 
 class GrpcCommunicationProtocol(CommunicationProtocol):
 
     def __init__(
-        self, host: str = "127.0.0.1", port: int = None, commands: List[Command] = []
+        self, addr: str = "127.0.0.1",
+        commands: List[Command] = []
     ) -> None:
-        # Random port
-        if port is None:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.bind(("", 0))
-                port = s.getsockname()[1]
-        self.addr = f"{host}:{port}"
+        
+        # Parse IP address
+        parsed_address = AddressParser(addr)
+        if not parsed_address:
+            raise Exception(f"Address ({addr}) cannot be parsed.")
+
+        self.addr = parsed_address.get_parsed_address()
+        if parsed_address.unix_domain:
+            # Using Unix domain socket
+            self._socket_family = socket.AF_UNIX
+        else:
+            self._socket_family = socket.AF_INET
+            
         # Neighbors
         self._neighbors = GrpcNeighbors(self.addr)
         # GRPC Client
