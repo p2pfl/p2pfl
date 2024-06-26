@@ -19,7 +19,11 @@ import time
 import random
 import math
 import threading
+import uuid
+
 from typing import Dict, List, Optional, Tuple, Any, Type, Callable
+
+from p2pfl.communication.communication_protocol import CommunicationProtocol
 from p2pfl.settings import Settings
 from p2pfl.commands.metrics_command import MetricsCommand
 from p2pfl.commands.model_initialized_command import ModelInitializedCommand
@@ -52,7 +56,6 @@ ModelFunction = Callable[[str], Tuple[Any, List[str], int]]
 - model gossip provisional (hard-coded, se necesita mover el model gossiper)
 """
 
-
 class Node:
 
     #####################
@@ -63,15 +66,15 @@ class Node:
         self,
         model,
         data,
-        host: str = "127.0.0.1",
-        port: Optional[int] = None,
+        address: str = "127.0.0.1",
         learner: Type[NodeLearner] = LightningLearner,
         aggregator: Type[Aggregator] = FedAvg,
+        protocol: Type[CommunicationProtocol] = GrpcCommunicationProtocol,
         **kwargs,
     ) -> None:
 
         # Communication protol
-        self._communication_protocol = GrpcCommunicationProtocol(host, port)
+        self._communication_protocol = protocol(address)
         self.addr = self._communication_protocol.get_address()
 
         # Learning
