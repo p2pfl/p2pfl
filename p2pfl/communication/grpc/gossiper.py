@@ -1,16 +1,15 @@
 import threading
 import time
-from typing import List
+import random
+from typing import List, Tuple, Callable, Any
 from p2pfl.communication.grpc.client import GrpcClient
 from p2pfl.settings import Settings
 from p2pfl.management.logger import logger
 
-
-"""
-duda, esto sobre comm proto? así es generalizable, solo se usa el __client.send_message
-
-problema: lo usa el server (está acoplado)
-"""
+# Define type aliases for clarity
+CandidateCondition = Callable[[str], bool]
+StatusFunction = Callable[[str], Any]
+ModelFunction = Callable[[str], Tuple[Any, List[str], int]]
 
 
 class Gossiper(threading.Thread):
@@ -120,4 +119,73 @@ class Gossiper(threading.Thread):
                     self.__client.send(nei, msg)
             # Sleep to allow periodicity
             sleep_time = max(0, self.period - (t - time.time()))
+            time.sleep(sleep_time)
+
+    ###
+    # Gossip Model (syncronous gossip not as a thread)
+    ###
+
+    def gossip_model(
+        self,
+        early_stopping_fn: Callable[[], bool],
+        get_candidates_fn,
+        status_fn: StatusFunction,
+        model_fn: ModelFunction,
+        period: float = Settings.GOSSIP_MODELS_PERIOD,
+    ) -> None:
+        # Initialize list with status of nodes in the last X iterations
+        last_x_status: List[Any] = []
+        j = 0
+
+        while True:
+            # Get time to calculate frequency
+            t = time.time()
+
+            # If the trainning has been interrupted, stop waiting
+            if early_stopping_fn():
+                logger.info(self.__self_addr, "Stopping model gossip process.")
+                return
+
+            # Get nodes wich need models
+            neis = get_candidates_fn()
+            logger.debug(self.__self_addr, f"Gossip remaining nodes: {neis}")
+
+            # Determine end of gossip
+            if neis == []:
+                logger.info(self.__self_addr, "Gossip finished.")
+                return
+
+            # Save state of neighbors. If nodes are not responding gossip will stop
+            if len(last_x_status) != Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS:
+                last_x_status.append([status_fn(n) for n in neis])
+            else:
+                last_x_status[j] = str([status_fn(n) for n in neis])
+                j = (j + 1) % Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS
+
+                # Check if las messages are the same
+                for i in range(len(last_x_status) - 1):
+                    if last_x_status[i] != last_x_status[i + 1]:
+                        break
+                    logger.info(
+                        self.__self_addr,
+                        f"Gossiping exited for {Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS} equal reounds.",
+                    )
+                    return
+
+            # Select a random subset of neighbors
+            samples = min(Settings.GOSSIP_MODELS_PER_ROUND, len(neis))
+            neis = random.sample(neis, samples)
+
+            # Generate and Send Model Partial Aggregations (model, node_contributors)
+            for nei in neis:
+                # Send Partial Aggregation
+                logger.info(self.__self_addr, f"Gossiping model to {nei}.")
+                self._communication_protocol.send(
+                    nei,
+                    model_fn(BLABLABLA)
+                )
+
+
+            # Sleep to allow periodicity
+            sleep_time = max(0, period - (t - time.time()))
             time.sleep(sleep_time)

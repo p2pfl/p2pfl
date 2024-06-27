@@ -9,9 +9,6 @@ heartbeater_cmd_name = "beat"
 
 
 class Heartbeater(threading.Thread):
-    """
-    arreglar tipos -> esto simplemente que actualice tiempos y desconecte
-    """
 
     def __init__(
         self, self_addr: str, neighbors: GrpcNeighbors, client: GrpcClient

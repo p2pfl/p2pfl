@@ -19,7 +19,7 @@ import time
 import random
 import math
 import threading
-from typing import Dict, List, Optional, Tuple, Any, Type, Callable
+from typing import Dict, List, Optional, Tuple, Any, Type
 from p2pfl.settings import Settings
 from p2pfl.commands.metrics_command import MetricsCommand
 from p2pfl.commands.model_initialized_command import ModelInitializedCommand
@@ -34,14 +34,10 @@ from p2pfl.management.logger import logger
 from p2pfl.communication.grpc.communication_protocol import GrpcCommunicationProtocol
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.pytorch.lightning_learner import LightningLearner
-from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
+from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.aggregators.fedavg import FedAvg
 
 
-# Define type aliases for clarity
-CandidateCondition = Callable[[str], bool]
-StatusFunction = Callable[[str], Any]
-ModelFunction = Callable[[str], Tuple[Any, List[str], int]]
 
 """
 - revisar agregación de nodos en caliente
@@ -643,77 +639,4 @@ class Node:
         # Gossip
         self.__gossip_model(candidate_condition, status_function, model_function)
 
-    def __gossip_model(
-        self,
-        candidate_condition: CandidateCondition,
-        status_function: StatusFunction,
-        model_function: ModelFunction,
-        period: float = Settings.GOSSIP_MODELS_PERIOD,
-    ) -> None:
-        # Initialize list with status of nodes in the last X iterations
-        last_x_status: List[Any] = []
-        j = 0
 
-        while True:
-            # Get time to calculate frequency
-            t = time.time()
-
-            # If the trainning has been interrupted, stop waiting
-            if self.state.learner is None:
-                logger.info(self.addr, "Stopping model gossip process.")
-                return
-
-            # Get nodes wich need models
-            neis = [n for n in self.get_neighbors(only_direct=True) if candidate_condition(n)]
-            logger.debug(self.addr, f"Gossip remaining nodes: {neis}")
-
-            # Determine end of gossip
-            if neis == []:
-                logger.info(self.addr, "Gossip finished.")
-                return
-
-            # Save state of neighbors. If nodes are not responding gossip will stop
-            if len(last_x_status) != Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS:
-                last_x_status.append([status_function(n) for n in neis])
-            else:
-                last_x_status[j] = str([status_function(n) for n in neis])
-                j = (j + 1) % Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS
-
-                # Check if las messages are the same
-                for i in range(len(last_x_status) - 1):
-                    if last_x_status[i] != last_x_status[i + 1]:
-                        break
-                    logger.info(
-                        self.addr,
-                        f"Gossiping exited for {Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS} equal reounds.",
-                    )
-                    return
-
-            # Select a random subset of neighbors
-            samples = min(Settings.GOSSIP_MODELS_PER_ROUND, len(neis))
-            neis = random.sample(neis, samples)
-
-            # Generate and Send Model Partial Aggregations (model, node_contributors)
-            for nei in neis:
-                try:
-                    # Send Partial Aggregation
-                    logger.info(self.addr, f"Gossiping model to {nei}.")
-                    model, contributors, weight = model_function(nei)
-                    encoded_model = self.state.learner.encode_parameters(params=model)
-                    self._communication_protocol.send(
-                        nei,
-                        self._communication_protocol.build_weights(
-                            AddModelCommand.get_name(),
-                            self.state.round,
-                            encoded_model,
-                            contributors,
-                            weight,
-                        ),
-                    )
-                except NoModelsToAggregateError:
-                    logger.debug(self.addr, f"No models to send to {nei}.")
-                    pass
-
-            # Sleep to allow periodicity
-            sleep_time = max(0, period - (t - time.time()))
-            time.sleep(sleep_time)
