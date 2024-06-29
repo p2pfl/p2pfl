@@ -103,7 +103,12 @@ class GrpcClient:
     # Message Sending
     ####
 
-    def send(self, nei: str, msg: Union[node_pb2.Message, node_pb2.Weights], create_connection: bool = False) -> None:
+    def send(
+        self,
+        nei: str,
+        msg: Union[node_pb2.Message, node_pb2.Weights],
+        create_connection: bool = False,
+    ) -> None:
         channel = None
         try:
             # Get neighbor

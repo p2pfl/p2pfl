@@ -66,9 +66,7 @@ class GrpcNeighbors(Neighbors):
             node_channel, node_stub, _ = self.get(addr)
             if disconnect_msg:
                 if node_stub is not None:
-                    node_stub.disconnect(
-                        node_pb2.HandShakeRequest(addr=self.self_addr)
-                    )
+                    node_stub.disconnect(node_pb2.HandShakeRequest(addr=self.self_addr))
                 # Close channel
                 if node_channel is not None:
                     node_channel.close()

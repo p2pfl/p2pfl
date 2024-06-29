@@ -22,8 +22,6 @@ from p2pfl.utils import (
     wait_4_results,
     wait_convergence,
 )
-
-set_test_settings()
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
     MnistFederatedDM,
 )
@@ -32,7 +30,7 @@ from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
 from p2pfl.node import Node
 import time
 import pytest
-
+set_test_settings()
 
 @pytest.fixture
 def two_nodes():

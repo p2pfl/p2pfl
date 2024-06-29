@@ -132,7 +132,7 @@ class Gossiper(threading.Thread):
         status_fn: StatusFunction,
         model_fn: ModelFunction,
         period: float,
-        create_connection: bool
+        create_connection: bool,
     ) -> None:
         # Initialize list with status of nodes in the last X iterations
         last_x_status: List[Any] = []
@@ -171,7 +171,9 @@ class Gossiper(threading.Thread):
                         self.__self_addr,
                         f"Gossiping exited for {Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS} equal rounds.",
                     )
-                    logger.debug(self.__self_addr, f"Gossip last status: {last_x_status[-1]}")
+                    logger.debug(
+                        self.__self_addr, f"Gossip last status: {last_x_status[-1]}"
+                    )
                     return
 
             # Select a random subset of neighbors
@@ -185,15 +187,8 @@ class Gossiper(threading.Thread):
                 if model is None:
                     continue
                 logger.info(self.__self_addr, f"Gossiping model to {nei}.")
-                self.__client.send(
-                    nei,
-                    model,
-                    create_connection=create_connection
-                )
+                self.__client.send(nei, model, create_connection=create_connection)
 
             # Sleep to allow periodicity
             sleep_time = max(0, period - (t - time.time()))
             time.sleep(sleep_time)
-
-
-

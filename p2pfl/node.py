@@ -50,6 +50,7 @@ from p2pfl.communication.grpc.communication_protocol import GrpcCommunicationPro
 - model gossip provisional (hard-coded, se necesita mover el model gossiper)
 """
 
+
 class Node:
 
     #####################
@@ -75,7 +76,9 @@ class Node:
         self.data = data
         self.model = model
         self.learner_class = learner
-        self.aggregator = aggregator(node_name=self.addr)  # Ponerlo como learner (que se vaya instanciando dinamicamente)
+        self.aggregator = aggregator(
+            node_name=self.addr
+        )  # Ponerlo como learner (que se vaya instanciando dinamicamente)
 
         # State
         self.__running = False
@@ -289,9 +292,7 @@ class Node:
         if self.state.round is not None:
             # send stop msg
             self._communication_protocol.broadcast(
-                self._communication_protocol.build_msg(
-                    StopLearningCommand.get_name()
-                )
+                self._communication_protocol.build_msg(StopLearningCommand.get_name())
             )
             # stop learning
             self.__stop_learning()
@@ -312,7 +313,9 @@ class Node:
             # Init
             self.state.set_experiment("experiment", rounds)
             logger.experiment_started(self.addr)
-            self.state.learner = self.learner_class(self.model, self.data, self.addr, epochs)
+            self.state.learner = self.learner_class(
+                self.model, self.data, self.addr, epochs
+            )
             self.state.start_thread_lock.release()
             begin = time.time()
 
@@ -386,7 +389,9 @@ class Node:
                 # send model added msg ---->> redundant (a node always owns its model)
                 self._communication_protocol.broadcast(
                     self._communication_protocol.build_msg(
-                        ModelsAggregatedCommand.get_name(), models_added, round=self.state.round
+                        ModelsAggregatedCommand.get_name(),
+                        models_added,
+                        round=self.state.round,
                     )
                 )
                 self.__gossip_model_aggregation()
@@ -430,7 +435,7 @@ class Node:
 
     def __vote_train_set(self) -> List[str]:
         # Vote (at least itself)
-        candidates = list(self.get_neighbors(only_direct=False))
+        candidates = list(self.get_neighbors(only_direct=False).keys())
         if self.addr not in candidates:
             candidates.append(self.addr)
         logger.debug(self.addr, f"{len(candidates)} candidates to train set")
@@ -464,6 +469,8 @@ class Node:
         count = 0.0
         begin = time.time()
 
+        print(self.state.train_set_votes)
+
         while True:
             # If the trainning has been interrupted, stop waiting
             if self.state.round is None:
@@ -478,17 +485,24 @@ class Node:
             # Clear non candidate votes
             self.state.train_set_votes_lock.acquire()
             nc_votes = {
-                k: v for k, v in self.state.train_set_votes.items() if k in self.get_neighbors(only_direct=False)
+                k: v
+                for k, v in self.state.train_set_votes.items()
+                if k in list(self.get_neighbors(only_direct=False).keys())
+                or k == self.addr
             }
             self.state.train_set_votes_lock.release()
 
             # Determine if all votes are received
-            votes_ready = set(self.get_neighbors(only_direct=False)) == set(nc_votes.keys())
+            needed_votes = set(
+                list(self.get_neighbors(only_direct=False).keys()) + [self.addr]
+            )
+            votes_ready = needed_votes == set(nc_votes.keys())
+
             if votes_ready or timeout:
                 if timeout and not votes_ready:
                     logger.info(
                         self.addr,
-                        f"Timeout for vote aggregation. Missing votes from {set(self.get_neighbors(only_direct=False)) - set(nc_votes.keys())}",
+                        f"Timeout for vote aggregation. Missing votes from {set(list(self.get_neighbors(only_direct=False).keys()) + [self.addr]) - set(nc_votes.keys())}",
                     )
 
                 results: Dict[str, int] = {}
@@ -522,7 +536,7 @@ class Node:
     def __validate_train_set(self, train_set: List[str]) -> List[str]:
         # Verify if node set is valid (can happend that a node was down when the votes were being processed)
         for tsn in train_set:
-            if tsn not in self.get_neighbors(only_direct=False):
+            if tsn not in list(self.get_neighbors(only_direct=False).keys()):
                 if tsn != self.addr:
                     train_set.remove(tsn)
         return train_set
@@ -604,18 +618,24 @@ class Node:
         CAREFULL: full connected trainset to increase aggregation speed. On real scenarios, this won't be possible, private networks and firewalls.
         Needed because the trainset can split the networks (and neighbors that are not in the trainset won't receive the aggregation).
         """
+
         # Anonymous functions
         def early_stopping_fn():
             return self.state.round is None
 
         def get_candidates_fn() -> List[str]:
             return [
-                n for n in self.get_neighbors(only_direct=False) if (n not in self.aggregator.get_aggregated_models()) and (n in self.state.train_set)
+                n
+                for n in self.get_neighbors(only_direct=False)
+                if (n not in self.aggregator.get_aggregated_models())
+                and (n in self.state.train_set)
             ]
 
         def status_fn() -> Any:
             return [
-                (n, self.get_aggregated_models(n)) for n in self.get_neighbors(only_direct=False) if (n in self.state.train_set)
+                (n, self.get_aggregated_models(n))
+                for n in self.get_neighbors(only_direct=False)
+                if (n in self.state.train_set)
             ]
 
         def model_fn(node: str) -> Any:
@@ -639,7 +659,7 @@ class Node:
             get_candidates_fn,
             status_fn,
             model_fn,
-            create_connection=True
+            create_connection=True,
         )
 
     def __gossip_model_difusion(self, initialization: bool = False) -> None:
@@ -648,6 +668,7 @@ class Node:
 
         # Wait a model (init or aggregated)
         if initialization:
+
             def candidate_condition(node: str) -> bool:
                 return node not in self.state.nei_status.keys()
 
@@ -660,7 +681,9 @@ class Node:
 
         def get_candidates_fn() -> List[str]:
             return [
-                n for n in self.get_neighbors(only_direct=True) if candidate_condition(n)
+                n
+                for n in self.get_neighbors(only_direct=True)
+                if candidate_condition(n)
             ]
 
         def status_fn() -> Any:
@@ -672,7 +695,11 @@ class Node:
             weight = 1
             encoded_model = self.state.learner.encode_parameters(params=model)
             return self._communication_protocol.build_weights(
-                InitModelCommand.get_name() if initialization else AddModelCommand.get_name(),
+                (
+                    InitModelCommand.get_name()
+                    if initialization
+                    else AddModelCommand.get_name()
+                ),
                 self.state.round,
                 encoded_model,
                 contributors,

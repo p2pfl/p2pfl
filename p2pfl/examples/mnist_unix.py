@@ -113,6 +113,7 @@ def test_convergence(n, r, epochs=2):
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
+
 if __name__ == "__main__":
     # Settings
     set_test_settings()

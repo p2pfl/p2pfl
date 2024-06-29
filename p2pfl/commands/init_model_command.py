@@ -52,8 +52,11 @@ class InitModelCommand(Command):
                 return
 
             # Check moment (not init and invalid round)
-            if (not self.state.model_initialized_lock.locked()):
-                logger.error(self.state.addr, "Model initizalization message when the model is already initialized. Ignored.")
+            if not self.state.model_initialized_lock.locked():
+                logger.error(
+                    self.state.addr,
+                    "Model initizalization message when the model is already initialized. Ignored.",
+                )
                 return
 
             try:
@@ -63,7 +66,9 @@ class InitModelCommand(Command):
                 logger.info(self.state.addr, "Model Weights Initialized")
                 # Communicate Initialization
                 self.communication_protocol.broadcast(
-                    self.communication_protocol.build_msg(ModelInitializedCommand.get_name())
+                    self.communication_protocol.build_msg(
+                        ModelInitializedCommand.get_name()
+                    )
                 )
 
             # Warning: these stops can cause a denegation of service attack

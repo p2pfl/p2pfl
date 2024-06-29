@@ -79,7 +79,11 @@ class LightningLearner(NodeLearner):
     """
 
     def __init__(
-        self, model: pl.LightningModule, data: LightningDataModule, self_addr: str, epochs: int
+        self,
+        model: pl.LightningModule,
+        data: LightningDataModule,
+        self_addr: str,
+        epochs: int,
     ):
         self.model = model
         self.data = data

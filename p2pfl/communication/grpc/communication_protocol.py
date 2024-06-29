@@ -36,10 +36,7 @@ ModelFunction = Callable[[str], Tuple[Any, List[str], int]]
 
 class GrpcCommunicationProtocol(CommunicationProtocol):
 
-    def __init__(
-        self, addr: str = "127.0.0.1",
-        commands: List[Command] = []
-    ) -> None:
+    def __init__(self, addr: str = "127.0.0.1", commands: List[Command] = []) -> None:
 
         # Parse IP address
         parsed_address = AddressParser(addr)
@@ -54,7 +51,7 @@ class GrpcCommunicationProtocol(CommunicationProtocol):
         else:
             self._socket_family = socket.AF_INET
         """
-            
+
         # Neighbors
         self._neighbors = GrpcNeighbors(self.addr)
         # GRPC Client
@@ -62,9 +59,7 @@ class GrpcCommunicationProtocol(CommunicationProtocol):
         # Gossip
         self._gossiper = Gossiper(self.addr, self._client)
         # GRPC
-        self._server = GrpcServer(
-            self.addr, self._gossiper, self._neighbors, commands
-        )
+        self._server = GrpcServer(self.addr, self._gossiper, self._neighbors, commands)
         # Hearbeat
         self._heartbeater = Heartbeater(self.addr, self._neighbors, self._client)
         # Commands
@@ -132,6 +127,13 @@ class GrpcCommunicationProtocol(CommunicationProtocol):
         status_fn: StatusFunction,
         model_fn: ModelFunction,
         period: float = Settings.GOSSIP_MODELS_PERIOD,
-        create_connection: bool = False
+        create_connection: bool = False,
     ) -> None:
-        self._gossiper.gossip_weights(early_stopping_fn, get_candidates_fn, status_fn, model_fn, period, create_connection)
+        self._gossiper.gossip_weights(
+            early_stopping_fn,
+            get_candidates_fn,
+            status_fn,
+            model_fn,
+            period,
+            create_connection,
+        )

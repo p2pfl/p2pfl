@@ -127,7 +127,9 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
                 # Update ttl and gossip
                 request.ttl -= 1
                 pending_neis = [
-                    n for n in self.__neighbors.get_all(only_direct=True).keys() if n != request.source
+                    n
+                    for n in self.__neighbors.get_all(only_direct=True).keys()
+                    if n != request.source
                 ]
                 self.__gossiper.add_message(request, pending_neis)
 

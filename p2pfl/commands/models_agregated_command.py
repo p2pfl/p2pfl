@@ -1,6 +1,7 @@
 from p2pfl.commands.command import Command
 from p2pfl.management.logger import logger
 
+
 class ModelsAggregatedCommand(Command):
 
     def __init__(self, state):

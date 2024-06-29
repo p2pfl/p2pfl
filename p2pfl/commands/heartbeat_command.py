@@ -6,7 +6,7 @@ class HeartbeatCommand(Command):
 
     def __init__(self, heartbeat: Heartbeater) -> None:
         self.__heartbeat = heartbeat
-    
+
     @staticmethod
     def get_name() -> str:
         return heartbeater_cmd_name

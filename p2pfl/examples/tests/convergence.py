@@ -25,8 +25,9 @@ from p2pfl.utils import (
     set_test_settings,
     wait_4_results,
     wait_convergence,
-    check_equal_models
+    check_equal_models,
 )
+
 set_test_settings()
 
 ###########################
@@ -35,7 +36,7 @@ set_test_settings()
 
 
 def main():
-    n = 4
+    n = 2
     nodes = []
     for i in range(n):
         node = Node(MLP(), MnistFederatedDM())

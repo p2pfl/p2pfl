@@ -52,8 +52,10 @@ class AddModelCommand(Command):
                 return
 
             # Check moment (not init and invalid round)
-            if (len(self.state.train_set) == 0):
-                logger.error(self.state.addr, "Model Reception when there is no trainset")
+            if len(self.state.train_set) == 0:
+                logger.error(
+                    self.state.addr, "Model Reception when there is no trainset"
+                )
                 return
 
             try:

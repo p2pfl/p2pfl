@@ -20,6 +20,7 @@ import socket
 from typing import Optional, Tuple
 from ipaddress import ip_address
 
+
 class AddressParser:
     def __init__(self, address: str):
         self.address = address
@@ -42,7 +43,7 @@ class AddressParser:
 
                     if self.port > 65535 or self.port < 1:
                         raise ValueError("Port number is invalid.")
-                    
+
                 else:
                     raw_host = raw_port
 
@@ -62,11 +63,11 @@ class AddressParser:
     def __is_unix_domain_address(self, address: str) -> bool:
         """Check if the given address is a Unix domain address."""
         # Ensure the URL is in the correct format
-        if not address.startswith('unix://'):
+        if not address.startswith("unix://"):
             return False
-        
+
         # Extract the path from the URL
-        socket_path = address[len('unix://'):]
+        socket_path = address[len("unix://") :]
 
         return os.path.isabs(socket_path)
 
@@ -74,20 +75,25 @@ class AddressParser:
         if self.unix_domain:
             return self.host
         elif self.host is not None:
-            return f"[{self.host}]:{self.port}" if self.is_v6 else f"{self.host}:{self.port}"
-        
+            return (
+                f"[{self.host}]:{self.port}"
+                if self.is_v6
+                else f"{self.host}:{self.port}"
+            )
+
         return None
+
 
 if __name__ == "__main__":
     # Example usage:
-    parser = AddressParser('127.0.0.1:8080')
+    parser = AddressParser("127.0.0.1:8080")
     print(parser.get_parsed_address())  # Output: ('127.0.0.1', 8080, False)
 
-    parser = AddressParser('127.0.0.1')
+    parser = AddressParser("127.0.0.1")
     print(parser.get_parsed_address())  # Output: ('127.0.0.1', 8080, False)
 
-    parser = AddressParser('[::1]:8080')
+    parser = AddressParser("[::1]:8080")
     print(parser.get_parsed_address())  # Output: ('::1', 8080, True)
 
-    parser = AddressParser('unix:///var/run/socket')
+    parser = AddressParser("unix:///var/run/socket")
     print(parser.get_parsed_address())  # Output: ('unix:///var/run/socket', None, None)

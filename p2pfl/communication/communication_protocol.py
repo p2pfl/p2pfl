@@ -68,6 +68,6 @@ class CommunicationProtocol(ABC):
         status_fn: StatusFunction,
         model_fn: ModelFunction,
         period: float,
-        create_connection: bool = False
+        create_connection: bool = False,
     ) -> None:
         pass
