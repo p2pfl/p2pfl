@@ -16,7 +16,7 @@ class VoteTrainSetCommand(Command):
         ########################################################
         # try to improve clarity in message moment check
         ########################################################
-        if self.state.learner is not None:
+        if self.state.round is not None:
             if round in [self.state.round, self.state.round + 1]:
                 # build vote dict
                 votes = args

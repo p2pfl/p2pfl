@@ -16,18 +16,16 @@ class ModelsReadyCommand(Command):
         ########################################################
         # try to improve clarity in message moment check
         ########################################################
-        if self.state.learner is not None:
+        if self.state.round is not None:
             if round in [self.state.round - 1, self.state.round]:
-                self.state.nei_status[source] = int(
-                    args[0]
-                )  # ESTO SE PUEDE REEMPLAZAR POR EL NOMBRE DEL ARG EN CONCRETO
+                self.state.nei_status[source] = self.state.round
             else:
                 # Ignored
                 logger.error(
                     self.state.addr,
-                    f"Models ready in a late round. Ignored. {round} != {self.state.round} / {self.state.round-1}",
+                    f"Models ready from {source} in a late round. Ignored. {round} != {self.state.round} / {self.state.round-1}",
                 )
         else:
-            logger.error(
+            logger.warning(
                 self.state.addr, "Models ready received when learning is not running"
             )

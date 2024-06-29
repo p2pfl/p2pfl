@@ -19,8 +19,9 @@ from datetime import datetime
 from typing import List, Optional, Union
 from p2pfl.communication.grpc.neightbors import GrpcNeighbors
 from p2pfl.settings import Settings
-from p2pfl.communication.grpc.proto import node_pb2
+from p2pfl.communication.grpc.proto import node_pb2, node_pb2_grpc
 from p2pfl.management.logger import logger
+import grpc
 
 
 class NeighborNotConnectedError(Exception):
@@ -54,6 +55,8 @@ class GrpcClient:
         Returns:
             node_pb2.Message: Message to send.
         """
+        if round is None:
+            round = -1
         if args is None:
             args = []
         hs = hash(
@@ -100,13 +103,19 @@ class GrpcClient:
     # Message Sending
     ####
 
-    def send(self, nei: str, msg: Union[node_pb2.Message, node_pb2.Weights]) -> None:
+    def send(self, nei: str, msg: Union[node_pb2.Message, node_pb2.Weights], create_connection: bool = False) -> None:
+        channel = None
         try:
             # Get neighbor
             try:
                 node_stub = self.__neighbors.get(nei)[1]
             except KeyError:
-                raise NeighborNotConnectedError("Neighbor not found.")
+                raise NeighborNotConnectedError(f"Neighbor {nei} not found.")
+
+            # Check if direct connection
+            if node_stub is None and create_connection:
+                channel = grpc.insecure_channel(nei)
+                node_stub = node_pb2_grpc.NodeServicesStub(channel)
 
             # Send
             if node_stub is not None:
@@ -119,7 +128,7 @@ class GrpcClient:
                     raise TypeError("Message type not supported.")
             else:
                 raise NeighborNotConnectedError(
-                    "Neighbor not directly connected (Stub not defined)."
+                    "Neighbor not directly connected (Stub not defined and create_connection is false)."
                 )
             if res.error:
                 logger.error(
@@ -134,6 +143,10 @@ class GrpcClient:
                 f"Cannot send message {msg.cmd} to {nei}. Error: {str(e)}",
             )
             self.__neighbors.remove(nei)
+
+        finally:
+            if channel is not None:
+                channel.close()
 
     def broadcast(
         self, msg: node_pb2.Message, node_list: Optional[List[str]] = None

@@ -174,7 +174,7 @@ class Aggregator:
                     else:
                         logger.debug(
                             self.node_name,
-                            f"Can't add a model that has already been added {nodes}",
+                            f"Can't add a model that has already been added {nodes} / {self.get_aggregated_models()}",
                         )
                 else:
                     logger.debug(
@@ -263,9 +263,7 @@ class Aggregator:
 
         # If there are no models to aggregate
         if len(dict_aux) == 0:
-            raise NoModelsToAggregateError(
-                "Imposible to get a partial aggregation, no models to aggregate."
-            )
+            return None, None, None
 
         return (
             self.aggregate(dict_aux),

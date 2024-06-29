@@ -15,8 +15,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from typing import List, Optional, Union
-import socket, os
+from typing import List, Optional, Union, Callable, Any, Tuple
 from p2pfl.communication.grpc.gossiper import Gossiper
 from p2pfl.communication.grpc.heartbeater import Heartbeater
 from p2pfl.communication.grpc.neightbors import GrpcNeighbors
@@ -27,6 +26,13 @@ from p2pfl.communication.communication_protocol import CommunicationProtocol
 from p2pfl.commands.command import Command
 from p2pfl.commands.heartbeat_command import HeartbeatCommand
 from p2pfl.communication.grpc.address import AddressParser
+from p2pfl.settings import Settings
+
+# Define type aliases for clarity
+CandidateCondition = Callable[[str], bool]
+StatusFunction = Callable[[str], Any]
+ModelFunction = Callable[[str], Tuple[Any, List[str], int]]
+
 
 class GrpcCommunicationProtocol(CommunicationProtocol):
 
@@ -34,18 +40,20 @@ class GrpcCommunicationProtocol(CommunicationProtocol):
         self, addr: str = "127.0.0.1",
         commands: List[Command] = []
     ) -> None:
-        
+
         # Parse IP address
         parsed_address = AddressParser(addr)
-        if not parsed_address:
+        self.addr = parsed_address.get_parsed_address()
+        if not self.addr:  # esto rompe si esta mal? -> meterlo a test
             raise Exception(f"Address ({addr}) cannot be parsed.")
 
-        self.addr = parsed_address.get_parsed_address()
+        """ De momento no aporta nada no?
         if parsed_address.unix_domain:
             # Using Unix domain socket
             self._socket_family = socket.AF_UNIX
         else:
             self._socket_family = socket.AF_INET
+        """
             
         # Neighbors
         self._neighbors = GrpcNeighbors(self.addr)
@@ -116,3 +124,14 @@ class GrpcCommunicationProtocol(CommunicationProtocol):
 
     def wait_for_termination(self) -> None:
         self._server.wait_for_termination()
+
+    def gossip_weights(
+        self,
+        early_stopping_fn: Callable[[], bool],
+        get_candidates_fn,
+        status_fn: StatusFunction,
+        model_fn: ModelFunction,
+        period: float = Settings.GOSSIP_MODELS_PERIOD,
+        create_connection: bool = False
+    ) -> None:
+        self._gossiper.gossip_weights(early_stopping_fn, get_candidates_fn, status_fn, model_fn, period, create_connection)

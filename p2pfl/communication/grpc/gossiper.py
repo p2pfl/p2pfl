@@ -125,13 +125,14 @@ class Gossiper(threading.Thread):
     # Gossip Model (syncronous gossip not as a thread)
     ###
 
-    def gossip_model(
+    def gossip_weights(
         self,
         early_stopping_fn: Callable[[], bool],
         get_candidates_fn,
         status_fn: StatusFunction,
         model_fn: ModelFunction,
-        period: float = Settings.GOSSIP_MODELS_PERIOD,
+        period: float,
+        create_connection: bool
     ) -> None:
         # Initialize list with status of nodes in the last X iterations
         last_x_status: List[Any] = []
@@ -148,7 +149,6 @@ class Gossiper(threading.Thread):
 
             # Get nodes wich need models
             neis = get_candidates_fn()
-            logger.debug(self.__self_addr, f"Gossip remaining nodes: {neis}")
 
             # Determine end of gossip
             if neis == []:
@@ -156,10 +156,11 @@ class Gossiper(threading.Thread):
                 return
 
             # Save state of neighbors. If nodes are not responding gossip will stop
+            logger.debug(self.__self_addr, f"Gossip remaining nodes: {neis}")
             if len(last_x_status) != Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS:
-                last_x_status.append([status_fn(n) for n in neis])
+                last_x_status.append(status_fn())
             else:
-                last_x_status[j] = str([status_fn(n) for n in neis])
+                last_x_status[j] = str(status_fn())
                 j = (j + 1) % Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS
 
                 # Check if las messages are the same
@@ -168,8 +169,9 @@ class Gossiper(threading.Thread):
                         break
                     logger.info(
                         self.__self_addr,
-                        f"Gossiping exited for {Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS} equal reounds.",
+                        f"Gossiping exited for {Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS} equal rounds.",
                     )
+                    logger.debug(self.__self_addr, f"Gossip last status: {last_x_status[-1]}")
                     return
 
             # Select a random subset of neighbors
@@ -179,13 +181,19 @@ class Gossiper(threading.Thread):
             # Generate and Send Model Partial Aggregations (model, node_contributors)
             for nei in neis:
                 # Send Partial Aggregation
+                model = model_fn(nei)
+                if model is None:
+                    continue
                 logger.info(self.__self_addr, f"Gossiping model to {nei}.")
-                self._communication_protocol.send(
+                self.__client.send(
                     nei,
-                    model_fn(BLABLABLA)
+                    model,
+                    create_connection=create_connection
                 )
-
 
             # Sleep to allow periodicity
             sleep_time = max(0, period - (t - time.time()))
             time.sleep(sleep_time)
+
+
+

@@ -15,39 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-
-from p2pfl.node import Node
 import time
-from p2pfl.utils import (
-    check_equal_models,
-    set_test_settings,
-    wait_4_results,
-    wait_convergence,
-)
-set_test_settings()
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
     MnistFederatedDM,
 )
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.node import Node
-import time
-
-def wait_convergence(nodes, n_neis, wait=5, only_direct=False):
-    acum = 0
-    while True:
-        begin = time.time()
-        if all(
-            [len(n.get_neighbors(only_direct=only_direct)) == n_neis for n in nodes]
-        ):
-            break
-        time.sleep(0.1)
-        acum += time.time() - begin
-        if acum > wait:
-            assert False
+from p2pfl.utils import (
+    set_test_settings,
+    wait_4_results,
+    wait_convergence,
+    check_equal_models
+)
+set_test_settings()
 
 ###########################
 #  Tests Infraestructure  #
 ###########################
+
 
 def main():
     n = 4
@@ -67,16 +52,14 @@ def main():
     nodes[0].set_start_learning(rounds=2, epochs=0)
 
     # Stopping node
-    #time.sleep(0.3)
-    #print("Stopping node")
-    #nodes[-1].stop()
+    time.sleep(0.3)
+    nodes[-1].stop()
 
     wait_4_results(nodes)
 
     for node in nodes[:-1]:
         node.stop()
 
-    [n.stop() for n in nodes]
 
 if __name__ == "__main__":
     main()

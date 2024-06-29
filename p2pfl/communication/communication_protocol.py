@@ -1,6 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Callable, Any, Tuple
 from p2pfl.commands.command import Command
+
+# Define type aliases for clarity
+CandidateCondition = Callable[[str], bool]
+StatusFunction = Callable[[str], Any]
+ModelFunction = Callable[[str], Tuple[Any, List[str], int]]
 
 
 class CommunicationProtocol(ABC):
@@ -53,4 +58,16 @@ class CommunicationProtocol(ABC):
 
     @abstractmethod
     def wait_for_termination(self) -> None:
+        pass
+
+    @abstractmethod
+    def gossip_weights(
+        self,
+        early_stopping_fn: Callable[[], bool],
+        get_candidates_fn,
+        status_fn: StatusFunction,
+        model_fn: ModelFunction,
+        period: float,
+        create_connection: bool = False
+    ) -> None:
         pass

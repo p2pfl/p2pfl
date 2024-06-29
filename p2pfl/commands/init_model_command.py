@@ -1,6 +1,6 @@
 from typing import List
 from p2pfl.commands.command import Command
-from p2pfl.commands.models_agregated_command import ModelsAggregatedCommand
+from p2pfl.commands.model_initialized_command import ModelInitializedCommand
 from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
 from p2pfl.management.logger import logger
 
@@ -14,7 +14,7 @@ revisar el tema de parado de nodos: importante enviar que es lo que falló cache
 """
 
 
-class AddModelCommand(Command):
+class InitModelCommand(Command):
 
     def __init__(
         self,
@@ -30,7 +30,7 @@ class AddModelCommand(Command):
 
     @staticmethod
     def get_name() -> str:
-        return "add_model"
+        return "init_model"
 
     def execute(
         self,
@@ -42,7 +42,7 @@ class AddModelCommand(Command):
     ) -> None:
 
         # Check if Learning is running
-        if self.state.round is not None:
+        if self.state.learner is not None:
             # Check source
             if round != self.state.round:
                 logger.error(
@@ -52,26 +52,19 @@ class AddModelCommand(Command):
                 return
 
             # Check moment (not init and invalid round)
-            if (len(self.state.train_set) == 0):
-                logger.error(self.state.addr, "Model Reception when there is no trainset")
+            if (not self.state.model_initialized_lock.locked()):
+                logger.error(self.state.addr, "Model initizalization message when the model is already initialized. Ignored.")
                 return
 
             try:
-                # Add model to aggregator
-                models_added = self.aggregator.add_model(
-                    self.state.learner.decode_parameters(weights),
-                    list(contributors),
-                    weight,
+                model = self.state.learner.decode_parameters(weights)
+                self.state.learner.set_parameters(model)
+                self.state.model_initialized_lock.release()
+                logger.info(self.state.addr, "Model Weights Initialized")
+                # Communicate Initialization
+                self.communication_protocol.broadcast(
+                    self.communication_protocol.build_msg(ModelInitializedCommand.get_name())
                 )
-                if models_added != []:
-                    # Communicate Aggregation
-                    self.communication_protocol.broadcast(
-                        self.communication_protocol.build_msg(
-                            ModelsAggregatedCommand.get_name(),
-                            models_added,
-                            round=self.state.round,
-                        )
-                    )
 
             # Warning: these stops can cause a denegation of service attack
             except DecodingParamsError:

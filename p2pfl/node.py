@@ -19,7 +19,9 @@ import time
 import random
 import math
 import threading
-from typing import Dict, List, Optional, Tuple, Any, Type, Callable
+from typing import Dict, List, Any, Type
+
+from p2pfl.commands.init_model_command import InitModelCommand
 from p2pfl.settings import Settings
 from p2pfl.commands.metrics_command import MetricsCommand
 from p2pfl.commands.model_initialized_command import ModelInitializedCommand
@@ -31,12 +33,12 @@ from p2pfl.commands.vote_train_set_command import VoteTrainSetCommand
 from p2pfl.commands.add_model_command import AddModelCommand
 from p2pfl.node_state import NodeState
 from p2pfl.management.logger import logger
-from p2pfl.communication.grpc.communication_protocol import GrpcCommunicationProtocol
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.pytorch.lightning_learner import LightningLearner
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.aggregators.fedavg import FedAvg
-
+from p2pfl.communication.communication_protocol import CommunicationProtocol
+from p2pfl.communication.grpc.communication_protocol import GrpcCommunicationProtocol
 
 
 """
@@ -88,6 +90,12 @@ class Node:
             ModelsAggregatedCommand(self.state),
             ModelsReadyCommand(self.state),
             MetricsCommand(self.state),
+            InitModelCommand(
+                self.state,
+                self.stop,
+                self.aggregator,
+                self._communication_protocol,
+            ),
             AddModelCommand(
                 self.state,
                 self.stop,
@@ -198,6 +206,8 @@ class Node:
         self._communication_protocol.stop()
         # Set not running
         self.__running = False
+        # State
+        self.state.clear()
         # Unregister node
         logger.unregister_node(self.addr)
 
@@ -248,7 +258,10 @@ class Node:
         """
         self.assert_running(True)
 
-        if self.state.learner is None:
+        if rounds < 1:
+            raise Exception("Rounds and epochs must be greater than 0.")
+
+        if self.state.round is None:
             # Broadcast start Learning
             logger.info(self.addr, "Broadcasting start learning...")
             self._communication_protocol.broadcast(
@@ -273,7 +286,7 @@ class Node:
         """
         Stop the learning process in the entire network.
         """
-        if self.state.learner is not None:
+        if self.state.round is not None:
             # send stop msg
             self._communication_protocol.broadcast(
                 self._communication_protocol.build_msg(
@@ -295,7 +308,7 @@ class Node:
 
     def __start_learning(self, rounds: int, epochs: int) -> None:
         self.state.start_thread_lock.acquire()  # Used to avoid create duplicated training threads
-        if self.state.learner is None:
+        if self.state.round is None:
             # Init
             self.state.set_experiment("experiment", rounds)
             logger.experiment_started(self.addr)
@@ -323,7 +336,6 @@ class Node:
         logger.info(self.addr, "Stopping learning")
         # Leraner
         self.state.learner.interrupt_fit()
-        self.state.learner = None
         # Aggregator
         self.aggregator.clear()
         # State
@@ -341,7 +353,7 @@ class Node:
 
     def __train_step(self) -> None:
         # Set train set
-        if self.state.learner is not None:
+        if self.state.round is not None:
             self.state.train_set = self.__vote_train_set()
             self.state.train_set = self.__validate_train_set(self.state.train_set)
             logger.info(
@@ -352,20 +364,20 @@ class Node:
         # Determine if node is in the train set
         if self.addr in self.state.train_set:
             # Set nodes to agg
-            if self.state.learner is not None:
+            if self.state.round is not None:
                 # Set Models To Aggregate
                 self.aggregator.set_nodes_to_aggregate(self.state.train_set)
 
             # Evaluate and send metrics
-            if self.state.learner is not None:
+            if self.state.round is not None:
                 self.__evaluate()
 
             # Train
-            if self.state.learner is not None:
+            if self.state.round is not None:
                 self.__train()
 
             # Aggregate Model
-            if self.state.learner is not None:
+            if self.state.round is not None:
                 models_added = self.aggregator.add_model(
                     self.state.learner.get_parameters(),
                     [self.addr],
@@ -374,7 +386,7 @@ class Node:
                 # send model added msg ---->> redundant (a node always owns its model)
                 self._communication_protocol.broadcast(
                     self._communication_protocol.build_msg(
-                        ModelsAggregatedCommand.get_name(), models_added
+                        ModelsAggregatedCommand.get_name(), models_added, round=self.state.round
                     )
                 )
                 self.__gossip_model_aggregation()
@@ -385,12 +397,12 @@ class Node:
             self.aggregator.set_waiting_aggregated_model(self.state.train_set)
 
         # Gossip aggregated model (also syncrhonizes nodes)
-        if self.state.learner is not None:
+        if self.state.round is not None:
             self.__wait_aggregated_model()
             self.__gossip_model_difusion()
 
         # Finish round
-        if self.state.learner is not None:
+        if self.state.round is not None:
             self.__on_round_finished()
 
     def __wait_aggregated_model(self) -> None:
@@ -405,7 +417,7 @@ class Node:
             # Share that aggregation is done
             self._communication_protocol.broadcast(
                 self._communication_protocol.build_msg(
-                    ModelsReadyCommand.get_name(), [str(self.state.round)]
+                    ModelsReadyCommand.get_name(), [], round=self.state.round
                 )
             )
         else:
@@ -454,7 +466,7 @@ class Node:
 
         while True:
             # If the trainning has been interrupted, stop waiting
-            if self.state.learner is None:
+            if self.state.round is None:
                 logger.info(self.addr, "Stopping on_round_finished process.")
                 return []
 
@@ -466,17 +478,17 @@ class Node:
             # Clear non candidate votes
             self.state.train_set_votes_lock.acquire()
             nc_votes = {
-                k: v for k, v in self.state.train_set_votes.items() if k in candidates
+                k: v for k, v in self.state.train_set_votes.items() if k in self.get_neighbors(only_direct=False)
             }
             self.state.train_set_votes_lock.release()
 
             # Determine if all votes are received
-            votes_ready = set(candidates) == set(nc_votes.keys())
+            votes_ready = set(self.get_neighbors(only_direct=False)) == set(nc_votes.keys())
             if votes_ready or timeout:
                 if timeout and not votes_ready:
                     logger.info(
                         self.addr,
-                        f"Timeout for vote aggregation. Missing votes from {set(candidates) - set(nc_votes.keys())}",
+                        f"Timeout for vote aggregation. Missing votes from {set(self.get_neighbors(only_direct=False)) - set(nc_votes.keys())}",
                     )
 
                 results: Dict[str, int] = {}
@@ -545,7 +557,7 @@ class Node:
 
     def __on_round_finished(self) -> None:
         # Check if learning is running
-        if self.state.learner is None:
+        if self.state.round is None:
             raise Exception("Round finished when learning is not running")
 
         # Set Next Round
@@ -588,31 +600,54 @@ class Node:
             return []
 
     def __gossip_model_aggregation(self) -> None:
+        """
+        CAREFULL: full connected trainset to increase aggregation speed. On real scenarios, this won't be possible, private networks and firewalls.
+        Needed because the trainset can split the networks (and neighbors that are not in the trainset won't receive the aggregation).
+        """
         # Anonymous functions
-        def candidate_condition(node: str) -> bool:
-            return (node not in self.aggregator.get_aggregated_models()) and (
-                node in self.state.train_set
-            )
+        def early_stopping_fn():
+            return self.state.round is None
 
-        def status_function(node: str) -> Any:
-            return node, self.get_aggregated_models(node)
+        def get_candidates_fn() -> List[str]:
+            return [
+                n for n in self.get_neighbors(only_direct=False) if (n not in self.aggregator.get_aggregated_models()) and (n in self.state.train_set)
+            ]
 
-        def model_function(node: str) -> Any:
-            return self.aggregator.get_partial_aggregation(
+        def status_fn() -> Any:
+            return [
+                (n, self.get_aggregated_models(n)) for n in self.get_neighbors(only_direct=False) if (n in self.state.train_set)
+            ]
+
+        def model_fn(node: str) -> Any:
+            model, contributors, weight = self.aggregator.get_partial_aggregation(
                 self.get_aggregated_models(node)
+            )
+            if model is None:
+                return None
+            encoded_model = self.state.learner.encode_parameters(params=model)
+            return self._communication_protocol.build_weights(
+                AddModelCommand.get_name(),
+                self.state.round,
+                encoded_model,
+                contributors,
+                weight,
             )
 
         # Gossip
-        self.__gossip_model(candidate_condition, status_function, model_function)
+        self._communication_protocol.gossip_weights(
+            early_stopping_fn,
+            get_candidates_fn,
+            status_fn,
+            model_fn,
+            create_connection=True
+        )
 
     def __gossip_model_difusion(self, initialization: bool = False) -> None:
-        # Check if learning is running
-        if self.state.learner is None:
-            raise Exception("Gossiping model when learning is not running")
+        def early_stopping_fn():
+            return self.state.round is None
 
         # Wait a model (init or aggregated)
         if initialization:
-
             def candidate_condition(node: str) -> bool:
                 return node not in self.state.nei_status.keys()
 
@@ -623,92 +658,31 @@ class Node:
             def candidate_condition(node: str) -> bool:
                 return self.state.nei_status[node] < fixed_round
 
-        # Status fn
-        def status_function(nc: str) -> Any:
-            return nc
+        def get_candidates_fn() -> List[str]:
+            return [
+                n for n in self.get_neighbors(only_direct=True) if candidate_condition(n)
+            ]
 
-        # Model fn -> At diffusion, contributors are not relevant
-        def model_function(_: str) -> Tuple[Any, List[str], int]:
-            return (
-                self.state.learner.get_parameters(),
-                self.aggregator.get_aggregated_models(),
-                1,
+        def status_fn() -> Any:
+            return get_candidates_fn()
+
+        def model_fn(node: str) -> Any:
+            model = self.state.learner.get_parameters()
+            contributors = self.aggregator.get_aggregated_models()
+            weight = 1
+            encoded_model = self.state.learner.encode_parameters(params=model)
+            return self._communication_protocol.build_weights(
+                InitModelCommand.get_name() if initialization else AddModelCommand.get_name(),
+                self.state.round,
+                encoded_model,
+                contributors,
+                weight,
             )
 
         # Gossip
-        self.__gossip_model(candidate_condition, status_function, model_function)
-
-    def __gossip_model(
-        self,
-        candidate_condition: CandidateCondition,
-        status_function: StatusFunction,
-        model_function: ModelFunction,
-        period: float = Settings.GOSSIP_MODELS_PERIOD,
-    ) -> None:
-        # Initialize list with status of nodes in the last X iterations
-        last_x_status: List[Any] = []
-        j = 0
-
-        while True:
-            # Get time to calculate frequency
-            t = time.time()
-
-            # If the trainning has been interrupted, stop waiting
-            if self.state.learner is None:
-                logger.info(self.addr, "Stopping model gossip process.")
-                return
-
-            # Get nodes wich need models
-            neis = [n for n in self.get_neighbors(only_direct=True) if candidate_condition(n)]
-            logger.debug(self.addr, f"Gossip remaining nodes: {neis}")
-
-            # Determine end of gossip
-            if neis == []:
-                logger.info(self.addr, "Gossip finished.")
-                return
-
-            # Save state of neighbors. If nodes are not responding gossip will stop
-            if len(last_x_status) != Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS:
-                last_x_status.append([status_function(n) for n in neis])
-            else:
-                last_x_status[j] = str([status_function(n) for n in neis])
-                j = (j + 1) % Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS
-
-                # Check if las messages are the same
-                for i in range(len(last_x_status) - 1):
-                    if last_x_status[i] != last_x_status[i + 1]:
-                        break
-                    logger.info(
-                        self.addr,
-                        f"Gossiping exited for {Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS} equal reounds.",
-                    )
-                    return
-
-            # Select a random subset of neighbors
-            samples = min(Settings.GOSSIP_MODELS_PER_ROUND, len(neis))
-            neis = random.sample(neis, samples)
-
-            # Generate and Send Model Partial Aggregations (model, node_contributors)
-            for nei in neis:
-                try:
-                    # Send Partial Aggregation
-                    logger.info(self.addr, f"Gossiping model to {nei}.")
-                    model, contributors, weight = model_function(nei)
-                    encoded_model = self.state.learner.encode_parameters(params=model)
-                    self._communication_protocol.send(
-                        nei,
-                        self._communication_protocol.build_weights(
-                            AddModelCommand.get_name(),
-                            self.state.round,
-                            encoded_model,
-                            contributors,
-                            weight,
-                        ),
-                    )
-                except NoModelsToAggregateError:
-                    logger.debug(self.addr, f"No models to send to {nei}.")
-                    pass
-
-            # Sleep to allow periodicity
-            sleep_time = max(0, period - (t - time.time()))
-            time.sleep(sleep_time)
+        self._communication_protocol.gossip_weights(
+            early_stopping_fn,
+            get_candidates_fn,
+            status_fn,
+            model_fn,
+        )
