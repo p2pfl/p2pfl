@@ -222,6 +222,26 @@ class Logger:
         Logger.get_instance().logger.setLevel(level)
 
     @staticmethod
+    def get_level() -> int:
+        """
+        Get the logger level.
+
+        Returns:
+            int: The logger level.
+        """
+        return Logger.get_instance().logger.getEffectiveLevel()
+    
+    @staticmethod
+    def get_level_name(lvl: int) -> str:
+        """
+        Get the logger level name.
+
+        Returns:
+            str: The logger level name.
+        """
+        return logging.getLevelName(lvl)
+
+    @staticmethod
     def info(node: str, message: str) -> None:
         """
         Log an info message.

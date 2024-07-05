@@ -55,6 +55,7 @@ class NodeState:
         Increase the round number.
         """
         self.round += 1
+        self.models_aggregated = {}
 
     def clear(self) -> None:
         """
