@@ -22,4 +22,4 @@ class StageWokflow:
 
 class LearningWorkflow(StageWokflow):
     def __init__(self):
-        super().__init__(StageFactory.get_stage("TrainStage"))
+        super().__init__(StageFactory.get_stage("StartLearningStage"))

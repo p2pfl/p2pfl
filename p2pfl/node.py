@@ -317,6 +317,7 @@ class Node:
                 communication_protocol=self._communication_protocol,
                 early_stopping_fn=lambda: self.state.round is None,
                 aggregator=self.aggregator,
+                learner_class=self.learner_class,
             )
         except Exception as e:
             if logger.get_level_name(logger.get_level()) == "DEBUG":

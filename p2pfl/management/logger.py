@@ -474,8 +474,6 @@ class Logger:
         else:
             raise Exception(f"Node {node} not registered.")
 
-        print("NO ESTA SIENDO LLAMADO (SOLO AL FINAL)")
-
     ######
     # Node Status
     ######

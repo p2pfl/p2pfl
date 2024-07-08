@@ -23,5 +23,4 @@ class WaitAggregatedModelsStage(Stage):
         Quizá pueda ser interesante que la lógica de espera esté aquí
         """
         aggregator.set_waiting_aggregated_model(state.train_set)
-        print("going to the GossipModelStage")
         return StageFactory.get_stage("GossipModelStage")

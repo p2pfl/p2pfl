@@ -37,7 +37,7 @@ class GossipModelStage(Stage):
             )
 
         if not early_stopping_fn():
-            GossipModelStage.__gossip_model_difusion()
+            GossipModelStage.__gossip_model_difusion(state, communication_protocol, aggregator)
 
         return StageFactory.get_stage("RoundFinishedStage")
 

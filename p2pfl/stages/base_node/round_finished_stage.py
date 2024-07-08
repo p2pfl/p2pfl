@@ -30,11 +30,12 @@ class RoundFinishedStage(Stage):
             or early_stopping_fn is None
         ):
             raise Exception("Invalid parameters on RoundFinishedStage.")
-
-        # Check if learning is running
-        if not early_stopping_fn():
-            raise Exception("Round finished when learning is not running")
-
+        
+        # Check if early stopping
+        if early_stopping_fn():
+            logger.info(state.addr, "Early stopping.")
+            return None
+            
         # Set Next Round
         aggregator.clear()
         state.increase_round()

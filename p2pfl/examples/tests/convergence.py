@@ -53,7 +53,7 @@ def main():
     nodes[0].set_start_learning(rounds=2, epochs=0)
 
     # Stopping node
-    time.sleep(0.3)
+    time.sleep(0.1)
     nodes[-1].stop()
 
     wait_4_results(nodes)

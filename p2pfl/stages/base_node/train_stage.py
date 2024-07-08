@@ -15,7 +15,7 @@ class TrainStage(Stage):
     @staticmethod
     def name():
         return "TrainStage"
-    
+
     @staticmethod
     def execute(
         state: NodeState = None,
@@ -30,10 +30,6 @@ class TrainStage(Stage):
             or aggregator is None
             or early_stopping_fn is None
         ):
-            print(f"state: {state}")
-            print(f"communication_protocol: {communication_protocol}")
-            print(f"aggregator: {aggregator}")
-            print(f"early_stopping_fn: {early_stopping_fn}")
             raise Exception("Invalid parameters on TrainStage.")
 
         # Set nodes to agg
@@ -64,10 +60,10 @@ class TrainStage(Stage):
                     round=state.round,
                 )
             )
-            TrainStage.__gossip_model_aggregation(state, communication_protocol)
+            TrainStage.__gossip_model_aggregation(state, communication_protocol, aggregator)
 
         # Next stage
-        return StageFactory.get_stage("WaitAggregatedModelsStage")
+        return StageFactory.get_stage("GossipModelStage")
 
     def __train(state: NodeState) -> None:
         logger.info(state.addr, "Training...")

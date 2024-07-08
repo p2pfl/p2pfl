@@ -1,5 +1,6 @@
 import time
 from typing import Any, List, Union
+from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.node_state import NodeState
 from p2pfl.stages.stage import Stage
@@ -15,16 +16,17 @@ class StartLearningStage(Stage):
     @staticmethod
     def name():
         return "StartLearningStage"
-    
+
     @staticmethod
     def execute(
         rounds: int = None,
         epochs: int = None,
+        model: Any = None,
+        data: Any = None,
         state: NodeState = None,
         learner_class: NodeLearner = None,
         communication_protocol: CommunicationProtocol = None,
-        model: Any = None,
-        data: Any = None,
+        aggregator: Aggregator = None,
         **kwargs
     ) -> Union["Stage", None]:
         if (
@@ -51,7 +53,7 @@ class StartLearningStage(Stage):
             logger.info(state.addr, "Waiting initialization.")
             state.model_initialized_lock.acquire()
             logger.info(state.addr, "Gossiping model initialization.")
-            StartLearningStage.__gossip_model(initialization=True)
+            StartLearningStage.__gossip_model(state, communication_protocol, aggregator)
 
             # Wait to guarantee new connection heartbeats convergence
             wait_time = Settings.WAIT_HEARTBEATS_CONVERGENCE - (time.time() - begin)
@@ -60,12 +62,13 @@ class StartLearningStage(Stage):
 
             # Vote
             return StageFactory.get_stage("VoteTrainSetStage")
-        
+
         else:
             state.start_thread_lock.release()
             return None
 
-    def __gossip_model(self, state, communication_protocol, aggregator) -> None:
+    def __gossip_model(
+            state: NodeState, communication_protocol: CommunicationProtocol, aggregator: Aggregator) -> None:
         def early_stopping_fn():
             return state.round is None
 
