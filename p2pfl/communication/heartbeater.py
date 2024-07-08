@@ -1,7 +1,7 @@
 import threading
 import time
-from p2pfl.communication.grpc.client import GrpcClient
-from p2pfl.communication.grpc.neightbors import GrpcNeighbors
+from p2pfl.communication.client import Client
+from p2pfl.communication.neighbors import Neighbors
 from p2pfl.settings import Settings
 from p2pfl.management.logger import logger
 
@@ -11,7 +11,7 @@ heartbeater_cmd_name = "beat"
 class Heartbeater(threading.Thread):
 
     def __init__(
-        self, self_addr: str, neighbors: GrpcNeighbors, client: GrpcClient
+        self, self_addr: str, neighbors: Neighbors, client: Client
     ) -> None:
         """
         Initialize the heartbeat thread.

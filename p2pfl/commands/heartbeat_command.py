@@ -1,5 +1,5 @@
 from p2pfl.commands.command import Command
-from p2pfl.communication.grpc.heartbeater import Heartbeater, heartbeater_cmd_name
+from p2pfl.communication.heartbeater import Heartbeater, heartbeater_cmd_name
 
 
 class HeartbeatCommand(Command):
