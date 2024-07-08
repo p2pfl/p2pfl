@@ -20,12 +20,13 @@ import datetime
 import threading
 import time
 from typing import Dict
+
 import psutil
+
 from p2pfl.settings import Settings
 
 
 class NodeMonitor(threading.Thread):
-
     def __init__(self, node_addr, metric_report_callback) -> None:
         self.node_addr = node_addr
         self.metric_report_callback = metric_report_callback

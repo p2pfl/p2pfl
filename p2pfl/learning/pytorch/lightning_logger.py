@@ -1,4 +1,5 @@
 from pytorch_lightning.loggers.logger import Logger
+
 from p2pfl.management.logger import Logger as P2PLogger
 
 

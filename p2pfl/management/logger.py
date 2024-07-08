@@ -16,18 +16,19 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import atexit
+import datetime
 import logging
+import multiprocessing
 import os
+from logging.handlers import QueueHandler, QueueListener
 from typing import Dict, List, Optional, Tuple
+
 from p2pfl.management.metric_storage import GlobalMetricStorage, LocalMetricStorage
+from p2pfl.management.node_monitor import NodeMonitor
+from p2pfl.management.p2pfl_web_services import P2pflWebServices
 from p2pfl.node_state import NodeState
 from p2pfl.settings import Settings
-from logging.handlers import QueueHandler, QueueListener
-import multiprocessing
-import datetime
-from p2pfl.management.p2pfl_web_services import P2pflWebServices
-from p2pfl.management.node_monitor import NodeMonitor
-import atexit
 
 #########################################
 #    Logging handler (transmit logs)    #
@@ -81,7 +82,6 @@ RESET = "\033[0m"
 
 
 class ColoredFormatter(logging.Formatter):
-
     def format(self, record):
         # Warn level color
         if record.levelname == "DEBUG":
@@ -230,7 +230,7 @@ class Logger:
             int: The logger level.
         """
         return Logger.get_instance().logger.getEffectiveLevel()
-    
+
     @staticmethod
     def get_level_name(lvl: int) -> str:
         """
@@ -436,7 +436,6 @@ class Logger:
         # Web
         node_monitor = None
         if Logger.get_instance().p2pfl_web_services is not None:
-
             # Register the node
             Logger.get_instance().p2pfl_web_services.register_node(node, simulation)
 

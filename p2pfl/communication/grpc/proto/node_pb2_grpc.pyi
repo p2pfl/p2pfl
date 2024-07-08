@@ -7,11 +7,12 @@ python -m grpc_tools.protoc -I=p2pfl/proto --python_out=p2pfl/proto --grpc_pytho
 
 import abc
 import collections.abc
+import typing
+
 import google.protobuf.empty_pb2
 import grpc
 import grpc.aio
 import node_pb2
-import typing
 
 _T = typing.TypeVar("_T")
 
@@ -20,7 +21,6 @@ class _MaybeAsyncIterator(
     collections.abc.Iterator[_T],
     metaclass=abc.ABCMeta,
 ): ...
-
 class _ServicerContext(grpc.ServicerContext, grpc.aio.ServicerContext):  # type: ignore
     ...
 

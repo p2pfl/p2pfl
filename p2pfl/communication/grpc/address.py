@@ -17,8 +17,8 @@
 
 import os
 import socket
-from typing import Optional, Tuple
 from ipaddress import ip_address
+from typing import Optional, Tuple
 
 
 class AddressParser:

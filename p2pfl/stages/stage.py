@@ -2,7 +2,6 @@ from typing import Union
 
 
 class Stage:
-
     @staticmethod
     def name():
         raise NotImplementedError("Stage name not implemented.")

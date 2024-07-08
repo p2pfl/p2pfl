@@ -2,7 +2,6 @@ import abc
 
 
 class Command(abc.ABC):
-
     @staticmethod
     def get_name() -> str:
         pass

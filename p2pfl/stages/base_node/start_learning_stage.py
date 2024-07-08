@@ -1,18 +1,18 @@
 import time
 from typing import Any, List, Union
-from p2pfl.learning.aggregators.aggregator import Aggregator
-from p2pfl.learning.learner import NodeLearner
-from p2pfl.node_state import NodeState
-from p2pfl.stages.stage import Stage
-from p2pfl.management.logger import logger
-from p2pfl.settings import Settings
+
 from p2pfl.commands.init_model_command import InitModelCommand
 from p2pfl.communication.communication_protocol import CommunicationProtocol
+from p2pfl.learning.aggregators.aggregator import Aggregator
+from p2pfl.learning.learner import NodeLearner
+from p2pfl.management.logger import logger
+from p2pfl.node_state import NodeState
+from p2pfl.settings import Settings
+from p2pfl.stages.stage import Stage
 from p2pfl.stages.stage_factory import StageFactory
 
 
 class StartLearningStage(Stage):
-
     @staticmethod
     def name():
         return "StartLearningStage"
@@ -27,7 +27,7 @@ class StartLearningStage(Stage):
         learner_class: NodeLearner = None,
         communication_protocol: CommunicationProtocol = None,
         aggregator: Aggregator = None,
-        **kwargs
+        **kwargs,
     ) -> Union["Stage", None]:
         if (
             rounds is None
@@ -68,7 +68,10 @@ class StartLearningStage(Stage):
             return None
 
     def __gossip_model(
-            state: NodeState, communication_protocol: CommunicationProtocol, aggregator: Aggregator) -> None:
+        state: NodeState,
+        communication_protocol: CommunicationProtocol,
+        aggregator: Aggregator,
+    ) -> None:
         def early_stopping_fn():
             return state.round is None
 

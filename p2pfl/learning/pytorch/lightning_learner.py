@@ -16,21 +16,22 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from collections import OrderedDict
+import logging
 import pickle
+from collections import OrderedDict
 from typing import Dict, Optional, Tuple
+
+import pytorch_lightning as pl
 import torch
-from pytorch_lightning import Trainer
-from p2pfl.learning.learner import NodeLearner
-from p2pfl.learning.pytorch.lightning_logger import FederatedLogger
+from pytorch_lightning import LightningDataModule, Trainer
+
 from p2pfl.learning.exceptions import (
     DecodingParamsError,
     ModelNotMatchingError,
 )
+from p2pfl.learning.learner import NodeLearner
+from p2pfl.learning.pytorch.lightning_logger import FederatedLogger
 from p2pfl.management.logger import logger
-import logging
-from pytorch_lightning import LightningDataModule
-import pytorch_lightning as pl
 
 torch.set_num_threads(1)
 

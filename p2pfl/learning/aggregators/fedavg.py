@@ -17,7 +17,9 @@
 #
 
 from typing import Dict, Tuple
+
 import torch
+
 from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
 
 

@@ -1,7 +1,7 @@
+from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.stage import Stage
 from p2pfl.stages.stage_factory import StageFactory
-from p2pfl.management.logger import logger
 
 
 class StageWokflow:
@@ -9,7 +9,6 @@ class StageWokflow:
         self.current_stage = first_stage
 
     def run(self, **kwargs):
-
         # get state
         state: NodeState = kwargs.get("state")
 

@@ -1,6 +1,7 @@
-from typing import Dict
-from p2pfl.management.logger import logger
 import threading
+from typing import Dict
+
+from p2pfl.management.logger import logger
 
 """
 Duda, el channel sirve para algo?¿ Sólo para cerrar conexion no?

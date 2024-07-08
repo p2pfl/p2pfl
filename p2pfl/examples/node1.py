@@ -16,12 +16,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from p2pfl.node import Node
+import sys
+
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
     MnistFederatedDM,
 )
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
-import sys
+from p2pfl.node import Node
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

@@ -1,14 +1,12 @@
 from p2pfl.commands.command import Command
 from p2pfl.management.logger import logger
 
-
 """
 hacer un test para esto, revisar coverage tests
 """
 
 
 class StopLearningCommand(Command):
-
     def __init__(self, state, aggregator) -> None:
         self.state = state
         self.aggregator = aggregator

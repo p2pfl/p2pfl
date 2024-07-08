@@ -1,17 +1,17 @@
-from typing import Any, List, Callable, Union
+from typing import Any, Callable, List, Union
+
+from p2pfl.commands.add_model_command import AddModelCommand
+from p2pfl.commands.metrics_command import MetricsCommand
+from p2pfl.commands.models_agregated_command import ModelsAggregatedCommand
 from p2pfl.communication.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
+from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.stage import Stage
-from p2pfl.management.logger import logger
-from p2pfl.commands.models_agregated_command import ModelsAggregatedCommand
-from p2pfl.commands.metrics_command import MetricsCommand
-from p2pfl.commands.add_model_command import AddModelCommand
 from p2pfl.stages.stage_factory import StageFactory
 
 
 class TrainStage(Stage):
-
     @staticmethod
     def name():
         return "TrainStage"
@@ -22,7 +22,7 @@ class TrainStage(Stage):
         communication_protocol: CommunicationProtocol = None,
         aggregator: Aggregator = None,
         early_stopping_fn: Callable[[], bool] = None,
-        **kwargs
+        **kwargs,
     ) -> Union["Stage", None]:
         if (
             state is None
@@ -60,7 +60,9 @@ class TrainStage(Stage):
                     round=state.round,
                 )
             )
-            TrainStage.__gossip_model_aggregation(state, communication_protocol, aggregator)
+            TrainStage.__gossip_model_aggregation(
+                state, communication_protocol, aggregator
+            )
 
         # Next stage
         return StageFactory.get_stage("GossipModelStage")
@@ -122,8 +124,7 @@ class TrainStage(Stage):
         def model_fn(node: str) -> Any:
             model, contributors, weight = aggregator.get_partial_aggregation(
                 TrainStage.__get_aggregated_models(
-                    node,
-                    state
+                    node, state
                 )  # reemplazar por Aggregator - borrarlo de node
             )
             if model is None:

@@ -15,17 +15,18 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from typing import List, Optional, Union, Callable, Any, Tuple
+from typing import Any, Callable, List, Optional, Tuple, Union
+
+from p2pfl.commands.command import Command
+from p2pfl.commands.heartbeat_command import HeartbeatCommand
+from p2pfl.communication.communication_protocol import CommunicationProtocol
+from p2pfl.communication.grpc.address import AddressParser
+from p2pfl.communication.grpc.client import GrpcClient
 from p2pfl.communication.grpc.gossiper import Gossiper
 from p2pfl.communication.grpc.heartbeater import Heartbeater
 from p2pfl.communication.grpc.neightbors import GrpcNeighbors
-from p2pfl.communication.grpc.client import GrpcClient
 from p2pfl.communication.grpc.proto import node_pb2
 from p2pfl.communication.grpc.server import GrpcServer
-from p2pfl.communication.communication_protocol import CommunicationProtocol
-from p2pfl.commands.command import Command
-from p2pfl.commands.heartbeat_command import HeartbeatCommand
-from p2pfl.communication.grpc.address import AddressParser
 from p2pfl.settings import Settings
 
 # Define type aliases for clarity
@@ -35,9 +36,7 @@ ModelFunction = Callable[[str], Tuple[Any, List[str], int]]
 
 
 class GrpcCommunicationProtocol(CommunicationProtocol):
-
     def __init__(self, addr: str = "127.0.0.1", commands: List[Command] = []) -> None:
-
         # Parse IP address
         parsed_address = AddressParser(addr)
         self.addr = parsed_address.get_parsed_address()

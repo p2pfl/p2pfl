@@ -1,5 +1,6 @@
-import requests
 import datetime
+
+import requests
 
 ##################################
 #    P2PFL Web Services (API)    #

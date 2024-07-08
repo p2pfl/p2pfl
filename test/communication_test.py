@@ -17,11 +17,14 @@
 #
 
 from p2pfl.settings import Settings
-from p2pfl.utils import set_test_settings, wait_convergence, full_connection
+from p2pfl.utils import full_connection, set_test_settings, wait_convergence
+
 set_test_settings()
-import pytest
-from p2pfl.node import Node
 import time
+
+import pytest
+
+from p2pfl.node import Node
 
 
 @pytest.fixture
@@ -54,6 +57,7 @@ def four_nodes():
 ###########################
 #  Tests Infraestructure  #
 ###########################
+
 
 def test_connect_invalid_node():
     n = Node(None, None)
@@ -161,7 +165,9 @@ def test_bad_msg(two_nodes):
     time.sleep(0.1)
 
     # Create an error message
-    n1._communication_protocol.broadcast(n1._communication_protocol.build_msg("BAD_MSG"))
+    n1._communication_protocol.broadcast(
+        n1._communication_protocol.build_msg("BAD_MSG")
+    )
     time.sleep(1)
     assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == 0
 

@@ -1,6 +1,8 @@
-import grpc
 import time
 from typing import Optional, Tuple
+
+import grpc
+
 from p2pfl.communication.grpc.proto import node_pb2, node_pb2_grpc
 from p2pfl.communication.neightbors import Neighbors
 from p2pfl.management.logger import logger
@@ -8,7 +10,6 @@ from p2pfl.settings import Settings
 
 
 class GrpcNeighbors(Neighbors):
-
     def refresh_or_add(self, addr: str, time: time) -> None:
         # Update if exists
         if addr in self.neis.keys():

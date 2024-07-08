@@ -1,5 +1,5 @@
-from typing import Dict, List
 import threading
+from typing import Dict, List
 
 
 class NodeState:

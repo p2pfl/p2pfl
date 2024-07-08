@@ -1,27 +1,27 @@
-from typing import Any, List, Callable, Union
+from typing import Any, Callable, List, Union
+
 from p2pfl.commands.add_model_command import AddModelCommand
+from p2pfl.commands.models_ready_command import ModelsReadyCommand
 from p2pfl.communication.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
+from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.stage import Stage
-from p2pfl.management.logger import logger
-from p2pfl.commands.models_ready_command import ModelsReadyCommand
 from p2pfl.stages.stage_factory import StageFactory
 
 
 class GossipModelStage(Stage):
-
     @staticmethod
     def name():
         return "GossipModelStage"
-    
+
     @staticmethod
     def execute(
         state: NodeState = None,
         communication_protocol: CommunicationProtocol = None,
         aggregator: Aggregator = None,
         early_stopping_fn: Callable[[], bool] = None,
-        **kwargs
+        **kwargs,
     ) -> Union["Stage", None]:
         if (
             state is None
@@ -37,7 +37,9 @@ class GossipModelStage(Stage):
             )
 
         if not early_stopping_fn():
-            GossipModelStage.__gossip_model_difusion(state, communication_protocol, aggregator)
+            GossipModelStage.__gossip_model_difusion(
+                state, communication_protocol, aggregator
+            )
 
         return StageFactory.get_stage("RoundFinishedStage")
 

@@ -17,6 +17,8 @@
 
 import threading
 from typing import List, Type
+
+from p2pfl.commands.add_model_command import AddModelCommand
 from p2pfl.commands.init_model_command import InitModelCommand
 from p2pfl.commands.metrics_command import MetricsCommand
 from p2pfl.commands.model_initialized_command import ModelInitializedCommand
@@ -25,17 +27,15 @@ from p2pfl.commands.models_ready_command import ModelsReadyCommand
 from p2pfl.commands.start_learning_command import StartLearningCommand
 from p2pfl.commands.stop_learning_command import StopLearningCommand
 from p2pfl.commands.vote_train_set_command import VoteTrainSetCommand
-from p2pfl.commands.add_model_command import AddModelCommand
-from p2pfl.node_state import NodeState
-from p2pfl.management.logger import logger
-from p2pfl.learning.learner import NodeLearner
-from p2pfl.learning.pytorch.lightning_learner import LightningLearner
-from p2pfl.learning.aggregators.aggregator import Aggregator
-from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.communication.communication_protocol import CommunicationProtocol
 from p2pfl.communication.grpc.communication_protocol import GrpcCommunicationProtocol
+from p2pfl.learning.aggregators.aggregator import Aggregator
+from p2pfl.learning.aggregators.fedavg import FedAvg
+from p2pfl.learning.learner import NodeLearner
+from p2pfl.learning.pytorch.lightning_learner import LightningLearner
+from p2pfl.management.logger import logger
+from p2pfl.node_state import NodeState
 from p2pfl.stages.workflows import LearningWorkflow
-
 
 """
 - revisar agregación de nodos en caliente
@@ -48,7 +48,6 @@ from p2pfl.stages.workflows import LearningWorkflow
 
 
 class Node:
-
     #####################
     #     Node Init     #
     #####################
@@ -63,7 +62,6 @@ class Node:
         protocol: Type[CommunicationProtocol] = GrpcCommunicationProtocol,
         **kwargs,
     ) -> None:
-
         # Communication protol
         self._communication_protocol = protocol(address)
         self.addr = self._communication_protocol.get_address()

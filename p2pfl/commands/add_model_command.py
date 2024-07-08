@@ -1,9 +1,9 @@
 from typing import List
+
 from p2pfl.commands.command import Command
 from p2pfl.commands.models_agregated_command import ModelsAggregatedCommand
 from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
 from p2pfl.management.logger import logger
-
 
 """
 revisar el tema de parado de nodos: importante enviar que es lo que falló cacheando el error (haría un re-raise)
@@ -15,7 +15,6 @@ revisar el tema de parado de nodos: importante enviar que es lo que falló cache
 
 
 class AddModelCommand(Command):
-
     def __init__(
         self,
         state,
@@ -40,7 +39,6 @@ class AddModelCommand(Command):
         contributors: List[str],
         weight: int,
     ) -> None:
-
         # Check if Learning is running
         if self.state.round is not None:
             # Check source

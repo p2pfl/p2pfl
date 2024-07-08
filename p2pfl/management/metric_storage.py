@@ -1,5 +1,5 @@
-from typing import Dict, List, Tuple, Union
 from threading import Lock
+from typing import Dict, List, Tuple, Union
 
 MetricsType = Dict[str, List[Tuple[int, float]]]  # Metric name -> [(step, value)...]
 NodeLogsType = Dict[str, MetricsType]  # Node name -> MetricsType
@@ -31,7 +31,6 @@ class LocalMetricStorage:
         val: Union[int, float],
         step: int,
     ) -> None:
-
         # Lock
         self.lock.acquire()
 
@@ -125,7 +124,6 @@ class GlobalMetricStorage:
     def add_log(
         self, exp_name: str, round: int, metric: str, node: str, val: Union[int, float]
     ) -> None:
-
         # Lock
         self.lock.acquire()
 

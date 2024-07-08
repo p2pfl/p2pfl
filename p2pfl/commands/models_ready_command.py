@@ -3,7 +3,6 @@ from p2pfl.management.logger import logger
 
 
 class ModelsReadyCommand(Command):
-
     def __init__(self, state):
         self.state = state
 

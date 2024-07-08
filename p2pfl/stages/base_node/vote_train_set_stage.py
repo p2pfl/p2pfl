@@ -1,25 +1,27 @@
-import time
-from typing import List, Dict, Union
 import math
 import random
-from p2pfl.stages.stage import Stage
-from p2pfl.management.logger import logger
-from p2pfl.settings import Settings
+import time
+from typing import Dict, List, Union
+
 from p2pfl.commands.vote_train_set_command import VoteTrainSetCommand
 from p2pfl.communication.communication_protocol import CommunicationProtocol
+from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
+from p2pfl.settings import Settings
+from p2pfl.stages.stage import Stage
 from p2pfl.stages.stage_factory import StageFactory
 
 
 class VoteTrainSetStage(Stage):
-
     @staticmethod
     def name():
         return "VoteTrainSetStage"
-    
+
     @staticmethod
     def execute(
-        state: NodeState = None, communication_protocol: CommunicationProtocol = None, **kwargs
+        state: NodeState = None,
+        communication_protocol: CommunicationProtocol = None,
+        **kwargs,
     ) -> Union["Stage", None]:
         if state is None or communication_protocol is None:
             raise Exception("Invalid parameters on VoteTrainSetStage.")

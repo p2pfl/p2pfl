@@ -18,9 +18,11 @@
 
 import threading
 from typing import Dict, List, Tuple, Union
+
 import torch
-from p2pfl.settings import Settings
+
 from p2pfl.management.logger import logger
+from p2pfl.settings import Settings
 
 
 class NoModelsToAggregateError(Exception):

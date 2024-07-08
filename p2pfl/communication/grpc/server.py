@@ -15,20 +15,20 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import grpc
 from concurrent import futures
 from typing import List, Union
-from p2pfl.management.logger import logger
+
+import google.protobuf.empty_pb2
+import grpc
+
 from p2pfl.commands.command import Command
 from p2pfl.communication.grpc.gossiper import Gossiper
-from p2pfl.communication.grpc.proto import node_pb2
-from p2pfl.communication.grpc.proto import node_pb2_grpc
 from p2pfl.communication.grpc.neightbors import GrpcNeighbors
-import google.protobuf.empty_pb2
+from p2pfl.communication.grpc.proto import node_pb2, node_pb2_grpc
+from p2pfl.management.logger import logger
 
 
 class GrpcServer(node_pb2_grpc.NodeServicesServicer):
-
     ####
     # Init
     ####
@@ -40,7 +40,6 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
         neighbors: GrpcNeighbors,
         commands: List[Command] = {},
     ) -> None:
-
         # Message handlers
         self.__commands = {c.get_name(): c for c in commands}
 

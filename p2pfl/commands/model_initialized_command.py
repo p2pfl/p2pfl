@@ -2,7 +2,6 @@ from p2pfl.commands.command import Command
 
 
 class ModelInitializedCommand(Command):
-
     def __init__(self, state):
         super().__init__()
         self.state = state
