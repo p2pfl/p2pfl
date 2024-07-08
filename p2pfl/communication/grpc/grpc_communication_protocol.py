@@ -24,7 +24,7 @@ from p2pfl.communication.grpc.address import AddressParser
 from p2pfl.communication.grpc.client import GrpcClient
 from p2pfl.communication.grpc.gossiper import Gossiper
 from p2pfl.communication.grpc.heartbeater import Heartbeater
-from p2pfl.communication.grpc.neightbors import GrpcNeighbors
+from p2pfl.communication.grpc.grpc_neightbors import GrpcNeighbors
 from p2pfl.communication.grpc.proto import node_pb2
 from p2pfl.communication.grpc.server import GrpcServer
 from p2pfl.settings import Settings

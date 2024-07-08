@@ -2,7 +2,7 @@ import threading
 import time
 
 from p2pfl.communication.grpc.client import GrpcClient
-from p2pfl.communication.grpc.neightbors import GrpcNeighbors
+from p2pfl.communication.grpc.grpc_neightbors import GrpcNeighbors
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 
