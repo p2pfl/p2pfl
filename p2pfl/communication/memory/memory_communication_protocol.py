@@ -15,18 +15,16 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from typing import Any, Callable, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union, Callable, Any, Tuple
 
-from p2pfl.commands.command import Command
-from p2pfl.commands.heartbeat_command import HeartbeatCommand
-from p2pfl.communication.communication_protocol import CommunicationProtocol
-from p2pfl.communication.grpc.address import AddressParser
-from p2pfl.communication.grpc.grpc_client import GrpcClient
 from p2pfl.communication.gossiper import Gossiper
 from p2pfl.communication.heartbeater import Heartbeater
-from p2pfl.communication.grpc.grpc_neighbors import GrpcNeighbors
-from p2pfl.communication.grpc.proto import node_pb2
-from p2pfl.communication.grpc.grpc_server import GrpcServer
+from p2pfl.communication.memory.memory_client import InMemoryClient
+from p2pfl.communication.memory.memory_server import InMemoryServer
+from p2pfl.communication.memory.memory_neighbors import InMemoryNeighbors
+from p2pfl.communication.communication_protocol import CommunicationProtocol
+from p2pfl.commands.command import Command
+from p2pfl.commands.heartbeat_command import HeartbeatCommand
 from p2pfl.settings import Settings
 
 # Define type aliases for clarity
@@ -35,30 +33,21 @@ StatusFunction = Callable[[str], Any]
 ModelFunction = Callable[[str], Tuple[Any, List[str], int]]
 
 
-class GrpcCommunicationProtocol(CommunicationProtocol):
-    def __init__(self, addr: str = "127.0.0.1", commands: List[Command] = []) -> None:
-        # Parse IP address
-        parsed_address = AddressParser(addr)
-        self.addr = parsed_address.get_parsed_address()
-        if not self.addr:  # esto rompe si esta mal? -> meterlo a test
-            raise Exception(f"Address ({addr}) cannot be parsed.")
+class InMemoryCommunicationProtocol(CommunicationProtocol):
 
-        """ De momento no aporta nada no?
-        if parsed_address.unix_domain:
-            # Using Unix domain socket
-            self._socket_family = socket.AF_UNIX
-        else:
-            self._socket_family = socket.AF_INET
-        """
+    def __init__(self, addr: str = "address", commands: List[Command] = []) -> None:
+
+        # Address
+        self.addr = addr
 
         # Neighbors
-        self._neighbors = GrpcNeighbors(self.addr)
-        # GRPC Client
-        self._client = GrpcClient(self.addr, self._neighbors)
+        self._neighbors = InMemoryNeighbors(self.addr)
+        # Client
+        self._client = InMemoryClient(self.addr, self._neighbors)
         # Gossip
         self._gossiper = Gossiper(self.addr, self._client)
-        # GRPC
-        self._server = GrpcServer(self.addr, self._gossiper, self._neighbors, commands)
+        # Server
+        self._server = InMemoryServer(self.addr, self._gossiper, self._neighbors, commands)
         # Hearbeat
         self._heartbeater = Heartbeater(self.addr, self._neighbors, self._client)
         # Commands
@@ -105,11 +94,11 @@ class GrpcCommunicationProtocol(CommunicationProtocol):
             cmd, round, serialized_model, contributors, weight
         )
 
-    def send(self, nei: str, msg: Union[node_pb2.Message, node_pb2.Weights]) -> None:
+    def send(self, nei: str, msg: Union[Dict[str, Union[str, int, List[str], bytes]], Dict[str, Union[str, int, bytes, List[str]]]]) -> None:
         self._client.send(nei, msg)
 
     def broadcast(
-        self, msg: node_pb2.Message, node_list: Optional[List[str]] = None
+        self, msg: Dict[str, Union[str, int, List[str]]], node_list: Optional[List[str]] = None
     ) -> None:
         self._client.broadcast(msg, node_list)
 

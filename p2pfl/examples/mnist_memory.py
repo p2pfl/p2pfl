@@ -16,21 +16,20 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import time
-
-import matplotlib.pyplot as plt
-
+from p2pfl.communication.memory.memory_communication_protocol import InMemoryCommunicationProtocol
+from p2pfl.utils import (
+    wait_convergence,
+    set_test_settings,
+    wait_4_results,
+)
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
     MnistFederatedDM,
 )
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
-from p2pfl.management.logger import logger
 from p2pfl.node import Node
-from p2pfl.utils import (
-    set_test_settings,
-    wait_4_results,
-    wait_convergence,
-)
+from p2pfl.management.logger import logger
+import time
+import matplotlib.pyplot as plt
 
 
 def wait_convergence(nodes, n_neis, wait=5, only_direct=False):
@@ -52,10 +51,12 @@ def test_convergence(n, r, epochs=2):
 
     # Node Creation
     nodes = []
-    for _ in range(n):
+    for i in range(n):
         node = Node(
             MLP(),
             MnistFederatedDM(sub_id=0, number_sub=20),  # sampling for increase speed
+            address=f"test{i}",
+            protocol=InMemoryCommunicationProtocol,
         )
         node.start()
         nodes.append(node)

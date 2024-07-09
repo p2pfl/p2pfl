@@ -20,7 +20,7 @@ from typing import List, Optional, Union
 
 import grpc
 
-from p2pfl.communication.grpc.grpc_neightbors import GrpcNeighbors
+from p2pfl.communication.grpc.grpc_neighbors import GrpcNeighbors
 from p2pfl.communication.grpc.proto import node_pb2, node_pb2_grpc
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
@@ -35,9 +35,9 @@ class GrpcClient:
     Implementation of the client side (i.e. who initiates the communication) of the GRPC communication protocol.
     """
 
-    def __init__(self, self_addr: str, neightbors: GrpcNeighbors) -> None:
+    def __init__(self, self_addr: str, neighbors: GrpcNeighbors) -> None:
         self.__self_addr = self_addr
-        self.__neighbors = neightbors
+        self.__neighbors = neighbors
 
     ####
     # Message Building
