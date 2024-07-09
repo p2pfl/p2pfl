@@ -39,14 +39,19 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
+line-length = 100
 exclude = ["p2pfl/communication/grpc/proto"]
 
 [tool.ruff.lint]
 select = [
+    # docstring
+    "D",
     # pycodestyle
     "E",
     # Pyflakes
     "F",
+    # Pycodestyle warnings
+    "W",
     # pyupgrade
     "UP",
     # flake8-bugbear
@@ -55,7 +60,10 @@ select = [
     "SIM",
     # isort
     "I",
+    # comprehensions
+    "C4"
 ]
+ignore = ["B027", "D203", "D212"]
 
 #[tool.poetry.extras]
 #torch = ["torch", "torchvision", "torchmetrics", "pytorch-lightning"]

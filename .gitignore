@@ -139,3 +139,5 @@ dmypy.json
 Pipfile.lock
 
 junit
+.ruff_cache
+.vscode

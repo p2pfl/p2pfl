@@ -1,0 +1,37 @@
+name: CI
+
+on: [ push, pull_request ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:  
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies (poetry)
+        run: |
+          pip install poetry
+          python -m poetry lock --no-update
+          python -m poetry install
+
+      - name: Format (ruff)
+        run: |
+          poetry run ruff format p2pfl
+
+      - name: Lint (ruff)
+        run: |
+          poetry run ruff check p2pfl --output-format=github
+        continue-on-error: true
+
+      - name: Type checks (mypy)
+        run: |
+          poetry run mypy p2pfl
+
+      - name: Test (pytest)
+        run: |
+          poetry run pytest p2pfl
