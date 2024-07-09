@@ -16,6 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 import time
+
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
     MnistFederatedDM,
 )
@@ -25,7 +26,6 @@ from p2pfl.utils import (
     set_test_settings,
     wait_4_results,
     wait_convergence,
-    check_equal_models,
 )
 
 set_test_settings()
@@ -53,7 +53,7 @@ def main():
     nodes[0].set_start_learning(rounds=2, epochs=0)
 
     # Stopping node
-    time.sleep(0.3)
+    time.sleep(0.1)
     nodes[-1].stop()
 
     wait_4_results(nodes)

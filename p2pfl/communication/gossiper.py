@@ -1,10 +1,11 @@
+import random
 import threading
 import time
-import random
-from typing import List, Tuple, Callable, Any
+from typing import Any, Callable, List, Tuple
+
 from p2pfl.communication.grpc.client import GrpcClient
-from p2pfl.settings import Settings
 from p2pfl.management.logger import logger
+from p2pfl.settings import Settings
 
 # Define type aliases for clarity
 CandidateCondition = Callable[[str], bool]

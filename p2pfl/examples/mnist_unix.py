@@ -16,19 +16,21 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from p2pfl.utils import (
-    wait_convergence,
-    set_test_settings,
-    wait_4_results,
-)
+import time
+
+import matplotlib.pyplot as plt
+
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
     MnistFederatedDM,
 )
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
-from p2pfl.node import Node
 from p2pfl.management.logger import logger
-import time
-import matplotlib.pyplot as plt
+from p2pfl.node import Node
+from p2pfl.utils import (
+    set_test_settings,
+    wait_4_results,
+    wait_convergence,
+)
 
 
 def wait_convergence(nodes, n_neis, wait=5, only_direct=False):

@@ -18,7 +18,7 @@ For more information, see "[Creating a pull request](https://docs.github.com/en/
 
 ## Code style
 
-p2pfl uses [black](https://github.com/psf/black) for code formatting. Please run `black` on your code before submitting a pull request.
+p2pfl uses [Ruff](https://docs.astral.sh/ruff/) for code formatting. Please run `ruff format` on your code before submitting a pull request.
 
 Please see more details about design patterns and code style in the [documentation](https://pguijas.github.io/federated_learning_p2p/).
 

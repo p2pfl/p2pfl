@@ -3,7 +3,6 @@ from p2pfl.communication.heartbeater import Heartbeater, heartbeater_cmd_name
 
 
 class HeartbeatCommand(Command):
-
     def __init__(self, heartbeat: Heartbeater) -> None:
         self.__heartbeat = heartbeat
 

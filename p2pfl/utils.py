@@ -17,8 +17,10 @@
 #
 
 import time
-from p2pfl.settings import Settings
+
 import numpy as np
+
+from p2pfl.settings import Settings
 
 """
 Module to define constants for the p2pfl system.

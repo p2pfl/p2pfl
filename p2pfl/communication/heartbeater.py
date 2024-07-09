@@ -1,15 +1,15 @@
 import threading
 import time
+
 from p2pfl.communication.client import Client
 from p2pfl.communication.neighbors import Neighbors
-from p2pfl.settings import Settings
 from p2pfl.management.logger import logger
+from p2pfl.settings import Settings
 
 heartbeater_cmd_name = "beat"
 
 
 class Heartbeater(threading.Thread):
-
     def __init__(
         self, self_addr: str, neighbors: Neighbors, client: Client
     ) -> None:

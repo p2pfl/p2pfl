@@ -1,9 +1,9 @@
 from typing import Optional, Tuple
+
+import pytorch_lightning as pl
 import torch
 from torch.nn import functional as F
-import pytorch_lightning as pl
-from torchmetrics import Metric, Accuracy
-
+from torchmetrics import Accuracy, Metric
 
 ###############################
 #    Multilayer Perceptron    #

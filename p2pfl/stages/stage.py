@@ -1,16 +1,23 @@
-"""
-explicar que esto gestion el workflow del hilo principal de cada nodo
-"""
+from typing import Union
 
 
-def StageWokflow():
+class Stage:
+    @staticmethod
+    def name():
+        raise NotImplementedError("Stage name not implemented.")
 
-    def __init__(self, stage_list):
-        self.__stage_list = stage_list
+    @staticmethod
+    def execute() -> Union["Stage", None]:
+        raise NotImplementedError("Stage execute not implemented.")
 
-    def run(self):
+
+class StageWokflow:
+    def __init__(self, first_stage: Stage, early_stopping_fn=lambda: False):
+        self.current_stage = first_stage
+        self.early_stopping_fn = early_stopping_fn
+
+    def run(self, context):
         while True:
-            for stage in self.__stage_list:
-                exit = stage.run()
-                if exit:
-                    break
+            self.current_stage = self.current_stage.execute(context)
+            if self.current_stage is None or self.early_stopping_fn():
+                break

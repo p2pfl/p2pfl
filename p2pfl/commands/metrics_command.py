@@ -3,7 +3,6 @@ from p2pfl.management.logger import logger
 
 
 class MetricsCommand(Command):
-
     def __init__(self, state):
         super().__init__()
         self.state = state

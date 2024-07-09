@@ -2,7 +2,6 @@ from p2pfl.commands.command import Command
 
 
 class StartLearningCommand(Command):
-
     def __init__(self, start_learning_fn):
         super().__init__()
         self.__learning_fn = start_learning_fn

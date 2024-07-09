@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional, Union, Callable, Any, Tuple
+from typing import Any, Callable, List, Optional, Tuple, Union
+
 from p2pfl.commands.command import Command
 
 # Define type aliases for clarity
@@ -9,7 +10,6 @@ ModelFunction = Callable[[str], Tuple[Any, List[str], int]]
 
 
 class CommunicationProtocol(ABC):
-
     @abstractmethod
     def start(self) -> None:
         pass
