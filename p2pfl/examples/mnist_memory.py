@@ -16,7 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from p2pfl.communication.memory.communication_protocol import InMemoryCommunicationProtocol
+from p2pfl.communication.memory.memory_communication_protocol import InMemoryCommunicationProtocol
 from p2pfl.utils import (
     wait_convergence,
     set_test_settings,
@@ -120,4 +120,4 @@ if __name__ == "__main__":
     # Settings
     set_test_settings()
     # Launch experiment
-    test_convergence(25, 25, epochs=0)
+    test_convergence(2, 2, epochs=0)

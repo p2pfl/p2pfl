@@ -16,15 +16,14 @@
 #
 
 import random
-from datetime import datetime
 import time
-from typing import List, Optional, Union, Dict, Any
+from typing import List, Optional, Union, Dict
 
 from .server_singleton import ServerSingleton
 from p2pfl.settings import Settings
 from p2pfl.management.logger import logger
 
-from .neighbors import InMemoryNeighbors
+from .memory_neighbors import InMemoryNeighbors
 
 class NeighborNotConnectedError(Exception):
     pass

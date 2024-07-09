@@ -21,12 +21,12 @@ from p2pfl.commands.command import Command
 from p2pfl.commands.heartbeat_command import HeartbeatCommand
 from p2pfl.communication.communication_protocol import CommunicationProtocol
 from p2pfl.communication.grpc.address import AddressParser
-from p2pfl.communication.grpc.client import GrpcClient
-from p2pfl.communication.grpc.gossiper import Gossiper
-from p2pfl.communication.grpc.heartbeater import Heartbeater
-from p2pfl.communication.grpc.grpc_neightbors import GrpcNeighbors
+from p2pfl.communication.grpc.grpc_client import GrpcClient
+from p2pfl.communication.gossiper import Gossiper
+from p2pfl.communication.heartbeater import Heartbeater
+from p2pfl.communication.grpc.grpc_neighbors import GrpcNeighbors
 from p2pfl.communication.grpc.proto import node_pb2
-from p2pfl.communication.grpc.server import GrpcServer
+from p2pfl.communication.grpc.grpc_server import GrpcServer
 from p2pfl.settings import Settings
 
 # Define type aliases for clarity

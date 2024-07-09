@@ -16,12 +16,12 @@
 #
 
 from typing import Dict, List, Optional, Union, Callable, Any, Tuple
+
 from p2pfl.communication.gossiper import Gossiper
 from p2pfl.communication.heartbeater import Heartbeater
-from p2pfl.communication.memory.client import InMemoryClient
-from p2pfl.communication.memory.server import InMemoryServer
-from .neighbors import InMemoryNeighbors
-from p2pfl.communication.grpc.proto import node_pb2
+from p2pfl.communication.memory.memory_client import InMemoryClient
+from p2pfl.communication.memory.memory_server import InMemoryServer
+from p2pfl.communication.memory.memory_neighbors import InMemoryNeighbors
 from p2pfl.communication.communication_protocol import CommunicationProtocol
 from p2pfl.commands.command import Command
 from p2pfl.commands.heartbeat_command import HeartbeatCommand

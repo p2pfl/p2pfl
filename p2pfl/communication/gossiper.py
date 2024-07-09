@@ -3,7 +3,7 @@ import threading
 import time
 from typing import Any, Callable, List, Tuple
 
-from p2pfl.communication.grpc.client import GrpcClient
+from p2pfl.communication.grpc.grpc_client import GrpcClient
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 

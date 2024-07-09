@@ -16,11 +16,11 @@
 #
 
 import time
-from typing import Any, Dict, Optional, Tuple
+from typing import Optional, Tuple
 
 from p2pfl.communication.neighbors import Neighbors
 from p2pfl.management.logger import logger
-from .server_singleton import ServerSingleton
+from p2pfl.communication.memory.server_singleton import ServerSingleton
 
 class InMemoryNeighbors(Neighbors):
 

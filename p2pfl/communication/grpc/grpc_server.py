@@ -23,7 +23,7 @@ import grpc
 
 from p2pfl.commands.command import Command
 from p2pfl.communication.gossiper import Gossiper
-from p2pfl.communication.grpc.neighbors import GrpcNeighbors
+from p2pfl.communication.grpc.grpc_neighbors import GrpcNeighbors
 from p2pfl.communication.grpc.proto import node_pb2, node_pb2_grpc
 from p2pfl.management.logger import logger
 

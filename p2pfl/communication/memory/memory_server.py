@@ -20,7 +20,7 @@ from datetime import datetime
 
 from p2pfl.commands.command import Command
 from p2pfl.communication.gossiper import Gossiper
-from p2pfl.communication.memory.neighbors import InMemoryNeighbors
+from p2pfl.communication.memory.memory_neighbors import InMemoryNeighbors
 from p2pfl.communication.memory.server_singleton import ServerSingleton
 from p2pfl.management.logger import logger
 
