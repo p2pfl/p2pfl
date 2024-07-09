@@ -38,6 +38,9 @@ furo = "^2024.1.29"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.ruff]
+exclude = ["p2pfl/communication/grpc/proto"]
+
 [tool.ruff.lint]
 select = [
     # pycodestyle

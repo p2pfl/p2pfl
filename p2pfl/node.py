@@ -28,7 +28,9 @@ from p2pfl.commands.start_learning_command import StartLearningCommand
 from p2pfl.commands.stop_learning_command import StopLearningCommand
 from p2pfl.commands.vote_train_set_command import VoteTrainSetCommand
 from p2pfl.communication.communication_protocol import CommunicationProtocol
-from p2pfl.communication.grpc.communication_protocol import GrpcCommunicationProtocol
+from p2pfl.communication.grpc.grpc_communication_protocol import (
+    GrpcCommunicationProtocol,
+)
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.learner import NodeLearner

@@ -4,14 +4,12 @@ isort:skip_file
 compile command:
 python -m grpc_tools.protoc -I=p2pfl/proto --python_out=p2pfl/proto --grpc_python_out=p2pfl/proto p2pfl/proto/node.proto --mypy_out=p2pfl/proto
 """
-
 import builtins
 import collections.abc
-import sys
-
 import google.protobuf.descriptor
 import google.protobuf.internal.containers
 import google.protobuf.message
+import sys
 
 if sys.version_info >= (3, 8):
     import typing as typing_extensions
@@ -35,11 +33,7 @@ class Message(google.protobuf.message.Message):
     hash: builtins.int
     cmd: builtins.str
     @property
-    def args(
-        self,
-    ) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[
-        builtins.str
-    ]: ...
+    def args(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.str]: ...
     round: builtins.int
     def __init__(
         self,
@@ -51,32 +45,9 @@ class Message(google.protobuf.message.Message):
         args: collections.abc.Iterable[builtins.str] | None = ...,
         round: builtins.int | None = ...,
     ) -> None: ...
-    def HasField(
-        self,
-        field_name: typing_extensions.Literal["_round", b"_round", "round", b"round"],
-    ) -> builtins.bool: ...
-    def ClearField(
-        self,
-        field_name: typing_extensions.Literal[
-            "_round",
-            b"_round",
-            "args",
-            b"args",
-            "cmd",
-            b"cmd",
-            "hash",
-            b"hash",
-            "round",
-            b"round",
-            "source",
-            b"source",
-            "ttl",
-            b"ttl",
-        ],
-    ) -> None: ...
-    def WhichOneof(
-        self, oneof_group: typing_extensions.Literal["_round", b"_round"]
-    ) -> typing_extensions.Literal["round"] | None: ...
+    def HasField(self, field_name: typing_extensions.Literal["_round", b"_round", "round", b"round"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["_round", b"_round", "args", b"args", "cmd", b"cmd", "hash", b"hash", "round", b"round", "source", b"source", "ttl", b"ttl"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["_round", b"_round"]) -> typing_extensions.Literal["round"] | None: ...
 
 global___Message = Message
 
@@ -94,11 +65,7 @@ class Weights(google.protobuf.message.Message):
     round: builtins.int
     weights: builtins.bytes
     @property
-    def contributors(
-        self,
-    ) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[
-        builtins.str
-    ]: ...
+    def contributors(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.str]: ...
     weight: builtins.int
     cmd: builtins.str
     def __init__(
@@ -111,23 +78,7 @@ class Weights(google.protobuf.message.Message):
         weight: builtins.int = ...,
         cmd: builtins.str = ...,
     ) -> None: ...
-    def ClearField(
-        self,
-        field_name: typing_extensions.Literal[
-            "cmd",
-            b"cmd",
-            "contributors",
-            b"contributors",
-            "round",
-            b"round",
-            "source",
-            b"source",
-            "weight",
-            b"weight",
-            "weights",
-            b"weights",
-        ],
-    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["cmd", b"cmd", "contributors", b"contributors", "round", b"round", "source", b"source", "weight", b"weight", "weights", b"weights"]) -> None: ...
 
 global___Weights = Weights
 
@@ -142,9 +93,7 @@ class HandShakeRequest(google.protobuf.message.Message):
         *,
         addr: builtins.str = ...,
     ) -> None: ...
-    def ClearField(
-        self, field_name: typing_extensions.Literal["addr", b"addr"]
-    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["addr", b"addr"]) -> None: ...
 
 global___HandShakeRequest = HandShakeRequest
 
@@ -159,16 +108,8 @@ class ResponseMessage(google.protobuf.message.Message):
         *,
         error: builtins.str | None = ...,
     ) -> None: ...
-    def HasField(
-        self,
-        field_name: typing_extensions.Literal["_error", b"_error", "error", b"error"],
-    ) -> builtins.bool: ...
-    def ClearField(
-        self,
-        field_name: typing_extensions.Literal["_error", b"_error", "error", b"error"],
-    ) -> None: ...
-    def WhichOneof(
-        self, oneof_group: typing_extensions.Literal["_error", b"_error"]
-    ) -> typing_extensions.Literal["error"] | None: ...
+    def HasField(self, field_name: typing_extensions.Literal["_error", b"_error", "error", b"error"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["_error", b"_error", "error", b"error"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["_error", b"_error"]) -> typing_extensions.Literal["error"] | None: ...
 
 global___ResponseMessage = ResponseMessage
