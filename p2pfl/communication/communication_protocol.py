@@ -31,9 +31,7 @@ class CommunicationProtocol(ABC):
         pass
 
     @abstractmethod
-    def send(
-        self, nei: str, message: any, node_list: Optional[List[str]] = None
-    ) -> None:
+    def send(self, nei: str, message: any, node_list: Optional[List[str]] = None) -> None:
         pass
 
     @abstractmethod

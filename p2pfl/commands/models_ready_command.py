@@ -25,6 +25,4 @@ class ModelsReadyCommand(Command):
                     f"Models ready from {source} in a late round. Ignored. {round} != {self.state.round} / {self.state.round-1}",
                 )
         else:
-            logger.warning(
-                self.state.addr, "Models ready received when learning is not running"
-            )
+            logger.warning(self.state.addr, "Models ready received when learning is not running")

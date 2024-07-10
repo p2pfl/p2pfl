@@ -172,9 +172,7 @@ class Gossiper(threading.Thread):
                         self.__self_addr,
                         f"Gossiping exited for {Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS} equal rounds.",
                     )
-                    logger.debug(
-                        self.__self_addr, f"Gossip last status: {last_x_status[-1]}"
-                    )
+                    logger.debug(self.__self_addr, f"Gossip last status: {last_x_status[-1]}")
                     return
 
             # Select a random subset of neighbors

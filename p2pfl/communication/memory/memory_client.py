@@ -25,8 +25,10 @@ from p2pfl.management.logger import logger
 
 from .memory_neighbors import InMemoryNeighbors
 
+
 class NeighborNotConnectedError(Exception):
     pass
+
 
 class InMemoryClient:
     def __init__(self, self_addr: str, neighbors: InMemoryNeighbors) -> None:
@@ -40,9 +42,7 @@ class InMemoryClient:
             round = -1
         if args is None:
             args = []
-        hs = hash(
-            str(cmd) + str(args) + str(time.time()) + str(random.randint(0, 100000))
-        )
+        hs = hash(str(cmd) + str(args) + str(time.time()) + str(random.randint(0, 100000)))
         args = [str(a) for a in args]
         return {
             "source": self.__self_addr,
@@ -93,18 +93,21 @@ class InMemoryClient:
                     response = node_server.send_weights(msg)
                 else:
                     response = node_server.send_message(msg)
-                
+
             else:
                 raise NeighborNotConnectedError(
                     "Neighbor not directly connected (Server not defined and create_connection is false)."
                 )
-            
+
             if "error" in response:
-                logger.error(self.__self_addr,
-                             f"Error while sending a message: {msg['cmd']} {msg['args']}: {response['error']}")
+                logger.error(
+                    self.__self_addr,
+                    f"Error while sending a message: {msg['cmd']} {msg['args']}: {response['error']}",
+                )
         except Exception as e:
-            logger.info(self.__self_addr,
-                        f"Cannot send message {msg['cmd']} to {nei}. Error: {str(e)}")
+            logger.info(
+                self.__self_addr, f"Cannot send message {msg['cmd']} to {nei}. Error: {str(e)}"
+            )
             print(msg)
             self.__neighbors.remove(nei)
 
@@ -116,7 +119,7 @@ class InMemoryClient:
             node_list = node_list
         else:
             node_list = self.__neighbors.get_all(only_direct=True)
-        
+
         # Send
         for n in node_list:
             self.send(n, msg)

@@ -24,6 +24,7 @@ from p2pfl.communication.memory.memory_neighbors import InMemoryNeighbors
 from p2pfl.communication.memory.server_singleton import ServerSingleton
 from p2pfl.management.logger import logger
 
+
 class InMemoryServer:
     """
     Implementation of the server side of an in-memory communication protocol.
@@ -40,7 +41,7 @@ class InMemoryServer:
         addr: str,
         gossiper: Gossiper,
         neighbors: InMemoryNeighbors,
-        commands: List[Command] = []
+        commands: List[Command] = [],
     ) -> None:
         # Message handlers
         self.__commands = {c.get_name(): c for c in commands}
@@ -89,7 +90,7 @@ class InMemoryServer:
         """
         In-memory service. It is called when a node connects to another.
         """
-        if self.__neighbors.add(request['addr'], non_direct=False, handshake_msg=False):
+        if self.__neighbors.add(request["addr"], non_direct=False, handshake_msg=False):
             return {}
         else:
             return {"error": "Cannot add the node (duplicated or wrong direction)"}
@@ -98,40 +99,45 @@ class InMemoryServer:
         """
         In-memory service. It is called when a node disconnects from another.
         """
-        self.__neighbors.remove(request['addr'], disconnect_msg=False)
+        self.__neighbors.remove(request["addr"], disconnect_msg=False)
 
     def send_message(self, request: Dict[str, Any]) -> Dict[str, Any]:
         """
         In-memory service. It is called when a node sends a message to another.
         """
         # If not processed
-        if self.__gossiper.check_and_set_processed(request['hash']):
-            logger.debug(self.addr,
-                f"Received message from {request['source']} > {request['cmd']} {request['args']}"
+        if self.__gossiper.check_and_set_processed(request["hash"]):
+            logger.debug(
+                self.addr,
+                f"Received message from {request['source']} > {request['cmd']} {request['args']}",
             )
             # Gossip
-            if request['ttl'] > 1:
+            if request["ttl"] > 1:
                 # Update ttl and gossip
-                request['ttl'] -= 1
+                request["ttl"] -= 1
                 pending_neis = [
                     n
                     for n in self.__neighbors.get_all(only_direct=True).keys()
-                    if n != request['source']
+                    if n != request["source"]
                 ]
                 self.__gossiper.add_message(request, pending_neis)
 
             # Process message
-            if request['cmd'] in self.__commands.keys():
+            if request["cmd"] in self.__commands.keys():
                 try:
-                    self.__commands[request['cmd']].execute(
-                        request['source'], request['round'], *request['args']
+                    self.__commands[request["cmd"]].execute(
+                        request["source"], request["round"], *request["args"]
                     )
                 except Exception as e:
-                    error_text = f"Error while processing command: {request['cmd']} {request['args']}: {e}"
+                    error_text = (
+                        f"Error while processing command: {request['cmd']} {request['args']}: {e}"
+                    )
                     logger.error(self.addr, error_text)
                     return {"error": error_text}
             else:
-                logger.error(self.addr, f"Unknown command: {request['cmd']} from {request['source']}")
+                logger.error(
+                    self.addr, f"Unknown command: {request['cmd']} from {request['source']}"
+                )
                 return {"error": f"Unknown command: {request['cmd']}"}
 
         return {}
@@ -141,14 +147,14 @@ class InMemoryServer:
         In-memory service. It is called when a node sends weights to another.
         """
         # Process message
-        if request['cmd'] in self.__commands.keys():
+        if request["cmd"] in self.__commands.keys():
             try:
-                self.__commands[request['cmd']].execute(
-                    request['source'],
-                    request['round'],
-                    request['weights'],
-                    request['contributors'],
-                    request['weight'],
+                self.__commands[request["cmd"]].execute(
+                    request["source"],
+                    request["round"],
+                    request["weights"],
+                    request["contributors"],
+                    request["weight"],
                 )
             except Exception as e:
                 error_text = f"Error while processing model: {request['cmd']}: {e}"
@@ -163,7 +169,7 @@ class InMemoryServer:
     # Commands
     ####
 
-    def add_command(self, cmds: Union['Command', List['Command']]) -> None:
+    def add_command(self, cmds: Union["Command", List["Command"]]) -> None:
         """
         Adds a command.
         """
@@ -174,5 +180,3 @@ class InMemoryServer:
             self.__commands[cmds.get_name()] = cmds
         else:
             raise Exception("Command not valid")
-        
-    

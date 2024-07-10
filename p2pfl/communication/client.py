@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Union
 
+
 class Client(ABC):
     @abstractmethod
     def build_message(

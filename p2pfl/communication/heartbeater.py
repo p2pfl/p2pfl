@@ -10,9 +10,7 @@ heartbeater_cmd_name = "beat"
 
 
 class Heartbeater(threading.Thread):
-    def __init__(
-        self, self_addr: str, neighbors: Neighbors, client: Client
-    ) -> None:
+    def __init__(self, self_addr: str, neighbors: Neighbors, client: Client) -> None:
         """
         Initialize the heartbeat thread.
 
@@ -73,9 +71,7 @@ class Heartbeater(threading.Thread):
                 toggle = True
 
             # Send heartbeat
-            beat_msg = self.__client.build_message(
-                heartbeater_cmd_name, args=[str(time.time())]
-            )
+            beat_msg = self.__client.build_message(heartbeater_cmd_name, args=[str(time.time())])
             self.__client.broadcast(beat_msg)
 
             # Sleep to allow the periodicity

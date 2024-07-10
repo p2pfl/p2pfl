@@ -97,9 +97,7 @@ class CNN(pl.LightningModule):
         self.log("val_metric", metric, prog_bar=True)
         return loss
 
-    def test_step(
-        self, batch: Tuple[torch.Tensor, torch.Tensor], batch_id: int
-    ) -> torch.Tensor:
+    def test_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_id: int) -> torch.Tensor:
         """ """
         x, y = batch
         logits = self(x)

@@ -10,8 +10,6 @@ class StartLearningCommand(Command):
     def get_name() -> str:
         return "start_learning"
 
-    def execute(
-        self, source: str, round: int, learning_rounds, learning_epochs
-    ) -> None:
+    def execute(self, source: str, round: int, learning_rounds, learning_epochs) -> None:
         # Start learning thread
         self.__learning_fn(int(learning_rounds), int(learning_epochs))

@@ -60,9 +60,7 @@ class TrainStage(Stage):
                     round=state.round,
                 )
             )
-            TrainStage.__gossip_model_aggregation(
-                state, communication_protocol, aggregator
-            )
+            TrainStage.__gossip_model_aggregation(state, communication_protocol, aggregator)
 
         # Next stage
         return StageFactory.get_stage("GossipModelStage")
@@ -71,9 +69,7 @@ class TrainStage(Stage):
         logger.info(state.addr, "Training...")
         state.learner.fit()
 
-    def __evaluate(
-        state: NodeState, communication_protocol: CommunicationProtocol
-    ) -> None:
+    def __evaluate(state: NodeState, communication_protocol: CommunicationProtocol) -> None:
         logger.info(state.addr, "Evaluating...")
         results = state.learner.evaluate()
         logger.info(state.addr, f"Evaluated. Results: {results}")
@@ -107,8 +103,7 @@ class TrainStage(Stage):
             return [
                 n
                 for n in communication_protocol.get_neighbors(only_direct=False)
-                if (n not in aggregator.get_aggregated_models())
-                and (n in state.train_set)
+                if (n not in aggregator.get_aggregated_models()) and (n in state.train_set)
             ]
 
         def status_fn() -> Any:

@@ -88,9 +88,7 @@ class GrpcCommunicationProtocol(CommunicationProtocol):
     def disconnect(self, nei: str, disconnect_msg: bool = True) -> None:
         self._neighbors.remove(nei, disconnect_msg=disconnect_msg)
 
-    def build_msg(
-        self, cmd: str, args: List[str] = [], round: Optional[int] = None
-    ) -> any:
+    def build_msg(self, cmd: str, args: List[str] = [], round: Optional[int] = None) -> any:
         return self._client.build_message(cmd, args, round)
 
     def build_weights(
@@ -101,16 +99,12 @@ class GrpcCommunicationProtocol(CommunicationProtocol):
         contributors: Optional[List[str]] = [],
         weight: int = 1,
     ) -> any:
-        return self._client.build_weights(
-            cmd, round, serialized_model, contributors, weight
-        )
+        return self._client.build_weights(cmd, round, serialized_model, contributors, weight)
 
     def send(self, nei: str, msg: Union[node_pb2.Message, node_pb2.Weights]) -> None:
         self._client.send(nei, msg)
 
-    def broadcast(
-        self, msg: node_pb2.Message, node_list: Optional[List[str]] = None
-    ) -> None:
+    def broadcast(self, msg: node_pb2.Message, node_list: Optional[List[str]] = None) -> None:
         self._client.broadcast(msg, node_list)
 
     def get_neighbors(self, only_direct: bool = False) -> List[str]:

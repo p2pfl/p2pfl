@@ -36,9 +36,7 @@ class Neighbors:
 
         # Cannot add duplicates
         if self.exists(addr):
-            logger.info(
-                self.self_addr, f"Cannot add duplicates. {addr} already exists."
-            )
+            logger.info(self.self_addr, f"Cannot add duplicates. {addr} already exists.")
             self.neis_lock.release()
             return False
 

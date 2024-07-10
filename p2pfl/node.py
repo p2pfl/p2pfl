@@ -279,9 +279,7 @@ class Node:
             self.state.model_initialized_lock.release()
             # Broadcast initialize model
             self._communication_protocol.broadcast(
-                self._communication_protocol.build_msg(
-                    ModelInitializedCommand.get_name()
-                )
+                self._communication_protocol.build_msg(ModelInitializedCommand.get_name())
             )
             # Learning Thread
             self.__start_learning_thread(rounds, epochs)

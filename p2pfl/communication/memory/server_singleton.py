@@ -16,16 +16,17 @@
 
 import threading
 
+
 class ServerSingleton(dict):
     def __new__(cls):
-        if not hasattr(cls, 'instance'):
+        if not hasattr(cls, "instance"):
             cls.instance = super(ServerSingleton, cls).__new__(cls)
             cls.termination_event = threading.Event()  # Initialize the threading event
         return cls.instance
-    
+
     @classmethod
     def reset_instance(cls):
-        if hasattr(cls, 'instance'):
+        if hasattr(cls, "instance"):
             cls.termination_event.set()
             del cls.instance
 

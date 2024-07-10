@@ -140,14 +140,14 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
                     )
 
                 except Exception as e:
-                    error_text = f"Error while processing command: {request.cmd} {request.args}: {e}"
+                    error_text = (
+                        f"Error while processing command: {request.cmd} {request.args}: {e}"
+                    )
                     logger.error(self.addr, error_text)
                     return node_pb2.ResponseMessage(error=error_text)
             else:
                 # disconnect node
-                logger.error(
-                    self.addr, f"Unknown command: {request.cmd} from {request.source}"
-                )
+                logger.error(self.addr, f"Unknown command: {request.cmd} from {request.source}")
                 return node_pb2.ResponseMessage(error=f"Unknown command: {request.cmd}")
 
         return node_pb2.ResponseMessage()
@@ -173,9 +173,7 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
                 return node_pb2.ResponseMessage(error=error_text)
         else:
             # disconnect node
-            logger.error(
-                self.addr, f"Unknown command: {request.cmd} from {request.source}"
-            )
+            logger.error(self.addr, f"Unknown command: {request.cmd} from {request.source}")
             return node_pb2.ResponseMessage(error=f"Unknown command: {request.cmd}")
         return node_pb2.ResponseMessage()
 

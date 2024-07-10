@@ -114,9 +114,7 @@ class LightningLearner(NodeLearner):
     # Model weights
     ####
 
-    def encode_parameters(
-        self, params: Optional[Dict[str, torch.Tensor]] = None
-    ) -> bytes:
+    def encode_parameters(self, params: Optional[Dict[str, torch.Tensor]] = None) -> bytes:
         if params is None:
             params = self.get_parameters()
         array = [val.cpu().numpy() for _, val in params.items()]

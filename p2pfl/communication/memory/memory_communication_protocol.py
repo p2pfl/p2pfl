@@ -34,9 +34,7 @@ ModelFunction = Callable[[str], Tuple[Any, List[str], int]]
 
 
 class InMemoryCommunicationProtocol(CommunicationProtocol):
-
     def __init__(self, addr: str = "address", commands: List[Command] = []) -> None:
-
         # Address
         self.addr = addr
 
@@ -77,9 +75,7 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
     def disconnect(self, nei: str, disconnect_msg: bool = True) -> None:
         self._neighbors.remove(nei, disconnect_msg=disconnect_msg)
 
-    def build_msg(
-        self, cmd: str, args: List[str] = [], round: Optional[int] = None
-    ) -> any:
+    def build_msg(self, cmd: str, args: List[str] = [], round: Optional[int] = None) -> any:
         return self._client.build_message(cmd, args, round)
 
     def build_weights(
@@ -90,11 +86,16 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
         contributors: Optional[List[str]] = [],
         weight: int = 1,
     ) -> any:
-        return self._client.build_weights(
-            cmd, round, serialized_model, contributors, weight
-        )
+        return self._client.build_weights(cmd, round, serialized_model, contributors, weight)
 
-    def send(self, nei: str, msg: Union[Dict[str, Union[str, int, List[str], bytes]], Dict[str, Union[str, int, bytes, List[str]]]]) -> None:
+    def send(
+        self,
+        nei: str,
+        msg: Union[
+            Dict[str, Union[str, int, List[str], bytes]],
+            Dict[str, Union[str, int, bytes, List[str]]],
+        ],
+    ) -> None:
         self._client.send(nei, msg)
 
     def broadcast(

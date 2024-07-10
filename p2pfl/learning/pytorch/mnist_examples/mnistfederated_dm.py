@@ -73,9 +73,9 @@ class MnistFederatedDM(LightningDataModule):
             )
             if not iid:
                 sorted_indexes = MnistFederatedDM.mnist_train.targets.sort()[1]
-                MnistFederatedDM.mnist_train.targets = (
-                    MnistFederatedDM.mnist_train.targets[sorted_indexes]
-                )
+                MnistFederatedDM.mnist_train.targets = MnistFederatedDM.mnist_train.targets[
+                    sorted_indexes
+                ]
                 MnistFederatedDM.mnist_train.data = MnistFederatedDM.mnist_train.data[
                     sorted_indexes
                 ]
@@ -91,9 +91,7 @@ class MnistFederatedDM(LightningDataModule):
                 MnistFederatedDM.mnist_val.targets = MnistFederatedDM.mnist_val.targets[
                     sorted_indexes
                 ]
-                MnistFederatedDM.mnist_val.data = MnistFederatedDM.mnist_val.data[
-                    sorted_indexes
-                ]
+                MnistFederatedDM.mnist_val.data = MnistFederatedDM.mnist_val.data[sorted_indexes]
         if self.sub_id + 1 > self.number_sub:
             raise ValueError(f"Not exist the subset {self.sub_id}")
 

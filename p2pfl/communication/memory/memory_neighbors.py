@@ -22,8 +22,8 @@ from p2pfl.communication.neighbors import Neighbors
 from p2pfl.management.logger import logger
 from p2pfl.communication.memory.server_singleton import ServerSingleton
 
-class InMemoryNeighbors(Neighbors):
 
+class InMemoryNeighbors(Neighbors):
     def refresh_or_add(self, addr: str, time: time) -> None:
         # Update if exists
         if addr in self.neis.keys():
@@ -46,21 +46,23 @@ class InMemoryNeighbors(Neighbors):
         else:
             return self.__build_direct_neighbor(addr, handshake_msg)
 
-    def __build_direct_neighbor(self, addr: str, handshake_msg: bool) -> Optional[Tuple[str, str, float]]:
+    def __build_direct_neighbor(
+        self, addr: str, handshake_msg: bool
+    ) -> Optional[Tuple[str, str, float]]:
         try:
             # Get server
             server = ServerSingleton()[addr]
 
             # Simulate the handshake process
             if handshake_msg:
-                response = server.handshake({"addr":self.self_addr})
+                response = server.handshake({"addr": self.self_addr})
                 if response.get("error"):
                     logger.info(self.self_addr, f"Cannot add a neighbor: {response['error']}")
                     return None
 
             # Add neighbor
             self.neis[addr] = (None, server, time.time())
-            
+
             return (None, server, time.time())
 
         except Exception as e:
@@ -78,8 +80,7 @@ class InMemoryNeighbors(Neighbors):
 
             if disconnect_msg:
                 if node_server is not None:
-                    node_server.disconnect({"addr":self.self_addr})
+                    node_server.disconnect({"addr": self.self_addr})
 
         except Exception as e:
-            logger.error(self.self_addr,
-                         f"Error while disconnecting from {addr}: {e}")
+            logger.error(self.self_addr, f"Error while disconnecting from {addr}: {e}")

@@ -36,9 +36,7 @@ def wait_convergence(nodes, n_neis, wait=5, only_direct=False):
     acum = 0
     while True:
         begin = time.time()
-        if all(
-            [len(n.get_neighbors(only_direct=only_direct)) == n_neis for n in nodes]
-        ):
+        if all([len(n.get_neighbors(only_direct=only_direct)) == n_neis for n in nodes]):
             break
         time.sleep(0.1)
         acum += time.time() - begin
@@ -94,9 +92,7 @@ def test_convergence(n, r, epochs=2):
     # Global Logs
     global_logs = logger.get_global_logs()
     if global_logs != {}:
-        logs = list(global_logs.items())[0][
-            1
-        ]  # Accessing the nested dictionary directly
+        logs = list(global_logs.items())[0][1]  # Accessing the nested dictionary directly
         # Plot experiment metrics
         for node_name, node_metrics in logs.items():
             for metric, values in node_metrics.items():

@@ -75,11 +75,7 @@ class AddressParser:
         if self.unix_domain:
             return self.host
         elif self.host is not None:
-            return (
-                f"[{self.host}]:{self.port}"
-                if self.is_v6
-                else f"{self.host}:{self.port}"
-            )
+            return f"[{self.host}]:{self.port}" if self.is_v6 else f"{self.host}:{self.port}"
 
         return None
 

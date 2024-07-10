@@ -32,6 +32,6 @@ jobs:
         run: |
           poetry run mypy p2pfl
 
-      - name: Test (pytest)
+      - name: Test (pytest) # todo: coverage
         run: |
           poetry run pytest p2pfl

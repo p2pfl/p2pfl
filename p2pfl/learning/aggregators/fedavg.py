@@ -54,10 +54,7 @@ class FedAvg(Aggregator):
         total_samples = sum([y for _, y in models_list])
 
         # Create a Zero Model
-        accum = {
-            layer: torch.zeros_like(param)
-            for layer, param in models_list[-1][0].items()
-        }
+        accum = {layer: torch.zeros_like(param) for layer, param in models_list[-1][0].items()}
 
         # Add weighted models
         for m, w in models_list:

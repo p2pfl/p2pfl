@@ -61,9 +61,7 @@ class GrpcClient:
             round = -1
         if args is None:
             args = []
-        hs = hash(
-            str(cmd) + str(args) + str(datetime.now()) + str(random.randint(0, 100000))
-        )
+        hs = hash(str(cmd) + str(args) + str(datetime.now()) + str(random.randint(0, 100000)))
         args = [str(a) for a in args]
 
         return node_pb2.Message(
@@ -155,9 +153,7 @@ class GrpcClient:
             if channel is not None:
                 channel.close()
 
-    def broadcast(
-        self, msg: node_pb2.Message, node_list: Optional[List[str]] = None
-    ) -> None:
+    def broadcast(self, msg: node_pb2.Message, node_list: Optional[List[str]] = None) -> None:
         """
         Broadcast a message to all the neighbors.
 

@@ -89,9 +89,7 @@ class LocalMetricStorage:
         """
         return self.exp_dicts[exp][round]
 
-    def get_experiment_round_node_logs(
-        self, exp: str, round: int, node: str
-    ) -> NodeLogsType:
+    def get_experiment_round_node_logs(self, exp: str, round: int, node: str) -> NodeLogsType:
         """
         Obtain logs for a node in an experiment.
 

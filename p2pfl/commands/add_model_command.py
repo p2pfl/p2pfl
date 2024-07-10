@@ -43,17 +43,15 @@ class AddModelCommand(Command):
         if self.state.round is not None:
             # Check source
             if round != self.state.round:
-                logger.error(
+                logger.debug(
                     self.state.addr,
-                    f"Model Reception in a late round ({round} != {self.state.round}).",
+                    f"Model reception in a late round ({round} != {self.state.round}).",
                 )
                 return
 
             # Check moment (not init and invalid round)
             if len(self.state.train_set) == 0:
-                logger.error(
-                    self.state.addr, "Model Reception when there is no trainset"
-                )
+                logger.error(self.state.addr, "Model Reception when there is no trainset")
                 return
 
             try:
@@ -87,6 +85,4 @@ class AddModelCommand(Command):
                 self.stop()
 
         else:
-            logger.debug(
-                self.state.addr, "Tried to add a model while learning is not running"
-            )
+            logger.debug(self.state.addr, "Tried to add a model while learning is not running")

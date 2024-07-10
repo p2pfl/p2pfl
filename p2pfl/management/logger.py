@@ -168,9 +168,7 @@ class Logger:
         self.logger.addHandler(stream_handler)  # not async
 
         # Asynchronous logging (queue handler)
-        self.log_queue: multiprocessing.Queue[logging.LogRecord] = (
-            multiprocessing.Queue()
-        )
+        self.log_queue: multiprocessing.Queue[logging.LogRecord] = multiprocessing.Queue()
         queue_handler = QueueHandler(self.log_queue)
         self.logger.addHandler(queue_handler)
         self.queue_listener = QueueListener(self.log_queue, *handlers)
@@ -354,14 +352,10 @@ class Logger:
         # Local storage
         if step is None:
             # Global Metrics
-            Logger.get_instance().global_metrics.add_log(
-                exp, round, metric, node, value
-            )
+            Logger.get_instance().global_metrics.add_log(exp, round, metric, node, value)
         else:
             # Local Metrics
-            Logger.get_instance().local_metrics.add_log(
-                exp, round, metric, node, value, step
-            )
+            Logger.get_instance().local_metrics.add_log(exp, round, metric, node, value, step)
 
         # Web
         if Logger.get_instance().p2pfl_web_services is not None:
@@ -388,9 +382,7 @@ class Logger:
         """
         # Web
         if Logger.get_instance().p2pfl_web_services is not None:
-            Logger.get_instance().p2pfl_web_services.send_system_metric(
-                node, metric, value, time
-            )
+            Logger.get_instance().p2pfl_web_services.send_system_metric(node, metric, value, time)
 
     @staticmethod
     def get_local_logs() -> List[dict]:
@@ -440,9 +432,7 @@ class Logger:
             Logger.get_instance().p2pfl_web_services.register_node(node, simulation)
 
             # Start the node status reporter
-            node_monitor = NodeMonitor(
-                node, Logger.get_instance().log_system_metric
-            ).start()
+            node_monitor = NodeMonitor(node, Logger.get_instance().log_system_metric).start()
 
         # Node State
         if Logger.get_instance().nodes.get(node) is None:

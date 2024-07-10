@@ -158,9 +158,7 @@ class P2pflWebServices:
         except Exception:
             raise P2pflWebServicesError(response.status_code, response.text)
 
-    def send_global_metric(
-        self, exp: str, round: int, metric: str, node: str, value: float
-    ):
+    def send_global_metric(self, exp: str, round: int, metric: str, node: str, value: float):
         """
         Send a local metric.
 

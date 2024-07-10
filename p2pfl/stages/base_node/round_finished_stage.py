@@ -56,9 +56,7 @@ class RoundFinishedStage(Stage):
             logger.info(state.addr, "Training finished!!.")
             return None
 
-    def __evaluate(
-        state: NodeState, communication_protocol: CommunicationProtocol
-    ) -> None:
+    def __evaluate(state: NodeState, communication_protocol: CommunicationProtocol) -> None:
         logger.info(state.addr, "Evaluating...")
         results = state.learner.evaluate()
         logger.info(state.addr, f"Evaluated. Results: {results}")

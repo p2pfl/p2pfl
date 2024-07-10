@@ -120,9 +120,7 @@ class Aggregator:
 
         # Verify that contributors are not empty
         if contributors == []:
-            logger.debug(
-                self.node_name, "Received a model without a list of contributors."
-            )
+            logger.debug(self.node_name, "Received a model without a list of contributors.")
             self.__agg_lock.release()
             return []
 
@@ -224,9 +222,7 @@ class Aggregator:
                 f"Waiting for an an aggregated but several models were received: {self.__models.keys()}"
             )
         # Start aggregation
-        n_model_aggregated = sum(
-            [len(nodes.split()) for nodes in list(self.__models.keys())]
-        )
+        n_model_aggregated = sum([len(nodes.split()) for nodes in list(self.__models.keys())])
 
         # Timeout / All models
         if n_model_aggregated != len(self.__train_set):

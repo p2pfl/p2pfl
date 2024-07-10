@@ -55,12 +55,8 @@ class NodeMonitor(threading.Thread):
         # NetWork
         net_stat = psutil.net_io_counters()
         if self.last_net_in != -1 and self.last_net_out != -1:
-            res["net_in"] = (
-                (net_stat.bytes_recv - self.last_net_in) / self.period / (2**20)
-            )
-            res["net_out"] = (
-                (net_stat.bytes_sent - self.last_net_out) / self.period / (2**20)
-            )
+            res["net_in"] = (net_stat.bytes_recv - self.last_net_in) / self.period / (2**20)
+            res["net_out"] = (net_stat.bytes_sent - self.last_net_out) / self.period / (2**20)
         self.last_net_in = net_stat.bytes_recv
         self.last_net_out = net_stat.bytes_sent
 

@@ -43,9 +43,9 @@ class InitModelCommand(Command):
         if self.state.learner is not None:
             # Check source
             if round != self.state.round:
-                logger.error(
+                logger.debug(
                     self.state.addr,
-                    f"Model Reception in a late round ({round} != {self.state.round}).",
+                    f"Model reception in a late round ({round} != {self.state.round}).",
                 )
                 return
 
@@ -64,9 +64,7 @@ class InitModelCommand(Command):
                 logger.info(self.state.addr, "Model Weights Initialized")
                 # Communicate Initialization
                 self.communication_protocol.broadcast(
-                    self.communication_protocol.build_msg(
-                        ModelInitializedCommand.get_name()
-                    )
+                    self.communication_protocol.build_msg(ModelInitializedCommand.get_name())
                 )
 
             # Warning: these stops can cause a denegation of service attack
@@ -83,6 +81,4 @@ class InitModelCommand(Command):
                 self.stop()
 
         else:
-            logger.debug(
-                self.state.addr, "Tried to add a model while learning is not running"
-            )
+            logger.debug(self.state.addr, "Tried to add a model while learning is not running")

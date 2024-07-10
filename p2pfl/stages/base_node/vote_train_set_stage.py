@@ -45,9 +45,7 @@ class VoteTrainSetStage(Stage):
 
     def __vote(state: NodeState, communication_protocol: CommunicationProtocol) -> None:
         # Vote (at least itself)
-        candidates = list(
-            communication_protocol.get_neighbors(only_direct=False).keys()
-        )
+        candidates = list(communication_protocol.get_neighbors(only_direct=False).keys())
         if state.addr not in candidates:
             candidates.append(state.addr)
         logger.debug(state.addr, f"{len(candidates)} candidates to train set")
@@ -55,9 +53,7 @@ class VoteTrainSetStage(Stage):
         # Send vote
         samples = min(Settings.TRAIN_SET_SIZE, len(candidates))
         nodes_voted = random.sample(candidates, samples)
-        weights = [
-            math.floor(random.randint(0, 1000) / (i + 1)) for i in range(samples)
-        ]
+        weights = [math.floor(random.randint(0, 1000) / (i + 1)) for i in range(samples)]
         votes = list(zip(nodes_voted, weights))
 
         # Adding votes
@@ -101,16 +97,14 @@ class VoteTrainSetStage(Stage):
             nc_votes = {
                 k: v
                 for k, v in state.train_set_votes.items()
-                if k
-                in list(communication_protocol.get_neighbors(only_direct=False).keys())
+                if k in list(communication_protocol.get_neighbors(only_direct=False).keys())
                 or k == state.addr
             }
             state.train_set_votes_lock.release()
 
             # Determine if all votes are received
             needed_votes = set(
-                list(communication_protocol.get_neighbors(only_direct=False).keys())
-                + [state.addr]
+                list(communication_protocol.get_neighbors(only_direct=False).keys()) + [state.addr]
             )
             votes_ready = needed_votes == set(nc_votes.keys())
 
@@ -135,9 +129,7 @@ class VoteTrainSetStage(Stage):
                 results_ordered = sorted(
                     results.items(), key=lambda x: x[0], reverse=True
                 )  # to equal solve of draw (node name alphabetical order)
-                results_ordered = sorted(
-                    results_ordered, key=lambda x: x[1], reverse=True
-                )
+                results_ordered = sorted(results_ordered, key=lambda x: x[1], reverse=True)
                 top = min(len(results_ordered), Settings.TRAIN_SET_SIZE)
                 results_ordered = results_ordered[0:top]
 
@@ -156,9 +148,7 @@ class VoteTrainSetStage(Stage):
     ) -> List[str]:
         # Verify if node set is valid (can happend that a node was down when the votes were being processed)
         for tsn in train_set:
-            if tsn not in list(
-                communication_protocol.get_neighbors(only_direct=False).keys()
-            ):
+            if tsn not in list(communication_protocol.get_neighbors(only_direct=False).keys()):
                 if tsn != state.addr:
                     train_set.remove(tsn)
         return train_set
