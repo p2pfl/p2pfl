@@ -17,11 +17,9 @@
 #
 
 import time
-
-import sys
-
 import matplotlib.pyplot as plt
-
+from p2pfl.communication.grpc.grpc_communication_protocol import GrpcCommunicationProtocol
+from p2pfl.communication.memory.memory_communication_protocol import InMemoryCommunicationProtocol
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
     MnistFederatedDM,
 )
@@ -33,29 +31,48 @@ from p2pfl.utils import (
     wait_4_results,
     wait_convergence,
 )
+import argparse
 
+"""
+Example of a P2PFL MNIST experiment, using a MLP model and a MnistFederatedDM.
+"""
 
-def wait_convergence(nodes, n_neis, wait=5, only_direct=False):
-    acum = 0
-    while True:
-        begin = time.time()
-        if all([len(n.get_neighbors(only_direct=only_direct)) == n_neis for n in nodes]):
-            break
-        time.sleep(0.1)
-        acum += time.time() - begin
-        if acum > wait:
-            assert False
+def __parse_args():
+    parser = argparse.ArgumentParser(description="P2PFL MNIST experiment using the Web Logger.")
+    parser.add_argument("--nodes", type=int, help="The number of nodes.", default=2)
+    parser.add_argument("--rounds", type=int, help="The number of rounds.", default=2)
+    parser.add_argument("--epochs", type=int, help="The number of epochs.", default=0)
+    parser.add_argument("--show_metrics", action="store_true", help="Show metrics.", default=True)
+    parser.add_argument("--measure_time", action="store_true", help="Measure time.", default=False)
+    parser.add_argument("--use_unix_socket", action="store_true", help="Use Unix socket.", default=False)
+    parser.add_argument("--use_local_protocol", action="store_true", help="Use local protocol.", default=False)
+    parser.add_argument("--token", type=str, help="The API token for the Web Logger.", default="")
 
+    # check (cannot use the unix socket and the local protocol at the same time)
+    args = parser.parse_args()
 
-def test_convergence(n, r, epochs=2):
-    start_time = time.time()
+    if args.use_unix_socket and args.use_local_protocol:
+        parser.error("Cannot use the unix socket and the local protocol at the same time.")
+
+    return args
+
+def mnist(n, r, e, show_metrics=True, measure_time=False, use_unix_socket=False, use_local_protocol=False):
+    if measure_time:
+        start_time = time.time()
 
     # Node Creation
     nodes = []
-    for _ in range(n):
+    for i in range(n):
+        if use_local_protocol:
+            address = f"node-{i}"
+        else:
+            address=f"unix:///tmp/p2pfl-{i}.sock" if use_unix_socket else "127.0.0.1"
+
         node = Node(
             MLP(),
             MnistFederatedDM(sub_id=0, number_sub=20),  # sampling for increase speed
+            protocol= InMemoryCommunicationProtocol if use_local_protocol else GrpcCommunicationProtocol,
+            address=address
         )
         node.start()
         nodes.append(node)
@@ -67,64 +84,72 @@ def test_convergence(n, r, epochs=2):
     wait_convergence(nodes, n - 1, only_direct=False)
 
     # Start Learning
-    nodes[0].set_start_learning(rounds=r, epochs=epochs)
+    nodes[0].set_start_learning(rounds=r, epochs=e)
 
     # Wait and check
     wait_4_results(nodes)
 
     # Local Logs
-    local_logs = logger.get_local_logs()
-    if local_logs != {}:
-        logs = list(local_logs.items())[0][1]
-        #  Plot experiment metrics
-        for round_num, round_metrics in logs.items():
-            for node_name, node_metrics in round_metrics.items():
+    if show_metrics:
+        local_logs = logger.get_local_logs()
+        if local_logs != {}:
+            logs = list(local_logs.items())[0][1]
+            #  Plot experiment metrics
+            for round_num, round_metrics in logs.items():
+                for node_name, node_metrics in round_metrics.items():
+                    for metric, values in node_metrics.items():
+                        x, y = zip(*values)
+                        plt.plot(x, y, label=metric)
+                        # Add a red point to the last data point
+                        plt.scatter(x[-1], y[-1], color="red")
+                        plt.title(f"Round {round_num} - {node_name}")
+                        plt.xlabel("Epoch")
+                        plt.ylabel(metric)
+                        plt.legend()
+                        plt.show()
+
+        # Global Logs
+        global_logs = logger.get_global_logs()
+        if global_logs != {}:
+            logs = list(global_logs.items())[0][1]  # Accessing the nested dictionary directly
+            # Plot experiment metrics
+            for node_name, node_metrics in logs.items():
                 for metric, values in node_metrics.items():
                     x, y = zip(*values)
                     plt.plot(x, y, label=metric)
                     # Add a red point to the last data point
                     plt.scatter(x[-1], y[-1], color="red")
-                    plt.title(f"Round {round_num} - {node_name}")
+                    plt.title(f"{node_name} - {metric}")
                     plt.xlabel("Epoch")
                     plt.ylabel(metric)
                     plt.legend()
                     plt.show()
 
-    # Global Logs
-    global_logs = logger.get_global_logs()
-    if global_logs != {}:
-        logs = list(global_logs.items())[0][1]  # Accessing the nested dictionary directly
-        # Plot experiment metrics
-        for node_name, node_metrics in logs.items():
-            for metric, values in node_metrics.items():
-                x, y = zip(*values)
-                plt.plot(x, y, label=metric)
-                # Add a red point to the last data point
-                plt.scatter(x[-1], y[-1], color="red")
-                plt.title(f"{node_name} - {metric}")
-                plt.xlabel("Epoch")
-                plt.ylabel(metric)
-                plt.legend()
-                plt.show()
-
     # Stop Nodes
     [n.stop() for n in nodes]
 
-    print("--- %s seconds ---" % (time.time() - start_time))
+    if measure_time:
+        print("--- %s seconds ---" % (time.time() - start_time))
 
 
 if __name__ == "__main__":
-    # Get epoch number (from command line or default value)
-    epochs = 0
-    try:
-        epochs = int(sys.argv[1])
-    except:
-        print("No epochs provided. Using default value (0). (python mnist.py <epochs>)")
-        print(
-            "Remember that 0 means no epochs and it is used to validate the communications, no local training."
-        )
+    # Parse args
+    args = __parse_args()
+
+    # Set logger
+    if args.token != "":
+        logger.connect_web("http://localhost:3000/api/v1", args.token)
 
     # Settings
     set_test_settings()
+
     # Launch experiment
-    test_convergence(2, 2, epochs=epochs)
+    mnist(
+        args.nodes,
+        args.rounds,
+        args.epochs,
+        show_metrics=args.show_metrics,
+        measure_time=args.measure_time,
+        use_unix_socket=args.use_unix_socket,
+        use_local_protocol=args.use_local_protocol
+    )

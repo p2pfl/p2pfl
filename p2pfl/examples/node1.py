@@ -23,19 +23,30 @@ from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
 )
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.node import Node
+import argparse
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python3 nodo1.py <self_port>")
-        sys.exit(1)
+"""
+Example of a P2PFL MNIST node using a MLP model and a MnistFederatedDM. 
+This node only starts, create a node2 and connect to it in order to start the federated learning process.
+"""
 
+def __get_args():
+    parser = argparse.ArgumentParser(description="P2PFL MNIST node using a MLP model and a MnistFederatedDM.")
+    parser.add_argument("port", type=int, help="The port.")
+    return parser.parse_args()
+
+def node1(port):
     node = Node(
         MLP(),
         MnistFederatedDM(sub_id=0, number_sub=2),
-        port=int(sys.argv[1]),
+        port=port
     )
     node.start()
 
     input("Press any key to stop\n")
 
     node.stop()
+
+if __name__ == "__main__":
+    args = __get_args()
+    node1(args.port)

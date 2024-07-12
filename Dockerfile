@@ -19,8 +19,10 @@ ENV PYTHONUNBUFFERED=1 \
 RUN pip install "poetry==$POETRY_VERSION"
 
 # Install dependencies
-RUN poetry install
+RUN poetry install --without dev,docs
 
 # Install torch (cpu) - poetry present problem with torch-cpu installation
-RUN poetry run pip install torch==2.2.2 torchvision==0.17.2 --index-url https://download.pytorch.org/whl/cpu && \
-    poetry run pip install torchmetrics==1.4.0.post0 pytorch-lightning==1.9.5
+RUN poetry run pip install torch==2.2.2 torchvision==0.17.2 --index-url https://download.pytorch.org/whl/cpu
+
+# Install torchmetrics and pytorch-lightning
+RUN poetry run pip install torchmetrics==1.4.0.post0 pytorch-lightning==1.9.5
