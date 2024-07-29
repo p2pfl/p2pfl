@@ -17,7 +17,7 @@ jobs:
         run: |
           pip install poetry
           python -m poetry lock --no-update
-          python -m poetry install
+          python -m poetry install -E torch
 
       - name: Format (ruff)
         run: |

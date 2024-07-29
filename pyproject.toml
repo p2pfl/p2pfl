@@ -72,6 +72,3 @@ select = [
 ]
 fixable = ["E", "F", "W", "B", "SIM", "I", "C4"]
 ignore = ["B027", "D203", "D212"]
-
-#[tool.poetry.extras]
-#torch = ["torch", "torchvision", "torchmetrics", "pytorch-lightning"]
