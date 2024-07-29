@@ -16,9 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""
-Module to define constants for the p2pfl system.
-"""
+"""Module to define constants for the p2pfl system."""
 
 ###################
 # Global Settings #
@@ -26,14 +24,12 @@ Module to define constants for the p2pfl system.
 
 
 class Settings:
-    """
-    Class to define global settings for the p2pfl system.
-    """
+    """Class to define global settings for the p2pfl system."""
 
     ######
     # GENERAL
     ######
-    GRPC_TIMEOUT: int = 10
+    GRPC_TIMEOUT: float = 10
     """
     Maximum time (seconds) to wait for a gRPC request.
     """
@@ -49,11 +45,11 @@ class Settings:
     ######
     # HEARTBEAT
     ######
-    HEARTBEAT_PERIOD: int = 2
+    HEARTBEAT_PERIOD: float = 2
     """
     Period (seconds) to send heartbeats.
     """
-    HEARTBEAT_TIMEOUT: int = 5
+    HEARTBEAT_TIMEOUT: float = 5
     """
     Timeout (seconds) for a node to be considered dead.
     """

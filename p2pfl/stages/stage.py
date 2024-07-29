@@ -1,23 +1,34 @@
-from typing import Union
+#
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
+# Copyright (c) 2022 Pedro Guijas Bravo.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+"""Stage."""
+
+from typing import Type, Union
 
 
 class Stage:
+    """Abstract class for a stage."""
+
     @staticmethod
-    def name():
+    def name() -> str:
+        """Return the name of the stage."""
         raise NotImplementedError("Stage name not implemented.")
 
     @staticmethod
-    def execute() -> Union["Stage", None]:
+    def execute() -> Union[Type["Stage"], None]:
+        """Execute the stage."""
         raise NotImplementedError("Stage execute not implemented.")
-
-
-class StageWokflow:
-    def __init__(self, first_stage: Stage, early_stopping_fn=lambda: False):
-        self.current_stage = first_stage
-        self.early_stopping_fn = early_stopping_fn
-
-    def run(self, context):
-        while True:
-            self.current_stage = self.current_stage.execute(context)
-            if self.current_stage is None or self.early_stopping_fn():
-                break

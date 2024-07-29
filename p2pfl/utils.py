@@ -15,11 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Utils."""
 
 import time
+from typing import Any, List
 
 import numpy as np
 
+from p2pfl.node import Node
 from p2pfl.settings import Settings
 
 """
@@ -31,7 +34,8 @@ Module to define constants for the p2pfl system.
 ###################
 
 
-def set_test_settings():
+def set_test_settings() -> None:
+    """Set settings for testing."""
     Settings.GRPC_TIMEOUT = 0.5
     Settings.HEARTBEAT_PERIOD = 0.5
     Settings.HEARTBEAT_TIMEOUT = 2
@@ -46,26 +50,30 @@ def set_test_settings():
     Settings.VOTE_TIMEOUT = 60
     Settings.AGGREGATION_TIMEOUT = 60
     Settings.WAIT_HEARTBEATS_CONVERGENCE = 0.2 * Settings.HEARTBEAT_TIMEOUT
+    Settings.LOG_LEVEL = "DEBUG"
 
 
-def wait_convergence(nodes, n_neis, wait=5, only_direct=False):
-    acum = 0
+def wait_convergence(nodes: List[Node], n_neis: int, wait: int = 5, only_direct: bool = False) -> None:
+    """Wait until all nodes have n_neis neighbors."""
+    acum = 0.0
     while True:
         begin = time.time()
-        if all([len(n.get_neighbors(only_direct=only_direct)) == n_neis for n in nodes]):
+        if all(len(n.get_neighbors(only_direct=only_direct)) == n_neis for n in nodes):
             break
         time.sleep(0.1)
         acum += time.time() - begin
         if acum > wait:
-            assert False
+            raise AssertionError()
 
 
-def full_connection(node, nodes):
+def full_connection(node: Node, nodes: List[Node]) -> None:
+    """Connect node to all nodes."""
     for n in nodes:
         node.connect(n.addr)
 
 
-def wait_4_results(nodes):
+def wait_4_results(nodes: List[Node]) -> None:
+    """Wait until all nodes have finished the rounds."""
     while True:
         time.sleep(1)
         finish = True
@@ -76,10 +84,13 @@ def wait_4_results(nodes):
             break
 
 
-def check_equal_models(nodes):
-    model = None
+def check_equal_models(nodes: List[Node]) -> None:
+    """Check that all nodes have the same model."""
+    model: Any = None
     first = True
     for node in nodes:
+        if node.state.learner is None:
+            raise AssertionError()
         if first:
             model = node.state.learner.get_parameters()
             first = False

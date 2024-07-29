@@ -15,8 +15,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""GRPC server."""
+
 from concurrent import futures
-from typing import List, Union
+from typing import List, Optional, Union
 
 import google.protobuf.empty_pb2
 import grpc
@@ -29,18 +31,19 @@ from p2pfl.management.logger import logger
 
 
 class GrpcServer(node_pb2_grpc.NodeServicesServicer):
-    ####
-    # Init
-    ####
+    """Implementation of the server side of a GRPC communication protocol."""
 
     def __init__(
         self,
         addr: str,
         gossiper: Gossiper,
         neighbors: GrpcNeighbors,
-        commands: List[Command] = {},
+        commands: Optional[List[Command]] = None,
     ) -> None:
+        """Initialize the GRPC server."""
         # Message handlers
+        if commands is None:
+            commands = []
         self.__commands = {c.get_name(): c for c in commands}
 
         # Address
@@ -60,61 +63,43 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
     ####
 
     def start(self, wait: bool = False) -> None:
-        """
-        Starts the GRPC server.
-        """
+        """Start the GRPC server."""
         # Server
         node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.__server)
         try:
             self.__server.add_insecure_port(self.addr)
         except Exception as e:
-            raise Exception(f"Cannot bind the address ({self.addr}): {e}")
+            raise Exception(f"Cannot bind the address ({self.addr}): {e}") from e
         self.__server.start()
 
     def stop(self) -> None:
-        """
-        Stops the GRPC server.
-        """
+        """Stop the GRPC server."""
         self.__server.stop(0)
 
     def wait_for_termination(self) -> None:
-        """
-        Waits for termination.
-        """
+        """Wait for termination."""
         self.__server.wait_for_termination()
 
     ####
     # GRPC Services
     ####
 
-    def handshake(
-        self, request: node_pb2.HandShakeRequest, _: grpc.ServicerContext
-    ) -> node_pb2.ResponseMessage:
-        """
-        GRPC service. It is called when a node connects to another.
-        """
+    def handshake(self, request: node_pb2.HandShakeRequest, _: grpc.ServicerContext) -> node_pb2.ResponseMessage:
+        """GRPC service. It is called when a node connects to another."""
         if self.__neighbors.add(request.addr, non_direct=False, handshake_msg=False):
             return node_pb2.ResponseMessage()
         else:
-            return node_pb2.ResponseMessage(
-                error="Cannot add the node (duplicated or wrong direction)"
-            )
+            return node_pb2.ResponseMessage(error="Cannot add the node (duplicated or wrong direction)")
 
     def disconnect(
         self, request: node_pb2.HandShakeRequest, _: grpc.ServicerContext
     ) -> google.protobuf.empty_pb2.Empty:
-        """
-        GRPC service. It is called when a node disconnects from another.
-        """
+        """GRPC service. It is called when a node disconnects from another."""
         self.__neighbors.remove(request.addr, disconnect_msg=False)
         return google.protobuf.empty_pb2.Empty()
 
-    def send_message(
-        self, request: node_pb2.Message, _: grpc.ServicerContext
-    ) -> node_pb2.ResponseMessage:
-        """
-        GRPC service. It is called when a node sends a message to another.
-        """
+    def send_message(self, request: node_pb2.Message, _: grpc.ServicerContext) -> node_pb2.ResponseMessage:
+        """GRPC service. It is called when a node sends a message to another."""
         # If not processed
         if self.__gossiper.check_and_set_processed(request.hash):
             logger.debug(
@@ -125,24 +110,16 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
             if request.ttl > 1:
                 # Update ttl and gossip
                 request.ttl -= 1
-                pending_neis = [
-                    n
-                    for n in self.__neighbors.get_all(only_direct=True).keys()
-                    if n != request.source
-                ]
+                pending_neis = [n for n in self.__neighbors.get_all(only_direct=True) if n != request.source]
                 self.__gossiper.add_message(request, pending_neis)
 
             # Process message
-            if request.cmd in self.__commands.keys():
+            if request.cmd in self.__commands:
                 try:
-                    self.__commands[request.cmd].execute(
-                        request.source, request.round, *request.args
-                    )
+                    self.__commands[request.cmd].execute(request.source, request.round, *request.args)
 
                 except Exception as e:
-                    error_text = (
-                        f"Error while processing command: {request.cmd} {request.args}: {e}"
-                    )
+                    error_text = f"Error while processing command: {request.cmd} {request.args}: {e}"
                     logger.error(self.addr, error_text)
                     return node_pb2.ResponseMessage(error=error_text)
             else:
@@ -154,18 +131,17 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
 
     # Note: main diff with send_message (apart from the message type) is the gossip
     #   -> ADDED GOAL OF THE MESSAGE TO INCREASE ROBUSNTNESS
-    def send_weights(
-        self, request: node_pb2.Weights, _: grpc.ServicerContext
-    ) -> node_pb2.ResponseMessage:
+    def send_weights(self, request: node_pb2.Weights, _: grpc.ServicerContext) -> node_pb2.ResponseMessage:
+        """GRPC service. It is called when a node sends weights to another."""
         # Process message
-        if request.cmd in self.__commands.keys():
+        if request.cmd in self.__commands:
             try:
                 self.__commands[request.cmd].execute(
                     request.source,
                     request.round,
-                    request.weights,
-                    request.contributors,
-                    request.weight,
+                    weights=request.weights,
+                    contributors=request.contributors,
+                    weight=request.weight,
                 )
             except Exception as e:
                 error_text = f"Error while processing model: {request.cmd}: {e}"
@@ -182,12 +158,7 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
     ####
 
     def add_command(self, cmds: Union[Command, List[Command]]) -> None:
-        """
-        Adds a command.
-
-        Args:
-
-        """
+        """Add a command."""
         if isinstance(cmds, list):
             for cmd in cmds:
                 self.__commands[cmd.get_name()] = cmd

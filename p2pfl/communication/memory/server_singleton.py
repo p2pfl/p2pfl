@@ -14,25 +14,30 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""Server singleton."""
+
 import threading
 
 
 class ServerSingleton(dict):
-    def __new__(cls):
+    """Server singleton class."""
+
+    def __new__(cls) -> "ServerSingleton":
+        """Get or create an instance of the server singleton."""
         if not hasattr(cls, "instance"):
-            cls.instance = super(ServerSingleton, cls).__new__(cls)
+            cls.instance = super().__new__(cls)
             cls.termination_event = threading.Event()  # Initialize the threading event
         return cls.instance
 
     @classmethod
-    def reset_instance(cls):
+    def reset_instance(cls) -> "ServerSingleton":
+        """Reset the instance of the server singleton."""
         if hasattr(cls, "instance"):
             cls.termination_event.set()
             del cls.instance
+        return cls()
 
     @classmethod
-    def wait_for_termination(cls):
-        """
-        Blocks until the server is signaled to terminate.
-        """
+    def wait_for_termination(cls) -> None:
+        """Blocks until the server is signaled to terminate."""
         cls.termination_event.wait()

@@ -15,20 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Communication tests."""
 
-from p2pfl.settings import Settings
-from p2pfl.utils import full_connection, set_test_settings, wait_convergence
-
-set_test_settings()
 import time
 
 import pytest
 
 from p2pfl.node import Node
+from p2pfl.settings import Settings
+from p2pfl.utils import full_connection, set_test_settings, wait_convergence
+
+set_test_settings()
 
 
 @pytest.fixture
 def two_nodes():
+    """Create two nodes and start them. Yield the nodes. After the test, stop the nodes."""
     n1 = Node(None, None)
     n2 = Node(None, None)
     n1.start()
@@ -42,6 +44,7 @@ def two_nodes():
 
 @pytest.fixture
 def four_nodes():
+    """Create four nodes and start them. Yield the nodes. After the test, stop the nodes."""
     n1 = Node(None, None)
     n2 = Node(None, None)
     n3 = Node(None, None)
@@ -60,6 +63,7 @@ def four_nodes():
 
 
 def test_connect_invalid_node():
+    """Test that a node can't connect to an invalid node."""
     n = Node(None, None)
     n.start()
     n.connect("google.es:80")
@@ -69,28 +73,22 @@ def test_connect_invalid_node():
 
 
 def test_basic_node_paring(two_nodes):
+    """Test that two nodes can connect and disconnect."""
     n1, n2 = two_nodes
 
     # Connect
     n1.connect(n2.addr)
     wait_convergence(two_nodes, 1, only_direct=True)
-    assert (
-        len(n1.get_neighbors(only_direct=True))
-        == len(n2.get_neighbors(only_direct=True))
-        == 1
-    )
+    assert len(n1.get_neighbors(only_direct=True)) == len(n2.get_neighbors(only_direct=True)) == 1
 
     # Disconnect
     n2.disconnect(n1.addr)
     time.sleep((Settings.HEARTBEAT_PERIOD * 2) + 1)
-    assert (
-        len(n1.get_neighbors(only_direct=True))
-        == len(n2.get_neighbors(only_direct=True))
-        == 0
-    )
+    assert len(n1.get_neighbors(only_direct=True)) == len(n2.get_neighbors(only_direct=True)) == 0
 
 
 def test_full_connected(four_nodes):
+    """Test that four nodes can connect and disconnect (full connected)."""
     n1, n2, n3, n4 = four_nodes
 
     # Connect n1 n2
@@ -122,6 +120,7 @@ def test_full_connected(four_nodes):
 
 
 def test_network_neightbors(four_nodes):
+    """Test that four nodes can connect and disconnect (non-full connected)."""
     n1, n2, n3, n4 = four_nodes
 
     # Connect n1 n2
@@ -158,6 +157,7 @@ def test_network_neightbors(four_nodes):
 
 
 def test_bad_msg(two_nodes):
+    """Test that a node can't connect to an invalid node."""
     n1, n2 = two_nodes
 
     # Conexión
@@ -165,14 +165,13 @@ def test_bad_msg(two_nodes):
     time.sleep(0.1)
 
     # Create an error message
-    n1._communication_protocol.broadcast(
-        n1._communication_protocol.build_msg("BAD_MSG")
-    )
+    n1._communication_protocol.broadcast(n1._communication_protocol.build_msg("BAD_MSG"))
     time.sleep(1)
     assert len(n1.get_neighbors()) == len(n2.get_neighbors()) == 0
 
 
 def test_node_abrupt_down(four_nodes):
+    """Test fault tolerance of a node."""
     n1, n2, n3, n4 = four_nodes
 
     # Connect n1 n2

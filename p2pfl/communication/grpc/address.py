@@ -15,28 +15,32 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""Address parser."""
+
 import os
 import socket
 from ipaddress import ip_address
-from typing import Optional, Tuple
+from typing import Optional
 
 
 class AddressParser:
-    def __init__(self, address: str):
-        self.address = address
-        self.host = None
-        self.port = None
-        self.is_v6 = None
-        self.unix_domain = False
-        self.__parse_address()
+    """Address parser."""
 
-    def __parse_address(self):
-        if self.__is_unix_domain_address(self.address):
+    def __init__(self, address: str):
+        """Initialize the address parser."""
+        self.host: Optional[str] = None
+        self.port: Optional[int] = None
+        self.is_v6: Optional[bool] = None
+        self.unix_domain = False
+        self.__parse_address(address)
+
+    def __parse_address(self, address: str) -> None:
+        if self.__is_unix_domain_address(address):
             self.unix_domain = True
-            self.host = self.address
+            self.host = address
         else:
             try:
-                raw_host, _, raw_port = self.address.rpartition(":")
+                raw_host, _, raw_port = address.rpartition(":")
 
                 if raw_host != "":
                     self.port = int(raw_port)
@@ -71,13 +75,16 @@ class AddressParser:
 
         return os.path.isabs(socket_path)
 
-    def get_parsed_address(self) -> Optional[Tuple[str, int, Optional[bool]]]:
+    def get_parsed_address(self) -> str:
+        """Get the parsed address."""
         if self.unix_domain:
+            if self.host is None:
+                raise ValueError("Unix domain address is invalid.")
             return self.host
         elif self.host is not None:
             return f"[{self.host}]:{self.port}" if self.is_v6 else f"{self.host}:{self.port}"
-
-        return None
+        else:
+            raise ValueError("The address is invalid.")
 
 
 if __name__ == "__main__":

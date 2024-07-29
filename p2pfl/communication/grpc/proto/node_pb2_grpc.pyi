@@ -7,39 +7,36 @@ python -m grpc_tools.protoc -I=p2pfl/proto --python_out=p2pfl/proto --grpc_pytho
 
 import abc
 import collections.abc
-import typing
-
 import google.protobuf.empty_pb2
 import grpc
-import grpc.aio
-import node_pb2
+import grpc.aio # type: ignore
+from p2pfl.communication.grpc.proto import node_pb2
+import typing
 
 _T = typing.TypeVar("_T")
 
-class _MaybeAsyncIterator(
-    collections.abc.AsyncIterator[_T],
-    collections.abc.Iterator[_T],
-    metaclass=abc.ABCMeta,
-): ...
-class _ServicerContext(grpc.ServicerContext, grpc.aio.ServicerContext):  # type: ignore
+class _MaybeAsyncIterator(collections.abc.AsyncIterator[_T], collections.abc.Iterator[_T], metaclass=abc.ABCMeta): ...
+
+class _ServicerContext(grpc.ServicerContext, grpc.aio.ServicerContext):  # type: ignore[misc, type-arg]
     ...
 
 class NodeServicesStub:
-    def __init__(
-        self, channel: typing.Union[grpc.Channel, grpc.aio.Channel]
-    ) -> None: ...
+    def __init__(self, channel: typing.Union[grpc.Channel, grpc.aio.Channel]) -> None: ...
     handshake: grpc.UnaryUnaryMultiCallable[
         node_pb2.HandShakeRequest,
         node_pb2.ResponseMessage,
     ]
+
     disconnect: grpc.UnaryUnaryMultiCallable[
         node_pb2.HandShakeRequest,
         google.protobuf.empty_pb2.Empty,
     ]
+
     send_message: grpc.UnaryUnaryMultiCallable[
         node_pb2.Message,
         node_pb2.ResponseMessage,
     ]
+
     send_weights: grpc.UnaryUnaryMultiCallable[
         node_pb2.Weights,
         node_pb2.ResponseMessage,
@@ -50,14 +47,17 @@ class NodeServicesAsyncStub:
         node_pb2.HandShakeRequest,
         node_pb2.ResponseMessage,
     ]
+
     disconnect: grpc.aio.UnaryUnaryMultiCallable[
         node_pb2.HandShakeRequest,
         google.protobuf.empty_pb2.Empty,
     ]
+
     send_message: grpc.aio.UnaryUnaryMultiCallable[
         node_pb2.Message,
         node_pb2.ResponseMessage,
     ]
+
     send_weights: grpc.aio.UnaryUnaryMultiCallable[
         node_pb2.Weights,
         node_pb2.ResponseMessage,
@@ -69,35 +69,27 @@ class NodeServicesServicer(metaclass=abc.ABCMeta):
         self,
         request: node_pb2.HandShakeRequest,
         context: _ServicerContext,
-    ) -> typing.Union[
-        node_pb2.ResponseMessage, collections.abc.Awaitable[node_pb2.ResponseMessage]
-    ]: ...
+    ) -> typing.Union[node_pb2.ResponseMessage, collections.abc.Awaitable[node_pb2.ResponseMessage]]: ...
+
     @abc.abstractmethod
     def disconnect(
         self,
         request: node_pb2.HandShakeRequest,
         context: _ServicerContext,
-    ) -> typing.Union[
-        google.protobuf.empty_pb2.Empty,
-        collections.abc.Awaitable[google.protobuf.empty_pb2.Empty],
-    ]: ...
+    ) -> typing.Union[google.protobuf.empty_pb2.Empty, collections.abc.Awaitable[google.protobuf.empty_pb2.Empty]]: ...
+
     @abc.abstractmethod
     def send_message(
         self,
         request: node_pb2.Message,
         context: _ServicerContext,
-    ) -> typing.Union[
-        node_pb2.ResponseMessage, collections.abc.Awaitable[node_pb2.ResponseMessage]
-    ]: ...
+    ) -> typing.Union[node_pb2.ResponseMessage, collections.abc.Awaitable[node_pb2.ResponseMessage]]: ...
+
     @abc.abstractmethod
     def send_weights(
         self,
         request: node_pb2.Weights,
         context: _ServicerContext,
-    ) -> typing.Union[
-        node_pb2.ResponseMessage, collections.abc.Awaitable[node_pb2.ResponseMessage]
-    ]: ...
+    ) -> typing.Union[node_pb2.ResponseMessage, collections.abc.Awaitable[node_pb2.ResponseMessage]]: ...
 
-def add_NodeServicesServicer_to_server(
-    servicer: NodeServicesServicer, server: typing.Union[grpc.Server, grpc.aio.Server]
-) -> None: ...
+def add_NodeServicesServicer_to_server(servicer: NodeServicesServicer, server: typing.Union[grpc.Server, grpc.aio.Server]) -> None: ...

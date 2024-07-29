@@ -15,18 +15,23 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""In-memory neighbors."""
+
 import time
 from typing import Optional, Tuple
 
+from p2pfl.communication.memory.server_singleton import ServerSingleton
 from p2pfl.communication.neighbors import Neighbors
 from p2pfl.management.logger import logger
-from p2pfl.communication.memory.server_singleton import ServerSingleton
 
 
 class InMemoryNeighbors(Neighbors):
-    def refresh_or_add(self, addr: str, time: time) -> None:
+    """Implementation of the neighbors side of an in-memory communication protocol."""
+
+    def refresh_or_add(self, addr: str, time: float) -> None:
+        """Refresh or add a neighbor."""
         # Update if exists
-        if addr in self.neis.keys():
+        if addr in self.neis:
             with self.neis_lock:
                 # Update time
                 self.neis[addr] = (
@@ -40,15 +45,14 @@ class InMemoryNeighbors(Neighbors):
 
     def connect(
         self, addr: str, non_direct: bool = False, handshake_msg: bool = True
-    ) -> Tuple[Optional[None], Optional[None], float]:
+    ) -> Tuple[None, Optional[str], float]:
+        """Connect to a neighbor."""
         if non_direct:
             return self.__build_non_direct_neighbor(addr)
         else:
             return self.__build_direct_neighbor(addr, handshake_msg)
 
-    def __build_direct_neighbor(
-        self, addr: str, handshake_msg: bool
-    ) -> Optional[Tuple[str, str, float]]:
+    def __build_direct_neighbor(self, addr: str, handshake_msg: bool) -> Tuple[None, Optional[str], float]:
         try:
             # Get server
             server = ServerSingleton()[addr]
@@ -58,9 +62,11 @@ class InMemoryNeighbors(Neighbors):
                 response = server.handshake({"addr": self.self_addr})
                 if response.get("error"):
                     logger.info(self.self_addr, f"Cannot add a neighbor: {response['error']}")
-                    return None
+                    raise Exception(f"Cannot add a neighbor: {response['error']}")
 
             # Add neighbor
+            # ESTO ESTA MAL! esto simplemente devuelve un objeto de conexión, no lo agrega
+            print("BUG -> NEED TO FIX IT (just remove this line i think)")
             self.neis[addr] = (None, server, time.time())
 
             return (None, server, time.time())
@@ -70,17 +76,17 @@ class InMemoryNeighbors(Neighbors):
             # Re-raise exception
             raise e
 
-    def __build_non_direct_neighbor(self, _: str) -> Tuple[Optional[None], Optional[None], float]:
+    def __build_non_direct_neighbor(self, _: str) -> Tuple[None, None, float]:
         return (None, None, time.time())
 
     def disconnect(self, addr: str, disconnect_msg: bool = True) -> None:
+        """Disconnect from a neighbor."""
         try:
             # If the other node still connected, disconnect
             _, node_server, _ = self.get(addr)
 
-            if disconnect_msg:
-                if node_server is not None:
-                    node_server.disconnect({"addr": self.self_addr})
+            if disconnect_msg and node_server is not None:
+                node_server.disconnect({"addr": self.self_addr})
 
         except Exception as e:
             logger.error(self.self_addr, f"Error while disconnecting from {addr}: {e}")

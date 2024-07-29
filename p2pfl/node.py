@@ -15,8 +15,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""P2PFL Node."""
+
+import contextlib
 import threading
-from typing import List, Type
+from typing import Any, Dict, Type
 
 from p2pfl.commands.add_model_command import AddModelCommand
 from p2pfl.commands.init_model_command import InitModelCommand
@@ -39,20 +42,22 @@ from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.workflows import LearningWorkflow
 
-"""
-- revisar agregación de nodos en caliente
-- revisar logging en general
-- tiene sentido que lo del aprendizaje esté en este nodo!
-- patrón estado al nodo
-    - al final es algo secuencial: inicialización, votado, entrenamiento, agregación, ...
-- model gossip provisional (hard-coded, se necesita mover el model gossiper)
-"""
-
 
 class Node:
-    #####################
-    #     Node Init     #
-    #####################
+    """
+    Represents a learning node in the federated learning network.
+
+    Attributes
+    ----------
+        addr (str): The address of the node.
+        learner (Learner): The learner associated with the node.
+        aggregator (Aggregator): The aggregator used by the node.
+        communication_protocol (CommunicationProtocol): The communication protocol used by the node.
+        commands (List[Type]): The list of commands the node can execute.
+        running (bool): Flag indicating whether the node is running.
+        locks (dict): A dictionary of threading locks.
+
+    """
 
     def __init__(
         self,
@@ -64,6 +69,20 @@ class Node:
         protocol: Type[CommunicationProtocol] = GrpcCommunicationProtocol,
         **kwargs,
     ) -> None:
+        """
+        Initialize a node.
+
+        Args:
+        ----
+            model: Model to be used in the learning process.
+            data: Dataset to be used in the learning process.
+            address (str): The address of the node.
+            learner (Type[NodeLearner]): The learner class to be used.
+            aggregator (Type[Aggregator]): The aggregator class to be used.
+            protocol (Type[CommunicationProtocol]): The communication protocol to be used.
+            **kwargs: Additional arguments.
+
+        """
         # Communication protol
         self._communication_protocol = protocol(address)
         self.addr = self._communication_protocol.get_address()
@@ -113,15 +132,18 @@ class Node:
 
     def connect(self, addr: str) -> bool:
         """
-        Connects a node to another.
+        Connect a node to another.
 
         > Careful: Adding nodes while learning is running is not fully supported.
 
         Args:
+        ----
             addr (str): The address of the node to connect to.
 
         Returns:
+        -------
             bool: True if the node was connected, False otherwise.
+
         """
         # Check running
         self.assert_running(True)
@@ -129,15 +151,18 @@ class Node:
         logger.info(self.addr, f"Connecting to {addr}...")
         return self._communication_protocol.connect(addr)
 
-    def get_neighbors(self, only_direct: bool = False) -> List[str]:
+    def get_neighbors(self, only_direct: bool = False) -> Dict[str, Any]:
         """
-        Returns the neighbors of the node.
+        Return the neighbors of the node.
 
         Args:
+        ----
             only_direct (bool): If True, only the direct neighbors will be returned.
 
         Returns:
+        -------
             list: The list of neighbors.
+
         """
         return self._communication_protocol.get_neighbors(only_direct)
 
@@ -146,7 +171,9 @@ class Node:
         Disconnects a node from another.
 
         Args:
+        ----
             addr (str): The address of the node to disconnect from.
+
         """
         # Check running
         self.assert_running(True)
@@ -160,13 +187,16 @@ class Node:
 
     def assert_running(self, running: bool) -> None:
         """
-        Asserts that the node is running or not running.
+        Assert that the node is running or not running.
 
         Args:
+        ----
             running (bool): True if the node must be running, False otherwise.
 
         Raises:
+        ------
             Exception: If the node is not running and running is True, or if the node is running and running is False.
+
         """
         running_state = self.__running
         if running_state != running:
@@ -174,13 +204,16 @@ class Node:
 
     def start(self, wait: bool = False) -> None:
         """
-        Starts the node: server and neighbors(gossip and heartbeat).
+        Start the node: server and neighbors(gossip and heartbeat).
 
         Args:
+        ----
             wait (bool): If True, the function will wait until the server is terminated.
 
         Raises:
+        ------
             Exception: If the node is already running.
+
         """
         # Check not running
         self.assert_running(False)
@@ -196,10 +229,12 @@ class Node:
 
     def stop(self) -> None:
         """
-        Stops the node: server and neighbors(gossip and heartbeat).
+        Stop the node: server and neighbors(gossip and heartbeat).
 
-        Raises:
+        Raises
+        ------
             Exception: If the node is not running.
+
         """
         logger.info(self.addr, "Stopping node...")
         try:
@@ -211,7 +246,7 @@ class Node:
             self.state.clear()
             # Unregister node
             logger.unregister_node(self.addr)
-        except:
+        except Exception:
             pass
 
     ##########################
@@ -223,29 +258,42 @@ class Node:
         Set the data to be used in the learning process (by the learner).
 
         Args:
+        ----
             data: Dataset to be used in the learning process.
+
+        Raises:
+        ------
+            Exception: If the learner is already set.
+
         """
         self.data = data
-        self.state.learner.set_data(data)
+        # If learner is already set (raise)
+        if self.state.learner is not None:
+            raise Exception("Data cannot be set after learner is set.")
 
     def set_model(self, model) -> None:
         """
         Set the model to be used in the learning process (by the learner).
 
         Args:
+        ----
             model: Model to be used in the learning process.
+
+        Raises:
+        ------
+            Exception: If the learner is already set.
+
         """
         self.model = model
-        self.state.learner.set_model(model)
+        # If learner is already set (raise)
+        if self.state.learner is not None:
+            raise Exception("Model cannot be set after learner is set.")
 
     ###############################################
     #         Network Learning Management         #
     ###############################################
 
     def __start_learning_thread(self, rounds: int, epochs: int) -> None:
-        """
-        meter un try y handlear aqui las expeciones para detener al nodo -> controlar errores durante el aprendizaje -> cambiar state del nodo
-        """
         learning_thread = threading.Thread(
             target=self.__start_learning,
             args=(rounds, epochs),
@@ -259,8 +307,10 @@ class Node:
         Start the learning process in the entire network.
 
         Args:
+        ----
             rounds: Number of rounds of the learning process.
             epochs: Number of epochs of the learning process.
+
         """
         self.assert_running(True)
 
@@ -271,9 +321,7 @@ class Node:
             # Broadcast start Learning
             logger.info(self.addr, "Broadcasting start learning...")
             self._communication_protocol.broadcast(
-                self._communication_protocol.build_msg(
-                    StartLearningCommand.get_name(), [str(rounds), str(epochs)]
-                )
+                self._communication_protocol.build_msg(StartLearningCommand.get_name(), [str(rounds), str(epochs)])
             )
             # Set model initialized
             self.state.model_initialized_lock.release()
@@ -287,9 +335,7 @@ class Node:
             logger.info(self.addr, "Learning already started")
 
     def set_stop_learning(self) -> None:
-        """
-        Stop the learning process in the entire network.
-        """
+        """Stop the learning process in the entire network."""
         if self.state.round is not None:
             # send stop msg
             self._communication_protocol.broadcast(
@@ -326,14 +372,13 @@ class Node:
     def __stop_learning(self) -> None:
         logger.info(self.addr, "Stopping learning")
         # Leraner
-        self.state.learner.interrupt_fit()
+        if self.state.learner is not None:
+            self.state.learner.interrupt_fit()
         # Aggregator
         self.aggregator.clear()
         # State
         self.state.clear()
         logger.experiment_finished(self.addr)
         # Try to free wait locks
-        try:
+        with contextlib.suppress(Exception):
             self.state.wait_votes_ready_lock.release()
-        except Exception:
-            pass

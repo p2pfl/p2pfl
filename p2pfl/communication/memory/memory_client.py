@@ -15,29 +15,37 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""In-memory client."""
+
 import random
 import time
-from typing import List, Optional, Union, Dict
+from typing import Dict, List, Optional, Union
 
-from .server_singleton import ServerSingleton
-from p2pfl.settings import Settings
+from p2pfl.communication.client import Client
+from p2pfl.communication.memory.memory_neighbors import InMemoryNeighbors
+from p2pfl.communication.memory.server_singleton import ServerSingleton
 from p2pfl.management.logger import logger
-
-from .memory_neighbors import InMemoryNeighbors
+from p2pfl.settings import Settings
 
 
 class NeighborNotConnectedError(Exception):
+    """Neighbor not connected error."""
+
     pass
 
 
-class InMemoryClient:
+class InMemoryClient(Client):
+    """Implementation of the client side of an in-memory communication protocol."""
+
     def __init__(self, self_addr: str, neighbors: InMemoryNeighbors) -> None:
+        """Initialize the in-memory client."""
         self.__self_addr = self_addr
         self.__neighbors = neighbors
 
     def build_message(
         self, cmd: str, args: Optional[List[str]] = None, round: Optional[int] = None
     ) -> Dict[str, Union[str, int, List[str]]]:
+        """Build a message."""
         if round is None:
             round = -1
         if args is None:
@@ -58,9 +66,12 @@ class InMemoryClient:
         cmd: str,
         round: int,
         serialized_model: bytes,
-        contributors: Optional[List[str]] = [],
+        contributors: Optional[List[str]] = None,
         weight: int = 1,
     ) -> Dict[str, Union[str, int, bytes, List[str]]]:
+        """Build a weights message."""
+        if contributors is None:
+            contributors = []
         return {
             "source": self.__self_addr,
             "round": round,
@@ -76,12 +87,13 @@ class InMemoryClient:
         msg: Dict[str, Union[str, int, List[str], bytes]],
         create_connection: bool = False,
     ) -> None:
+        """Send a message."""
         try:
             # Get neighbor
             try:
                 node_server = self.__neighbors.get(nei)[1]
-            except KeyError:
-                raise NeighborNotConnectedError(f"Neighbor {nei} not found.")
+            except KeyError as e:
+                raise NeighborNotConnectedError(f"Neighbor {nei} not found.") from e
 
             # Check if direct connection
             if node_server is None and create_connection:
@@ -89,10 +101,7 @@ class InMemoryClient:
 
             # Simulate sending a message by invoking the neighbor's receive function
             if node_server is not None:
-                if "weight" in msg:
-                    response = node_server.send_weights(msg)
-                else:
-                    response = node_server.send_message(msg)
+                response = node_server.send_weights(msg) if "weight" in msg else node_server.send_message(msg)
 
             else:
                 raise NeighborNotConnectedError(
@@ -102,24 +111,25 @@ class InMemoryClient:
             if "error" in response:
                 logger.error(
                     self.__self_addr,
-                    f"Error while sending a message: {msg['cmd']} {msg['args']}: {response['error']}",
+                    f"Error while sending a message: {msg['cmd']!r} {msg['args']!r}: {response['error']!r}",
                 )
         except Exception as e:
             logger.info(
-                self.__self_addr, f"Cannot send message {msg['cmd']} to {nei}. Error: {str(e)}"
+                self.__self_addr,
+                f"Cannot send message {msg['cmd']!r} to {nei}. Error: {str(e)}",
             )
             print(msg)
             self.__neighbors.remove(nei)
 
     def broadcast(
-        self, msg: Dict[str, Union[str, int, List[str]]], node_list: Optional[List[str]] = None
+        self,
+        msg: Dict[str, Union[str, int, List[str], bytes]],
+        node_list: Optional[List[str]] = None,
     ) -> None:
+        """Broadcast a message."""
         # Node list
-        if node_list is not None:
-            node_list = node_list
-        else:
-            node_list = self.__neighbors.get_all(only_direct=True)
+        nodes = node_list if node_list is not None else self.__neighbors.get_all(only_direct=True)
 
         # Send
-        for n in node_list:
+        for n in nodes:
             self.send(n, msg)

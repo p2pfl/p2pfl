@@ -1,43 +1,57 @@
+#
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
+# Copyright (c) 2024 Pedro Guijas Bravo.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+"""Gossiper."""
+
 import random
 import threading
 import time
-from typing import Any, Callable, List, Tuple
+from typing import Any, Callable, List, Optional, Tuple
 
-from p2pfl.communication.grpc.grpc_client import GrpcClient
+from p2pfl.communication.client import Client
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 
-# Define type aliases for clarity
-CandidateCondition = Callable[[str], bool]
-StatusFunction = Callable[[str], Any]
-ModelFunction = Callable[[str], Tuple[Any, List[str], int]]
-
 
 class Gossiper(threading.Thread):
-    """
-    Gossiper.
-    """
-
-    ###
-    # Init
-    ###
+    """Gossiper for agnostic communication protocol."""
 
     def __init__(
         self,
         self_addr,
-        client: GrpcClient,  # can be generalized to any protocol
-        period: float = Settings.GOSSIP_PERIOD,
-        messages_per_period: int = Settings.GOSSIP_MESSAGES_PER_PERIOD,
+        client: Client,  # can be generalized to any protocol
+        period: Optional[float] = None,
+        messages_per_period: Optional[int] = None,
     ) -> None:
+        """Initialize the gossiper."""
+        if period is None:
+            period = Settings.GOSSIP_PERIOD
+        if messages_per_period is None:
+            messages_per_period = Settings.GOSSIP_MESSAGES_PER_PERIOD
         # Thread
         super().__init__()
         self.__self_addr = self_addr
         self.name = f"gossiper-thread-{self.__self_addr}"
 
         # Lists, locks and flag
-        self.__processed_messages = []
+        self.__processed_messages: List[int] = []
         self.__processed_messages_lock = threading.Lock()
-        self.__pending_msgs = []
+        self.__pending_msgs: List[Tuple[Any, List[str]]] = []
         self.__pending_msgs_lock = threading.Lock()
         self.__gossip_terminate_flag = threading.Event()
 
@@ -51,10 +65,12 @@ class Gossiper(threading.Thread):
     ###
 
     def start(self) -> None:
+        """Start the gossiper thread."""
         logger.info(self.__self_addr, "Starting gossiper...")
         return super().start()
 
     def stop(self) -> None:
+        """Stop the gossiper thread."""
         logger.info(self.__self_addr, "Stopping gossiper...")
         self.__gossip_terminate_flag.set()
 
@@ -62,15 +78,14 @@ class Gossiper(threading.Thread):
     # Gossip
     ###
 
-    def add_message(self, msg: any, pending_neis: List[str]) -> None:
-        """
-        Add to pending messages
-        """
+    def add_message(self, msg: Any, pending_neis: List[str]) -> None:
+        """Add message to pending."""
         self.__pending_msgs_lock.acquire()
         self.__pending_msgs.append((msg, pending_neis))
         self.__pending_msgs_lock.release()
 
     def check_and_set_processed(self, msg_hash: int) -> bool:
+        """Check if message was already processed and set it as processed."""
         self.__processed_messages_lock.acquire()
         # Check if message was already processed
         if msg_hash in self.__processed_messages:
@@ -85,6 +100,7 @@ class Gossiper(threading.Thread):
         return True
 
     def run(self) -> None:
+        """Run the gossiper thread."""
         while not self.__gossip_terminate_flag.is_set():
             t = time.time()
             messages_to_send = []
@@ -129,12 +145,13 @@ class Gossiper(threading.Thread):
     def gossip_weights(
         self,
         early_stopping_fn: Callable[[], bool],
-        get_candidates_fn,
-        status_fn: StatusFunction,
-        model_fn: ModelFunction,
+        get_candidates_fn: Callable[[], List[str]],
+        status_fn: Callable[[], Any],
+        model_fn: Callable[[str], Any],
         period: float,
         create_connection: bool,
     ) -> None:
+        """Gossip model weights. This is a synchronous gossip. End when there are no more neighbors to gossip."""
         # Initialize list with status of nodes in the last X iterations
         last_x_status: List[Any] = []
         j = 0

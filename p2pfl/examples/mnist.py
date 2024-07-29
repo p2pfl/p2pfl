@@ -16,10 +16,19 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""Example of a P2PFL MNIST experiment, using a MLP model and a MnistFederatedDM."""
+
+import argparse
 import time
+
 import matplotlib.pyplot as plt
-from p2pfl.communication.grpc.grpc_communication_protocol import GrpcCommunicationProtocol
-from p2pfl.communication.memory.memory_communication_protocol import InMemoryCommunicationProtocol
+
+from p2pfl.communication.grpc.grpc_communication_protocol import (
+    GrpcCommunicationProtocol,
+)
+from p2pfl.communication.memory.memory_communication_protocol import (
+    InMemoryCommunicationProtocol,
+)
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
     MnistFederatedDM,
 )
@@ -31,13 +40,9 @@ from p2pfl.utils import (
     wait_4_results,
     wait_convergence,
 )
-import argparse
 
-"""
-Example of a P2PFL MNIST experiment, using a MLP model and a MnistFederatedDM.
-"""
 
-def __parse_args():
+def __parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="P2PFL MNIST experiment using the Web Logger.")
     parser.add_argument("--nodes", type=int, help="The number of nodes.", default=2)
     parser.add_argument("--rounds", type=int, help="The number of rounds.", default=2)
@@ -45,7 +50,12 @@ def __parse_args():
     parser.add_argument("--show_metrics", action="store_true", help="Show metrics.", default=True)
     parser.add_argument("--measure_time", action="store_true", help="Measure time.", default=False)
     parser.add_argument("--use_unix_socket", action="store_true", help="Use Unix socket.", default=False)
-    parser.add_argument("--use_local_protocol", action="store_true", help="Use local protocol.", default=False)
+    parser.add_argument(
+        "--use_local_protocol",
+        action="store_true",
+        help="Use local protocol.",
+        default=False,
+    )
     parser.add_argument("--token", type=str, help="The API token for the Web Logger.", default="")
 
     # check (cannot use the unix socket and the local protocol at the same time)
@@ -56,7 +66,30 @@ def __parse_args():
 
     return args
 
-def mnist(n, r, e, show_metrics=True, measure_time=False, use_unix_socket=False, use_local_protocol=False):
+
+def mnist(
+    n: int,
+    r: int,
+    e: int,
+    show_metrics: bool = True,
+    measure_time: bool = False,
+    use_unix_socket: bool = False,
+    use_local_protocol: bool = False,
+) -> None:
+    """
+    P2PFL MNIST experiment.
+
+    Args:
+    ----
+        n: The number of nodes.
+        r: The number of rounds.
+        e: The number of epochs.
+        show_metrics: Show metrics.
+        measure_time: Measure time.
+        use_unix_socket: Use Unix socket.
+        use_local_protocol: Use local protocol
+
+    """
     if measure_time:
         start_time = time.time()
 
@@ -66,13 +99,13 @@ def mnist(n, r, e, show_metrics=True, measure_time=False, use_unix_socket=False,
         if use_local_protocol:
             address = f"node-{i}"
         else:
-            address=f"unix:///tmp/p2pfl-{i}.sock" if use_unix_socket else "127.0.0.1"
+            address = f"unix:///tmp/p2pfl-{i}.sock" if use_unix_socket else "127.0.0.1"
 
         node = Node(
             MLP(),
             MnistFederatedDM(sub_id=0, number_sub=20),  # sampling for increase speed
-            protocol= InMemoryCommunicationProtocol if use_local_protocol else GrpcCommunicationProtocol,
-            address=address
+            protocol=(InMemoryCommunicationProtocol if use_local_protocol else GrpcCommunicationProtocol),  # type: ignore
+            address=address,
         )
         node.start()
         nodes.append(node)
@@ -93,9 +126,9 @@ def mnist(n, r, e, show_metrics=True, measure_time=False, use_unix_socket=False,
     if show_metrics:
         local_logs = logger.get_local_logs()
         if local_logs != {}:
-            logs = list(local_logs.items())[0][1]
+            logs_l = list(local_logs.items())[0][1]
             #  Plot experiment metrics
-            for round_num, round_metrics in logs.items():
+            for round_num, round_metrics in logs_l.items():
                 for node_name, node_metrics in round_metrics.items():
                     for metric, values in node_metrics.items():
                         x, y = zip(*values)
@@ -111,9 +144,9 @@ def mnist(n, r, e, show_metrics=True, measure_time=False, use_unix_socket=False,
         # Global Logs
         global_logs = logger.get_global_logs()
         if global_logs != {}:
-            logs = list(global_logs.items())[0][1]  # Accessing the nested dictionary directly
+            logs_g = list(global_logs.items())[0][1]  # Accessing the nested dictionary directly
             # Plot experiment metrics
-            for node_name, node_metrics in logs.items():
+            for node_name, node_metrics in logs_g.items():
                 for metric, values in node_metrics.items():
                     x, y = zip(*values)
                     plt.plot(x, y, label=metric)
@@ -126,7 +159,8 @@ def mnist(n, r, e, show_metrics=True, measure_time=False, use_unix_socket=False,
                     plt.show()
 
     # Stop Nodes
-    [n.stop() for n in nodes]
+    for node in nodes:
+        node.stop()
 
     if measure_time:
         print("--- %s seconds ---" % (time.time() - start_time))
@@ -151,5 +185,5 @@ if __name__ == "__main__":
         show_metrics=args.show_metrics,
         measure_time=args.measure_time,
         use_unix_socket=args.use_unix_socket,
-        use_local_protocol=args.use_local_protocol
+        use_local_protocol=args.use_local_protocol,
     )

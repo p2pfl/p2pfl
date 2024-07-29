@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Learning tests."""
 
-from p2pfl.utils import set_test_settings
-
-set_test_settings()
 from collections import OrderedDict
 
 import torch
@@ -27,6 +25,10 @@ from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.pytorch.lightning_learner import LightningLearner
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.node import Node
+from p2pfl.utils import set_test_settings
+
+set_test_settings()
+
 
 ###############################################################################
 #    Test things related to the learning process (not the learning process)   #
@@ -34,6 +36,7 @@ from p2pfl.node import Node
 
 
 def test_encoding():
+    """Test encoding and decoding of parameters."""
     nl1 = LightningLearner(MLP(), None, "", 1)
     encoded_params = nl1.encode_parameters()
 
@@ -41,10 +44,11 @@ def test_encoding():
     decoded_params = nl2.decode_parameters(encoded_params)
     nl2.set_parameters(decoded_params)
 
-    encoded_params == nl2.encode_parameters()
+    assert encoded_params == nl2.encode_parameters()
 
 
 def test_avg_simple():
+    """Test simple aggregation (simple arrays)."""
     n = Node(None, None)
     n.start()
     aggregator = FedAvg()
@@ -68,6 +72,7 @@ def test_avg_simple():
 
 
 def test_avg_complex():
+    """Test complex aggregation (models)."""
     aggregator = FedAvg()
     nl1 = LightningLearner(MLP(), None, "", 1)
     params = nl1.get_parameters()

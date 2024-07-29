@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Node tests."""
 
 import time
 
@@ -38,6 +39,7 @@ set_test_settings()
 
 @pytest.fixture
 def two_nodes():
+    """Create two nodes and start them. Yield the nodes. After the test, stop the nodes."""
     n1 = Node(MLP(), MnistFederatedDM())
     n2 = Node(MLP(), MnistFederatedDM())
     n1.start()
@@ -51,6 +53,7 @@ def two_nodes():
 
 @pytest.fixture
 def four_nodes():
+    """Create four nodes and start them. Yield the nodes. After the test, stop the nodes."""
     n1 = Node(MLP(), MnistFederatedDM())
     n2 = Node(MLP(), MnistFederatedDM())
     n3 = Node(MLP(), MnistFederatedDM())
@@ -70,11 +73,12 @@ def four_nodes():
 
 @pytest.mark.parametrize("x", [(2, 1), (2, 2)])
 def test_convergence(x):
+    """Test convergence (on learning) of two nodes."""
     n, r = x
 
     # Node Creation
     nodes = []
-    for i in range(n):
+    for _ in range(n):
         node = Node(MLP(), MnistFederatedDM())
         node.start()
         nodes.append(node)
@@ -97,6 +101,7 @@ def test_convergence(x):
 
 
 def test_interrupt_train(two_nodes):
+    """Test interrupting training of a node."""
     if (
         __name__ == "__main__"
     ):  # To avoid creating new process when current has not finished its bootstrapping phase
@@ -120,9 +125,10 @@ def test_interrupt_train(two_nodes):
 
 @pytest.mark.parametrize("n", [2, 4])
 def test_node_down_on_learning(n):
+    """Test node down on learning."""
     # Node Creation
     nodes = []
-    for i in range(n):
+    for _ in range(n):
         node = Node(MLP(), MnistFederatedDM())
         node.start()
         nodes.append(node)
@@ -147,6 +153,7 @@ def test_node_down_on_learning(n):
 
 
 def test_wrong_model():
+    """Test sending a wrong model."""
     n1 = Node(MLP(), MnistFederatedDM())
     n2 = Node(CNN(), MnistFederatedDM())
 

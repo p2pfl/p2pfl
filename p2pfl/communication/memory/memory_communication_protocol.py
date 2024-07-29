@@ -15,26 +15,30 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from typing import Dict, List, Optional, Union, Callable, Any, Tuple
+"""In-memory communication protocol."""
 
+from typing import Any, Callable, Dict, List, Optional, Union
+
+from p2pfl.commands.command import Command
+from p2pfl.commands.heartbeat_command import HeartbeatCommand
+from p2pfl.communication.communication_protocol import CommunicationProtocol
 from p2pfl.communication.gossiper import Gossiper
 from p2pfl.communication.heartbeater import Heartbeater
 from p2pfl.communication.memory.memory_client import InMemoryClient
-from p2pfl.communication.memory.memory_server import InMemoryServer
 from p2pfl.communication.memory.memory_neighbors import InMemoryNeighbors
-from p2pfl.communication.communication_protocol import CommunicationProtocol
-from p2pfl.commands.command import Command
-from p2pfl.commands.heartbeat_command import HeartbeatCommand
+from p2pfl.communication.memory.memory_server import InMemoryServer
 from p2pfl.settings import Settings
 
-# Define type aliases for clarity
-CandidateCondition = Callable[[str], bool]
-StatusFunction = Callable[[str], Any]
-ModelFunction = Callable[[str], Tuple[Any, List[str], int]]
+# DUDA:
+#   - Cliente servidor con heartbeater? yo lo haría más simple quizá -> puede ser interesante mantenerlo para que sea
+#   exactamente igual al de grpc
 
 
 class InMemoryCommunicationProtocol(CommunicationProtocol):
-    def __init__(self, addr: str = "address", commands: List[Command] = []) -> None:
+    """In-memory communication protocol."""
+
+    def __init__(self, addr: str = "address", commands: Optional[List[Command]] = None) -> None:
+        """Initialize the in-memory communication protocol."""
         # Address
         self.addr = addr
 
@@ -50,32 +54,43 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
         self._heartbeater = Heartbeater(self.addr, self._neighbors, self._client)
         # Commands
         self._server.add_command(HeartbeatCommand(self._heartbeater))
+        if commands is None:
+            commands = []
         self._server.add_command(commands)
 
     def get_address(self) -> str:
+        """Get the address."""
         return self.addr
 
     def start(self) -> None:
+        """Start the communication protocol."""
         self._server.start()
         self._heartbeater.start()
         self._gossiper.start()
 
     def stop(self) -> None:
+        """Stop the communication protocol."""
         self._server.stop()
         self._heartbeater.stop()
         self._gossiper.stop()
         self._neighbors.clear_neighbors()
 
     def add_command(self, cmds: Union[Command, List[Command]]) -> None:
+        """Add a command."""
         self._server.add_command(cmds)
 
-    def connect(self, addr: str, non_direct: bool = False) -> None:
+    def connect(self, addr: str, non_direct: bool = False) -> bool:
+        """Connect to a neighbor."""
         return self._neighbors.add(addr, non_direct=non_direct)
 
     def disconnect(self, nei: str, disconnect_msg: bool = True) -> None:
+        """Disconnect from a neighbor."""
         self._neighbors.remove(nei, disconnect_msg=disconnect_msg)
 
-    def build_msg(self, cmd: str, args: List[str] = [], round: Optional[int] = None) -> any:
+    def build_msg(self, cmd: str, args: Optional[List[str]] = None, round: Optional[int] = None) -> Any:
+        """Build a message."""
+        if args is None:
+            args = []
         return self._client.build_message(cmd, args, round)
 
     def build_weights(
@@ -83,9 +98,12 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
         cmd: str,
         round: int,
         serialized_model: bytes,
-        contributors: Optional[List[str]] = [],
+        contributors: Optional[List[str]] = None,
         weight: int = 1,
-    ) -> any:
+    ) -> Any:
+        """Build a weights message."""
+        if contributors is None:
+            contributors = []
         return self._client.build_weights(cmd, round, serialized_model, contributors, weight)
 
     def send(
@@ -96,28 +114,37 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
             Dict[str, Union[str, int, bytes, List[str]]],
         ],
     ) -> None:
+        """Send a message."""
         self._client.send(nei, msg)
 
     def broadcast(
-        self, msg: Dict[str, Union[str, int, List[str]]], node_list: Optional[List[str]] = None
+        self,
+        msg: Dict[str, Union[str, int, List[str], bytes]],
+        node_list: Optional[List[str]] = None,
     ) -> None:
+        """Broadcast a message."""
         self._client.broadcast(msg, node_list)
 
-    def get_neighbors(self, only_direct: bool = False) -> List[str]:
+    def get_neighbors(self, only_direct: bool = False) -> Dict[str, Any]:
+        """Get neighbors."""
         return self._neighbors.get_all(only_direct)
 
     def wait_for_termination(self) -> None:
+        """Wait for termination."""
         self._server.wait_for_termination()
 
     def gossip_weights(
         self,
         early_stopping_fn: Callable[[], bool],
-        get_candidates_fn,
-        status_fn: StatusFunction,
-        model_fn: ModelFunction,
-        period: float = Settings.GOSSIP_MODELS_PERIOD,
+        get_candidates_fn: Callable[[], List[str]],
+        status_fn: Callable[[], Any],
+        model_fn: Callable[[str], Any],
+        period: Optional[float] = None,
         create_connection: bool = False,
     ) -> None:
+        """Gossip weights."""
+        if period is None:
+            period = Settings.GOSSIP_MODELS_PERIOD
         self._gossiper.gossip_weights(
             early_stopping_fn,
             get_candidates_fn,

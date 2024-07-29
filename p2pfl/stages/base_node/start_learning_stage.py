@@ -1,5 +1,24 @@
+#
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
+# Copyright (c) 2022 Pedro Guijas Bravo.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+"""Start learning stage."""
+
 import time
-from typing import Any, List, Union
+from typing import Any, List, Optional, Type, Union
 
 from p2pfl.commands.init_model_command import InitModelCommand
 from p2pfl.communication.communication_protocol import CommunicationProtocol
@@ -13,22 +32,26 @@ from p2pfl.stages.stage_factory import StageFactory
 
 
 class StartLearningStage(Stage):
+    """Start learning stage."""
+
     @staticmethod
     def name():
+        """Return the name of the stage."""
         return "StartLearningStage"
 
     @staticmethod
     def execute(
-        rounds: int = None,
-        epochs: int = None,
+        rounds: Optional[int] = None,
+        epochs: Optional[int] = None,
         model: Any = None,
         data: Any = None,
-        state: NodeState = None,
-        learner_class: NodeLearner = None,
-        communication_protocol: CommunicationProtocol = None,
-        aggregator: Aggregator = None,
+        state: Optional[NodeState] = None,
+        learner_class: Optional[Type[NodeLearner]] = None,
+        communication_protocol: Optional[CommunicationProtocol] = None,
+        aggregator: Optional[Aggregator] = None,
         **kwargs,
-    ) -> Union["Stage", None]:
+    ) -> Union[Type["Stage"], None]:
+        """Execute the stage."""
         if (
             rounds is None
             or epochs is None
@@ -37,6 +60,7 @@ class StartLearningStage(Stage):
             or model is None
             or data is None
             or communication_protocol is None
+            or aggregator is None
         ):
             raise Exception("Invalid parameters on StartLearningStage.")
 
@@ -67,6 +91,7 @@ class StartLearningStage(Stage):
             state.start_thread_lock.release()
             return None
 
+    @staticmethod
     def __gossip_model(
         state: NodeState,
         communication_protocol: CommunicationProtocol,
@@ -77,19 +102,19 @@ class StartLearningStage(Stage):
 
         # Wait a model (init or aggregated)
         def candidate_condition(node: str) -> bool:
-            return node not in state.nei_status.keys()
+            return node not in state.nei_status
 
         def get_candidates_fn() -> List[str]:
-            return [
-                n
-                for n in communication_protocol.get_neighbors(only_direct=True)
-                if candidate_condition(n)
-            ]
+            return [n for n in communication_protocol.get_neighbors(only_direct=True) if candidate_condition(n)]
 
         def status_fn() -> Any:
             return get_candidates_fn()
 
         def model_fn(_: str) -> Any:
+            if state.learner is None:
+                raise Exception("Learner not initialized.")
+            if state.round is None:
+                raise Exception("Round not initialized.")
             model = state.learner.get_parameters()
             contributors = aggregator.get_aggregated_models()  # Poner a NONE
             weight = 1  # Poner a NONE

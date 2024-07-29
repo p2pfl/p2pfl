@@ -16,18 +16,16 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""Learning Exceptions."""
+
 
 class DecodingParamsError(Exception):
-    """
-    An exception raised when decoding parameters fails.
-    """
+    """An exception raised when decoding parameters fails."""
 
     pass
 
 
 class ModelNotMatchingError(Exception):
-    """
-    An exception raised when parameters do not match with the model.
-    """
+    """An exception raised when parameters do not match with the model."""
 
     pass

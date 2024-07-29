@@ -30,7 +30,7 @@ Before submitting a pull request, please run the following commands:
 ```bash
 poetry run ruff check p2pfl
 poetry run ruff format p2pfl
-poetry run mypy p2pfl
+poetry run mypy -p p2pfl
 poetry run pytest -v --cov=p2pfl
 ```
 

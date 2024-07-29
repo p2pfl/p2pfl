@@ -15,6 +15,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""gRPC neighbors."""
+
 import time
 from typing import Optional, Tuple
 
@@ -27,9 +29,13 @@ from p2pfl.settings import Settings
 
 
 class GrpcNeighbors(Neighbors):
-    def refresh_or_add(self, addr: str, time: time) -> None:
+    """Implementation of the neighbors for a GRPC communication protocol."""
+
+    def refresh_or_add(self, addr: str, time: float) -> None:
+        """Refresh or add a neighbor."""
+        print(f"GrpcNeighbors.refresh_or_add: {addr}, {time}")
         # Update if exists
-        if addr in self.neis.keys():
+        if addr in self.neis:
             # Update time
             self.neis_lock.acquire()
             self.neis[addr] = (
@@ -44,17 +50,23 @@ class GrpcNeighbors(Neighbors):
 
     def connect(
         self, addr: str, non_direct: bool = False, handshake_msg: bool = True
-    ) -> Tuple[Optional[grpc.Channel], Optional[grpc.Channel], float]:
+    ) -> Tuple[Optional[grpc.Channel], Optional[node_pb2_grpc.NodeServicesStub], float]:
+        """Connect to a neighbor."""
         if non_direct:
             return self.__build_non_direct_neighbor(addr)
         else:
             return self.__build_direct_neighbor(addr, handshake_msg)
 
-    def __build_direct_neighbor(self, addr: str, handshake_msg: bool) -> bool:
+    def __build_direct_neighbor(
+        self, addr: str, handshake_msg: bool
+    ) -> Tuple[Optional[grpc.Channel], Optional[node_pb2_grpc.NodeServicesStub], float]:
         try:
             # Create channel and stub
             channel = grpc.insecure_channel(addr)
             stub = node_pb2_grpc.NodeServicesStub(channel)
+
+            if not stub:
+                raise Exception(f"Cannot create a stub for {addr}")
 
             # Handshake
             if handshake_msg:
@@ -65,7 +77,7 @@ class GrpcNeighbors(Neighbors):
                 if res.error:
                     logger.info(self.self_addr, f"Cannot add a neighbor: {res.error}")
                     channel.close()
-                    return False
+                    raise Exception(f"Cannot add a neighbor: {res.error}")
 
             # Add neighbor
             return (channel, stub, time.time())
@@ -75,10 +87,11 @@ class GrpcNeighbors(Neighbors):
             # Re-raise exception
             raise e
 
-    def __build_non_direct_neighbor(self, _: str) -> bool:
+    def __build_non_direct_neighbor(self, _: str) -> Tuple[None, None, float]:
         return (None, None, time.time())
 
     def disconnect(self, addr: str, disconnect_msg: bool = True) -> None:
+        """Disconnect from a neighbor."""
         try:
             # If the other node still connected, disconnect
             node_channel, node_stub, _ = self.get(addr)

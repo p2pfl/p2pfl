@@ -1,14 +1,33 @@
+#
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
+# Copyright (c) 2024 Pedro Guijas Bravo.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+"""CLI for the p2pfl platform."""
+
+import os
 import subprocess
 import sys
-from typing import Annotated, Optional
+from typing import Annotated, Dict
+
 import typer
-import os
-from rich.console import Console
-from rich.table import Table
 from rich.box import HEAVY_HEAD
+from rich.console import Console
 from rich.panel import Panel
-
-
+from rich.table import Table
 
 ####
 # ASCII Art
@@ -42,14 +61,20 @@ logo = r"""[italic]
 ####
 
 console = Console()
-app = typer.Typer(rich_markup_mode="rich", help="[bold blue]:earth_americas: P2PFL-CLI[/bold blue] | Peer-to-Peer Federated Learning Command Line Tool")
+app = typer.Typer(
+    rich_markup_mode="rich",
+    help="[bold blue]:earth_americas: P2PFL-CLI[/bold blue] | Peer-to-Peer Federated Learning Command Line Tool",
+)
 
 
 @app.command()
-def login(token: Annotated[str, typer.Option(help="🔑 Your API token")] = ""): #prompt="🔑 Enter your API token"
+def login(
+    token: Annotated[str, typer.Option(help="🔑 Your API token")] = "",
+):  # prompt="🔑 Enter your API token"
     """Authenticate with the p2pfl platform using your API token."""
     console.print(":sweat_smile: [bold yellow]Not implemented yet![/bold yellow] \n:rocket: Comming soon!")
-    #console.print(f"Authenticating with token: {token}...")
+    # console.print(f"Authenticating with token: {token}...")
+
 
 @app.command()
 def remote():
@@ -71,19 +96,22 @@ exp_app = typer.Typer(help="Run experiments on the p2pfl platform.")
 app.add_typer(exp_app, name="experiment")
 
 EXAMPLES_DIR = "p2pfl/examples"  # Update if your examples are elsewhere
-def __get_available_examples():
+
+
+def __get_available_examples() -> Dict[str, str]:
     # Load the available examples
     files = [filename[:-3] for filename in os.listdir(EXAMPLES_DIR) if filename.endswith(".py")]
 
     # Read the docstrings of the examples
     return {file: __read_docstring(os.path.join(EXAMPLES_DIR, file + ".py")) for file in files}
 
-def __read_docstring(file):
-    with open(file, "r") as f:
-        content = f.read()
-        content = content.split('"""')
+
+def __read_docstring(file) -> str:
+    with open(file) as f:
+        content = f.read().split('"""')
         docstring = content[1] if len(content) > 1 else ""
         return docstring.strip()
+
 
 @exp_app.command()
 def list():
@@ -99,7 +127,6 @@ def list():
         show_lines=True,
         expand=True,  # Allow table to expand to full width
         header_style="bold magenta",
-
     )
     table.add_column("Name", style="green", width=12)
     table.add_column("Description")
@@ -110,9 +137,8 @@ def list():
 
     console.print(table)
 
-@exp_app.command(
-    context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
-)
+
+@exp_app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
 def run(
     ctx: typer.Context,
     example: str,
@@ -143,12 +169,13 @@ def run(
             text=True,  # Decode output as text
         )
 
-        # Stream output line by line
-        for line in process.stdout:
-            print(line, end="")  # Print the line without a newline
+        if process.stdout:
+            # Stream output line by line
+            for line in process.stdout:
+                print(line, end="")  # Print the line without a newline
 
-        # Close the stdout pipe
-        process.stdout.close()
+            # Close the stdout pipe
+            process.stdout.close()
 
         # Wait for the process to finish
         returncode = process.wait()
@@ -160,6 +187,7 @@ def run(
 
     except Exception:
         console.print(f"\n\n:x: [bold red]Error running {example}[/bold red]")
+
 
 if __name__ == "__main__":
     app()

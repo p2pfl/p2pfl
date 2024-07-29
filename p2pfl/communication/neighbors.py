@@ -1,28 +1,52 @@
+#
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
+# Copyright (c) 2024 Pedro Guijas Bravo.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+"""Neighbor management."""
+
 import threading
-from typing import Dict
+from typing import Any, Dict
 
 from p2pfl.management.logger import logger
 
-"""
-Duda, el channel sirve para algo?¿ Sólo para cerrar conexion no?
-
-- mirar de hacer protected los atributos
-"""
-
 
 class Neighbors:
+    """Neighbor management class for agnostic communication protocol."""
+
     def __init__(self, self_addr) -> None:
+        """Initialize the neighbor management class."""
         self.self_addr = self_addr
-        self.neis = {}
+        self.neis: Dict[str, Any] = {}
         self.neis_lock = threading.Lock()
 
-    def connect(self, addr: str) -> any:
+    def connect(self, addr: str) -> Any:
+        """Connect to a neighbor."""
         raise NotImplementedError
 
     def disconnect(self, addr: str) -> None:
+        """Disconnect from a neighbor."""
+        raise NotImplementedError
+
+    def refresh_or_add(self, addr: str, time: float) -> None:
+        """Refresh or add a neighbor."""
         raise NotImplementedError
 
     def add(self, addr: str, *args, **kargs) -> bool:
+        """Add a neighbor to the neighbors list."""
         # Log
         logger.info(self.self_addr, f"Adding {addr}")
 
@@ -55,23 +79,30 @@ class Neighbors:
     def remove(self, addr: str, *args, **kargs) -> None:
         """
         Remove a neighbor from the neighbors list.
+
         Be careful, this method does not close the connection, is agnostic to the connection state.
 
         Args:
-            addr (str): Address of the neighbor.
+        ----
+        addr (str): Address of the neighbor to remove.
+        args: Additional arguments for the disconnect method.
+        kargs: Additional keyword arguments for the disconnect method.
+
         """
         self.neis_lock.acquire()
         # Disconnect
         self.disconnect(addr, *args, **kargs)
         # Remove neighbor
-        if addr in self.neis.keys():
+        if addr in self.neis:
             del self.neis[addr]
         self.neis_lock.release()
 
-    def get(self, addr: str) -> any:
+    def get(self, addr: str) -> Any:
+        """Get a neighbor from the neighbors list."""
         return self.neis[addr]
 
-    def get_all(self, only_direct: bool = False) -> Dict[str, any]:
+    def get_all(self, only_direct: bool = False) -> Dict[str, Any]:
+        """Get all neighbors from the neighbors list."""
         # Copy neighbors dict
         neis = self.neis.copy()
         # Filter
@@ -80,8 +111,10 @@ class Neighbors:
         return neis
 
     def exists(self, addr: str) -> bool:
-        return addr in self.neis.keys()
+        """Check if a neighbor exists in the neighbors list."""
+        return addr in self.neis
 
     def clear_neighbors(self) -> None:
+        """Clear all neighbors."""
         while len(self.neis) > 0:
             self.remove(list(self.neis.keys())[0])

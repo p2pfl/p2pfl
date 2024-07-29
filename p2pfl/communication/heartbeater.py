@@ -1,5 +1,26 @@
+#
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
+# Copyright (c) 2024 Pedro Guijas Bravo.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+"""Heartbeater."""
+
 import threading
 import time
+from typing import Optional
 
 from p2pfl.communication.client import Client
 from p2pfl.communication.neighbors import Neighbors
@@ -10,13 +31,18 @@ heartbeater_cmd_name = "beat"
 
 
 class Heartbeater(threading.Thread):
+    """Heartbeater for agnostic communication protocol. Send and update fresh heartbeats."""
+
     def __init__(self, self_addr: str, neighbors: Neighbors, client: Client) -> None:
         """
         Initialize the heartbeat thread.
 
         Args:
-            self_addr (str): Address of the node.
-            neighbors (dict): Dictionary of neighbors.
+        ----
+        self_addr (str): Address of the node.
+        neighbors (Neighbors): Neighbors of the node.
+        client (Client): Client to send the heartbeats
+
         """
         super().__init__()
         self.__self_addr = self_addr
@@ -27,9 +53,11 @@ class Heartbeater(threading.Thread):
         self.name = f"heartbeater-thread-{self.__self_addr}"
 
     def run(self) -> None:
+        """Run the heartbeat thread."""
         self.__heartbeater()
 
     def stop(self) -> None:
+        """Stop the heartbeat thread."""
         self.__heartbeat_terminate_flag.set()
 
     def beat(self, nei: str, time: float) -> None:
@@ -37,8 +65,10 @@ class Heartbeater(threading.Thread):
         Update the time of the last heartbeat of a neighbor. If the neighbor is not added, add it.
 
         Args:
+        ----
             nei (str): Address of the neighbor.
             time (float): Time of the heartbeat.
+
         """
         # Check if it is itself
         if nei == self.__self_addr:
@@ -49,18 +79,25 @@ class Heartbeater(threading.Thread):
 
     def __heartbeater(
         self,
-        period: float = Settings.HEARTBEAT_PERIOD,
-        timeout: float = Settings.HEARTBEAT_TIMEOUT,
+        period: Optional[float] = None,
+        timeout: Optional[float] = None,
     ) -> None:
+        if period is None:
+            period = Settings.HEARTBEAT_PERIOD
+        if timeout is None:
+            timeout = Settings.HEARTBEAT_TIMEOUT
         toggle = False
         while not self.__heartbeat_terminate_flag.is_set():
             t = time.time()
+
+            print(f"RUNNING HEARTBEATER {t} | {timeout}")
 
             # Check heartbeats (every 2 periods)
             if toggle:
                 # Get Neis
                 neis = self.__neighbors.get_all()
-                for nei in neis.keys():
+                for nei in neis:
+                    print(f"{t - neis[nei][2]}")
                     if t - neis[nei][2] > timeout:
                         logger.info(
                             self.__self_addr,

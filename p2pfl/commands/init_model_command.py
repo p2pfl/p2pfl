@@ -1,4 +1,24 @@
-from typing import List
+#
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
+# Copyright (c) 2024 Pedro Guijas Bravo.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+"""InitModel command."""
+
+from typing import List, Optional
 
 from p2pfl.commands.command import Command
 from p2pfl.commands.model_initialized_command import ModelInitializedCommand
@@ -15,6 +35,8 @@ revisar el tema de parado de nodos: importante enviar que es lo que falló cache
 
 
 class InitModelCommand(Command):
+    """InitModelCommand."""
+
     def __init__(
         self,
         state,
@@ -22,6 +44,7 @@ class InitModelCommand(Command):
         aggregator,
         comm_proto,
     ) -> None:
+        """Initialize InitModelCommand."""
         self.state = state
         self.stop = stop
         self.aggregator = aggregator
@@ -29,16 +52,23 @@ class InitModelCommand(Command):
 
     @staticmethod
     def get_name() -> str:
+        """Get the command name."""
         return "init_model"
 
     def execute(
         self,
         source: str,
         round: int,
-        weights: bytes,
-        contributors: List[str],
-        weight: int,
+        weights: Optional[bytes] = None,
+        contributors: Optional[List[str]] = None,
+        weight: Optional[int] = None,
+        **kwargs,
     ) -> None:
+        """Execute the command."""
+        if weights is None or contributors is None or weight is None:
+            logger.error(self.state.addr, "Invalid message")
+            return
+
         # Check if Learning is running
         if self.state.learner is not None:
             # Check source

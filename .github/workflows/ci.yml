@@ -30,7 +30,7 @@ jobs:
 
       - name: Type checks (mypy)
         run: |
-          poetry run mypy p2pfl
+          poetry run mypy -p p2pfl
 
       - name: Test (pytest) # todo: coverage
         run: |

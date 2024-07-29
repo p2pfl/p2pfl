@@ -1,7 +1,26 @@
+#
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
+# Copyright (c) 2022 Pedro Guijas Bravo.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+"""Vote Train Set Stage."""
+
 import math
 import random
 import time
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Type, Union
 
 from p2pfl.commands.vote_train_set_command import VoteTrainSetCommand
 from p2pfl.communication.communication_protocol import CommunicationProtocol
@@ -13,16 +32,20 @@ from p2pfl.stages.stage_factory import StageFactory
 
 
 class VoteTrainSetStage(Stage):
+    """Vote Train Set Stage."""
+
     @staticmethod
     def name():
+        """Return the name of the stage."""
         return "VoteTrainSetStage"
 
     @staticmethod
     def execute(
-        state: NodeState = None,
-        communication_protocol: CommunicationProtocol = None,
+        state: Optional[NodeState] = None,
+        communication_protocol: Optional[CommunicationProtocol] = None,
         **kwargs,
-    ) -> Union["Stage", None]:
+    ) -> Union[Type["Stage"], None]:
+        """Execute the stage."""
         if state is None or communication_protocol is None:
             raise Exception("Invalid parameters on VoteTrainSetStage.")
 
@@ -43,9 +66,10 @@ class VoteTrainSetStage(Stage):
         else:
             return StageFactory.get_stage("WaitAggregatedModelsStage")
 
+    @staticmethod
     def __vote(state: NodeState, communication_protocol: CommunicationProtocol) -> None:
         # Vote (at least itself)
-        candidates = list(communication_protocol.get_neighbors(only_direct=False).keys())
+        candidates = list(communication_protocol.get_neighbors(only_direct=False))
         if state.addr not in candidates:
             candidates.append(state.addr)
         logger.debug(state.addr, f"{len(candidates)} candidates to train set")
@@ -67,14 +91,13 @@ class VoteTrainSetStage(Stage):
         communication_protocol.broadcast(
             communication_protocol.build_msg(
                 VoteTrainSetCommand.get_name(),
-                list(map(str, list(sum(votes, tuple())))),
+                list(map(str, list(sum(votes, ())))),
                 round=state.round,
             )
         )
 
-    def __aggregate_votes(
-        state: NodeState, communication_protocol: CommunicationProtocol
-    ) -> List[str]:
+    @staticmethod
+    def __aggregate_votes(state: NodeState, communication_protocol: CommunicationProtocol) -> List[str]:
         logger.debug(state.addr, "Waiting other node votes.")
 
         # Get time
@@ -97,22 +120,22 @@ class VoteTrainSetStage(Stage):
             nc_votes = {
                 k: v
                 for k, v in state.train_set_votes.items()
-                if k in list(communication_protocol.get_neighbors(only_direct=False).keys())
-                or k == state.addr
+                if k in list(communication_protocol.get_neighbors(only_direct=False)) or k == state.addr
             }
             state.train_set_votes_lock.release()
 
             # Determine if all votes are received
-            needed_votes = set(
-                list(communication_protocol.get_neighbors(only_direct=False).keys()) + [state.addr]
-            )
+            needed_votes = set(list(communication_protocol.get_neighbors(only_direct=False)) + [state.addr])
             votes_ready = needed_votes == set(nc_votes.keys())
 
             if votes_ready or timeout:
                 if timeout and not votes_ready:
+                    missing_votes = set(
+                        list(communication_protocol.get_neighbors(only_direct=False)) + [state.addr]
+                    ) - set(nc_votes.keys())
                     logger.info(
                         state.addr,
-                        f"Timeout for vote aggregation. Missing votes from {set(list(communication_protocol.get_neighbors(only_direct=False).keys()) + [state.addr]) - set(nc_votes.keys())}",
+                        f"Timeout for vote aggregation. Missing votes from {missing_votes}",
                     )
 
                 results: Dict[str, int] = {}
@@ -141,14 +164,15 @@ class VoteTrainSetStage(Stage):
             # Wait for votes or refresh every 2 seconds
             state.wait_votes_ready_lock.acquire(timeout=2)
 
+    @staticmethod
     def __validate_train_set(
         train_set: List[str],
         state: NodeState,
         communication_protocol: CommunicationProtocol,
     ) -> List[str]:
-        # Verify if node set is valid (can happend that a node was down when the votes were being processed)
+        # Verify if node set is valid
+        # (can happend that a node was down when the votes were being processed)
         for tsn in train_set:
-            if tsn not in list(communication_protocol.get_neighbors(only_direct=False).keys()):
-                if tsn != state.addr:
-                    train_set.remove(tsn)
+            if tsn not in list(communication_protocol.get_neighbors(only_direct=False)) and (tsn != state.addr):
+                train_set.remove(tsn)
         return train_set
