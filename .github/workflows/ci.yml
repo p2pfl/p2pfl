@@ -34,4 +34,4 @@ jobs:
 
       - name: Test (pytest) # todo: coverage
         run: |
-          poetry run pytest p2pfl
+          poetry run pytest -v
