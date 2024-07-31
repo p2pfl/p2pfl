@@ -90,8 +90,6 @@ class Heartbeater(threading.Thread):
         while not self.__heartbeat_terminate_flag.is_set():
             t = time.time()
 
-            print(f"RUNNING HEARTBEATER {t} | {timeout}")
-
             # Check heartbeats (every 2 periods)
             if toggle:
                 # Get Neis

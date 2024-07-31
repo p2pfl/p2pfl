@@ -44,7 +44,7 @@ To install the library for development we recommend using a virtual environment.
 ```bash
 git clone https://github.com/pguijas/p2pfl.git
 cd p2pfl
-poetry install
+poetry install -E torch
 ```
 
 #### 🐳 Docker
@@ -52,7 +52,8 @@ poetry install
 You can also use the library with Docker. We provide a Docker image with the library installed. You can use it as follows:
 
 ```bash
-docker ... # TODO
+docker build -t p2pfl .
+docker run -it --rm p2pfl bash
 ```
 
 ## 📚 Documentation
