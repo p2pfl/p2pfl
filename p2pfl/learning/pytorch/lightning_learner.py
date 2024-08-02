@@ -16,8 +16,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""Lightning Learner for P2PFL."""
-
 import logging
 import pickle
 from collections import OrderedDict
@@ -34,6 +32,7 @@ from p2pfl.learning.exceptions import (
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.pytorch.lightning_logger import FederatedLogger
 from p2pfl.management.logger import logger
+from p2pfl.learning.LearnerStateDTO import LearnerStateDTO
 
 torch.set_num_threads(1)
 
@@ -41,7 +40,34 @@ torch.set_num_threads(1)
 #    LightningLearner     #
 ###########################
 
+"""
+---------->  Add information of the node that owns the learner.  <----------
+"""
 
+"""
+        decoded_model = self.learner.decode_parameters(weights)
+        if self.learner.check_parameters(decoded_model):
+            models_added = self.aggregator.add_model(
+                decoded_model,
+                list(contributors),
+                weight,
+            )
+            if models_added != []:
+                # Communicate Aggregation
+                self._neighbors.broadcast_msg(
+                    self._neighbors.build_msg(
+                        LearningNodeMessages.MODELS_AGGREGATED,
+                        models_added,
+                    )
+                )
+        else:
+            raise ModelNotMatchingError(
+                "Not matching models"
+            )  # esta excepción mejor tenerla en add_model (así nos ahorramos in if raise que no aporta robustez en el método que importa)
+
+"""
+
+    
 class LightningLearner(NodeLearner):
     """
     Learner with PyTorch Lightning.
@@ -61,28 +87,29 @@ class LightningLearner(NodeLearner):
         self_addr: str,
         epochs: int,
     ):
-        """Initialize the learner."""
         self.model = model
         self.data = data
         self.__trainer: Optional[Trainer] = None
         self.epochs = epochs
         self.__self_addr = self_addr
+        
+        self.learner_state = LearnerStateDTO()
+        
         # Start logging
         self.logger = FederatedLogger(self_addr)
         # To avoid GPU/TPU printings
         logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
 
     def set_model(self, model: pl.LightningModule) -> None:
-        """Set the model of the learner."""
         self.model = model
 
     def set_data(self, data: LightningDataModule) -> None:
-        """Set the data of the learner."""
         self.data = data
 
     def get_num_samples(self) -> Tuple[int, int]:
-        """Get the number of samples in the train and test datasets."""
-        # TODO: USE IT TO OBTAIN A MORE ACCURATE METRIC AGG
+        """
+        TODO: USE IT TO OBTAIN A MORE ACCURATE METRIC AGG
+        """
         train_len = len(self.data.train_dataloader().dataset)  # type: ignore
         test_len = len(self.data.test_dataloader().dataset)  # type: ignore
         return (train_len, test_len)
@@ -91,42 +118,38 @@ class LightningLearner(NodeLearner):
     # Model weights
     ####
 
-    def encode_parameters(self, params: Optional[Dict[str, torch.Tensor]] = None) -> bytes:
-        """Encode the parameters of the model."""
+    def encode_parameters(self, params: Optional[LearnerStateDTO] = None) -> bytes:
         if params is None:
-            params = self.get_parameters()
-        array = [val.cpu().numpy() for _, val in params.items()]
-        return pickle.dumps(array)
+            params = self.get_parameters()        
+        return pickle.dumps(params) # serializing the entire DTO object
 
-    def decode_parameters(self, data: bytes) -> Dict[str, torch.Tensor]:
-        """Decode the parameters of the model."""
+    def decode_parameters(self, data: bytes) -> LearnerStateDTO:
         try:
-            params_dict = zip(self.get_parameters().keys(), pickle.loads(data))
-            return OrderedDict({k: torch.tensor(v) for k, v in params_dict})
+            # params_dict = zip(self.get_parameters().keys(), pickle.loads(data))
+            # return OrderedDict({k: torch.tensor(v) for k, v in params_dict})
+            params_dict = pickle.loads(data)
+            return params_dict
         except Exception as e:
-            raise DecodingParamsError("Error decoding parameters") from e
+            raise DecodingParamsError("Error decoding parameters: {e}")
 
-    def set_parameters(self, params: OrderedDict[str, torch.Tensor]) -> None:
-        """Set the parameters of the model."""
+    def set_parameters(self, params: LearnerStateDTO) -> None:
         try:
-            self.model.load_state_dict(params)
-        except Exception as e:
-            raise ModelNotMatchingError("Not matching models") from e
+            self.model.load_state_dict(params.get_weights())
+        except Exception:
+            raise ModelNotMatchingError("Not matching models")
 
-    def get_parameters(self) -> Dict[str, torch.Tensor]:
-        """Get the parameters of the model."""
-        return self.model.state_dict()
+    def get_parameters(self) -> LearnerStateDTO:
+        self.learner_state.add_weights_dict(self.model.state_dict())
+        return self.learner_state
 
     ####
     # Training
     ####
 
     def set_epochs(self, epochs: int) -> None:
-        """Set the number of epochs."""
         self.epochs = epochs
 
     def fit(self) -> None:
-        """Fit the model."""
         try:
             if self.epochs > 0:
                 self.__trainer = Trainer(
@@ -146,13 +169,11 @@ class LightningLearner(NodeLearner):
             raise e
 
     def interrupt_fit(self) -> None:
-        """Interrupt the fit."""
         if self.__trainer is not None:
             self.__trainer.should_stop = True
             self.__trainer = None
 
     def evaluate(self) -> Dict[str, float]:
-        """Evaluate the model."""
         try:
             if self.epochs > 0:
                 self.__trainer = Trainer(

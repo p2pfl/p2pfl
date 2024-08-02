@@ -16,50 +16,57 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""FedAvg Aggregator."""
-
 from typing import Dict, Tuple
-
-import torch
+import numpy as np
 
 from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
-
+from p2pfl.learning.LearnerStateDTO import LearnerStateDTO
 
 class FedAvg(Aggregator):
-    """Federated Averaging (FedAvg) [McMahan et al., 2016] | Paper: https://arxiv.org/abs/1602.05629."""
+    """
+    Federated Averaging (FedAvg) [McMahan et al., 2016]
+    Paper: https://arxiv.org/abs/1602.05629
+    """
 
     def __init__(self, **kwargs):
-        """Initialize the Aggregator."""
         super().__init__(**kwargs)
 
-    def aggregate(self, models: Dict[str, Tuple[Dict[str, torch.Tensor], int]]) -> Dict[str, torch.Tensor]:
+    def aggregate(
+        self, models: Dict[str, Tuple[LearnerStateDTO, int]]
+    ) -> LearnerStateDTO:
         """
         Ponderated average of the models.
 
         Args:
-        ----
             models: Dictionary with the models (node: model,num_samples).
-
         """
+
         # Check if there are models to aggregate
         if len(models) == 0:
-            raise NoModelsToAggregateError(f"({self.node_name}) Trying to aggregate models when there is no models")
+            raise NoModelsToAggregateError(
+                f"({self.node_name}) Trying to aggregate models when there is no models"
+            )
 
-        models_list = list(models.values())
+        models_list = list(models.values())  # list of tuples (model, num_samples)
 
         # Total Samples
         total_samples = sum([y for _, y in models_list])
 
-        # Create a Zero Model
-        accum = {layer: torch.zeros_like(param) for layer, param in models_list[-1][0].items()}
+        # Create a Zero Model using numpy
+        first_model_weights = models_list[0][0].get_weights()
+        accum = {layer: np.zeros_like(param) for layer, param in first_model_weights.items()}
 
         # Add weighted models
-        for m, w in models_list:
-            for layer in m:
-                accum[layer] = accum[layer] + m[layer] * w
+        for m, w in models_list:  # m is the DTO
+            m_weights = m.get_weights()
+            for layer in m_weights.keys():
+                accum[layer] = np.add(accum[layer], m_weights[layer] * w)
 
         # Normalize Accum
         for layer in accum:
-            accum[layer] = accum[layer] / total_samples
-
-        return accum
+            accum[layer] = np.divide(accum[layer], total_samples)
+            
+        # Create a LearnerStateDTO to return
+        aggregated_state = LearnerStateDTO()
+        aggregated_state.add_weights_dict(accum)
+        return aggregated_state
