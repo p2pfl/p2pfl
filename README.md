@@ -15,7 +15,7 @@
 | p2pfl/commands/metrics\_command.py                            |       16 |        5 |     69% |     50-55 |
 | p2pfl/commands/model\_initialized\_command.py                 |       11 |        0 |    100% |           |
 | p2pfl/commands/models\_agregated\_command.py                  |       13 |        0 |    100% |           |
-| p2pfl/commands/models\_ready\_command.py                      |       15 |        2 |     87% |     57-63 |
+| p2pfl/commands/models\_ready\_command.py                      |       15 |        1 |     93% |        57 |
 | p2pfl/commands/start\_learning\_command.py                    |       13 |        1 |     92% |        59 |
 | p2pfl/commands/stop\_learning\_command.py                     |       19 |        8 |     58% |     50-61 |
 | p2pfl/commands/vote\_train\_set\_command.py                   |       24 |        2 |     92% |     69-74 |
@@ -49,7 +49,7 @@
 | p2pfl/exceptions.py                                           |        6 |        0 |    100% |           |
 | p2pfl/learning/\_\_init\_\_.py                                |        0 |        0 |    100% |           |
 | p2pfl/learning/aggregators/\_\_init\_\_.py                    |        0 |        0 |    100% |           |
-| p2pfl/learning/aggregators/aggregator.py                      |      106 |       20 |     81% |65, 82, 134-136, 140-146, 193, 225-232, 238-239 |
+| p2pfl/learning/aggregators/aggregator.py                      |      106 |       21 |     80% |65, 82, 134-136, 140-146, 188-193, 225-232, 238-239 |
 | p2pfl/learning/aggregators/fedavg.py                          |       16 |        1 |     94% |        41 |
 | p2pfl/learning/exceptions.py                                  |        4 |        0 |    100% |           |
 | p2pfl/learning/learner.py                                     |       26 |       12 |     54% |38, 51, 61, 76, 89, 102, 112, 122, 126, 130, 140, 150 |
