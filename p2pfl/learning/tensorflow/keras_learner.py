@@ -38,8 +38,7 @@ class KerasLearner(NodeLearner):
         model: tf.keras.Model,
         data: Tuple[tf.data.Dataset, tf.data.Dataset],
         self_addr: str,
-        epochs: int,
-        compile_params: Optional[Dict] = None,
+        epochs: int
     ):
         self.model = model
         self.data = data
@@ -51,8 +50,7 @@ class KerasLearner(NodeLearner):
         self.learner_state = LearnerStateDTO()
         logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
         
-        if compile_params is not None:
-            self.compile_model(**compile_params)
+        self.compile_model(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
     
     def set_epochs(self, epochs: int) -> None:
         self.epochs = epochs
