@@ -2781,4 +2781,4 @@ torch = ["pytorch-lightning", "torch", "torchmetrics", "torchvision"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "30d558c2d3362ac869c45f930dab4c620722bbb4aedb2394655b7698f882772e"
+content-hash = "9d8fe2118471054fe9529bd21bee35d5702cce501c14c18e831027cd3098990e"

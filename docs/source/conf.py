@@ -31,6 +31,8 @@
 import os
 import sys
 
+import pkg_resources
+
 sys.path.insert(0, os.path.abspath("../../p2pfl"))
 
 
@@ -45,7 +47,7 @@ html_logo = "logo.png"
 
 
 # The full version, including alpha/beta/rc tags
-release = "0.2.0"
+release = pkg_resources.get_distribution('p2pfl').version
 
 
 # -- General configuration ---------------------------------------------------

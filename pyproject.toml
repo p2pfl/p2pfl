@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "p2pfl"
-version = "0.2.2"
+version = "0.3.0"
 description = "A p2p federated learning framework"
 authors = ["Pedro Guijas <pguijas@gmail.com>"]
 license = "GPL-3.0-only"
@@ -94,3 +94,6 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "torchvision.*"
 ignore_missing_imports = true
+
+[tool.poetry.scripts]
+p2pfl = "p2pfl.cli:app"
