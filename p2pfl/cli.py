@@ -70,20 +70,26 @@ app = typer.Typer(
 @app.command()
 def login(
     token: Annotated[str, typer.Option(help="🔑 Your API token")] = "",
-):  # prompt="🔑 Enter your API token"
-    """Authenticate with the p2pfl platform using your API token."""
+) -> None:  # prompt="🔑 Enter your API token"
+    """
+    Authenticate with the p2pfl platform using your API token.
+
+    Args:
+        token: Your API token.
+
+    """
     console.print(":sweat_smile: [bold yellow]Not implemented yet![/bold yellow] \n:rocket: Comming soon!")
     # console.print(f"Authenticating with token: {token}...")
 
 
 @app.command()
-def remote():
+def remote() -> None:
     """Interact with a remote node in the p2pfl network."""
     console.print(":sweat_smile: [bold yellow]Not implemented yet![/bold yellow] \n:rocket: Comming soon!")
 
 
 @app.command()
-def launch():
+def launch() -> None:
     """Launch a new node in the p2pfl network."""
     console.print(":sweat_smile: [bold yellow]Not implemented yet![/bold yellow] \n:rocket: Comming soon!")
 
@@ -114,7 +120,7 @@ def __read_docstring(file) -> str:
 
 
 @exp_app.command()
-def list():
+def list() -> None:
     """List available examples."""
     # Get the available examples
     examples = __get_available_examples()
@@ -142,8 +148,15 @@ def list():
 def run(
     ctx: typer.Context,
     example: str,
-):
-    """Run an example."""
+) -> None:
+    """
+    Run an example.
+
+    Args:
+        example: The name of the example
+        ctx: The Typer context
+
+    """
     # Check if the example exists
     examples = __get_available_examples()
     if example not in examples:

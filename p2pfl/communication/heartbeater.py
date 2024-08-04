@@ -16,7 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""Heartbeater."""
+"""Protocol agnostic heartbeater."""
 
 import threading
 import time
@@ -31,19 +31,18 @@ heartbeater_cmd_name = "beat"
 
 
 class Heartbeater(threading.Thread):
-    """Heartbeater for agnostic communication protocol. Send and update fresh heartbeats."""
+    """
+    Heartbeater for agnostic communication protocol. Send and update fresh heartbeats.
+
+    Args:
+        self_addr: Address of the node.
+        neighbors: Neighbors to update.
+        client: Client to send messages.
+
+    """
 
     def __init__(self, self_addr: str, neighbors: Neighbors, client: Client) -> None:
-        """
-        Initialize the heartbeat thread.
-
-        Args:
-        ----
-        self_addr (str): Address of the node.
-        neighbors (Neighbors): Neighbors of the node.
-        client (Client): Client to send the heartbeats
-
-        """
+        """Initialize the heartbeat thread."""
         super().__init__()
         self.__self_addr = self_addr
         self.__neighbors = neighbors
@@ -65,9 +64,8 @@ class Heartbeater(threading.Thread):
         Update the time of the last heartbeat of a neighbor. If the neighbor is not added, add it.
 
         Args:
-        ----
-            nei (str): Address of the neighbor.
-            time (float): Time of the heartbeat.
+            nei: Address of the neighbor.
+            time: Time of the heartbeat.
 
         """
         # Check if it is itself
@@ -95,7 +93,6 @@ class Heartbeater(threading.Thread):
                 # Get Neis
                 neis = self.__neighbors.get_all()
                 for nei in neis:
-                    print(f"{t - neis[nei][2]}")
                     if t - neis[nei][2] > timeout:
                         logger.info(
                             self.__self_addr,

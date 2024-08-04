@@ -16,11 +16,6 @@ See [Contributing](contributing.md) for instructions on how to contribute to P2P
 
 Also see the [library design](library_design.md) for more information about the design of the library.
 
-<!---``` 
-sphinx-apidoc -F -o tmp ../p2pfl
-```
--->
-
 ## 📋 Index
 
 ```{eval-rst}
@@ -29,8 +24,9 @@ sphinx-apidoc -F -o tmp ../p2pfl
 
    installation
    quickstart
+   p2pfl_ws
    contributing
    library_design
-   documentation
+   api
 
 ```

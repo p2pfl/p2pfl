@@ -24,7 +24,13 @@ from p2pfl.management.logger import Logger as P2PLogger
 
 
 class FederatedLogger(Logger):
-    """Pytorch Lightning Logger for Federated Learning. Handles local training loggin."""
+    """
+    Pytorch Lightning Logger for Federated Learning. Handles local training loggin.
+
+    Args:
+        node_name: Name of the node.
+
+    """
 
     def __init__(self, node_name: str) -> None:
         """Initialize the logger."""

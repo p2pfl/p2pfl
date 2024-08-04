@@ -31,5 +31,13 @@ class Command(abc.ABC):
 
     @abc.abstractmethod
     def execute(self, source: str, round: int, **kwargs) -> None:
-        """Execute the command."""
+        """
+        Execute the command.
+
+        Args:
+            source: The source of the command.
+            round: The round of the command.
+            **kwargs: The command arguments.
+
+        """
         raise NotImplementedError

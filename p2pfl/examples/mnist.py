@@ -36,7 +36,6 @@ from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.utils import (
-    set_test_settings,
     wait_4_results,
     wait_convergence,
 )
@@ -80,7 +79,6 @@ def mnist(
     P2PFL MNIST experiment.
 
     Args:
-    ----
         n: The number of nodes.
         r: The number of rounds.
         e: The number of epochs.
@@ -175,7 +173,7 @@ if __name__ == "__main__":
         logger.connect_web("http://localhost:3000/api/v1", args.token)
 
     # Settings
-    set_test_settings()
+    # set_test_settings()
 
     # Launch experiment
     mnist(

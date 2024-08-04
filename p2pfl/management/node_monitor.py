@@ -29,7 +29,14 @@ from p2pfl.settings import Settings
 
 
 class NodeMonitor(threading.Thread):
-    """Node monitor thread."""
+    """
+    Node monitor thread.
+
+    Args:
+        node_addr: Node address.
+        metric_report_callback: Metric report callback.
+
+    """
 
     def __init__(self, node_addr, metric_report_callback) -> None:
         """Initialize the node monitor."""
@@ -76,5 +83,4 @@ class NodeMonitor(threading.Thread):
 
     def __report_status(self):
         """Report the status."""
-        # USAR EN UN FUTURO UNA STATUS FUNCTION PROPORCIONADA X EL NODO
         raise NotImplementedError

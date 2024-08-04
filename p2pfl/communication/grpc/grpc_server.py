@@ -31,7 +31,16 @@ from p2pfl.management.logger import logger
 
 
 class GrpcServer(node_pb2_grpc.NodeServicesServicer):
-    """Implementation of the server side of a GRPC communication protocol."""
+    """
+    Implementation of the server side of a GRPC communication protocol.
+
+    Args:
+        addr: Address of the server.
+        gossiper: Gossiper instance.
+        neighbors: Neighbors instance.
+        commands: List of commands to be executed by the server.
+
+    """
 
     def __init__(
         self,
@@ -63,7 +72,13 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
     ####
 
     def start(self, wait: bool = False) -> None:
-        """Start the GRPC server."""
+        """
+        Start the GRPC server.
+
+        Args:
+            wait: If True, wait for termination.
+
+        """
         # Server
         node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.__server)
         try:
@@ -85,7 +100,14 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
     ####
 
     def handshake(self, request: node_pb2.HandShakeRequest, _: grpc.ServicerContext) -> node_pb2.ResponseMessage:
-        """GRPC service. It is called when a node connects to another."""
+        """
+        GRPC service. It is called when a node connects to another.
+
+        Args:
+            request: Request message.
+            _: Context.
+
+        """
         if self.__neighbors.add(request.addr, non_direct=False, handshake_msg=False):
             return node_pb2.ResponseMessage()
         else:
@@ -94,12 +116,26 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
     def disconnect(
         self, request: node_pb2.HandShakeRequest, _: grpc.ServicerContext
     ) -> google.protobuf.empty_pb2.Empty:
-        """GRPC service. It is called when a node disconnects from another."""
+        """
+        GRPC service. It is called when a node disconnects from another.
+
+        Args:
+            request: Request message.
+            _: Context.
+
+        """
         self.__neighbors.remove(request.addr, disconnect_msg=False)
         return google.protobuf.empty_pb2.Empty()
 
     def send_message(self, request: node_pb2.Message, _: grpc.ServicerContext) -> node_pb2.ResponseMessage:
-        """GRPC service. It is called when a node sends a message to another."""
+        """
+        GRPC service. It is called when a node sends a message to another.
+
+        Args:
+            request: Request message.
+            _: Context.
+
+        """
         # If not processed
         if self.__gossiper.check_and_set_processed(request.hash):
             logger.debug(
@@ -129,10 +165,17 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
 
         return node_pb2.ResponseMessage()
 
-    # Note: main diff with send_message (apart from the message type) is the gossip
-    #   -> ADDED GOAL OF THE MESSAGE TO INCREASE ROBUSNTNESS
     def send_weights(self, request: node_pb2.Weights, _: grpc.ServicerContext) -> node_pb2.ResponseMessage:
-        """GRPC service. It is called when a node sends weights to another."""
+        """
+        GRPC service. It is called when a node sends weights to another.
+
+        .. note:: Main diff with send_message (apart from the message type) is the gossip
+
+        Args:
+            request: Request message.
+            _: Context.
+
+        """
         # Process message
         if request.cmd in self.__commands:
             try:
@@ -158,7 +201,13 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
     ####
 
     def add_command(self, cmds: Union[Command, List[Command]]) -> None:
-        """Add a command."""
+        """
+        Add a command.
+
+        Args:
+            cmds: Command or list of commands to be added.
+
+        """
         if isinstance(cmds, list):
             for cmd in cmds:
                 self.__commands[cmd.get_name()] = cmd

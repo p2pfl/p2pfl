@@ -35,7 +35,14 @@ from p2pfl.settings import Settings
 
 
 class InMemoryCommunicationProtocol(CommunicationProtocol):
-    """In-memory communication protocol."""
+    """
+    In-memory communication protocol.
+
+    Args:
+        addr: Address of the node.
+        commands: Commands to add to the communication protocol.
+
+    """
 
     def __init__(self, addr: str = "address", commands: Optional[List[Command]] = None) -> None:
         """Initialize the in-memory communication protocol."""
@@ -59,7 +66,13 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
         self._server.add_command(commands)
 
     def get_address(self) -> str:
-        """Get the address."""
+        """
+        Get the address.
+
+        Returns:
+            The address.
+
+        """
         return self.addr
 
     def start(self) -> None:
@@ -76,19 +89,47 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
         self._neighbors.clear_neighbors()
 
     def add_command(self, cmds: Union[Command, List[Command]]) -> None:
-        """Add a command."""
+        """
+        Add a command to the communication protocol.
+
+        Args:
+            cmds: The command to add.
+
+        """
         self._server.add_command(cmds)
 
     def connect(self, addr: str, non_direct: bool = False) -> bool:
-        """Connect to a neighbor."""
+        """
+        Connect to a neighbor.
+
+        Args:
+            addr: The address to connect to.
+            non_direct: The non direct flag.
+
+        """
         return self._neighbors.add(addr, non_direct=non_direct)
 
     def disconnect(self, nei: str, disconnect_msg: bool = True) -> None:
-        """Disconnect from a neighbor."""
+        """
+        Disconnect from a neighbor.
+
+        Args:
+            nei: The neighbor to disconnect from.
+            disconnect_msg: The disconnect message flag.
+
+        """
         self._neighbors.remove(nei, disconnect_msg=disconnect_msg)
 
     def build_msg(self, cmd: str, args: Optional[List[str]] = None, round: Optional[int] = None) -> Any:
-        """Build a message."""
+        """
+        Build a message.
+
+        Args:
+            cmd: The message.
+            args: The arguments.
+            round: The round.
+
+        """
         if args is None:
             args = []
         return self._client.build_message(cmd, args, round)
@@ -101,7 +142,17 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
         contributors: Optional[List[str]] = None,
         weight: int = 1,
     ) -> Any:
-        """Build a weights message."""
+        """
+        Build weights.
+
+        Args:
+            cmd: The command.
+            round: The round.
+            serialized_model: The serialized model.
+            contributors: The model contributors.
+            weight: The weight of the model (amount of samples used).
+
+        """
         if contributors is None:
             contributors = []
         return self._client.build_weights(cmd, round, serialized_model, contributors, weight)
@@ -114,7 +165,14 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
             Dict[str, Union[str, int, bytes, List[str]]],
         ],
     ) -> None:
-        """Send a message."""
+        """
+        Send a message to a neighbor.
+
+        Args:
+            nei: The neighbor to send the message.
+            msg: The message to send.
+
+        """
         self._client.send(nei, msg)
 
     def broadcast(
@@ -122,11 +180,24 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
         msg: Dict[str, Union[str, int, List[str], bytes]],
         node_list: Optional[List[str]] = None,
     ) -> None:
-        """Broadcast a message."""
+        """
+        Broadcast a message to all neighbors.
+
+        Args:
+            msg: The message to broadcast.
+            node_list: Optional node list.
+
+        """
         self._client.broadcast(msg, node_list)
 
     def get_neighbors(self, only_direct: bool = False) -> Dict[str, Any]:
-        """Get neighbors."""
+        """
+        Get the neighbors.
+
+        Args:
+            only_direct: The only direct flag.
+
+        """
         return self._neighbors.get_all(only_direct)
 
     def wait_for_termination(self) -> None:
@@ -142,7 +213,18 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
         period: Optional[float] = None,
         create_connection: bool = False,
     ) -> None:
-        """Gossip weights."""
+        """
+        Gossip model weights.
+
+        Args:
+            early_stopping_fn: The early stopping function.
+            get_candidates_fn: The get candidates function.
+            status_fn: The status function.
+            model_fn: The model function.
+            period: The period.
+            create_connection: The create connection flag.
+
+        """
         if period is None:
             period = Settings.GOSSIP_MODELS_PERIOD
         self._gossiper.gossip_weights(

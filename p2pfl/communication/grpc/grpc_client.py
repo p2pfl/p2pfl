@@ -24,20 +24,22 @@ from typing import List, Optional, Union
 import grpc
 
 from p2pfl.communication.client import Client
+from p2pfl.communication.exceptions import NeighborNotConnectedError
 from p2pfl.communication.grpc.grpc_neighbors import GrpcNeighbors
 from p2pfl.communication.grpc.proto import node_pb2, node_pb2_grpc
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 
 
-class NeighborNotConnectedError(Exception):
-    """Neighbor not connected error."""
-
-    pass
-
-
 class GrpcClient(Client):
-    """Implementation of the client side (i.e. who initiates the communication) of the GRPC communication protocol."""
+    """
+    Implementation of the client side (i.e. who initiates the communication) of the GRPC communication protocol.
+
+    Args:
+        self_addr: Address of the node.
+        neighbors: Neighbors of the node.
+
+    """
 
     def __init__(self, self_addr: str, neighbors: GrpcNeighbors) -> None:
         """Initialize the GRPC client."""
@@ -55,14 +57,12 @@ class GrpcClient(Client):
         Build a message to send to the neighbors.
 
         Args:
-        ----
-            cmd (string): Command of the message.
-            args (list): Arguments of the message.
-            round (int): Round of the message.
+            cmd: Command of the message.
+            args: Arguments of the message.
+            round: Round of the message.
 
         Returns:
-        -------
-            node_pb2.Message: Message to send.
+            Message to send.
 
         """
         if round is None:
@@ -93,12 +93,11 @@ class GrpcClient(Client):
         Build a weight message to send to the neighbors.
 
         Args:
-        ----
-            cmd (string): Command of the message.
-            round (int): Round of the message.
-            serialized_model (bytes): Serialized model.
-            contributors (list): Contributors of the model.
-            weight (int): Weight of the model.
+            cmd: Command of the message.
+            round: Round of the message.
+            serialized_model: Serialized model to send.
+            contributors: List of contributors.
+            weight: Weight of the message.
 
         """
         if contributors is None:
@@ -122,7 +121,15 @@ class GrpcClient(Client):
         msg: Union[node_pb2.Message, node_pb2.Weights],
         create_connection: bool = False,
     ) -> None:
-        """Send a message to a neighbor."""
+        """
+        Send a message to a neighbor.
+
+        Args:
+            nei (string): Neighbor address.
+            msg (node_pb2.Message or node_pb2.Weights): Message to send.
+            create_connection (bool): Create a connection if not exists.
+
+        """
         channel = None
         try:
             # Get neighbor
@@ -180,9 +187,8 @@ class GrpcClient(Client):
         Broadcast a message to all the neighbors.
 
         Args:
-        ----
-            msg (node_pb2.Message): Message to send.
-            node_list (list): List of neighbors to send the message. If None, send to all the neighbors.
+            msg: Message to send.
+            node_list: List of neighbors to send the message. If None, send to all the neighbors.
 
         """
         # Node list

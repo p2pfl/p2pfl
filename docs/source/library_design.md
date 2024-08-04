@@ -1,17 +1,56 @@
 # 🏛️ Library Design
 
-This document describes the design of the library.
+This document breafly describes the design of the library.
 
-## Design Principles
+## Design principles and patterns
 
-First of all, its important to keep in mind some design principles that were followed during the development of the library. Some of them are: SOLID principles, KISS, DRY, YAGNI, etc.
+The use of design principles and patterns is essential for one of the main goals of the library: simplicity.
+
+First of all, its important to keep in mind some design principles that were followed during the development of the library. Some of them are: `SOLID` principles, `KISS`, `DRY`, `YAGNI`, etc.
+
+As for the design patterns, the main ones will be dealt with in the next section. Nevertheles, it is important to note that their use greatly facilitates decoupling and the respect of the main design principles. 
 
 ## General Overview
 
-The library has been structured following 2 implementations of the node: the first one allows p2p communication using GRPC and the next one extends the first one to allow node learning.
+The core of the library is designed around a **modular architecture**, promoting flexibility and extensibility. 
 
-Since a p2p architecture is followed, the `BaseNode` will be a service provider as well as a consumer (using the `Neighbors` class). As for `Node`, its modular operation related to federated learning will depend on the `Aggregator` and `NodeLearner` components. These, thanks to the template pattern and strategy, will allow an easy extension of the library, as well as an agnostic character to the implementation of the learning algorithms.
+Flexibility and extensibility are achieved through a high degree of decoupling and ease of customisation of different aspects of the library. Thus, the `Node` class acts as the central entity to the library. It makes use of different modules that globally allow the operation of a Federated Learning node. The following diagram details the main modules of the library. 
 
-Note that the `send_message` remote call will be used for message passing (not including model exchange), following a similar approach to the command pattern but using callbacks.
+```{eval-rst}
+.. mermaid::
+    :align: center
 
-![class diagram 1](class.png)
+    graph LR
+        P2PFL_Node --- State["State"]
+        P2PFL_Node["Node"] --- Communication["Communication Protocol"]
+        P2PFL_Node --- Commands["Commands"]
+        P2PFL_Node --- Learner["Learner"]
+        P2PFL_Node --- Aggregator["Aggregator"]
+        P2PFL_Node --- Workflow["Workflow"]
+
+        Communication --- Grpc["gRPC"]
+        Communication --- InMemory["In-Memory"]
+
+        Learner --- PyTorch["PyTorch"]
+        Learner --- TensorFlow["TensorFlow (Coming Soon)"]
+
+        Aggregator --- FedAvg["FedAvg"]
+        Aggregator --- Scaffold["Scaffold (Coming Soon)"]
+
+        Workflow --- BaseNode["BaseNode"]
+        Workflow --- ProxyNode["ProxyNode (Coming Soon)"]
+
+    classDef notImplementedNode fill:#ddd, color:#777;
+    class TensorFlow notImplementedNode;
+    class ProxyNode notImplementedNode;
+    class Scaffold notImplementedNode;
+
+```
+
+A brief description of each module will be given below:
+- `State`: This module is responsible for managing the state of the node. It is used to store the node's information and to keep track of the node's state.
+- `CommunicationProtocol`: This module is responsible for managing the communication between nodes. In terms of patterns, highlight the **template pattern**, which will make it possible to implement different protocols that share the same API. Also note the **command pattern**, which allows the creation of new commands that can be executed regardless of the protocol that manages communications.
+- `Commands`: This module is responsible of the commands that can be executed over the `CommunicationProtocol`.
+- `Learner`: This module is responsible for managing the learning process. Remark again the **template pattern**, which will make it possible to integrate different machine learning frameworks over the same API.
+- `Aggregator`: This module is responsible for managing the aggregation process. It is possible to implement different aggregation strategies using the **strategy pattern**.
+- `Workflow`: This module is responsible for managing the node's workflow. It is possible to implement different workflows using the **strategy pattern**.

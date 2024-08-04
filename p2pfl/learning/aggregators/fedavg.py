@@ -28,17 +28,12 @@ from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregat
 class FedAvg(Aggregator):
     """Federated Averaging (FedAvg) [McMahan et al., 2016] | Paper: https://arxiv.org/abs/1602.05629."""
 
-    def __init__(self, **kwargs):
-        """Initialize the Aggregator."""
-        super().__init__(**kwargs)
-
     def aggregate(self, models: Dict[str, Tuple[Dict[str, torch.Tensor], int]]) -> Dict[str, torch.Tensor]:
         """
-        Ponderated average of the models.
+        Aggregate the models.
 
         Args:
-        ----
-            models: Dictionary with the models (node: model,num_samples).
+            models: Dictionary with the models to aggregate.
 
         """
         # Check if there are models to aggregate

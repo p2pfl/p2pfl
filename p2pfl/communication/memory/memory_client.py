@@ -22,20 +22,22 @@ import time
 from typing import Dict, List, Optional, Union
 
 from p2pfl.communication.client import Client
+from p2pfl.communication.exceptions import NeighborNotConnectedError
 from p2pfl.communication.memory.memory_neighbors import InMemoryNeighbors
 from p2pfl.communication.memory.server_singleton import ServerSingleton
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 
 
-class NeighborNotConnectedError(Exception):
-    """Neighbor not connected error."""
-
-    pass
-
-
 class InMemoryClient(Client):
-    """Implementation of the client side of an in-memory communication protocol."""
+    """
+    Implementation of the client side of an in-memory communication protocol.
+
+    Args:
+        self_addr: Address of the node.
+        neighbors: Neighbors of the node.
+
+    """
 
     def __init__(self, self_addr: str, neighbors: InMemoryNeighbors) -> None:
         """Initialize the in-memory client."""
@@ -45,7 +47,18 @@ class InMemoryClient(Client):
     def build_message(
         self, cmd: str, args: Optional[List[str]] = None, round: Optional[int] = None
     ) -> Dict[str, Union[str, int, List[str]]]:
-        """Build a message."""
+        """
+        Build a message to send to the neighbors.
+
+        Args:
+            cmd: Command of the message.
+            args: Arguments of the message.
+            round: Round of the message.
+
+        Returns:
+            Message to send.
+
+        """
         if round is None:
             round = -1
         if args is None:
@@ -69,7 +82,17 @@ class InMemoryClient(Client):
         contributors: Optional[List[str]] = None,
         weight: int = 1,
     ) -> Dict[str, Union[str, int, bytes, List[str]]]:
-        """Build a weights message."""
+        """
+        Build a weight message to send to the neighbors.
+
+        Args:
+            cmd: Command of the message.
+            round: Round of the message.
+            serialized_model: Serialized model to send.
+            contributors: List of contributors.
+            weight: Weight of the message.
+
+        """
         if contributors is None:
             contributors = []
         return {
@@ -87,7 +110,15 @@ class InMemoryClient(Client):
         msg: Dict[str, Union[str, int, List[str], bytes]],
         create_connection: bool = False,
     ) -> None:
-        """Send a message."""
+        """
+        Send a message to a neighbor.
+
+        Args:
+            nei (string): Neighbor address.
+            msg (node_pb2.Message or node_pb2.Weights): Message to send.
+            create_connection (bool): Create a connection if not exists.
+
+        """
         try:
             # Get neighbor
             try:
@@ -126,7 +157,14 @@ class InMemoryClient(Client):
         msg: Dict[str, Union[str, int, List[str], bytes]],
         node_list: Optional[List[str]] = None,
     ) -> None:
-        """Broadcast a message."""
+        """
+        Broadcast a message to all the neighbors.
+
+        Args:
+            msg: Message to send.
+            node_list: List of neighbors to send the message. If None, send to all the neighbors.
+
+        """
         # Node list
         nodes = node_list if node_list is not None else self.__neighbors.get_all(only_direct=True)
 

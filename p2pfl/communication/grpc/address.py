@@ -24,7 +24,13 @@ from typing import Optional
 
 
 class AddressParser:
-    """Address parser."""
+    """
+    Address parser. Determines if the address is a Unix domain address or an IP address (IPv4 or IPv6).
+
+    Args:
+        address: The address to parse.
+
+    """
 
     def __init__(self, address: str):
         """Initialize the address parser."""
@@ -76,7 +82,13 @@ class AddressParser:
         return os.path.isabs(socket_path)
 
     def get_parsed_address(self) -> str:
-        """Get the parsed address."""
+        """
+        Get the parsed address.
+
+        Returns:
+            The parsed address.
+
+        """
         if self.unix_domain:
             if self.host is None:
                 raise ValueError("Unix domain address is invalid.")

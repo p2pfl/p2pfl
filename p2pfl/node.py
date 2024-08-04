@@ -34,6 +34,7 @@ from p2pfl.communication.communication_protocol import CommunicationProtocol
 from p2pfl.communication.grpc.grpc_communication_protocol import (
     GrpcCommunicationProtocol,
 )
+from p2pfl.exceptions import LearnerNotSetException, NodeRunningException, ZeroRoundsException
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.learner import NodeLearner
@@ -47,15 +48,31 @@ class Node:
     """
     Represents a learning node in the federated learning network.
 
-    Attributes
-    ----------
-        addr (str): The address of the node.
-        learner (Learner): The learner associated with the node.
-        aggregator (Aggregator): The aggregator used by the node.
-        communication_protocol (CommunicationProtocol): The communication protocol used by the node.
-        commands (List[Type]): The list of commands the node can execute.
-        running (bool): Flag indicating whether the node is running.
-        locks (dict): A dictionary of threading locks.
+    The following example shows how to create a node with a MLP model and a MnistFederatedDM dataset. Then, the node is
+    started, connected to another node, and the learning process is started.
+
+    >>> node = Node(
+    ...     MLP(),
+    ...     MnistFederatedDM(),
+    ... )
+    >>> node.start()
+    >>> node.connect("127.0.0.1:666")
+    >>> node.set_start_learning(rounds=2, epochs=1)
+
+    Args:
+        model: Model to be used in the learning process.
+        data: Dataset to be used in the learning process.
+        address: The address of the node.
+        learner: The learner class to be used.
+        aggregator: The aggregator class to be used.
+        protocol: The communication protocol to be used.
+        **kwargs: Additional arguments.
+
+    .. todo::
+        Instanciate the aggregator dynamically.
+
+    .. todo::
+        Connect nodes dynamically (while learning).
 
     """
 
@@ -69,20 +86,7 @@ class Node:
         protocol: Type[CommunicationProtocol] = GrpcCommunicationProtocol,
         **kwargs,
     ) -> None:
-        """
-        Initialize a node.
-
-        Args:
-        ----
-            model: Model to be used in the learning process.
-            data: Dataset to be used in the learning process.
-            address (str): The address of the node.
-            learner (Type[NodeLearner]): The learner class to be used.
-            aggregator (Type[Aggregator]): The aggregator class to be used.
-            protocol (Type[CommunicationProtocol]): The communication protocol to be used.
-            **kwargs: Additional arguments.
-
-        """
+        """Initialize a node."""
         # Communication protol
         self._communication_protocol = protocol(address)
         self.addr = self._communication_protocol.get_address()
@@ -134,15 +138,14 @@ class Node:
         """
         Connect a node to another.
 
-        > Careful: Adding nodes while learning is running is not fully supported.
+        Warning:
+            Adding nodes while learning is running is not fully supported.
 
         Args:
-        ----
-            addr (str): The address of the node to connect to.
+            addr: The address of the node to connect to.
 
         Returns:
-        -------
-            bool: True if the node was connected, False otherwise.
+            True if the node was connected, False otherwise.
 
         """
         # Check running
@@ -156,12 +159,10 @@ class Node:
         Return the neighbors of the node.
 
         Args:
-        ----
-            only_direct (bool): If True, only the direct neighbors will be returned.
+            only_direct: If True, only the direct neighbors will be returned.
 
         Returns:
-        -------
-            list: The list of neighbors.
+            The list of neighbors.
 
         """
         return self._communication_protocol.get_neighbors(only_direct)
@@ -171,8 +172,7 @@ class Node:
         Disconnects a node from another.
 
         Args:
-        ----
-            addr (str): The address of the node to disconnect from.
+            addr: The address of the node to disconnect from.
 
         """
         # Check running
@@ -190,29 +190,26 @@ class Node:
         Assert that the node is running or not running.
 
         Args:
-        ----
-            running (bool): True if the node must be running, False otherwise.
+            running: True if the node must be running, False otherwise.
 
         Raises:
-        ------
-            Exception: If the node is not running and running is True, or if the node is running and running is False.
+            NodeRunningException: If the node is not running and running is True, or if the node is running and running
+            is False.
 
         """
         running_state = self.__running
         if running_state != running:
-            raise Exception(f"Node is {'not ' if running_state else ''}running.")
+            raise NodeRunningException(f"Node is {'not ' if running_state else ''}running.")
 
     def start(self, wait: bool = False) -> None:
         """
         Start the node: server and neighbors(gossip and heartbeat).
 
         Args:
-        ----
-            wait (bool): If True, the function will wait until the server is terminated.
+            wait: If True, the function will wait until the server is terminated.
 
         Raises:
-        ------
-            Exception: If the node is already running.
+            NodeRunningException: If the node is already running.
 
         """
         # Check not running
@@ -231,9 +228,8 @@ class Node:
         """
         Stop the node: server and neighbors(gossip and heartbeat).
 
-        Raises
-        ------
-            Exception: If the node is not running.
+        Raises:
+            NodeRunningException: If the node is not running.
 
         """
         logger.info(self.addr, "Stopping node...")
@@ -258,36 +254,32 @@ class Node:
         Set the data to be used in the learning process (by the learner).
 
         Args:
-        ----
             data: Dataset to be used in the learning process.
 
         Raises:
-        ------
-            Exception: If the learner is already set.
+            LearnerNotSetException: If the learner is already set.
 
         """
         self.data = data
         # If learner is already set (raise)
         if self.state.learner is not None:
-            raise Exception("Data cannot be set after learner is set.")
+            raise LearnerNotSetException("Data cannot be set after learner is set.")
 
     def set_model(self, model) -> None:
         """
         Set the model to be used in the learning process (by the learner).
 
         Args:
-        ----
             model: Model to be used in the learning process.
 
         Raises:
-        ------
-            Exception: If the learner is already set.
+            LearnerNotSetException: If the learner is already set.
 
         """
         self.model = model
         # If learner is already set (raise)
         if self.state.learner is not None:
-            raise Exception("Model cannot be set after learner is set.")
+            raise LearnerNotSetException("Model cannot be set after learner is set.")
 
     ###############################################
     #         Network Learning Management         #
@@ -307,15 +299,17 @@ class Node:
         Start the learning process in the entire network.
 
         Args:
-        ----
             rounds: Number of rounds of the learning process.
             epochs: Number of epochs of the learning process.
+
+        Raises:
+            ZeroRoundsException: If rounds is less than 1.
 
         """
         self.assert_running(True)
 
         if rounds < 1:
-            raise Exception("Rounds and epochs must be greater than 0.")
+            raise ZeroRoundsException("Rounds must be greater than 0.")
 
         if self.state.round is None:
             # Broadcast start Learning

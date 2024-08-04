@@ -22,7 +22,16 @@ from typing import Any, Dict, Optional, Tuple
 
 
 class NodeLearner:
-    """Template to implement learning processes, including metric monitoring during training."""
+    """
+    Template to implement learning processes, including metric monitoring during training.
+
+    Args:
+        model: The model of the learner.
+        data: The data of the learner.
+        self_addr: The address of the learner.
+        epochs: The number of epochs of the model.
+
+    """
 
     def __init__(self, model: Any, data: Any, self_addr: str, epochs: int) -> None:
         """Initialize the learner."""
@@ -33,11 +42,9 @@ class NodeLearner:
         Set the model of the learner (not wheights).
 
         Args:
-        ----
             model: The model of the learner.
 
         Raises:
-        ------
             ModelNotMatchingError: If the model is not matching the learner.
 
         """
@@ -48,7 +55,6 @@ class NodeLearner:
         Set the data of the learner. It is used to fit the model.
 
         Args:
-        ----
             data: The data of the learner.
 
         """
@@ -59,13 +65,11 @@ class NodeLearner:
         Encode the parameters of the model. (binary) If params are not provided, self parameters are encoded.
 
         Args:
-        ----
             params: The parameters of the model. (non-binary)
             contributors: The contributors of the model.
             weight: The weight of the model.
 
         Returns:
-        -------
             The encoded parameters of the model.
 
         """
@@ -76,27 +80,10 @@ class NodeLearner:
         Decode the parameters of the model (binary).
 
         Args:
-        ----
             data: The encoded parameters of the model.
 
         Returns:
-        -------
             The decoded parameters of the model.
-
-        """
-        raise NotImplementedError
-
-    def check_parameters(self, params: Any) -> bool:
-        """
-        Check if the parameters are compatible with the model.
-
-        Args:
-        ----
-            params: The parameters to check. (non-binary)
-
-        Returns:
-        -------
-            True if the parameters are compatible with the model.
 
         """
         raise NotImplementedError
@@ -106,11 +93,9 @@ class NodeLearner:
         Set the parameters of the model.
 
         Args:
-        ----
             params: The parameters of the model. (non-binary)
 
         Raises:
-        ------
             ModelNotMatchingError: If the model is not matching the learner.
 
         """
@@ -121,7 +106,6 @@ class NodeLearner:
         Get the parameters of the model.
 
         Returns
-        -------
             The parameters of the model. (non-binary)
 
         """
@@ -132,7 +116,6 @@ class NodeLearner:
         Set the number of epochs of the model.
 
         Args:
-        ----
             epochs: The number of epochs of the model.
 
         """
@@ -147,7 +130,13 @@ class NodeLearner:
         raise NotImplementedError
 
     def evaluate(self) -> Dict[str, float]:
-        """Evaluate the model with actual parameters."""
+        """
+        Evaluate the model with actual parameters.
+
+        Returns:
+            The evaluation results.
+
+        """
         raise NotImplementedError
 
     def get_num_samples(self) -> Tuple[int, int]:
@@ -155,7 +144,6 @@ class NodeLearner:
         Get the number of samples of the model.
 
         Returns
-        -------
             The number of samples of the model.
 
         """

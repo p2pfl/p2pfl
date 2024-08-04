@@ -16,12 +16,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""Client."""
+"""Protocol agnostic client."""
 
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional
-
-# TODO: Encapsular msg
 
 
 class Client(ABC):
@@ -29,6 +27,8 @@ class Client(ABC):
     Client interface.
 
     It is used as a interface to help to decoulple communication protocols based on clien-server architecutes.
+
+    .. todo:: Encapsulate msg.
     """
 
     @abstractmethod
@@ -37,14 +37,12 @@ class Client(ABC):
         Build a message to send to the neighbors.
 
         Args:
-        ----
-            cmd (string): Command of the message.
-            args (list): Arguments of the message.
-            round (int): Round of the message.
+            cmd: Command of the message.
+            args: Arguments of the message.
+            round: Round of the message.
 
         Returns:
-        -------
-            any: Message to send.
+            Message to send.
 
         """
         pass
@@ -62,12 +60,11 @@ class Client(ABC):
         Build a weight message to send to the neighbors.
 
         Args:
-        ----
-            cmd (string): Command of the message.
-            round (int): Round of the message.
-            serialized_model (bytes): Serialized model to send.
-            contributors (list): List of contributors.
-            weight (int): Weight of the message.
+            cmd: Command of the message.
+            round: Round of the message.
+            serialized_model: Serialized model to send.
+            contributors: List of contributors.
+            weight: Weight of the message.
 
         """
         pass

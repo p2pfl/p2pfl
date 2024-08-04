@@ -16,7 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""Aggregator."""
+"""Abstract aggregator."""
 
 import contextlib
 import threading
@@ -39,8 +39,7 @@ class Aggregator:
     Class to manage the aggregation of models. Aggregate not implemented, strategy pattern.
 
     Args:
-    ----
-        node_name: (str): String with the name of the node.
+        node_name: String with the name of the node.
 
     """
 
@@ -56,7 +55,13 @@ class Aggregator:
         self.__finish_aggregation_lock = threading.Lock()
 
     def aggregate(self, models: Dict[str, Tuple[Dict[str, torch.Tensor], int]]):
-        """Aggregate the models."""
+        """
+        Aggregate the models.
+
+        Args:
+            models: Dictionary with the models to aggregate.
+
+        """
         raise NotImplementedError
 
     def set_nodes_to_aggregate(self, nodes_to_aggregate: List[str]) -> None:
@@ -64,11 +69,9 @@ class Aggregator:
         List with the name of nodes to aggregate. Be careful, by setting new nodes, the actual aggregation will be lost.
 
         Args:
-        ----
             nodes_to_aggregate: List of nodes to aggregate. Empty for no aggregation.
 
         Raises:
-        ------
             Exception: If the aggregation is running.
 
         """
@@ -83,10 +86,9 @@ class Aggregator:
         Indicate that the node is waiting for a completed aggregation. It won't participate in aggregation process.
 
         Args:
-        ----
             nodes: List of nodes to aggregate. Empty for no aggregation.
 
-        """  # noqa: D205
+        """
         self.set_nodes_to_aggregate(nodes)
         self.__waiting_aggregated_model = True
 
@@ -104,7 +106,6 @@ class Aggregator:
         Get the list of aggregated models.
 
         Returns
-        -------
             Name of nodes that colaborated to get the model.
 
         """
@@ -118,10 +119,12 @@ class Aggregator:
         Add a model. The first model to be added starts the `run` method (timeout).
 
         Args:
-        ----
-            model (dict): Model to add.
-            contributors (list): List of contributors.
-            weight (int): Weight of the model.
+            model: Model to add.
+            contributors: List of contributors.
+            weight: Weight of the model.
+
+        Returns:
+            List of contributors.
 
         """
         nodes = list(contributors)
@@ -201,15 +204,12 @@ class Aggregator:
         Wait for aggregation to finish.
 
         Args:
-        ----
-            timeout (int): Timeout in seconds.
+            timeout: Timeout in seconds.
 
         Returns:
-        -------
             Aggregated model.
 
         Raises:
-        ------
             Exception: If waiting for an aggregated model and several models were received.
 
         """
@@ -253,11 +253,9 @@ class Aggregator:
         Obtain a partial aggregation.
 
         Args:
-        ----
-            except_nodes (list): List of nodes to exclude from the aggregation.
+            except_nodes: List of nodes to exclude from the aggregation.
 
         Returns:
-        -------
             Aggregated model, nodes aggregated and aggregation weight.
 
         """

@@ -23,10 +23,6 @@ import contextlib
 from p2pfl.commands.command import Command
 from p2pfl.management.logger import logger
 
-"""
-hacer un test para esto, revisar coverage tests
-"""
-
 
 class StopLearningCommand(Command):
     """StopLearning command."""
@@ -42,7 +38,15 @@ class StopLearningCommand(Command):
         return "stop_learning"
 
     def execute(self, source: str, round: int, **kwargs) -> None:
-        """Execute the command."""
+        """
+        Execute the command. Start learning thread.
+
+        Args:
+            source: The source of the command.
+            round: The round of the command.
+            **kwargs: The command keyword arguments.
+
+        """
         logger.info(self.state.addr, "Stopping learning")
         # Leraner
         self.state.learner.interrupt_fit()

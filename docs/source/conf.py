@@ -31,7 +31,7 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath("../../p2pfl"))
 
 
 # -- Project information -----------------------------------------------------
@@ -60,7 +60,23 @@ extensions = [
     "sphinx.ext.githubpages",
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
+    "sphinx_autodoc_typehints",
+    "sphinx.ext.todo",
+    'sphinxcontrib.mermaid'
 ]
+
+# Autodoc options
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': True,
+    'private-members': False,
+    'special-members': False,
+    'inherited-members': False,
+    'show-inheritance': True,
+}
+
+# Todos
+todo_include_todos = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -68,7 +84,7 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+#exclude_patterns = []
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -77,6 +93,7 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 html_theme = "furo"
+html_favicon = "favicon.ico"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

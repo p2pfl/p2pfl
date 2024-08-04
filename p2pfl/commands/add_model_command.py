@@ -25,14 +25,6 @@ from p2pfl.commands.models_agregated_command import ModelsAggregatedCommand
 from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
 from p2pfl.management.logger import logger
 
-"""
-revisar el tema de parado de nodos: importante enviar que es lo que falló cacheando el error (haría un re-raise)
-
-- diversificar agregación de modelos en diferentes tareas (por ejemplo init o demás): simplicidad y organización
-    - __add_model_aggregator
-    - __initialize_model
-"""
-
 
 class AddModelCommand(Command):
     """AddModelCommand."""

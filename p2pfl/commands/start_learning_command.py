@@ -44,7 +44,17 @@ class StartLearningCommand(Command):
         learning_epochs: Optional[int] = None,
         **kwargs,
     ) -> None:
-        """Execute the command. Start learning thread."""
+        """
+        Execute the command. Start learning thread.
+
+        Args:
+            source: The source of the command.
+            round: The round of the command.
+            learning_rounds: The number of learning rounds.
+            learning_epochs: The number of learning epochs.
+            **kwargs: The command keyword arguments.
+
+        """
         if learning_rounds is None or learning_epochs is None:
             raise ValueError("Learning rounds and epochs are required")
         self.__learning_fn(int(learning_rounds), int(learning_epochs))

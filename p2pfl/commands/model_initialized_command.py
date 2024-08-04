@@ -36,5 +36,13 @@ class ModelInitializedCommand(Command):
         return "model_initialized"
 
     def execute(self, source: str, round: int, **kwargs) -> None:
-        """Execute the command."""
+        """
+        Execute the command.
+
+        Args:
+            source: The source of the command.
+            round: The round of the command.
+            **kwargs: The command keyword arguments.
+
+        """
         self.state.nei_status[source] = -1

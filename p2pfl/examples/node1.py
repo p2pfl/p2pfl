@@ -38,8 +38,14 @@ def __get_args() -> argparse.Namespace:
 
 
 def node1(port: int) -> None:
-    """Start a node1 and waits for a key press to stop it."""
-    node = Node(MLP(), MnistFederatedDM(sub_id=0, number_sub=2), port=port)
+    """
+    Start a node1 and waits for a key press to stop it.
+
+    Args:
+        port: The port where the node will be listening.
+
+    """
+    node = Node(MLP(), MnistFederatedDM(sub_id=0, number_sub=2), address=f"127.0.0.1:{port}")
     node.start()
 
     input("Press any key to stop\n")
