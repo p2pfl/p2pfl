@@ -27,9 +27,9 @@ jobs:
       - name: Generate documentation
         run: |
           cd docs
-          make clean
-          sphinx-apidoc -M -e -f -o source/modules ../p2pfl
-          make html
+          python3 -m poetry run make clean
+          python3 -m poetry run sphinx-apidoc -M -e -f -o source/modules ../p2pfl
+          python3 -m poetry run make html
           touch ./_build/.nojekyll
 
       - name: Deploy to GitHub Pages
