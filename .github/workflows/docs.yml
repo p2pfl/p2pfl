@@ -22,18 +22,18 @@ jobs:
         run: |
           pip install poetry
           python -m poetry lock --no-update
-          python3 -m poetry install --only docs
+          python -m poetry install -E torch
 
       - name: Generate documentation
         run: |
           cd docs
-          python3 -m poetry run make clean
-          python3 -m poetry run sphinx-apidoc -M -e -f -o source/modules ../p2pfl
-          python3 -m poetry run make html
-          touch ./_build/.nojekyll
+          python -m poetry run make clean
+          python -m poetry run sphinx-apidoc -M -e -f -o source/modules ../p2pfl
+          python -m poetry run make html
+          touch ./build/html/.nojekyll
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/_build/html
+          publish_dir: ./docs/build/html
