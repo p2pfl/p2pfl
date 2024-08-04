@@ -7,7 +7,7 @@ license = "GPL-3.0-only"
 readme = "README.md"
 homepage = "https://pguijas.github.io/p2pfl/"
 repository = "https://github.com/pguijas/p2pfl"
-documentation = "https://pguijas.github.io/p2pfl/doc"
+documentation = "https://pguijas.github.io/p2pfl"
 keywords = ["federated learning", "fl", "peer to peer", "p2p", "decentralized", "data privacy", "data security", "pytorch"]
 
 [tool.poetry.dependencies]

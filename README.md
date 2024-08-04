@@ -59,11 +59,11 @@ docker run -it --rm p2pfl bash
 
 ## 🎬 Quickstart
 
-To start using P2PFL, follow our [quickstart guide](https://pguijas.github.io/p2pfl/doc/quickstart.html/) in the documentation.
+To start using P2PFL, follow our [quickstart guide](https://pguijas.github.io/p2pfl/quickstart.html/) in the documentation.
 
 ## 📚 Documentation & Resources
 
-* **Documentation:** [https://pguijas.github.io/p2pfl/](https://pguijas.github.io/p2pfl/doc)
+* **Documentation:** [https://pguijas.github.io/p2pfl/](https://pguijas.github.io/p2pfl)
 * **End-of-Degree Project Report:** [other/memoria.pdf](other/memoria.pdf)
 * **Open Source Project Award Report:** [other/memoria-open-source.pdf](other/memoria-open-source.pdf)
 

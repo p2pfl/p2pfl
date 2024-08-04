@@ -21,4 +21,4 @@ make html
 
 ## 📚 Documentation
 
-The documentation is available at [https://pguijas.github.io/p2pfl/doc](https://pguijas.github.io/p2pfl/doc).
+The documentation is available at [https://pguijas.github.io/p2pfl](https://pguijas.github.io/p2pfl).
