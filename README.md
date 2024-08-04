@@ -1,4 +1,4 @@
-![GitHub Logo](other/logo.png)
+![GitHub Logo](https://raw.githubusercontent.com/pguijas/p2pfl/main/other/logo.png)
 
 # P2PFL - Federated Learning over P2P networks
 
@@ -35,7 +35,7 @@ P2PFL offers a range of features designed to make decentralized federated learni
 ### 👨🏼‍💻 For Users
 
 ```bash
-pip install p2pfl
+pip install "p2pfl[torch]"
 ```
 
 ### 👨🏼‍🔧 For Developers
