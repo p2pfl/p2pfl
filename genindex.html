@@ -1,0 +1,2087 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="#" /><link rel="search" title="Search" href="search.html" />
+
+    <link rel="shortcut icon" href="_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.07.18 --><title>Index - p2pfl 0.2.0 documentation</title>
+<link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=613ab9ff" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">p2pfl 0.2.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="_static/logo.png" alt="Logo"/>
+  </div>
+  
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">📥 Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">🎬 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="p2pfl_ws.html">🌐 P2PFL Web Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">👫 Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="library_design.html">🏛️ Library Design</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">📚 API</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of 📚 API</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="modules/p2pfl.html">p2pfl package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of p2pfl package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="modules/p2pfl.commands.html">p2pfl.commands package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of p2pfl.commands package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.commands.add_model_command.html">p2pfl.commands.add_model_command module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.commands.command.html">p2pfl.commands.command module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.commands.heartbeat_command.html">p2pfl.commands.heartbeat_command module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.commands.init_model_command.html">p2pfl.commands.init_model_command module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.commands.metrics_command.html">p2pfl.commands.metrics_command module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.commands.model_initialized_command.html">p2pfl.commands.model_initialized_command module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.commands.models_agregated_command.html">p2pfl.commands.models_agregated_command module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.commands.models_ready_command.html">p2pfl.commands.models_ready_command module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.commands.start_learning_command.html">p2pfl.commands.start_learning_command module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.commands.stop_learning_command.html">p2pfl.commands.stop_learning_command module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.commands.vote_train_set_command.html">p2pfl.commands.vote_train_set_command module</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="modules/p2pfl.communication.html">p2pfl.communication package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of p2pfl.communication package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="modules/p2pfl.communication.grpc.html">p2pfl.communication.grpc package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of p2pfl.communication.grpc package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5 has-children"><a class="reference internal" href="modules/p2pfl.communication.grpc.proto.html">p2pfl.communication.grpc.proto package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of p2pfl.communication.grpc.proto package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6"><a class="reference internal" href="modules/p2pfl.communication.grpc.proto.generate_proto.html">p2pfl.communication.grpc.proto.generate_proto module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="modules/p2pfl.communication.grpc.proto.node_pb2.html">p2pfl.communication.grpc.proto.node_pb2 module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="modules/p2pfl.communication.grpc.proto.node_pb2_grpc.html">p2pfl.communication.grpc.proto.node_pb2_grpc module</a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.communication.grpc.address.html">p2pfl.communication.grpc.address module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.communication.grpc.grpc_client.html">p2pfl.communication.grpc.grpc_client module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.communication.grpc.grpc_communication_protocol.html">p2pfl.communication.grpc.grpc_communication_protocol module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.communication.grpc.grpc_neighbors.html">p2pfl.communication.grpc.grpc_neighbors module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.communication.grpc.grpc_server.html">p2pfl.communication.grpc.grpc_server module</a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="modules/p2pfl.communication.memory.html">p2pfl.communication.memory package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of p2pfl.communication.memory package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.communication.memory.memory_client.html">p2pfl.communication.memory.memory_client module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.communication.memory.memory_communication_protocol.html">p2pfl.communication.memory.memory_communication_protocol module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.communication.memory.memory_neighbors.html">p2pfl.communication.memory.memory_neighbors module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.communication.memory.memory_server.html">p2pfl.communication.memory.memory_server module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.communication.memory.server_singleton.html">p2pfl.communication.memory.server_singleton module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.communication.client.html">p2pfl.communication.client module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.communication.communication_protocol.html">p2pfl.communication.communication_protocol module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.communication.exceptions.html">p2pfl.communication.exceptions module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.communication.gossiper.html">p2pfl.communication.gossiper module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.communication.heartbeater.html">p2pfl.communication.heartbeater module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.communication.neighbors.html">p2pfl.communication.neighbors module</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="modules/p2pfl.examples.html">p2pfl.examples package</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of p2pfl.examples package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.examples.mnist.html">p2pfl.examples.mnist module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.examples.node1.html">p2pfl.examples.node1 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.examples.node2.html">p2pfl.examples.node2 module</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="modules/p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of p2pfl.learning package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="modules/p2pfl.learning.aggregators.html">p2pfl.learning.aggregators package</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle navigation of p2pfl.learning.aggregators package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.learning.aggregators.aggregator.html">p2pfl.learning.aggregators.aggregator module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.learning.aggregators.fedavg.html">p2pfl.learning.aggregators.fedavg module</a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="modules/p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle navigation of p2pfl.learning.pytorch package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5 has-children"><a class="reference internal" href="modules/p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle navigation of p2pfl.learning.pytorch.mnist_examples package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6 has-children"><a class="reference internal" href="modules/p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><div class="visually-hidden">Toggle navigation of p2pfl.learning.pytorch.mnist_examples.models package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l7"><a class="reference internal" href="modules/p2pfl.learning.pytorch.mnist_examples.models.cnn.html">p2pfl.learning.pytorch.mnist_examples.models.cnn module</a></li>
+<li class="toctree-l7"><a class="reference internal" href="modules/p2pfl.learning.pytorch.mnist_examples.models.mlp.html">p2pfl.learning.pytorch.mnist_examples.models.mlp module</a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="modules/p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.html">p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm module</a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.learning.pytorch.lightning_learner.html">p2pfl.learning.pytorch.lightning_learner module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.learning.pytorch.lightning_logger.html">p2pfl.learning.pytorch.lightning_logger module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.learning.exceptions.html">p2pfl.learning.exceptions module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.learning.learner.html">p2pfl.learning.learner module</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="modules/p2pfl.management.html">p2pfl.management package</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><div class="visually-hidden">Toggle navigation of p2pfl.management package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.management.logger.html">p2pfl.management.logger module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.management.node_monitor.html">p2pfl.management.node_monitor module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.management.p2pfl_web_services.html">p2pfl.management.p2pfl_web_services module</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="modules/p2pfl.stages.html">p2pfl.stages package</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle navigation of p2pfl.stages package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="modules/p2pfl.stages.base_node.html">p2pfl.stages.base_node package</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><div class="visually-hidden">Toggle navigation of p2pfl.stages.base_node package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.stages.base_node.gossip_model_stage.html">p2pfl.stages.base_node.gossip_model_stage module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.stages.base_node.round_finished_stage.html">p2pfl.stages.base_node.round_finished_stage module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.stages.base_node.start_learning_stage.html">p2pfl.stages.base_node.start_learning_stage module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.stages.base_node.train_stage.html">p2pfl.stages.base_node.train_stage module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.stages.base_node.vote_train_set_stage.html">p2pfl.stages.base_node.vote_train_set_stage module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="modules/p2pfl.stages.base_node.wait_agg_models_stage.html">p2pfl.stages.base_node.wait_agg_models_stage module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.stages.stage.html">p2pfl.stages.stage module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.stages.stage_factory.html">p2pfl.stages.stage_factory module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.stages.workflows.html">p2pfl.stages.workflows module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="modules/p2pfl.cli.html">p2pfl.cli module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/p2pfl.exceptions.html">p2pfl.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/p2pfl.node.html">p2pfl.node module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/p2pfl.node_state.html">p2pfl.node_state module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/p2pfl.settings.html">p2pfl.settings module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/p2pfl.utils.html">p2pfl.utils module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          
+<section class="genindex-section">
+  <h1 id="index">Index</h1>
+  <div class="genindex-jumpbox"><a href="#A"><strong>A</strong></a> | <a href="#B"><strong>B</strong></a> | <a href="#C"><strong>C</strong></a> | <a href="#D"><strong>D</strong></a> | <a href="#E"><strong>E</strong></a> | <a href="#F"><strong>F</strong></a> | <a href="#G"><strong>G</strong></a> | <a href="#H"><strong>H</strong></a> | <a href="#I"><strong>I</strong></a> | <a href="#L"><strong>L</strong></a> | <a href="#M"><strong>M</strong></a> | <a href="#N"><strong>N</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#R"><strong>R</strong></a> | <a href="#S"><strong>S</strong></a> | <a href="#T"><strong>T</strong></a> | <a href="#U"><strong>U</strong></a> | <a href="#V"><strong>V</strong></a> | <a href="#W"><strong>W</strong></a> | <a href="#Z"><strong>Z</strong></a></div>
+</section>
+<section id="A" class="genindex-section">
+  <h2>A</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.actual_exp_name">actual_exp_name (p2pfl.node_state.NodeState attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.neighbors.html#p2pfl.communication.neighbors.Neighbors.add">add() (p2pfl.communication.neighbors.Neighbors method)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.communication_protocol.html#p2pfl.communication.communication_protocol.CommunicationProtocol.add_command">add_command() (p2pfl.communication.communication_protocol.CommunicationProtocol method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_communication_protocol.html#p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol.add_command">(p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_server.html#p2pfl.communication.grpc.grpc_server.GrpcServer.add_command">(p2pfl.communication.grpc.grpc_server.GrpcServer method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_communication_protocol.html#p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol.add_command">(p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_server.html#p2pfl.communication.memory.memory_server.InMemoryServer.add_command">(p2pfl.communication.memory.memory_server.InMemoryServer method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.management.metric_storage.html#p2pfl.management.metric_storage.GlobalMetricStorage.add_log">add_log() (p2pfl.management.metric_storage.GlobalMetricStorage method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.management.metric_storage.html#p2pfl.management.metric_storage.LocalMetricStorage.add_log">(p2pfl.management.metric_storage.LocalMetricStorage method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.communication.gossiper.html#p2pfl.communication.gossiper.Gossiper.add_message">add_message() (p2pfl.communication.gossiper.Gossiper method)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#p2pfl.learning.aggregators.aggregator.Aggregator.add_model">add_model() (p2pfl.learning.aggregators.aggregator.Aggregator method)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.grpc.proto.node_pb2_grpc.html#p2pfl.communication.grpc.proto.node_pb2_grpc.add_NodeServicesServicer_to_server">add_NodeServicesServicer_to_server() (in module p2pfl.communication.grpc.proto.node_pb2_grpc)</a>
+</li>
+        <li><a href="modules/p2pfl.commands.add_model_command.html#p2pfl.commands.add_model_command.AddModelCommand">AddModelCommand (class in p2pfl.commands.add_model_command)</a>
+</li>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.addr">addr (p2pfl.node_state.NodeState attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.grpc.address.html#p2pfl.communication.grpc.address.AddressParser">AddressParser (class in p2pfl.communication.grpc.address)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#p2pfl.learning.aggregators.aggregator.Aggregator.aggregate">aggregate() (p2pfl.learning.aggregators.aggregator.Aggregator method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.aggregators.fedavg.html#p2pfl.learning.aggregators.fedavg.FedAvg.aggregate">(p2pfl.learning.aggregators.fedavg.FedAvg method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.AGGREGATION_TIMEOUT">AGGREGATION_TIMEOUT (p2pfl.settings.Settings attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#p2pfl.learning.aggregators.aggregator.Aggregator">Aggregator (class in p2pfl.learning.aggregators.aggregator)</a>
+</li>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.AMOUNT_LAST_MESSAGES_SAVED">AMOUNT_LAST_MESSAGES_SAVED (p2pfl.settings.Settings attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.node.html#p2pfl.node.Node.assert_running">assert_running() (p2pfl.node.Node method)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="B" class="genindex-section">
+  <h2>B</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.communication.heartbeater.html#p2pfl.communication.heartbeater.Heartbeater.beat">beat() (p2pfl.communication.heartbeater.Heartbeater method)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.client.html#p2pfl.communication.client.Client.broadcast">broadcast() (p2pfl.communication.client.Client method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.communication_protocol.html#p2pfl.communication.communication_protocol.CommunicationProtocol.broadcast">(p2pfl.communication.communication_protocol.CommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_client.html#p2pfl.communication.grpc.grpc_client.GrpcClient.broadcast">(p2pfl.communication.grpc.grpc_client.GrpcClient method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_communication_protocol.html#p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol.broadcast">(p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_client.html#p2pfl.communication.memory.memory_client.InMemoryClient.broadcast">(p2pfl.communication.memory.memory_client.InMemoryClient method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_communication_protocol.html#p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol.broadcast">(p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.communication.client.html#p2pfl.communication.client.Client.build_message">build_message() (p2pfl.communication.client.Client method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_client.html#p2pfl.communication.grpc.grpc_client.GrpcClient.build_message">(p2pfl.communication.grpc.grpc_client.GrpcClient method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_client.html#p2pfl.communication.memory.memory_client.InMemoryClient.build_message">(p2pfl.communication.memory.memory_client.InMemoryClient method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.communication.communication_protocol.html#p2pfl.communication.communication_protocol.CommunicationProtocol.build_msg">build_msg() (p2pfl.communication.communication_protocol.CommunicationProtocol method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_communication_protocol.html#p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol.build_msg">(p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_communication_protocol.html#p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol.build_msg">(p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.communication.client.html#p2pfl.communication.client.Client.build_weights">build_weights() (p2pfl.communication.client.Client method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.communication_protocol.html#p2pfl.communication.communication_protocol.CommunicationProtocol.build_weights">(p2pfl.communication.communication_protocol.CommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_client.html#p2pfl.communication.grpc.grpc_client.GrpcClient.build_weights">(p2pfl.communication.grpc.grpc_client.GrpcClient method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_communication_protocol.html#p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol.build_weights">(p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_client.html#p2pfl.communication.memory.memory_client.InMemoryClient.build_weights">(p2pfl.communication.memory.memory_client.InMemoryClient method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_communication_protocol.html#p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol.build_weights">(p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="C" class="genindex-section">
+  <h2>C</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.communication.gossiper.html#p2pfl.communication.gossiper.Gossiper.check_and_set_processed">check_and_set_processed() (p2pfl.communication.gossiper.Gossiper method)</a>
+</li>
+        <li><a href="modules/p2pfl.utils.html#p2pfl.utils.check_equal_models">check_equal_models() (in module p2pfl.utils)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.cleanup">cleanup() (p2pfl.management.logger.Logger method)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#p2pfl.learning.aggregators.aggregator.Aggregator.clear">clear() (p2pfl.learning.aggregators.aggregator.Aggregator method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.clear">(p2pfl.node_state.NodeState method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.communication.neighbors.html#p2pfl.communication.neighbors.Neighbors.clear_neighbors">clear_neighbors() (p2pfl.communication.neighbors.Neighbors method)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.client.html#p2pfl.communication.client.Client">Client (class in p2pfl.communication.client)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.cnn.html#p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN">CNN (class in p2pfl.learning.pytorch.mnist_examples.models.cnn)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.ColoredFormatter">ColoredFormatter (class in p2pfl.management.logger)</a>
+</li>
+        <li><a href="modules/p2pfl.commands.command.html#p2pfl.commands.command.Command">Command (class in p2pfl.commands.command)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.communication_protocol.html#p2pfl.communication.communication_protocol.CommunicationProtocol">CommunicationProtocol (class in p2pfl.communication.communication_protocol)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.cnn.html#p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN.configure_optimizers">configure_optimizers() (p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.mlp.html#p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP.configure_optimizers">(p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.communication.communication_protocol.html#p2pfl.communication.communication_protocol.CommunicationProtocol.connect">connect() (p2pfl.communication.communication_protocol.CommunicationProtocol method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_communication_protocol.html#p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol.connect">(p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_neighbors.html#p2pfl.communication.grpc.grpc_neighbors.GrpcNeighbors.connect">(p2pfl.communication.grpc.grpc_neighbors.GrpcNeighbors method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_communication_protocol.html#p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol.connect">(p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_neighbors.html#p2pfl.communication.memory.memory_neighbors.InMemoryNeighbors.connect">(p2pfl.communication.memory.memory_neighbors.InMemoryNeighbors method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.neighbors.html#p2pfl.communication.neighbors.Neighbors.connect">(p2pfl.communication.neighbors.Neighbors method)</a>
+</li>
+          <li><a href="modules/p2pfl.node.html#p2pfl.node.Node.connect">(p2pfl.node.Node method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.connect_web">connect_web() (p2pfl.management.logger.Logger static method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.critical">critical() (p2pfl.management.logger.Logger static method)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="D" class="genindex-section">
+  <h2>D</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.debug">debug() (p2pfl.management.logger.Logger static method)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.learner.html#p2pfl.learning.learner.NodeLearner.decode_parameters">decode_parameters() (p2pfl.learning.learner.NodeLearner method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.lightning_learner.html#p2pfl.learning.pytorch.lightning_learner.LightningLearner.decode_parameters">(p2pfl.learning.pytorch.lightning_learner.LightningLearner method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.learning.exceptions.html#p2pfl.learning.exceptions.DecodingParamsError">DecodingParamsError</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.DictFormatter">DictFormatter (class in p2pfl.management.logger)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.communication_protocol.html#p2pfl.communication.communication_protocol.CommunicationProtocol.disconnect">disconnect() (p2pfl.communication.communication_protocol.CommunicationProtocol method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_communication_protocol.html#p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol.disconnect">(p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_neighbors.html#p2pfl.communication.grpc.grpc_neighbors.GrpcNeighbors.disconnect">(p2pfl.communication.grpc.grpc_neighbors.GrpcNeighbors method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_server.html#p2pfl.communication.grpc.grpc_server.GrpcServer.disconnect">(p2pfl.communication.grpc.grpc_server.GrpcServer method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.proto.node_pb2_grpc.html#p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServices.disconnect">(p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServices static method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.proto.node_pb2_grpc.html#p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServicesServicer.disconnect">(p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServicesServicer method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_communication_protocol.html#p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol.disconnect">(p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_neighbors.html#p2pfl.communication.memory.memory_neighbors.InMemoryNeighbors.disconnect">(p2pfl.communication.memory.memory_neighbors.InMemoryNeighbors method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_server.html#p2pfl.communication.memory.memory_server.InMemoryServer.disconnect">(p2pfl.communication.memory.memory_server.InMemoryServer method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.neighbors.html#p2pfl.communication.neighbors.Neighbors.disconnect">(p2pfl.communication.neighbors.Neighbors method)</a>
+</li>
+          <li><a href="modules/p2pfl.node.html#p2pfl.node.Node.disconnect">(p2pfl.node.Node method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="E" class="genindex-section">
+  <h2>E</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.P2pflWebLogHandler.emit">emit() (p2pfl.management.logger.P2pflWebLogHandler method)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.learner.html#p2pfl.learning.learner.NodeLearner.encode_parameters">encode_parameters() (p2pfl.learning.learner.NodeLearner method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.lightning_learner.html#p2pfl.learning.pytorch.lightning_learner.LightningLearner.encode_parameters">(p2pfl.learning.pytorch.lightning_learner.LightningLearner method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.error">error() (p2pfl.management.logger.Logger static method)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.learner.html#p2pfl.learning.learner.NodeLearner.evaluate">evaluate() (p2pfl.learning.learner.NodeLearner method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.lightning_learner.html#p2pfl.learning.pytorch.lightning_learner.LightningLearner.evaluate">(p2pfl.learning.pytorch.lightning_learner.LightningLearner method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.commands.add_model_command.html#p2pfl.commands.add_model_command.AddModelCommand.execute">execute() (p2pfl.commands.add_model_command.AddModelCommand method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.commands.command.html#p2pfl.commands.command.Command.execute">(p2pfl.commands.command.Command method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.heartbeat_command.html#p2pfl.commands.heartbeat_command.HeartbeatCommand.execute">(p2pfl.commands.heartbeat_command.HeartbeatCommand method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.init_model_command.html#p2pfl.commands.init_model_command.InitModelCommand.execute">(p2pfl.commands.init_model_command.InitModelCommand method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.metrics_command.html#p2pfl.commands.metrics_command.MetricsCommand.execute">(p2pfl.commands.metrics_command.MetricsCommand method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.model_initialized_command.html#p2pfl.commands.model_initialized_command.ModelInitializedCommand.execute">(p2pfl.commands.model_initialized_command.ModelInitializedCommand method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.models_agregated_command.html#p2pfl.commands.models_agregated_command.ModelsAggregatedCommand.execute">(p2pfl.commands.models_agregated_command.ModelsAggregatedCommand method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.models_ready_command.html#p2pfl.commands.models_ready_command.ModelsReadyCommand.execute">(p2pfl.commands.models_ready_command.ModelsReadyCommand method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.start_learning_command.html#p2pfl.commands.start_learning_command.StartLearningCommand.execute">(p2pfl.commands.start_learning_command.StartLearningCommand method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.stop_learning_command.html#p2pfl.commands.stop_learning_command.StopLearningCommand.execute">(p2pfl.commands.stop_learning_command.StopLearningCommand method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.vote_train_set_command.html#p2pfl.commands.vote_train_set_command.VoteTrainSetCommand.execute">(p2pfl.commands.vote_train_set_command.VoteTrainSetCommand method)</a>
+</li>
+          <li><a href="modules/p2pfl.stages.base_node.gossip_model_stage.html#p2pfl.stages.base_node.gossip_model_stage.GossipModelStage.execute">(p2pfl.stages.base_node.gossip_model_stage.GossipModelStage static method)</a>
+</li>
+          <li><a href="modules/p2pfl.stages.base_node.round_finished_stage.html#p2pfl.stages.base_node.round_finished_stage.RoundFinishedStage.execute">(p2pfl.stages.base_node.round_finished_stage.RoundFinishedStage static method)</a>
+</li>
+          <li><a href="modules/p2pfl.stages.base_node.start_learning_stage.html#p2pfl.stages.base_node.start_learning_stage.StartLearningStage.execute">(p2pfl.stages.base_node.start_learning_stage.StartLearningStage static method)</a>
+</li>
+          <li><a href="modules/p2pfl.stages.base_node.train_stage.html#p2pfl.stages.base_node.train_stage.TrainStage.execute">(p2pfl.stages.base_node.train_stage.TrainStage static method)</a>
+</li>
+          <li><a href="modules/p2pfl.stages.base_node.vote_train_set_stage.html#p2pfl.stages.base_node.vote_train_set_stage.VoteTrainSetStage.execute">(p2pfl.stages.base_node.vote_train_set_stage.VoteTrainSetStage static method)</a>
+</li>
+          <li><a href="modules/p2pfl.stages.base_node.wait_agg_models_stage.html#p2pfl.stages.base_node.wait_agg_models_stage.WaitAggregatedModelsStage.execute">(p2pfl.stages.base_node.wait_agg_models_stage.WaitAggregatedModelsStage static method)</a>
+</li>
+          <li><a href="modules/p2pfl.stages.stage.html#p2pfl.stages.stage.Stage.execute">(p2pfl.stages.stage.Stage static method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.communication.neighbors.html#p2pfl.communication.neighbors.Neighbors.exists">exists() (p2pfl.communication.neighbors.Neighbors method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.experiment_finished">experiment_finished() (p2pfl.management.logger.Logger static method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.experiment_started">experiment_started() (p2pfl.management.logger.Logger static method)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="F" class="genindex-section">
+  <h2>F</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.learning.aggregators.fedavg.html#p2pfl.learning.aggregators.fedavg.FedAvg">FedAvg (class in p2pfl.learning.aggregators.fedavg)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.pytorch.lightning_logger.html#p2pfl.learning.pytorch.lightning_logger.FederatedLogger">FederatedLogger (class in p2pfl.learning.pytorch.lightning_logger)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.pytorch.lightning_logger.html#p2pfl.learning.pytorch.lightning_logger.FederatedLogger.finalize">finalize() (p2pfl.learning.pytorch.lightning_logger.FederatedLogger method)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.learner.html#p2pfl.learning.learner.NodeLearner.fit">fit() (p2pfl.learning.learner.NodeLearner method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.lightning_learner.html#p2pfl.learning.pytorch.lightning_learner.LightningLearner.fit">(p2pfl.learning.pytorch.lightning_learner.LightningLearner method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.ColoredFormatter.format">format() (p2pfl.management.logger.ColoredFormatter method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.DictFormatter.format">(p2pfl.management.logger.DictFormatter method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.cnn.html#p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN.forward">forward() (p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.mlp.html#p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP.forward">(p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.utils.html#p2pfl.utils.full_connection">full_connection() (in module p2pfl.utils)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="G" class="genindex-section">
+  <h2>G</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.communication.neighbors.html#p2pfl.communication.neighbors.Neighbors.get">get() (p2pfl.communication.neighbors.Neighbors method)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.communication_protocol.html#p2pfl.communication.communication_protocol.CommunicationProtocol.get_address">get_address() (p2pfl.communication.communication_protocol.CommunicationProtocol method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_communication_protocol.html#p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol.get_address">(p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_communication_protocol.html#p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol.get_address">(p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#p2pfl.learning.aggregators.aggregator.Aggregator.get_aggregated_models">get_aggregated_models() (p2pfl.learning.aggregators.aggregator.Aggregator method)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.neighbors.html#p2pfl.communication.neighbors.Neighbors.get_all">get_all() (p2pfl.communication.neighbors.Neighbors method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.metric_storage.html#p2pfl.management.metric_storage.GlobalMetricStorage.get_all_logs">get_all_logs() (p2pfl.management.metric_storage.GlobalMetricStorage method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.management.metric_storage.html#p2pfl.management.metric_storage.LocalMetricStorage.get_all_logs">(p2pfl.management.metric_storage.LocalMetricStorage method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.management.metric_storage.html#p2pfl.management.metric_storage.GlobalMetricStorage.get_experiment_logs">get_experiment_logs() (p2pfl.management.metric_storage.GlobalMetricStorage method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.management.metric_storage.html#p2pfl.management.metric_storage.LocalMetricStorage.get_experiment_logs">(p2pfl.management.metric_storage.LocalMetricStorage method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.management.metric_storage.html#p2pfl.management.metric_storage.GlobalMetricStorage.get_experiment_node_logs">get_experiment_node_logs() (p2pfl.management.metric_storage.GlobalMetricStorage method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.metric_storage.html#p2pfl.management.metric_storage.LocalMetricStorage.get_experiment_round_logs">get_experiment_round_logs() (p2pfl.management.metric_storage.LocalMetricStorage method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.metric_storage.html#p2pfl.management.metric_storage.LocalMetricStorage.get_experiment_round_node_logs">get_experiment_round_node_logs() (p2pfl.management.metric_storage.LocalMetricStorage method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.get_global_logs">get_global_logs() (p2pfl.management.logger.Logger static method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.get_instance">get_instance() (p2pfl.management.logger.Logger static method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.get_level">get_level() (p2pfl.management.logger.Logger static method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.get_level_name">get_level_name() (p2pfl.management.logger.Logger static method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.get_local_logs">get_local_logs() (p2pfl.management.logger.Logger static method)</a>
+</li>
+        <li><a href="modules/p2pfl.commands.add_model_command.html#p2pfl.commands.add_model_command.AddModelCommand.get_name">get_name() (p2pfl.commands.add_model_command.AddModelCommand static method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.commands.command.html#p2pfl.commands.command.Command.get_name">(p2pfl.commands.command.Command static method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.heartbeat_command.html#p2pfl.commands.heartbeat_command.HeartbeatCommand.get_name">(p2pfl.commands.heartbeat_command.HeartbeatCommand static method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.init_model_command.html#p2pfl.commands.init_model_command.InitModelCommand.get_name">(p2pfl.commands.init_model_command.InitModelCommand static method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.metrics_command.html#p2pfl.commands.metrics_command.MetricsCommand.get_name">(p2pfl.commands.metrics_command.MetricsCommand static method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.model_initialized_command.html#p2pfl.commands.model_initialized_command.ModelInitializedCommand.get_name">(p2pfl.commands.model_initialized_command.ModelInitializedCommand static method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.models_agregated_command.html#p2pfl.commands.models_agregated_command.ModelsAggregatedCommand.get_name">(p2pfl.commands.models_agregated_command.ModelsAggregatedCommand static method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.models_ready_command.html#p2pfl.commands.models_ready_command.ModelsReadyCommand.get_name">(p2pfl.commands.models_ready_command.ModelsReadyCommand static method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.start_learning_command.html#p2pfl.commands.start_learning_command.StartLearningCommand.get_name">(p2pfl.commands.start_learning_command.StartLearningCommand static method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.stop_learning_command.html#p2pfl.commands.stop_learning_command.StopLearningCommand.get_name">(p2pfl.commands.stop_learning_command.StopLearningCommand static method)</a>
+</li>
+          <li><a href="modules/p2pfl.commands.vote_train_set_command.html#p2pfl.commands.vote_train_set_command.VoteTrainSetCommand.get_name">(p2pfl.commands.vote_train_set_command.VoteTrainSetCommand static method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.communication.communication_protocol.html#p2pfl.communication.communication_protocol.CommunicationProtocol.get_neighbors">get_neighbors() (p2pfl.communication.communication_protocol.CommunicationProtocol method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_communication_protocol.html#p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol.get_neighbors">(p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_communication_protocol.html#p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol.get_neighbors">(p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.node.html#p2pfl.node.Node.get_neighbors">(p2pfl.node.Node method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.learning.learner.html#p2pfl.learning.learner.NodeLearner.get_num_samples">get_num_samples() (p2pfl.learning.learner.NodeLearner method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.lightning_learner.html#p2pfl.learning.pytorch.lightning_learner.LightningLearner.get_num_samples">(p2pfl.learning.pytorch.lightning_learner.LightningLearner method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.learning.learner.html#p2pfl.learning.learner.NodeLearner.get_parameters">get_parameters() (p2pfl.learning.learner.NodeLearner method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.lightning_learner.html#p2pfl.learning.pytorch.lightning_learner.LightningLearner.get_parameters">(p2pfl.learning.pytorch.lightning_learner.LightningLearner method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.communication.grpc.address.html#p2pfl.communication.grpc.address.AddressParser.get_parsed_address">get_parsed_address() (p2pfl.communication.grpc.address.AddressParser method)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#p2pfl.learning.aggregators.aggregator.Aggregator.get_partial_aggregation">get_partial_aggregation() (p2pfl.learning.aggregators.aggregator.Aggregator method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.p2pfl_web_services.html#p2pfl.management.p2pfl_web_services.P2pflWebServices.get_pending_actions">get_pending_actions() (p2pfl.management.p2pfl_web_services.P2pflWebServices method)</a>
+</li>
+        <li><a href="modules/p2pfl.stages.stage_factory.html#p2pfl.stages.stage_factory.StageFactory.get_stage">get_stage() (p2pfl.stages.stage_factory.StageFactory static method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.metric_storage.html#p2pfl.management.metric_storage.GlobalMetricStorage">GlobalMetricStorage (class in p2pfl.management.metric_storage)</a>
+</li>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS">GOSSIP_EXIT_ON_X_EQUAL_ROUNDS (p2pfl.settings.Settings attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.GOSSIP_MESSAGES_PER_PERIOD">GOSSIP_MESSAGES_PER_PERIOD (p2pfl.settings.Settings attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.GOSSIP_MODELS_PER_ROUND">GOSSIP_MODELS_PER_ROUND (p2pfl.settings.Settings attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.GOSSIP_MODELS_PERIOD">GOSSIP_MODELS_PERIOD (p2pfl.settings.Settings attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.GOSSIP_PERIOD">GOSSIP_PERIOD (p2pfl.settings.Settings attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.communication_protocol.html#p2pfl.communication.communication_protocol.CommunicationProtocol.gossip_weights">gossip_weights() (p2pfl.communication.communication_protocol.CommunicationProtocol method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.gossiper.html#p2pfl.communication.gossiper.Gossiper.gossip_weights">(p2pfl.communication.gossiper.Gossiper method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_communication_protocol.html#p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol.gossip_weights">(p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_communication_protocol.html#p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol.gossip_weights">(p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.communication.gossiper.html#p2pfl.communication.gossiper.Gossiper">Gossiper (class in p2pfl.communication.gossiper)</a>
+</li>
+        <li><a href="modules/p2pfl.stages.base_node.gossip_model_stage.html#p2pfl.stages.base_node.gossip_model_stage.GossipModelStage">GossipModelStage (class in p2pfl.stages.base_node.gossip_model_stage)</a>
+</li>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.GRPC_TIMEOUT">GRPC_TIMEOUT (p2pfl.settings.Settings attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.grpc.grpc_client.html#p2pfl.communication.grpc.grpc_client.GrpcClient">GrpcClient (class in p2pfl.communication.grpc.grpc_client)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.grpc.grpc_communication_protocol.html#p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol">GrpcCommunicationProtocol (class in p2pfl.communication.grpc.grpc_communication_protocol)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.grpc.grpc_neighbors.html#p2pfl.communication.grpc.grpc_neighbors.GrpcNeighbors">GrpcNeighbors (class in p2pfl.communication.grpc.grpc_neighbors)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.grpc.grpc_server.html#p2pfl.communication.grpc.grpc_server.GrpcServer">GrpcServer (class in p2pfl.communication.grpc.grpc_server)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="H" class="genindex-section">
+  <h2>H</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.communication.grpc.grpc_server.html#p2pfl.communication.grpc.grpc_server.GrpcServer.handshake">handshake() (p2pfl.communication.grpc.grpc_server.GrpcServer method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.proto.node_pb2_grpc.html#p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServices.handshake">(p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServices static method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.proto.node_pb2_grpc.html#p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServicesServicer.handshake">(p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServicesServicer method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_server.html#p2pfl.communication.memory.memory_server.InMemoryServer.handshake">(p2pfl.communication.memory.memory_server.InMemoryServer method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.HEARTBEAT_PERIOD">HEARTBEAT_PERIOD (p2pfl.settings.Settings attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.HEARTBEAT_TIMEOUT">HEARTBEAT_TIMEOUT (p2pfl.settings.Settings attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.commands.heartbeat_command.html#p2pfl.commands.heartbeat_command.HeartbeatCommand">HeartbeatCommand (class in p2pfl.commands.heartbeat_command)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.heartbeater.html#p2pfl.communication.heartbeater.Heartbeater">Heartbeater (class in p2pfl.communication.heartbeater)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="I" class="genindex-section">
+  <h2>I</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.increase_round">increase_round() (p2pfl.node_state.NodeState method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.info">info() (p2pfl.management.logger.Logger static method)</a>
+</li>
+        <li><a href="modules/p2pfl.commands.init_model_command.html#p2pfl.commands.init_model_command.InitModelCommand">InitModelCommand (class in p2pfl.commands.init_model_command)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.memory.memory_client.html#p2pfl.communication.memory.memory_client.InMemoryClient">InMemoryClient (class in p2pfl.communication.memory.memory_client)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.communication.memory.memory_communication_protocol.html#p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol">InMemoryCommunicationProtocol (class in p2pfl.communication.memory.memory_communication_protocol)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.memory.memory_neighbors.html#p2pfl.communication.memory.memory_neighbors.InMemoryNeighbors">InMemoryNeighbors (class in p2pfl.communication.memory.memory_neighbors)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.memory.memory_server.html#p2pfl.communication.memory.memory_server.InMemoryServer">InMemoryServer (class in p2pfl.communication.memory.memory_server)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.learner.html#p2pfl.learning.learner.NodeLearner.interrupt_fit">interrupt_fit() (p2pfl.learning.learner.NodeLearner method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.lightning_learner.html#p2pfl.learning.pytorch.lightning_learner.LightningLearner.interrupt_fit">(p2pfl.learning.pytorch.lightning_learner.LightningLearner method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="L" class="genindex-section">
+  <h2>L</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.cli.html#p2pfl.cli.launch">launch() (in module p2pfl.cli)</a>
+</li>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.learner">learner (p2pfl.node_state.NodeState attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.exceptions.html#p2pfl.exceptions.LearnerNotSetException">LearnerNotSetException</a>
+</li>
+        <li><a href="modules/p2pfl.stages.workflows.html#p2pfl.stages.workflows.LearningWorkflow">LearningWorkflow (class in p2pfl.stages.workflows)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.pytorch.lightning_learner.html#p2pfl.learning.pytorch.lightning_learner.LightningLearner">LightningLearner (class in p2pfl.learning.pytorch.lightning_learner)</a>
+</li>
+        <li><a href="modules/p2pfl.cli.html#p2pfl.cli.list">list() (in module p2pfl.cli)</a>
+</li>
+        <li><a href="modules/p2pfl.management.metric_storage.html#p2pfl.management.metric_storage.LocalMetricStorage">LocalMetricStorage (class in p2pfl.management.metric_storage)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.log">log() (p2pfl.management.logger.Logger method)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.LOG_DIR">LOG_DIR (p2pfl.settings.Settings attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.pytorch.lightning_logger.html#p2pfl.learning.pytorch.lightning_logger.FederatedLogger.log_hyperparams">log_hyperparams() (p2pfl.learning.pytorch.lightning_logger.FederatedLogger method)</a>
+</li>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.LOG_LEVEL">LOG_LEVEL (p2pfl.settings.Settings attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.log_metric">log_metric() (p2pfl.management.logger.Logger static method)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.pytorch.lightning_logger.html#p2pfl.learning.pytorch.lightning_logger.FederatedLogger.log_metrics">log_metrics() (p2pfl.learning.pytorch.lightning_logger.FederatedLogger method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.log_system_metric">log_system_metric() (p2pfl.management.logger.Logger static method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger">Logger (class in p2pfl.management.logger)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.logger">logger (in module p2pfl.management.logger)</a>
+</li>
+        <li><a href="modules/p2pfl.cli.html#p2pfl.cli.login">login() (in module p2pfl.cli)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="M" class="genindex-section">
+  <h2>M</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.commands.metrics_command.html#p2pfl.commands.metrics_command.MetricsCommand">MetricsCommand (class in p2pfl.commands.metrics_command)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.mlp.html#p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP">MLP (class in p2pfl.learning.pytorch.mnist_examples.models.mlp)</a>
+</li>
+        <li><a href="modules/p2pfl.examples.mnist.html#p2pfl.examples.mnist.mnist">mnist() (in module p2pfl.examples.mnist)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.html#p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.MnistFederatedDM.mnist_train">mnist_train (p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.MnistFederatedDM attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.html#p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.MnistFederatedDM.mnist_val">mnist_val (p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.MnistFederatedDM attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.html#p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.MnistFederatedDM">MnistFederatedDM (class in p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm)</a>
+</li>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.model_initialized_lock">model_initialized_lock (p2pfl.node_state.NodeState attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.commands.model_initialized_command.html#p2pfl.commands.model_initialized_command.ModelInitializedCommand">ModelInitializedCommand (class in p2pfl.commands.model_initialized_command)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.exceptions.html#p2pfl.learning.exceptions.ModelNotMatchingError">ModelNotMatchingError</a>
+</li>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.models_aggregated">models_aggregated (p2pfl.node_state.NodeState attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.commands.models_agregated_command.html#p2pfl.commands.models_agregated_command.ModelsAggregatedCommand">ModelsAggregatedCommand (class in p2pfl.commands.models_agregated_command)</a>
+</li>
+        <li><a href="modules/p2pfl.commands.models_ready_command.html#p2pfl.commands.models_ready_command.ModelsReadyCommand">ModelsReadyCommand (class in p2pfl.commands.models_ready_command)</a>
+</li>
+        <li>
+    module
+
+        <ul>
+          <li><a href="modules/p2pfl.html#module-p2pfl">p2pfl</a>
+</li>
+          <li><a href="modules/p2pfl.cli.html#module-p2pfl.cli">p2pfl.cli</a>
+</li>
+          <li><a href="modules/p2pfl.commands.html#module-p2pfl.commands">p2pfl.commands</a>
+</li>
+          <li><a href="modules/p2pfl.commands.add_model_command.html#module-p2pfl.commands.add_model_command">p2pfl.commands.add_model_command</a>
+</li>
+          <li><a href="modules/p2pfl.commands.command.html#module-p2pfl.commands.command">p2pfl.commands.command</a>
+</li>
+          <li><a href="modules/p2pfl.commands.heartbeat_command.html#module-p2pfl.commands.heartbeat_command">p2pfl.commands.heartbeat_command</a>
+</li>
+          <li><a href="modules/p2pfl.commands.init_model_command.html#module-p2pfl.commands.init_model_command">p2pfl.commands.init_model_command</a>
+</li>
+          <li><a href="modules/p2pfl.commands.metrics_command.html#module-p2pfl.commands.metrics_command">p2pfl.commands.metrics_command</a>
+</li>
+          <li><a href="modules/p2pfl.commands.model_initialized_command.html#module-p2pfl.commands.model_initialized_command">p2pfl.commands.model_initialized_command</a>
+</li>
+          <li><a href="modules/p2pfl.commands.models_agregated_command.html#module-p2pfl.commands.models_agregated_command">p2pfl.commands.models_agregated_command</a>
+</li>
+          <li><a href="modules/p2pfl.commands.models_ready_command.html#module-p2pfl.commands.models_ready_command">p2pfl.commands.models_ready_command</a>
+</li>
+          <li><a href="modules/p2pfl.commands.start_learning_command.html#module-p2pfl.commands.start_learning_command">p2pfl.commands.start_learning_command</a>
+</li>
+          <li><a href="modules/p2pfl.commands.stop_learning_command.html#module-p2pfl.commands.stop_learning_command">p2pfl.commands.stop_learning_command</a>
+</li>
+          <li><a href="modules/p2pfl.commands.vote_train_set_command.html#module-p2pfl.commands.vote_train_set_command">p2pfl.commands.vote_train_set_command</a>
+</li>
+          <li><a href="modules/p2pfl.communication.html#module-p2pfl.communication">p2pfl.communication</a>
+</li>
+          <li><a href="modules/p2pfl.communication.client.html#module-p2pfl.communication.client">p2pfl.communication.client</a>
+</li>
+          <li><a href="modules/p2pfl.communication.communication_protocol.html#module-p2pfl.communication.communication_protocol">p2pfl.communication.communication_protocol</a>
+</li>
+          <li><a href="modules/p2pfl.communication.exceptions.html#module-p2pfl.communication.exceptions">p2pfl.communication.exceptions</a>
+</li>
+          <li><a href="modules/p2pfl.communication.gossiper.html#module-p2pfl.communication.gossiper">p2pfl.communication.gossiper</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.html#module-p2pfl.communication.grpc">p2pfl.communication.grpc</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.address.html#module-p2pfl.communication.grpc.address">p2pfl.communication.grpc.address</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_client.html#module-p2pfl.communication.grpc.grpc_client">p2pfl.communication.grpc.grpc_client</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_communication_protocol.html#module-p2pfl.communication.grpc.grpc_communication_protocol">p2pfl.communication.grpc.grpc_communication_protocol</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_neighbors.html#module-p2pfl.communication.grpc.grpc_neighbors">p2pfl.communication.grpc.grpc_neighbors</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_server.html#module-p2pfl.communication.grpc.grpc_server">p2pfl.communication.grpc.grpc_server</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.proto.html#module-p2pfl.communication.grpc.proto">p2pfl.communication.grpc.proto</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.proto.generate_proto.html#module-p2pfl.communication.grpc.proto.generate_proto">p2pfl.communication.grpc.proto.generate_proto</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.proto.node_pb2.html#module-p2pfl.communication.grpc.proto.node_pb2">p2pfl.communication.grpc.proto.node_pb2</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.proto.node_pb2_grpc.html#module-p2pfl.communication.grpc.proto.node_pb2_grpc">p2pfl.communication.grpc.proto.node_pb2_grpc</a>
+</li>
+          <li><a href="modules/p2pfl.communication.heartbeater.html#module-p2pfl.communication.heartbeater">p2pfl.communication.heartbeater</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.html#module-p2pfl.communication.memory">p2pfl.communication.memory</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_client.html#module-p2pfl.communication.memory.memory_client">p2pfl.communication.memory.memory_client</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_communication_protocol.html#module-p2pfl.communication.memory.memory_communication_protocol">p2pfl.communication.memory.memory_communication_protocol</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_neighbors.html#module-p2pfl.communication.memory.memory_neighbors">p2pfl.communication.memory.memory_neighbors</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_server.html#module-p2pfl.communication.memory.memory_server">p2pfl.communication.memory.memory_server</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.server_singleton.html#module-p2pfl.communication.memory.server_singleton">p2pfl.communication.memory.server_singleton</a>
+</li>
+          <li><a href="modules/p2pfl.communication.neighbors.html#module-p2pfl.communication.neighbors">p2pfl.communication.neighbors</a>
+</li>
+          <li><a href="modules/p2pfl.examples.html#module-p2pfl.examples">p2pfl.examples</a>
+</li>
+          <li><a href="modules/p2pfl.examples.mnist.html#module-p2pfl.examples.mnist">p2pfl.examples.mnist</a>
+</li>
+          <li><a href="modules/p2pfl.examples.node1.html#module-p2pfl.examples.node1">p2pfl.examples.node1</a>
+</li>
+          <li><a href="modules/p2pfl.examples.node2.html#module-p2pfl.examples.node2">p2pfl.examples.node2</a>
+</li>
+          <li><a href="modules/p2pfl.exceptions.html#module-p2pfl.exceptions">p2pfl.exceptions</a>
+</li>
+          <li><a href="modules/p2pfl.learning.html#module-p2pfl.learning">p2pfl.learning</a>
+</li>
+          <li><a href="modules/p2pfl.learning.aggregators.html#module-p2pfl.learning.aggregators">p2pfl.learning.aggregators</a>
+</li>
+          <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#module-p2pfl.learning.aggregators.aggregator">p2pfl.learning.aggregators.aggregator</a>
+</li>
+          <li><a href="modules/p2pfl.learning.aggregators.fedavg.html#module-p2pfl.learning.aggregators.fedavg">p2pfl.learning.aggregators.fedavg</a>
+</li>
+          <li><a href="modules/p2pfl.learning.exceptions.html#module-p2pfl.learning.exceptions">p2pfl.learning.exceptions</a>
+</li>
+          <li><a href="modules/p2pfl.learning.learner.html#module-p2pfl.learning.learner">p2pfl.learning.learner</a>
+</li>
+          <li><a href="modules/p2pfl.learning.pytorch.html#module-p2pfl.learning.pytorch">p2pfl.learning.pytorch</a>
+</li>
+          <li><a href="modules/p2pfl.learning.pytorch.lightning_learner.html#module-p2pfl.learning.pytorch.lightning_learner">p2pfl.learning.pytorch.lightning_learner</a>
+</li>
+          <li><a href="modules/p2pfl.learning.pytorch.lightning_logger.html#module-p2pfl.learning.pytorch.lightning_logger">p2pfl.learning.pytorch.lightning_logger</a>
+</li>
+          <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.html#module-p2pfl.learning.pytorch.mnist_examples">p2pfl.learning.pytorch.mnist_examples</a>
+</li>
+          <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.html#module-p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm">p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm</a>
+</li>
+          <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.html#module-p2pfl.learning.pytorch.mnist_examples.models">p2pfl.learning.pytorch.mnist_examples.models</a>
+</li>
+          <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.cnn.html#module-p2pfl.learning.pytorch.mnist_examples.models.cnn">p2pfl.learning.pytorch.mnist_examples.models.cnn</a>
+</li>
+          <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.mlp.html#module-p2pfl.learning.pytorch.mnist_examples.models.mlp">p2pfl.learning.pytorch.mnist_examples.models.mlp</a>
+</li>
+          <li><a href="modules/p2pfl.management.html#module-p2pfl.management">p2pfl.management</a>
+</li>
+          <li><a href="modules/p2pfl.management.logger.html#module-p2pfl.management.logger">p2pfl.management.logger</a>
+</li>
+          <li><a href="modules/p2pfl.management.metric_storage.html#module-p2pfl.management.metric_storage">p2pfl.management.metric_storage</a>
+</li>
+          <li><a href="modules/p2pfl.management.node_monitor.html#module-p2pfl.management.node_monitor">p2pfl.management.node_monitor</a>
+</li>
+          <li><a href="modules/p2pfl.management.p2pfl_web_services.html#module-p2pfl.management.p2pfl_web_services">p2pfl.management.p2pfl_web_services</a>
+</li>
+          <li><a href="modules/p2pfl.node.html#module-p2pfl.node">p2pfl.node</a>
+</li>
+          <li><a href="modules/p2pfl.node_state.html#module-p2pfl.node_state">p2pfl.node_state</a>
+</li>
+          <li><a href="modules/p2pfl.settings.html#module-p2pfl.settings">p2pfl.settings</a>
+</li>
+          <li><a href="modules/p2pfl.stages.html#module-p2pfl.stages">p2pfl.stages</a>
+</li>
+          <li><a href="modules/p2pfl.stages.base_node.html#module-p2pfl.stages.base_node">p2pfl.stages.base_node</a>
+</li>
+          <li><a href="modules/p2pfl.stages.base_node.gossip_model_stage.html#module-p2pfl.stages.base_node.gossip_model_stage">p2pfl.stages.base_node.gossip_model_stage</a>
+</li>
+          <li><a href="modules/p2pfl.stages.base_node.round_finished_stage.html#module-p2pfl.stages.base_node.round_finished_stage">p2pfl.stages.base_node.round_finished_stage</a>
+</li>
+          <li><a href="modules/p2pfl.stages.base_node.start_learning_stage.html#module-p2pfl.stages.base_node.start_learning_stage">p2pfl.stages.base_node.start_learning_stage</a>
+</li>
+          <li><a href="modules/p2pfl.stages.base_node.train_stage.html#module-p2pfl.stages.base_node.train_stage">p2pfl.stages.base_node.train_stage</a>
+</li>
+          <li><a href="modules/p2pfl.stages.base_node.vote_train_set_stage.html#module-p2pfl.stages.base_node.vote_train_set_stage">p2pfl.stages.base_node.vote_train_set_stage</a>
+</li>
+          <li><a href="modules/p2pfl.stages.base_node.wait_agg_models_stage.html#module-p2pfl.stages.base_node.wait_agg_models_stage">p2pfl.stages.base_node.wait_agg_models_stage</a>
+</li>
+          <li><a href="modules/p2pfl.stages.stage.html#module-p2pfl.stages.stage">p2pfl.stages.stage</a>
+</li>
+          <li><a href="modules/p2pfl.stages.stage_factory.html#module-p2pfl.stages.stage_factory">p2pfl.stages.stage_factory</a>
+</li>
+          <li><a href="modules/p2pfl.stages.workflows.html#module-p2pfl.stages.workflows">p2pfl.stages.workflows</a>
+</li>
+          <li><a href="modules/p2pfl.utils.html#module-p2pfl.utils">p2pfl.utils</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="N" class="genindex-section">
+  <h2>N</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.learning.pytorch.lightning_logger.html#p2pfl.learning.pytorch.lightning_logger.FederatedLogger.name">name (p2pfl.learning.pytorch.lightning_logger.FederatedLogger property)</a>
+</li>
+        <li><a href="modules/p2pfl.stages.base_node.gossip_model_stage.html#p2pfl.stages.base_node.gossip_model_stage.GossipModelStage.name">name() (p2pfl.stages.base_node.gossip_model_stage.GossipModelStage static method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.stages.base_node.round_finished_stage.html#p2pfl.stages.base_node.round_finished_stage.RoundFinishedStage.name">(p2pfl.stages.base_node.round_finished_stage.RoundFinishedStage static method)</a>
+</li>
+          <li><a href="modules/p2pfl.stages.base_node.start_learning_stage.html#p2pfl.stages.base_node.start_learning_stage.StartLearningStage.name">(p2pfl.stages.base_node.start_learning_stage.StartLearningStage static method)</a>
+</li>
+          <li><a href="modules/p2pfl.stages.base_node.train_stage.html#p2pfl.stages.base_node.train_stage.TrainStage.name">(p2pfl.stages.base_node.train_stage.TrainStage static method)</a>
+</li>
+          <li><a href="modules/p2pfl.stages.base_node.vote_train_set_stage.html#p2pfl.stages.base_node.vote_train_set_stage.VoteTrainSetStage.name">(p2pfl.stages.base_node.vote_train_set_stage.VoteTrainSetStage static method)</a>
+</li>
+          <li><a href="modules/p2pfl.stages.base_node.wait_agg_models_stage.html#p2pfl.stages.base_node.wait_agg_models_stage.WaitAggregatedModelsStage.name">(p2pfl.stages.base_node.wait_agg_models_stage.WaitAggregatedModelsStage static method)</a>
+</li>
+          <li><a href="modules/p2pfl.stages.stage.html#p2pfl.stages.stage.Stage.name">(p2pfl.stages.stage.Stage static method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.nei_status">nei_status (p2pfl.node_state.NodeState attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.exceptions.html#p2pfl.communication.exceptions.NeighborNotConnectedError">NeighborNotConnectedError</a>
+</li>
+        <li><a href="modules/p2pfl.communication.neighbors.html#p2pfl.communication.neighbors.Neighbors">Neighbors (class in p2pfl.communication.neighbors)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.node.html#p2pfl.node.Node">Node (class in p2pfl.node)</a>
+</li>
+        <li><a href="modules/p2pfl.examples.node1.html#p2pfl.examples.node1.node1">node1() (in module p2pfl.examples.node1)</a>
+</li>
+        <li><a href="modules/p2pfl.examples.node2.html#p2pfl.examples.node2.node2">node2() (in module p2pfl.examples.node2)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.learner.html#p2pfl.learning.learner.NodeLearner">NodeLearner (class in p2pfl.learning.learner)</a>
+</li>
+        <li><a href="modules/p2pfl.management.node_monitor.html#p2pfl.management.node_monitor.NodeMonitor">NodeMonitor (class in p2pfl.management.node_monitor)</a>
+</li>
+        <li><a href="modules/p2pfl.exceptions.html#p2pfl.exceptions.NodeRunningException">NodeRunningException</a>
+</li>
+        <li><a href="modules/p2pfl.communication.grpc.proto.node_pb2_grpc.html#p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServices">NodeServices (class in p2pfl.communication.grpc.proto.node_pb2_grpc)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.grpc.proto.node_pb2_grpc.html#p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServicesServicer">NodeServicesServicer (class in p2pfl.communication.grpc.proto.node_pb2_grpc)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.grpc.proto.node_pb2_grpc.html#p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServicesStub">NodeServicesStub (class in p2pfl.communication.grpc.proto.node_pb2_grpc)</a>
+</li>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState">NodeState (class in p2pfl.node_state)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#p2pfl.learning.aggregators.aggregator.NoModelsToAggregateError">NoModelsToAggregateError</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="P" class="genindex-section">
+  <h2>P</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    p2pfl
+
+        <ul>
+          <li><a href="modules/p2pfl.html#module-p2pfl">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.cli
+
+        <ul>
+          <li><a href="modules/p2pfl.cli.html#module-p2pfl.cli">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.commands
+
+        <ul>
+          <li><a href="modules/p2pfl.commands.html#module-p2pfl.commands">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.commands.add_model_command
+
+        <ul>
+          <li><a href="modules/p2pfl.commands.add_model_command.html#module-p2pfl.commands.add_model_command">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.commands.command
+
+        <ul>
+          <li><a href="modules/p2pfl.commands.command.html#module-p2pfl.commands.command">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.commands.heartbeat_command
+
+        <ul>
+          <li><a href="modules/p2pfl.commands.heartbeat_command.html#module-p2pfl.commands.heartbeat_command">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.commands.init_model_command
+
+        <ul>
+          <li><a href="modules/p2pfl.commands.init_model_command.html#module-p2pfl.commands.init_model_command">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.commands.metrics_command
+
+        <ul>
+          <li><a href="modules/p2pfl.commands.metrics_command.html#module-p2pfl.commands.metrics_command">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.commands.model_initialized_command
+
+        <ul>
+          <li><a href="modules/p2pfl.commands.model_initialized_command.html#module-p2pfl.commands.model_initialized_command">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.commands.models_agregated_command
+
+        <ul>
+          <li><a href="modules/p2pfl.commands.models_agregated_command.html#module-p2pfl.commands.models_agregated_command">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.commands.models_ready_command
+
+        <ul>
+          <li><a href="modules/p2pfl.commands.models_ready_command.html#module-p2pfl.commands.models_ready_command">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.commands.start_learning_command
+
+        <ul>
+          <li><a href="modules/p2pfl.commands.start_learning_command.html#module-p2pfl.commands.start_learning_command">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.commands.stop_learning_command
+
+        <ul>
+          <li><a href="modules/p2pfl.commands.stop_learning_command.html#module-p2pfl.commands.stop_learning_command">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.commands.vote_train_set_command
+
+        <ul>
+          <li><a href="modules/p2pfl.commands.vote_train_set_command.html#module-p2pfl.commands.vote_train_set_command">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.html#module-p2pfl.communication">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.client
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.client.html#module-p2pfl.communication.client">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.communication_protocol
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.communication_protocol.html#module-p2pfl.communication.communication_protocol">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.exceptions
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.exceptions.html#module-p2pfl.communication.exceptions">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.gossiper
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.gossiper.html#module-p2pfl.communication.gossiper">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.grpc
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.html#module-p2pfl.communication.grpc">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.grpc.address
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.address.html#module-p2pfl.communication.grpc.address">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.grpc.grpc_client
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_client.html#module-p2pfl.communication.grpc.grpc_client">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.grpc.grpc_communication_protocol
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_communication_protocol.html#module-p2pfl.communication.grpc.grpc_communication_protocol">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.grpc.grpc_neighbors
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_neighbors.html#module-p2pfl.communication.grpc.grpc_neighbors">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.grpc.grpc_server
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_server.html#module-p2pfl.communication.grpc.grpc_server">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.grpc.proto
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.proto.html#module-p2pfl.communication.grpc.proto">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.grpc.proto.generate_proto
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.proto.generate_proto.html#module-p2pfl.communication.grpc.proto.generate_proto">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.grpc.proto.node_pb2
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.proto.node_pb2.html#module-p2pfl.communication.grpc.proto.node_pb2">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.grpc.proto.node_pb2_grpc
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.proto.node_pb2_grpc.html#module-p2pfl.communication.grpc.proto.node_pb2_grpc">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.heartbeater
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.heartbeater.html#module-p2pfl.communication.heartbeater">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.memory
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.memory.html#module-p2pfl.communication.memory">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.memory.memory_client
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.memory.memory_client.html#module-p2pfl.communication.memory.memory_client">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.memory.memory_communication_protocol
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.memory.memory_communication_protocol.html#module-p2pfl.communication.memory.memory_communication_protocol">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.memory.memory_neighbors
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.memory.memory_neighbors.html#module-p2pfl.communication.memory.memory_neighbors">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.memory.memory_server
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.memory.memory_server.html#module-p2pfl.communication.memory.memory_server">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.memory.server_singleton
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.memory.server_singleton.html#module-p2pfl.communication.memory.server_singleton">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.communication.neighbors
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.neighbors.html#module-p2pfl.communication.neighbors">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.examples
+
+        <ul>
+          <li><a href="modules/p2pfl.examples.html#module-p2pfl.examples">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.examples.mnist
+
+        <ul>
+          <li><a href="modules/p2pfl.examples.mnist.html#module-p2pfl.examples.mnist">module</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    p2pfl.examples.node1
+
+        <ul>
+          <li><a href="modules/p2pfl.examples.node1.html#module-p2pfl.examples.node1">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.examples.node2
+
+        <ul>
+          <li><a href="modules/p2pfl.examples.node2.html#module-p2pfl.examples.node2">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.exceptions
+
+        <ul>
+          <li><a href="modules/p2pfl.exceptions.html#module-p2pfl.exceptions">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.learning
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.html#module-p2pfl.learning">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.learning.aggregators
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.aggregators.html#module-p2pfl.learning.aggregators">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.learning.aggregators.aggregator
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#module-p2pfl.learning.aggregators.aggregator">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.learning.aggregators.fedavg
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.aggregators.fedavg.html#module-p2pfl.learning.aggregators.fedavg">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.learning.exceptions
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.exceptions.html#module-p2pfl.learning.exceptions">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.learning.learner
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.learner.html#module-p2pfl.learning.learner">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.learning.pytorch
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.html#module-p2pfl.learning.pytorch">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.learning.pytorch.lightning_learner
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.lightning_learner.html#module-p2pfl.learning.pytorch.lightning_learner">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.learning.pytorch.lightning_logger
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.lightning_logger.html#module-p2pfl.learning.pytorch.lightning_logger">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.learning.pytorch.mnist_examples
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.html#module-p2pfl.learning.pytorch.mnist_examples">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.html#module-p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.learning.pytorch.mnist_examples.models
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.html#module-p2pfl.learning.pytorch.mnist_examples.models">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.learning.pytorch.mnist_examples.models.cnn
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.cnn.html#module-p2pfl.learning.pytorch.mnist_examples.models.cnn">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.learning.pytorch.mnist_examples.models.mlp
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.mlp.html#module-p2pfl.learning.pytorch.mnist_examples.models.mlp">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.management
+
+        <ul>
+          <li><a href="modules/p2pfl.management.html#module-p2pfl.management">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.management.logger
+
+        <ul>
+          <li><a href="modules/p2pfl.management.logger.html#module-p2pfl.management.logger">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.management.metric_storage
+
+        <ul>
+          <li><a href="modules/p2pfl.management.metric_storage.html#module-p2pfl.management.metric_storage">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.management.node_monitor
+
+        <ul>
+          <li><a href="modules/p2pfl.management.node_monitor.html#module-p2pfl.management.node_monitor">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.management.p2pfl_web_services
+
+        <ul>
+          <li><a href="modules/p2pfl.management.p2pfl_web_services.html#module-p2pfl.management.p2pfl_web_services">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.node
+
+        <ul>
+          <li><a href="modules/p2pfl.node.html#module-p2pfl.node">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.node_state
+
+        <ul>
+          <li><a href="modules/p2pfl.node_state.html#module-p2pfl.node_state">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.settings
+
+        <ul>
+          <li><a href="modules/p2pfl.settings.html#module-p2pfl.settings">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.stages
+
+        <ul>
+          <li><a href="modules/p2pfl.stages.html#module-p2pfl.stages">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.stages.base_node
+
+        <ul>
+          <li><a href="modules/p2pfl.stages.base_node.html#module-p2pfl.stages.base_node">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.stages.base_node.gossip_model_stage
+
+        <ul>
+          <li><a href="modules/p2pfl.stages.base_node.gossip_model_stage.html#module-p2pfl.stages.base_node.gossip_model_stage">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.stages.base_node.round_finished_stage
+
+        <ul>
+          <li><a href="modules/p2pfl.stages.base_node.round_finished_stage.html#module-p2pfl.stages.base_node.round_finished_stage">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.stages.base_node.start_learning_stage
+
+        <ul>
+          <li><a href="modules/p2pfl.stages.base_node.start_learning_stage.html#module-p2pfl.stages.base_node.start_learning_stage">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.stages.base_node.train_stage
+
+        <ul>
+          <li><a href="modules/p2pfl.stages.base_node.train_stage.html#module-p2pfl.stages.base_node.train_stage">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.stages.base_node.vote_train_set_stage
+
+        <ul>
+          <li><a href="modules/p2pfl.stages.base_node.vote_train_set_stage.html#module-p2pfl.stages.base_node.vote_train_set_stage">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.stages.base_node.wait_agg_models_stage
+
+        <ul>
+          <li><a href="modules/p2pfl.stages.base_node.wait_agg_models_stage.html#module-p2pfl.stages.base_node.wait_agg_models_stage">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.stages.stage
+
+        <ul>
+          <li><a href="modules/p2pfl.stages.stage.html#module-p2pfl.stages.stage">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.stages.stage_factory
+
+        <ul>
+          <li><a href="modules/p2pfl.stages.stage_factory.html#module-p2pfl.stages.stage_factory">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.stages.workflows
+
+        <ul>
+          <li><a href="modules/p2pfl.stages.workflows.html#module-p2pfl.stages.workflows">module</a>
+</li>
+        </ul></li>
+        <li>
+    p2pfl.utils
+
+        <ul>
+          <li><a href="modules/p2pfl.utils.html#module-p2pfl.utils">module</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.P2pflWebLogHandler">P2pflWebLogHandler (class in p2pfl.management.logger)</a>
+</li>
+        <li><a href="modules/p2pfl.management.p2pfl_web_services.html#p2pfl.management.p2pfl_web_services.P2pflWebServices">P2pflWebServices (class in p2pfl.management.p2pfl_web_services)</a>
+</li>
+        <li><a href="modules/p2pfl.management.p2pfl_web_services.html#p2pfl.management.p2pfl_web_services.P2pflWebServicesError">P2pflWebServicesError</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="R" class="genindex-section">
+  <h2>R</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.communication.grpc.grpc_neighbors.html#p2pfl.communication.grpc.grpc_neighbors.GrpcNeighbors.refresh_or_add">refresh_or_add() (p2pfl.communication.grpc.grpc_neighbors.GrpcNeighbors method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.memory.memory_neighbors.html#p2pfl.communication.memory.memory_neighbors.InMemoryNeighbors.refresh_or_add">(p2pfl.communication.memory.memory_neighbors.InMemoryNeighbors method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.neighbors.html#p2pfl.communication.neighbors.Neighbors.refresh_or_add">(p2pfl.communication.neighbors.Neighbors method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.register_node">register_node() (p2pfl.management.logger.Logger static method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.management.p2pfl_web_services.html#p2pfl.management.p2pfl_web_services.P2pflWebServices.register_node">(p2pfl.management.p2pfl_web_services.P2pflWebServices method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.cli.html#p2pfl.cli.remote">remote() (in module p2pfl.cli)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.neighbors.html#p2pfl.communication.neighbors.Neighbors.remove">remove() (p2pfl.communication.neighbors.Neighbors method)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.memory.server_singleton.html#p2pfl.communication.memory.server_singleton.ServerSingleton.reset_instance">reset_instance() (p2pfl.communication.memory.server_singleton.ServerSingleton class method)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.RESOURCE_MONITOR_PERIOD">RESOURCE_MONITOR_PERIOD (p2pfl.settings.Settings attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.round">round (p2pfl.node_state.NodeState attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.round_finished">round_finished() (p2pfl.management.logger.Logger static method)</a>
+</li>
+        <li><a href="modules/p2pfl.stages.base_node.round_finished_stage.html#p2pfl.stages.base_node.round_finished_stage.RoundFinishedStage">RoundFinishedStage (class in p2pfl.stages.base_node.round_finished_stage)</a>
+</li>
+        <li><a href="modules/p2pfl.cli.html#p2pfl.cli.run">run() (in module p2pfl.cli)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.gossiper.html#p2pfl.communication.gossiper.Gossiper.run">(p2pfl.communication.gossiper.Gossiper method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.heartbeater.html#p2pfl.communication.heartbeater.Heartbeater.run">(p2pfl.communication.heartbeater.Heartbeater method)</a>
+</li>
+          <li><a href="modules/p2pfl.management.node_monitor.html#p2pfl.management.node_monitor.NodeMonitor.run">(p2pfl.management.node_monitor.NodeMonitor method)</a>
+</li>
+          <li><a href="modules/p2pfl.stages.workflows.html#p2pfl.stages.workflows.StageWokflow.run">(p2pfl.stages.workflows.StageWokflow method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="S" class="genindex-section">
+  <h2>S</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.learning.pytorch.lightning_logger.html#p2pfl.learning.pytorch.lightning_logger.FederatedLogger.save">save() (p2pfl.learning.pytorch.lightning_logger.FederatedLogger method)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.client.html#p2pfl.communication.client.Client.send">send() (p2pfl.communication.client.Client method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.communication_protocol.html#p2pfl.communication.communication_protocol.CommunicationProtocol.send">(p2pfl.communication.communication_protocol.CommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_client.html#p2pfl.communication.grpc.grpc_client.GrpcClient.send">(p2pfl.communication.grpc.grpc_client.GrpcClient method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_communication_protocol.html#p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol.send">(p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_client.html#p2pfl.communication.memory.memory_client.InMemoryClient.send">(p2pfl.communication.memory.memory_client.InMemoryClient method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_communication_protocol.html#p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol.send">(p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.management.p2pfl_web_services.html#p2pfl.management.p2pfl_web_services.P2pflWebServices.send_global_metric">send_global_metric() (p2pfl.management.p2pfl_web_services.P2pflWebServices method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.p2pfl_web_services.html#p2pfl.management.p2pfl_web_services.P2pflWebServices.send_local_metric">send_local_metric() (p2pfl.management.p2pfl_web_services.P2pflWebServices method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.p2pfl_web_services.html#p2pfl.management.p2pfl_web_services.P2pflWebServices.send_log">send_log() (p2pfl.management.p2pfl_web_services.P2pflWebServices method)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.grpc.grpc_server.html#p2pfl.communication.grpc.grpc_server.GrpcServer.send_message">send_message() (p2pfl.communication.grpc.grpc_server.GrpcServer method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.proto.node_pb2_grpc.html#p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServices.send_message">(p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServices static method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.proto.node_pb2_grpc.html#p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServicesServicer.send_message">(p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServicesServicer method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_server.html#p2pfl.communication.memory.memory_server.InMemoryServer.send_message">(p2pfl.communication.memory.memory_server.InMemoryServer method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.management.p2pfl_web_services.html#p2pfl.management.p2pfl_web_services.P2pflWebServices.send_system_metric">send_system_metric() (p2pfl.management.p2pfl_web_services.P2pflWebServices method)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.grpc.grpc_server.html#p2pfl.communication.grpc.grpc_server.GrpcServer.send_weights">send_weights() (p2pfl.communication.grpc.grpc_server.GrpcServer method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.proto.node_pb2_grpc.html#p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServices.send_weights">(p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServices static method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.proto.node_pb2_grpc.html#p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServicesServicer.send_weights">(p2pfl.communication.grpc.proto.node_pb2_grpc.NodeServicesServicer method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_server.html#p2pfl.communication.memory.memory_server.InMemoryServer.send_weights">(p2pfl.communication.memory.memory_server.InMemoryServer method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.communication.memory.server_singleton.html#p2pfl.communication.memory.server_singleton.ServerSingleton">ServerSingleton (class in p2pfl.communication.memory.server_singleton)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.learner.html#p2pfl.learning.learner.NodeLearner.set_data">set_data() (p2pfl.learning.learner.NodeLearner method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.lightning_learner.html#p2pfl.learning.pytorch.lightning_learner.LightningLearner.set_data">(p2pfl.learning.pytorch.lightning_learner.LightningLearner method)</a>
+</li>
+          <li><a href="modules/p2pfl.node.html#p2pfl.node.Node.set_data">(p2pfl.node.Node method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.learning.learner.html#p2pfl.learning.learner.NodeLearner.set_epochs">set_epochs() (p2pfl.learning.learner.NodeLearner method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.lightning_learner.html#p2pfl.learning.pytorch.lightning_learner.LightningLearner.set_epochs">(p2pfl.learning.pytorch.lightning_learner.LightningLearner method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.set_experiment">set_experiment() (p2pfl.node_state.NodeState method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.set_level">set_level() (p2pfl.management.logger.Logger static method)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.learner.html#p2pfl.learning.learner.NodeLearner.set_model">set_model() (p2pfl.learning.learner.NodeLearner method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.lightning_learner.html#p2pfl.learning.pytorch.lightning_learner.LightningLearner.set_model">(p2pfl.learning.pytorch.lightning_learner.LightningLearner method)</a>
+</li>
+          <li><a href="modules/p2pfl.node.html#p2pfl.node.Node.set_model">(p2pfl.node.Node method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#p2pfl.learning.aggregators.aggregator.Aggregator.set_nodes_to_aggregate">set_nodes_to_aggregate() (p2pfl.learning.aggregators.aggregator.Aggregator method)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.learning.learner.html#p2pfl.learning.learner.NodeLearner.set_parameters">set_parameters() (p2pfl.learning.learner.NodeLearner method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.lightning_learner.html#p2pfl.learning.pytorch.lightning_learner.LightningLearner.set_parameters">(p2pfl.learning.pytorch.lightning_learner.LightningLearner method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.node.html#p2pfl.node.Node.set_start_learning">set_start_learning() (p2pfl.node.Node method)</a>
+</li>
+        <li><a href="modules/p2pfl.node.html#p2pfl.node.Node.set_stop_learning">set_stop_learning() (p2pfl.node.Node method)</a>
+</li>
+        <li><a href="modules/p2pfl.utils.html#p2pfl.utils.set_test_settings">set_test_settings() (in module p2pfl.utils)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#p2pfl.learning.aggregators.aggregator.Aggregator.set_waiting_aggregated_model">set_waiting_aggregated_model() (p2pfl.learning.aggregators.aggregator.Aggregator method)</a>
+</li>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings">Settings (class in p2pfl.settings)</a>
+</li>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.simulation">simulation (p2pfl.node_state.NodeState attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.stages.stage.html#p2pfl.stages.stage.Stage">Stage (class in p2pfl.stages.stage)</a>
+</li>
+        <li><a href="modules/p2pfl.stages.stage_factory.html#p2pfl.stages.stage_factory.StageFactory">StageFactory (class in p2pfl.stages.stage_factory)</a>
+</li>
+        <li><a href="modules/p2pfl.stages.workflows.html#p2pfl.stages.workflows.StageWokflow">StageWokflow (class in p2pfl.stages.workflows)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.communication_protocol.html#p2pfl.communication.communication_protocol.CommunicationProtocol.start">start() (p2pfl.communication.communication_protocol.CommunicationProtocol method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.gossiper.html#p2pfl.communication.gossiper.Gossiper.start">(p2pfl.communication.gossiper.Gossiper method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_communication_protocol.html#p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol.start">(p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_server.html#p2pfl.communication.grpc.grpc_server.GrpcServer.start">(p2pfl.communication.grpc.grpc_server.GrpcServer method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_communication_protocol.html#p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol.start">(p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_server.html#p2pfl.communication.memory.memory_server.InMemoryServer.start">(p2pfl.communication.memory.memory_server.InMemoryServer method)</a>
+</li>
+          <li><a href="modules/p2pfl.node.html#p2pfl.node.Node.start">(p2pfl.node.Node method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.start_thread_lock">start_thread_lock (p2pfl.node_state.NodeState attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.commands.start_learning_command.html#p2pfl.commands.start_learning_command.StartLearningCommand">StartLearningCommand (class in p2pfl.commands.start_learning_command)</a>
+</li>
+        <li><a href="modules/p2pfl.stages.base_node.start_learning_stage.html#p2pfl.stages.base_node.start_learning_stage.StartLearningStage">StartLearningStage (class in p2pfl.stages.base_node.start_learning_stage)</a>
+</li>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.status">status (p2pfl.node_state.NodeState attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.communication_protocol.html#p2pfl.communication.communication_protocol.CommunicationProtocol.stop">stop() (p2pfl.communication.communication_protocol.CommunicationProtocol method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.gossiper.html#p2pfl.communication.gossiper.Gossiper.stop">(p2pfl.communication.gossiper.Gossiper method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_communication_protocol.html#p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol.stop">(p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_server.html#p2pfl.communication.grpc.grpc_server.GrpcServer.stop">(p2pfl.communication.grpc.grpc_server.GrpcServer method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.heartbeater.html#p2pfl.communication.heartbeater.Heartbeater.stop">(p2pfl.communication.heartbeater.Heartbeater method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_communication_protocol.html#p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol.stop">(p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_server.html#p2pfl.communication.memory.memory_server.InMemoryServer.stop">(p2pfl.communication.memory.memory_server.InMemoryServer method)</a>
+</li>
+          <li><a href="modules/p2pfl.management.node_monitor.html#p2pfl.management.node_monitor.NodeMonitor.stop">(p2pfl.management.node_monitor.NodeMonitor method)</a>
+</li>
+          <li><a href="modules/p2pfl.node.html#p2pfl.node.Node.stop">(p2pfl.node.Node method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.commands.stop_learning_command.html#p2pfl.commands.stop_learning_command.StopLearningCommand">StopLearningCommand (class in p2pfl.commands.stop_learning_command)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="T" class="genindex-section">
+  <h2>T</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.html#p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.MnistFederatedDM.test_dataloader">test_dataloader() (p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.MnistFederatedDM method)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.cnn.html#p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN.test_step">test_step() (p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.mlp.html#p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP.test_step">(p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.total_rounds">total_rounds (p2pfl.node_state.NodeState attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.html#p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.MnistFederatedDM.train_dataloader">train_dataloader() (p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.MnistFederatedDM method)</a>
+</li>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.train_set">train_set (p2pfl.node_state.NodeState attribute)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.TRAIN_SET_SIZE">TRAIN_SET_SIZE (p2pfl.settings.Settings attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.train_set_votes">train_set_votes (p2pfl.node_state.NodeState attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.train_set_votes_lock">train_set_votes_lock (p2pfl.node_state.NodeState attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.cnn.html#p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN.training_step">training_step() (p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.mlp.html#p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP.training_step">(p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP method)</a>
+</li>
+        </ul></li>
+        <li><a href="modules/p2pfl.stages.base_node.train_stage.html#p2pfl.stages.base_node.train_stage.TrainStage">TrainStage (class in p2pfl.stages.base_node.train_stage)</a>
+</li>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.TTL">TTL (p2pfl.settings.Settings attribute)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="U" class="genindex-section">
+  <h2>U</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.unregister_node">unregister_node() (p2pfl.management.logger.Logger static method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.management.p2pfl_web_services.html#p2pfl.management.p2pfl_web_services.P2pflWebServices.unregister_node">(p2pfl.management.p2pfl_web_services.P2pflWebServices method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="V" class="genindex-section">
+  <h2>V</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.html#p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.MnistFederatedDM.val_dataloader">val_dataloader() (p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.MnistFederatedDM method)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.cnn.html#p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN.validation_step">validation_step() (p2pfl.learning.pytorch.mnist_examples.models.cnn.CNN method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.pytorch.mnist_examples.models.mlp.html#p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP.validation_step">(p2pfl.learning.pytorch.mnist_examples.models.mlp.MLP method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.learning.pytorch.lightning_logger.html#p2pfl.learning.pytorch.lightning_logger.FederatedLogger.version">version (p2pfl.learning.pytorch.lightning_logger.FederatedLogger property)</a>
+</li>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.VOTE_TIMEOUT">VOTE_TIMEOUT (p2pfl.settings.Settings attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.commands.vote_train_set_command.html#p2pfl.commands.vote_train_set_command.VoteTrainSetCommand">VoteTrainSetCommand (class in p2pfl.commands.vote_train_set_command)</a>
+</li>
+        <li><a href="modules/p2pfl.stages.base_node.vote_train_set_stage.html#p2pfl.stages.base_node.vote_train_set_stage.VoteTrainSetStage">VoteTrainSetStage (class in p2pfl.stages.base_node.vote_train_set_stage)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="W" class="genindex-section">
+  <h2>W</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.utils.html#p2pfl.utils.wait_4_results">wait_4_results() (in module p2pfl.utils)</a>
+</li>
+        <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#p2pfl.learning.aggregators.aggregator.Aggregator.wait_and_get_aggregation">wait_and_get_aggregation() (p2pfl.learning.aggregators.aggregator.Aggregator method)</a>
+</li>
+        <li><a href="modules/p2pfl.utils.html#p2pfl.utils.wait_convergence">wait_convergence() (in module p2pfl.utils)</a>
+</li>
+        <li><a href="modules/p2pfl.communication.communication_protocol.html#p2pfl.communication.communication_protocol.CommunicationProtocol.wait_for_termination">wait_for_termination() (p2pfl.communication.communication_protocol.CommunicationProtocol method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_communication_protocol.html#p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol.wait_for_termination">(p2pfl.communication.grpc.grpc_communication_protocol.GrpcCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.grpc.grpc_server.html#p2pfl.communication.grpc.grpc_server.GrpcServer.wait_for_termination">(p2pfl.communication.grpc.grpc_server.GrpcServer method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_communication_protocol.html#p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol.wait_for_termination">(p2pfl.communication.memory.memory_communication_protocol.InMemoryCommunicationProtocol method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.memory_server.html#p2pfl.communication.memory.memory_server.InMemoryServer.wait_for_termination">(p2pfl.communication.memory.memory_server.InMemoryServer method)</a>
+</li>
+          <li><a href="modules/p2pfl.communication.memory.server_singleton.html#p2pfl.communication.memory.server_singleton.ServerSingleton.wait_for_termination">(p2pfl.communication.memory.server_singleton.ServerSingleton class method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.WAIT_HEARTBEATS_CONVERGENCE">WAIT_HEARTBEATS_CONVERGENCE (p2pfl.settings.Settings attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.node_state.html#p2pfl.node_state.NodeState.wait_votes_ready_lock">wait_votes_ready_lock (p2pfl.node_state.NodeState attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.stages.base_node.wait_agg_models_stage.html#p2pfl.stages.base_node.wait_agg_models_stage.WaitAggregatedModelsStage">WaitAggregatedModelsStage (class in p2pfl.stages.base_node.wait_agg_models_stage)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger.warning">warning() (p2pfl.management.logger.Logger static method)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="Z" class="genindex-section">
+  <h2>Z</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.exceptions.html#p2pfl.exceptions.ZeroRoundsException">ZeroRoundsException</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Pedro Guijas Bravo
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=938c9ccc"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="https://unpkg.com/mermaid@10.2.0/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true});</script>
+    </body>
+</html>
