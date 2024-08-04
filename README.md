@@ -6,7 +6,7 @@
 |-------------------------------------------------------------- | -------: | -------: | ------: | --------: |
 | p2pfl/\_\_init\_\_.py                                         |        0 |        0 |    100% |           |
 | p2pfl/\_\_main\_\_.py                                         |        3 |        3 |      0% |     21-24 |
-| p2pfl/cli.py                                                  |       63 |       63 |      0% |    21-206 |
+| p2pfl/cli.py                                                  |       64 |       64 |      0% |    21-207 |
 | p2pfl/commands/\_\_init\_\_.py                                |        0 |        0 |    100% |           |
 | p2pfl/commands/add\_model\_command.py                         |       38 |       11 |     71% |61, 95-108 |
 | p2pfl/commands/command.py                                     |        8 |        2 |     75% |    30, 43 |
@@ -49,7 +49,7 @@
 | p2pfl/exceptions.py                                           |        6 |        0 |    100% |           |
 | p2pfl/learning/\_\_init\_\_.py                                |        0 |        0 |    100% |           |
 | p2pfl/learning/aggregators/\_\_init\_\_.py                    |        0 |        0 |    100% |           |
-| p2pfl/learning/aggregators/aggregator.py                      |      106 |       21 |     80% |65, 82, 134-136, 140-146, 188-193, 225-232, 238-239 |
+| p2pfl/learning/aggregators/aggregator.py                      |      106 |       20 |     81% |65, 82, 134-136, 140-146, 193, 225-232, 238-239 |
 | p2pfl/learning/aggregators/fedavg.py                          |       16 |        1 |     94% |        41 |
 | p2pfl/learning/exceptions.py                                  |        4 |        0 |    100% |           |
 | p2pfl/learning/learner.py                                     |       26 |       12 |     54% |38, 51, 61, 76, 89, 102, 112, 122, 126, 130, 140, 150 |
@@ -81,7 +81,7 @@
 | p2pfl/stages/stage\_factory.py                                |       24 |        1 |     96% |        59 |
 | p2pfl/stages/workflows.py                                     |       21 |        2 |     90% |    40, 47 |
 | p2pfl/utils.py                                                |       54 |        5 |     91% |28, 71, 78, 102, 127 |
-|                                                     **TOTAL** | **2653** |  **997** | **62%** |           |
+|                                                     **TOTAL** | **2654** |  **997** | **62%** |           |
 
 
 ## Setup coverage badge
