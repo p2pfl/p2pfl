@@ -374,6 +374,7 @@
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">Dict</span>
 
+<span class="kn">import</span> <span class="nn">pkg_resources</span>
 <span class="kn">import</span> <span class="nn">typer</span>
 <span class="kn">from</span> <span class="nn">rich.box</span> <span class="kn">import</span> <span class="n">HEAVY_HEAD</span>
 <span class="kn">from</span> <span class="nn">rich.console</span> <span class="kn">import</span> <span class="n">Console</span>
@@ -461,8 +462,7 @@
 <span class="n">exp_app</span> <span class="o">=</span> <span class="n">typer</span><span class="o">.</span><span class="n">Typer</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s2">&quot;Run experiments on the p2pfl platform.&quot;</span><span class="p">)</span>
 <span class="n">app</span><span class="o">.</span><span class="n">add_typer</span><span class="p">(</span><span class="n">exp_app</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;experiment&quot;</span><span class="p">)</span>
 
-<span class="n">EXAMPLES_DIR</span> <span class="o">=</span> <span class="s2">&quot;p2pfl/examples&quot;</span>  <span class="c1"># Update if your examples are elsewhere</span>
-
+<span class="n">EXAMPLES_DIR</span> <span class="o">=</span> <span class="n">pkg_resources</span><span class="o">.</span><span class="n">resource_filename</span><span class="p">(</span><span class="s1">&#39;p2pfl&#39;</span><span class="p">,</span> <span class="s1">&#39;examples&#39;</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">__get_available_examples</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
     <span class="c1"># Load the available examples</span>
