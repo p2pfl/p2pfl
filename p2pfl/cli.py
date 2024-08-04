@@ -23,6 +23,7 @@ import subprocess
 import sys
 from typing import Annotated, Dict
 
+import pkg_resources
 import typer
 from rich.box import HEAVY_HEAD
 from rich.console import Console
@@ -101,8 +102,7 @@ def launch() -> None:
 exp_app = typer.Typer(help="Run experiments on the p2pfl platform.")
 app.add_typer(exp_app, name="experiment")
 
-EXAMPLES_DIR = "p2pfl/examples"  # Update if your examples are elsewhere
-
+EXAMPLES_DIR = pkg_resources.resource_filename('p2pfl', 'examples')
 
 def __get_available_examples() -> Dict[str, str]:
     # Load the available examples
