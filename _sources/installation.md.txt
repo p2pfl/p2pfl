@@ -9,7 +9,7 @@
 To install the library, you can simply run:
 
 ```bash
-pip install p2pfl
+pip install "p2pfl[torch]"
 ```
 
 Or you can install it from source. This installation method is recommended for developers (detailed in the next section).
