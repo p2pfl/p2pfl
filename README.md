@@ -25,7 +25,7 @@ P2PFL offers a range of features designed to make decentralized federated learni
 | 🧪 Versatile     | Experiment in simulated or real-world environments.|
 | 🔒 Private       | Prioritizes data privacy with decentralized architecture.|
 | 🧩 Flexible      | Integrate with PyTorch and TensorFlow (coming soon!).|
-| 📈 Real-time Monitoring | Manage and track experiment through [P2PFL Web Services](p2pfl.com). | 
+| 📈 Real-time Monitoring | Manage and track experiment through [P2PFL Web Services](https://p2pfl.com). | 
 | 🧠 Model Agnostic | Use any machine learning model you prefer (e.g., PyTorch models). |
 | 📡 Communication Protocol Agnostic | Choose the communication protocol that best suits your needs (e.g., gRPC). |
 ## 📥 Installation
