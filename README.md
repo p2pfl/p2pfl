@@ -59,7 +59,7 @@ docker run -it --rm p2pfl bash
 
 ## 🎬 Quickstart
 
-To start using P2PFL, follow our [quickstart guide](https://pguijas.github.io/p2pfl/quickstart.html/) in the documentation.
+To start using P2PFL, follow our [quickstart guide](https://pguijas.github.io/p2pfl/quickstart.html) in the documentation.
 
 ## 📚 Documentation & Resources
 
