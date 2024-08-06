@@ -32,8 +32,14 @@ class GrpcNeighbors(Neighbors):
     """Implementation of the neighbors for a GRPC communication protocol."""
 
     def refresh_or_add(self, addr: str, time: float) -> None:
-        """Refresh or add a neighbor."""
-        print(f"GrpcNeighbors.refresh_or_add: {addr}, {time}")
+        """
+        Refresh or add a neighbor.
+
+        Args:
+            addr: Address of the neighbor.
+            time: Time of the last heartbeat.
+
+        """
         # Update if exists
         if addr in self.neis:
             # Update time
@@ -51,7 +57,15 @@ class GrpcNeighbors(Neighbors):
     def connect(
         self, addr: str, non_direct: bool = False, handshake_msg: bool = True
     ) -> Tuple[Optional[grpc.Channel], Optional[node_pb2_grpc.NodeServicesStub], float]:
-        """Connect to a neighbor."""
+        """
+        Connect to a neighbor.
+
+        Args:
+            addr: Address of the neighbor to connect.
+            non_direct: If the connection is direct or not.
+            handshake_msg: If a handshake message is needed.
+
+        """
         if non_direct:
             return self.__build_non_direct_neighbor(addr)
         else:
@@ -91,7 +105,14 @@ class GrpcNeighbors(Neighbors):
         return (None, None, time.time())
 
     def disconnect(self, addr: str, disconnect_msg: bool = True) -> None:
-        """Disconnect from a neighbor."""
+        """
+        Disconnect from a neighbor.
+
+        Args:
+            addr: Address of the neighbor to disconnect.
+            disconnect_msg: If a disconnect message is needed.
+
+        """
         try:
             # If the other node still connected, disconnect
             node_channel, node_stub, _ = self.get(addr)

@@ -16,7 +16,17 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""P2PFL Web Services (API)."""
+"""
+Communication with P2PFL Web Services (via REST API).
+
+.. todo:: Implement batch sending.
+
+.. todo:: Implement get_pending_actions.
+
+.. todo:: Implement unregister_node.
+
+.. todo:: Implement get_experiment_id.
+"""
 
 import datetime
 from typing import Dict
@@ -27,15 +37,16 @@ import requests
 #    P2PFL Web Services (API)    #
 ##################################
 
-##
-#
-# Note: Needs to implement batch sending.
-#
-##
-
 
 class P2pflWebServicesError(Exception):
-    """P2PFL Web Services Error."""
+    """
+    P2PFL Web Services Error.
+
+    Args:
+        code: Error code.
+        message: Error message.
+
+    """
 
     def __init__(self, code: int, message: str) -> None:
         """Initialize the error."""
@@ -45,18 +56,17 @@ class P2pflWebServicesError(Exception):
 
 
 class P2pflWebServices:
-    """Class that manages the communication with the p2pfl-web services."""
+    """
+    Class that manages the communication with the p2pfl-web services.
+
+    Args:
+        url: The URL of the p2pfl-web services.
+        key: The key to access the services.
+
+    """
 
     def __init__(self, url: str, key: str) -> None:
-        """
-        Initialize the p2pfl web services.
-
-        Args:
-        ----
-            url (str): The URL of the p2pfl-web services.
-            key (str): The key to access the services.
-
-        """
+        """Initialize the p2pfl web services."""
         self.__url = url
         # http warning
         if not url.startswith("https://"):
@@ -69,14 +79,13 @@ class P2pflWebServices:
         headers["x-api-key"] = self.__key
         return headers
 
-    def register_node(self, node: str, is_simulated: bool):
+    def register_node(self, node: str, is_simulated: bool) -> None:
         """
         Register a node.
 
         Args:
-        ----
-            node (str): The node address.
-            is_simulated (bool): If the node is simulated.
+            node: The node address.
+            is_simulated: If the node is simulated.
 
         """
         # Send request
@@ -94,27 +103,25 @@ class P2pflWebServices:
         # Get node id
         self.node_id[node] = response.json()["node_id"]
 
-    def unregister_node(self, node: str):
+    def unregister_node(self, node: str) -> None:
         """
         Unregister a node.
 
         Args:
-        ----
-            node (str): The node address.
+            node: The node address.
 
         """
         print("NOT IMPLEMENTED YET")
 
-    def send_log(self, time: datetime.datetime, node: str, level: int, message: str):
+    def send_log(self, time: datetime.datetime, node: str, level: int, message: str) -> None:
         """
         Send a log message.
 
         Args:
-        ----
-            time (str): The time of the message.
-            node (str): The node address.
-            level (int): The log level.
-            message (str): The message.
+            time: The time of the message.
+            node: The node address.
+            level: The log level.
+            message: The message.
 
         """
         # get node id
@@ -143,18 +150,17 @@ class P2pflWebServices:
                 print("Please check the API key or the node registration in the p2pfl-web services.")
             raise e
 
-    def send_local_metric(self, exp: str, round: int, metric: str, node: str, value: float, step: int):
+    def send_local_metric(self, exp: str, round: int, metric: str, node: str, value: float, step: int) -> None:
         """
         Send a local metric.
 
         Args:
-        ----
-            exp (str): The experiment.
-            round (int): The round.
-            metric (str): The metric.
-            node (str): The node address.
-            value (float): The value.
-            step (int): The step.
+            exp: The experiment.
+            round: The round.
+            metric: The metric.
+            node: The node address.
+            value: The value.
+            step: The step.
 
         """
         # get node id
@@ -190,12 +196,11 @@ class P2pflWebServices:
         Send a local metric.
 
         Args:
-        ----
-            exp (str): The experiment.
-            round (int): The round.
-            metric (str): The metric.
-            node (str): The node address.
-            value (float): The value.
+            exp: The experiment.
+            round: The round.
+            metric: The metric.
+            node: The node address.
+            value: The value.
 
         """
         # get node id
@@ -230,11 +235,10 @@ class P2pflWebServices:
         Send a metric.
 
         Args:
-        ----
-            node (str): The node address.
-            metric (str): The metric.
-            value (float): The value.
-            time (datetime): The time.
+            node: The node address.
+            metric: The metric.
+            value: The value.
+            time: The time.
 
         """
         # get node id

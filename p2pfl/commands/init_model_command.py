@@ -25,14 +25,6 @@ from p2pfl.commands.model_initialized_command import ModelInitializedCommand
 from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
 from p2pfl.management.logger import logger
 
-"""
-revisar el tema de parado de nodos: importante enviar que es lo que falló cacheando el error (haría un re-raise)
-
-- diversificar agregación de modelos en diferentes tareas (por ejemplo init o demás): simplicidad y organización
-    - __add_model_aggregator
-    - __initialize_model
-"""
-
 
 class InitModelCommand(Command):
     """InitModelCommand."""
@@ -64,7 +56,18 @@ class InitModelCommand(Command):
         weight: Optional[int] = None,
         **kwargs,
     ) -> None:
-        """Execute the command."""
+        """
+        Execute the command.
+
+        Args:
+            source: The source of the command.
+            round: The round of the command.
+            weights: The weights of the model.
+            contributors: The contributors of the command.
+            weight: The weight of the model (ammount of samples).
+            **kwargs: The command arguments.
+
+        """
         if weights is None or contributors is None or weight is None:
             logger.error(self.state.addr, "Invalid message")
             return

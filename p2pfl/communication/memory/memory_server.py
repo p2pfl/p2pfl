@@ -27,7 +27,16 @@ from p2pfl.management.logger import logger
 
 
 class InMemoryServer:
-    """Implementation of the server side of an in-memory communication protocol."""
+    """
+    Implementation of the server side of an in-memory communication protocol.
+
+    Args:
+        addr: Address of the server.
+        gossiper: Gossiper instance.
+        neighbors: Neighbors instance.
+        commands: List of commands to be executed by the server.
+
+    """
 
     ####
     # Init
@@ -63,7 +72,13 @@ class InMemoryServer:
     ####
 
     def start(self, wait: bool = False) -> None:
-        """Start the in-memory server."""
+        """
+        Start the in-memory server.
+
+        Args:
+            wait: If True, wait for termination.
+
+        """
         if self.__server is None:
             raise Exception("ServerSingleton instance not created")
         self.__server[self.addr] = self
@@ -83,18 +98,36 @@ class InMemoryServer:
     ####
 
     def handshake(self, request: Dict[str, Any]) -> Dict[str, Any]:
-        """In-memory service. It is called when a node connects to another."""
+        """
+        In-memory service. It is called when a node connects to another.
+
+        Args:
+            request: Request message.
+
+        """
         if self.__neighbors.add(request["addr"], non_direct=False, handshake_msg=False):
             return {}
         else:
             return {"error": "Cannot add the node (duplicated or wrong direction)"}
 
     def disconnect(self, request: Dict[str, Any]) -> None:
-        """In-memory service. It is called when a node disconnects from another."""
+        """
+        In-memory service. It is called when a node disconnects from another.
+
+        Args:
+            request: Request message.
+
+        """
         self.__neighbors.remove(request["addr"], disconnect_msg=False)
 
     def send_message(self, request: Dict[str, Any]) -> Dict[str, Any]:
-        """In-memory service. It is called when a node sends a message to another."""
+        """
+        In-memory service. It is called when a node sends a message to another.
+
+        Args:
+            request: Request message
+
+        """
         # If not processed
         if self.__gossiper.check_and_set_processed(request["hash"]):
             logger.debug(
@@ -126,7 +159,13 @@ class InMemoryServer:
         return {}
 
     def send_weights(self, request: Dict[str, Any]) -> Dict[str, Any]:
-        """In-memory service. It is called when a node sends weights to another."""
+        """
+        In-memory service. It is called when a node sends weights to another.
+
+        Args:
+            request: Request message.
+
+        """
         # Process message
         if request["cmd"] in self.__commands:
             try:
@@ -151,7 +190,13 @@ class InMemoryServer:
     ####
 
     def add_command(self, cmds: Union["Command", List["Command"]]) -> None:
-        """Add a command."""
+        """
+        Add a command.
+
+        Args:
+            cmds: Command or list of commands to be added.
+
+        """
         if isinstance(cmds, list):
             for cmd in cmds:
                 self.__commands[cmd.get_name()] = cmd

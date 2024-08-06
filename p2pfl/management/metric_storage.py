@@ -33,15 +33,17 @@ class LocalMetricStorage:
 
     Format:
 
-    ```
-    "experiment":{
-        "round": {
-            "node_name": {
-                "metric": [(step, value), ...]
+    .. code-block:: python
+
+        {
+            "experiment": {
+                "round": {
+                    "node_name": {
+                        "metric": [(step, value), ...]
+                    }
+                }
             }
         }
-    }
-    ```
 
     """
 
@@ -59,7 +61,18 @@ class LocalMetricStorage:
         val: Union[int, float],
         step: int,
     ) -> None:
-        """Add a log entry."""
+        """
+        Add a log entry.
+
+        Args:
+            exp_name: Experiment name.
+            round: Round number.
+            metric: Metric name.
+            node: Node name.
+            val: Value of the metric.
+            step: Step number.
+
+        """
         # Lock
         self.lock.acquire()
 
@@ -88,8 +101,7 @@ class LocalMetricStorage:
         """
         Obtain all logs.
 
-        Returns
-        -------
+        Returns:
             All logs
 
         """
@@ -100,11 +112,9 @@ class LocalMetricStorage:
         Obtain logs for an experiment.
 
         Args:
-        ----
-            exp (str): Experiment number
+            exp: Experiment number
 
         Returns:
-        -------
             Experiment logs
 
         """
@@ -115,12 +125,10 @@ class LocalMetricStorage:
         Obtain logs for a round in an experiment.
 
         Args:
-        ----
-            exp (str): Experiment number
-            round (int): Round number
+            exp: Experiment number
+            round: Round number
 
         Returns:
-        -------
             Round logs
 
         """
@@ -131,13 +139,11 @@ class LocalMetricStorage:
         Obtain logs for a node in an experiment.
 
         Args:
-        ----
-            exp (str): Experiment number
-            round (int): Round number
-            node (str): Node name
+            exp: Experiment number
+            round: Round number
+            node: Node name
 
         Returns:
-        -------
             Node logs
 
         """
@@ -153,13 +159,15 @@ class GlobalMetricStorage:
 
     Format:
 
-    ```
-    "experiment":{
-        "node_name": {
-            "metric": [(round, value), ...]
+    .. code-block:: python
+
+        {
+            "experiment":{
+                "node_name": {
+                    "metric": [(round, value), ...]
+            }
         }
-    }
-    ```
+
     """
 
     def __init__(self) -> None:
@@ -168,7 +176,17 @@ class GlobalMetricStorage:
         self.lock = Lock()
 
     def add_log(self, exp_name: str, round: int, metric: str, node: str, val: Union[int, float]) -> None:
-        """Add a log entry."""
+        """
+        Add a log entry.
+
+        Args:
+            exp_name: Experiment name.
+            round: Round number.
+            metric: Metric name.
+            node: Node name.
+            val: Value of the metric.
+
+        """
         # Lock
         self.lock.acquire()
 
@@ -195,8 +213,7 @@ class GlobalMetricStorage:
         """
         Obtain all logs.
 
-        Returns
-        -------
+        Returns:
             All logs
 
         """
@@ -207,11 +224,9 @@ class GlobalMetricStorage:
         Obtain logs for an experiment.
 
         Args:
-        ----
-            exp (str): Experiment number
+            exp: Experiment number
 
         Returns:
-        -------
             Experiment logs
 
         """
@@ -222,12 +237,10 @@ class GlobalMetricStorage:
         Obtain logs for a node in an experiment.
 
         Args:
-        ----
-            exp (str): Experiment number
-            node (str): Node name
+            exp: Experiment number
+            node: Node name
 
         Returns:
-        -------
             Node logs
 
         """

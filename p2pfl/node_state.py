@@ -24,7 +24,30 @@ from p2pfl.learning.learner import NodeLearner
 
 
 class NodeState:
-    """Class to store the main state of a learning node."""
+    """
+    Class to store the main state of a learning node.
+
+    Attributes:
+        addr(str): The address of the node.
+        status(str): The status of the node.
+        actual_exp_name(str): The name of the experiment.
+        round(int): The current round.
+        total_rounds(int): The total rounds of the experiment.
+        simulation(bool): If the node is a simulation.
+        learner(NodeLearner): The learner of the node.
+        models_aggregated(Dict[str, List[str]]): The models aggregated by the node.
+        nei_status(Dict[str, int]): The status of the neighbors.
+        train_set(List[str]): The train set of the node.
+        train_set_votes(Dict[str, Dict[str, int]]): The votes of the train set.
+        train_set_votes_lock(threading.Lock): The lock for the train set votes.
+        start_thread_lock(threading.Lock): The lock for the start thread.
+        wait_votes_ready_lock(threading.Lock): The lock for the wait votes ready.
+        model_initialized_lock(threading.Lock): The lock for the model initialized.
+
+    Args:
+        addr: The address of the node.
+
+    """
 
     def __init__(self, addr: str) -> None:
         """Initialize the node state."""
@@ -58,14 +81,27 @@ class NodeState:
         self.model_initialized_lock.acquire()
 
     def set_experiment(self, exp_name: str, total_rounds: int) -> None:
-        """Set the experiment name."""
+        """
+        Set the experiment name.
+
+        Args:
+            exp_name: The name of the experiment.
+            total_rounds: The total rounds of the experiment.
+
+        """
         self.status = "Learning"
         self.actual_exp_name = exp_name
         self.total_rounds = total_rounds
         self.round = 0
 
     def increase_round(self) -> None:
-        """Increase the round number."""
+        """
+        Increase the round number.
+
+        Raises:
+            ValueError: If the round is not initialized.
+
+        """
         if self.round is None:
             raise ValueError("Round not initialized")
         self.round += 1

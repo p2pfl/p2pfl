@@ -35,10 +35,11 @@ class FedAvg(Aggregator):
         self, models: Dict[str, Tuple[LearnerStateDTO, int]]
     ) -> LearnerStateDTO:
         """
-        Ponderated average of the models.
+        Aggregate the models.
 
         Args:
             models: Dictionary with the models (node: model,num_samples).
+
         """
 
         # Check if there are models to aggregate

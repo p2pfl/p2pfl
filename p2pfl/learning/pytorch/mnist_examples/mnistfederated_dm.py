@@ -16,7 +16,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""FederatedDataModule for MNIST."""  # TODO -> Create a P2PFL Dataset
+"""
+FederatedDataModule for MNIST.
+
+.. todo:: Create a P2PFL Dataset
+"""
 
 from math import floor
 from typing import Optional
@@ -37,7 +41,6 @@ class MnistFederatedDM(LightningDataModule):
     LightningDataModule of partitioned MNIST. Its used to generate **IID** distribucions over MNIS. Toy Problem.
 
     Args:
-    ----
         sub_id: Subset id of partition. (0 <= sub_id < number_sub)
         number_sub: Number of subsets.
         batch_size: The batch size of the data.
@@ -59,7 +62,18 @@ class MnistFederatedDM(LightningDataModule):
         val_percent: float = 0.1,
         iid: bool = True,
     ) -> None:
-        """Initialize the MNIST Federated DataModule."""
+        """
+        Initialize the MNIST Federated DataModule.
+
+        Args:
+            sub_id: Subset id of partition. (0 <= sub_id < number_sub)
+            number_sub: Number of subsets.
+            batch_size: The batch size of the data.
+            num_workers: The number of workers of the data.
+            val_percent: The percentage of the validation set.
+            iid: If True, the data is IID, if False, the data is non-IID.
+
+        """
         super().__init__()
         self.sub_id = sub_id
         self.number_sub = number_sub

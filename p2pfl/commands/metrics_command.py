@@ -37,7 +37,16 @@ class MetricsCommand(Command):
         return "metrics"
 
     def execute(self, source: str, round: int, *args, **kwargs) -> None:
-        """Execute the command."""
+        """
+        Execute the command.
+
+        Args:
+            source: The source of the command.
+            round: The round of the command.
+            *args: Metric values (pairs of key and values).
+            **kwargs: The command keyword arguments.
+
+        """
         logger.info(self.state.addr, f"Metrics received from {source}")
         # process metrics
         for i in range(0, len(args), 2):

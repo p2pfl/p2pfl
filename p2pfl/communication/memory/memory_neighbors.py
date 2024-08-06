@@ -29,7 +29,14 @@ class InMemoryNeighbors(Neighbors):
     """Implementation of the neighbors side of an in-memory communication protocol."""
 
     def refresh_or_add(self, addr: str, time: float) -> None:
-        """Refresh or add a neighbor."""
+        """
+        Refresh or add a neighbor.
+
+        Args:
+            addr: Address of the neighbor.
+            time: Time of the last heartbeat.
+
+        """
         # Update if exists
         if addr in self.neis:
             with self.neis_lock:
@@ -46,7 +53,15 @@ class InMemoryNeighbors(Neighbors):
     def connect(
         self, addr: str, non_direct: bool = False, handshake_msg: bool = True
     ) -> Tuple[None, Optional[str], float]:
-        """Connect to a neighbor."""
+        """
+        Connect to a neighbor.
+
+        Args:
+            addr: Address of the neighbor to connect.
+            non_direct: If the connection is direct or not.
+            handshake_msg: If a handshake message is needed.
+
+        """
         if non_direct:
             return self.__build_non_direct_neighbor(addr)
         else:
@@ -64,11 +79,6 @@ class InMemoryNeighbors(Neighbors):
                     logger.info(self.self_addr, f"Cannot add a neighbor: {response['error']}")
                     raise Exception(f"Cannot add a neighbor: {response['error']}")
 
-            # Add neighbor
-            # ESTO ESTA MAL! esto simplemente devuelve un objeto de conexión, no lo agrega
-            print("BUG -> NEED TO FIX IT (just remove this line i think)")
-            self.neis[addr] = (None, server, time.time())
-
             return (None, server, time.time())
 
         except Exception as e:
@@ -80,7 +90,14 @@ class InMemoryNeighbors(Neighbors):
         return (None, None, time.time())
 
     def disconnect(self, addr: str, disconnect_msg: bool = True) -> None:
-        """Disconnect from a neighbor."""
+        """
+        Disconnect from a neighbor.
+
+        Args:
+            addr: Address of the neighbor to disconnect.
+            disconnect_msg: If a disconnect message is needed.
+
+        """
         try:
             # If the other node still connected, disconnect
             _, node_server, _ = self.get(addr)

@@ -16,7 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""Gossiper."""
+"""Protocol agnostic gossiper."""
 
 import random
 import threading
@@ -29,7 +29,16 @@ from p2pfl.settings import Settings
 
 
 class Gossiper(threading.Thread):
-    """Gossiper for agnostic communication protocol."""
+    """
+    Gossiper for agnostic communication protocol.
+
+    Args:
+        self_addr: Address of the node.
+        client: Client to send messages.
+        period: Period of gossip.
+        messages_per_period: Amount of messages to send per period.
+
+    """
 
     def __init__(
         self,
@@ -79,13 +88,26 @@ class Gossiper(threading.Thread):
     ###
 
     def add_message(self, msg: Any, pending_neis: List[str]) -> None:
-        """Add message to pending."""
+        """
+        Add message to pending.
+
+        Args:
+            msg: Message to send.
+            pending_neis: Neighbors to send the message.
+
+        """
         self.__pending_msgs_lock.acquire()
         self.__pending_msgs.append((msg, pending_neis))
         self.__pending_msgs_lock.release()
 
     def check_and_set_processed(self, msg_hash: int) -> bool:
-        """Check if message was already processed and set it as processed."""
+        """
+        Check if message was already processed and set it as processed.
+
+        Args:
+            msg_hash: Hash of the message to check.
+
+        """
         self.__processed_messages_lock.acquire()
         # Check if message was already processed
         if msg_hash in self.__processed_messages:
@@ -151,7 +173,18 @@ class Gossiper(threading.Thread):
         period: float,
         create_connection: bool,
     ) -> None:
-        """Gossip model weights. This is a synchronous gossip. End when there are no more neighbors to gossip."""
+        """
+        Gossip model weights. This is a synchronous gossip. End when there are no more neighbors to gossip.
+
+        Args:
+            early_stopping_fn: Function to check if the gossip should stop.
+            get_candidates_fn: Function to get the neighbors to gossip.
+            status_fn: Function to get the status of the node.
+            model_fn: Function to get the model of a neighbor.
+            period: Period of gossip.
+            create_connection: Flag to create a connection.
+
+        """
         # Initialize list with status of nodes in the last X iterations
         last_x_status: List[Any] = []
         j = 0

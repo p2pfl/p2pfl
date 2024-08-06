@@ -54,7 +54,19 @@ def set_test_settings() -> None:
 
 
 def wait_convergence(nodes: List[Node], n_neis: int, wait: int = 5, only_direct: bool = False) -> None:
-    """Wait until all nodes have n_neis neighbors."""
+    """
+    Wait until all nodes have n_neis neighbors.
+
+    Args:
+        nodes: List of nodes.
+        n_neis: Number of neighbors.
+        wait: Time to wait.
+        only_direct: Only direct neighbors.
+
+    Raises:
+        AssertionError: If the condition is not met.
+
+    """
     acum = 0.0
     while True:
         begin = time.time()
@@ -67,13 +79,26 @@ def wait_convergence(nodes: List[Node], n_neis: int, wait: int = 5, only_direct:
 
 
 def full_connection(node: Node, nodes: List[Node]) -> None:
-    """Connect node to all nodes."""
+    """
+    Connect node to all nodes.
+
+    Args:
+        node: Node to connect.
+        nodes: List of nodes
+
+    """
     for n in nodes:
         node.connect(n.addr)
 
 
 def wait_4_results(nodes: List[Node]) -> None:
-    """Wait until all nodes have finished the rounds."""
+    """
+    Wait until all nodes have finished the rounds.
+
+    Args:
+        nodes: List of nodes.
+
+    """
     while True:
         time.sleep(1)
         finish = True
@@ -85,7 +110,16 @@ def wait_4_results(nodes: List[Node]) -> None:
 
 
 def check_equal_models(nodes: List[Node]) -> None:
-    """Check that all nodes have the same model."""
+    """
+    Check that all nodes have the same model.
+
+    Args:
+        nodes: List of nodes.
+
+    Raises:
+        AssertionError: If the condition is not met.
+
+    """
     model: Any = None
     first = True
     for node in nodes:

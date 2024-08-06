@@ -37,7 +37,16 @@ class HeartbeatCommand(Command):
         return heartbeater_cmd_name
 
     def execute(self, source: str, round: int, time: Optional[str] = None, **kwargs) -> None:
-        """Execute the command."""
+        """
+        Execute the command.
+
+        Args:
+            source: The source of the command.
+            round: The round of the command.
+            time: The time of the command.
+            **kwargs: The command arguments.
+
+        """
         if time is None:
             raise ValueError("Time is required")
         self.__heartbeat.beat(source, time=float(time))

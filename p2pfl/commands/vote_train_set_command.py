@@ -38,8 +38,16 @@ class VoteTrainSetCommand(Command):
         return "vote_train_set"
 
     def execute(self, source: str, round: int, *args, **kwargs) -> None:
-        """Execute the command."""
-        # check moment: round or round + 1 because of node async
+        """
+        Execute the command. Start learning thread.
+
+        Args:
+            source: The source of the command.
+            round: The round of the command.
+            *args: Vote values (pairs of key and values).
+            **kwargs: The command keyword arguments.
+
+        """  # check moment: round or round + 1 because of node async
         ########################################################
         # try to improve clarity in message moment check
         ########################################################

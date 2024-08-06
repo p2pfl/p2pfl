@@ -16,7 +16,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""Logger."""
+"""
+P2PFL Logger.
+
+.. note:: Not all is typed because the python logger is not typed (yep, is a TODO...).
+
+"""
 
 import atexit
 import datetime
@@ -41,7 +46,13 @@ class DictFormatter(logging.Formatter):
     """Formatter (logging) that returns a dictionary with the log record attributes."""
 
     def format(self, record):
-        """Format the log record as a dictionary."""
+        """
+        Format the log record as a dictionary.
+
+        Args:
+            record: The log record.
+
+        """
         # Get node
         if not hasattr(record, "node"):
             raise ValueError("The log record must have a 'node' attribute.")
@@ -55,7 +66,13 @@ class DictFormatter(logging.Formatter):
 
 
 class P2pflWebLogHandler(logging.Handler):
-    """Custom logging handler that sends log entries to the API."""
+    """
+    Custom logging handler that sends log entries to the API.
+
+    Args:
+        p2pfl_web: The P2PFL Web Services.
+
+    """
 
     def __init__(self, p2pfl_web: P2pflWebServices):
         """Initialize the handler."""
@@ -64,7 +81,13 @@ class P2pflWebLogHandler(logging.Handler):
         self.formatter = DictFormatter()  # Instantiate the custom formatter
 
     def emit(self, record):
-        """Emit the log record."""
+        """
+        Emit the log record.
+
+        Args:
+            record: The log record.
+
+        """
         # Format the log record using the custom formatter
         log_message = self.formatter.format(record)  # type: ignore
         # Send log entry to the API
@@ -94,7 +117,13 @@ class ColoredFormatter(logging.Formatter):
     """Formatter that adds color to the log messages."""
 
     def format(self, record):
-        """Format the log record with color."""
+        """
+        Format the log record with color.
+
+        Args:
+            record: The log record.
+
+        """
         # Warn level color
         if record.levelname == "DEBUG":
             record.levelname = BLUE + record.levelname + RESET
@@ -118,6 +147,10 @@ class Logger:
 
     Keep in mind that the logs (with the exception of the console) are asynchronous.
     So if the program is closed abruptly, the logs may not be saved.
+
+    Args:
+        p2pfl_web_services: The P2PFL Web Services to log and monitor the nodes remotely.
+
     """
 
     ######
@@ -128,7 +161,14 @@ class Logger:
 
     @staticmethod
     def connect_web(url: str, key: str) -> None:
-        """Connect to the web services."""
+        """
+        Connect to the web services.
+
+        Args:
+            url: The URL of the web services.
+            key: The API key.
+
+        """
         # Remove the instance if it already exists
         if Logger.__instance is not None:
             Logger.__instance.queue_listener.stop()
@@ -191,7 +231,7 @@ class Logger:
         # Register cleanup function to close the queue on exit
         atexit.register(self.cleanup)
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Cleanup the logger."""
         # Unregister nodes
         for node in self.nodes:
@@ -214,8 +254,7 @@ class Logger:
         Return the logger instance.
 
         Returns
-        -------
-            logging.Logger: The logger instance.
+            The logger instance.
 
         """
         if Logger.__instance is None:
@@ -232,8 +271,7 @@ class Logger:
         Set the logger level.
 
         Args:
-        ----
-            level (int): The logger level.
+            level: The logger level.
 
         """
         Logger.get_instance().logger.setLevel(level)
@@ -244,8 +282,7 @@ class Logger:
         Get the logger level.
 
         Returns
-        -------
-            int: The logger level.
+            The logger level.
 
         """
         return Logger.get_instance().logger.getEffectiveLevel()
@@ -255,9 +292,11 @@ class Logger:
         """
         Get the logger level name.
 
-        Returns
-        -------
-            str: The logger level name.
+        Args:
+            lvl: The logger level.
+
+        Returns:
+            The logger level name.
 
         """
         return logging.getLevelName(lvl)
@@ -268,9 +307,8 @@ class Logger:
         Log an info message.
 
         Args:
-        ----
-            node (str): The node name.
-            message (str): The message to log.
+            node: The node name.
+            message: The message to log.
 
         """
         Logger.get_instance().log(logging.INFO, node, message)
@@ -281,9 +319,8 @@ class Logger:
         Log a debug message.
 
         Args:
-        ----
-            node (str): The node name.
-            message (str): The message to log.
+            node: The node name.
+            message: The message to log.
 
         """
         Logger.get_instance().log(logging.DEBUG, node, message)
@@ -294,9 +331,8 @@ class Logger:
         Log a warning message.
 
         Args:
-        ----
-            node (str): The node name.
-            message (str): The message to log.
+            node: The node name.
+            message: The message to log.
 
         """
         Logger.get_instance().log(logging.WARNING, node, message)
@@ -307,9 +343,8 @@ class Logger:
         Log an error message.
 
         Args:
-        ----
-            node (str): The node name.
-            message (str): The message to log.
+            node: The node name.
+            message: The message to log.
 
         """
         Logger.get_instance().log(logging.ERROR, node, message)
@@ -320,9 +355,8 @@ class Logger:
         Log a critical message.
 
         Args:
-        ----
-            node (str): The node name.
-            message (str): The message to log.
+            node: The node name.
+            message: The message to log.
 
         """
         Logger.get_instance().log(logging.CRITICAL, node, message)
@@ -332,10 +366,9 @@ class Logger:
         Log a message.
 
         Args:
-        ----
-            level (int): The log level.
-            node (str): The node name.
-            message (str): The message to log.
+            level: The log level.
+            node: The node name.
+            message: The message to log.
 
         """
         # Traditional logging
@@ -368,12 +401,11 @@ class Logger:
         Log a metric.
 
         Args:
-        ----
-            node (str): The node name.
-            metric (str): The metric to log.
-            value (float): The value.
-            step (int): The step.
-            round (int): The round.
+            node: The node name.
+            metric: The metric to log.
+            value: The value.
+            step: The step.
+            round: The round.
 
         """
         # Get Round
@@ -411,11 +443,10 @@ class Logger:
         Log a system metric. Only on web.
 
         Args:
-        ----
-            node (str): The node name.
-            metric (str): The metric to log.
-            value (float): The value.
-            time (datetime): The time.
+            node: The node name.
+            metric: The metric to log.
+            value: The value.
+            time: The time.
 
         """
         # Web
@@ -429,13 +460,11 @@ class Logger:
         Get the logs.
 
         Args:
-        ----
-            node (str): The node name.
-            exp (str): The experiment name.
+            node: The node name.
+            exp: The experiment name.
 
         Returns:
-        -------
-            List[dict]: The logs.
+            The logs.
 
         """
         return Logger.get_instance().local_metrics.get_all_logs()
@@ -446,13 +475,11 @@ class Logger:
         Get the logs.
 
         Args:
-        ----
-            node (str): The node name.
-            exp (str): The experiment name.
+            node: The node name.
+            exp: The experiment name.
 
         Returns:
-        -------
-            List[dict]: The logs.
+            The logs.
 
         """
         return Logger.get_instance().global_metrics.get_all_logs()
@@ -467,10 +494,9 @@ class Logger:
         Register a node.
 
         Args:
-        ----
-            node (str): The node address.
-            state (NodeState): The node state.
-            simulation (bool): If the node is a simulation.
+            node: The node address.
+            state: The node state.
+            simulation: If the node is a simulation.
 
         """
         # Web
@@ -497,8 +523,7 @@ class Logger:
         Unregister a node.
 
         Args:
-        ----
-            node (str): The node address.
+            node: The node address.
 
         """
         # Web
@@ -521,16 +546,13 @@ class Logger:
     # Node Status
     ######
 
-    # en algun sitio hay que checkear si es instancia de NodeState (y no de BaseNodeState)
-
     @staticmethod
     def experiment_started(node: str) -> None:
         """
         Notify the experiment start.
 
         Args:
-        ----
-            node (str): The node address.
+            node: The node address.
 
         """
         Logger.get_instance().warning(node, "Uncatched Experiment Started on Logger")
@@ -541,8 +563,7 @@ class Logger:
         Notify the experiment end.
 
         Args:
-        ----
-            node (str): The node address.
+            node: The node address.
 
         """
         Logger.get_instance().warning(node, "Uncatched Experiment Ended on Logger")
@@ -553,8 +574,7 @@ class Logger:
         Notify the round end.
 
         Args:
-        ----
-            node (str): The node address.
+            node: The node address.
 
         """
         r = Logger.get_instance().nodes[node][1].round

@@ -31,6 +31,7 @@ from p2pfl.communication.communication_protocol import CommunicationProtocol
 from p2pfl.communication.grpc.grpc_communication_protocol import (
     GrpcCommunicationProtocol,
 )
+from p2pfl.exceptions import LearnerNotSetException, NodeRunningException, ZeroRoundsException
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.learner import NodeLearner
@@ -47,6 +48,7 @@ from p2pfl.stages.workflows import LearningWorkflow
     - al final es algo secuencial: inicialización, votado, entrenamiento, agregación, ...
 - model gossip provisional (hard-coded, se necesita mover el model gossiper)
 """
+
 
 
 class Node:
@@ -115,13 +117,15 @@ class Node:
         """
         Connects a node to another.
 
-        > Careful: Adding nodes while learning is running is not fully supported.
+        Warning:
+            Adding nodes while learning is running is not fully supported.
 
         Args:
-            addr (str): The address of the node to connect to.
+            addr: The address of the node to connect to.
 
         Returns:
-            bool: True if the node was connected, False otherwise.
+            True if the node was connected, False otherwise.
+
         """
         # Check running
         self.assert_running(True)
@@ -134,10 +138,11 @@ class Node:
         Returns the neighbors of the node.
 
         Args:
-            only_direct (bool): If True, only the direct neighbors will be returned.
+            only_direct: If True, only the direct neighbors will be returned.
 
         Returns:
-            list: The list of neighbors.
+            The list of neighbors.
+
         """
         return self._communication_protocol.get_neighbors(only_direct)
 
@@ -146,7 +151,8 @@ class Node:
         Disconnects a node from another.
 
         Args:
-            addr (str): The address of the node to disconnect from.
+            addr: The address of the node to disconnect from.
+
         """
         # Check running
         self.assert_running(True)
@@ -163,24 +169,27 @@ class Node:
         Asserts that the node is running or not running.
 
         Args:
-            running (bool): True if the node must be running, False otherwise.
+            running: True if the node must be running, False otherwise.
 
         Raises:
-            Exception: If the node is not running and running is True, or if the node is running and running is False.
+            NodeRunningException: If the node is not running and running is True, or if the node is running and running
+            is False.
+
         """
         running_state = self.__running
         if running_state != running:
-            raise Exception(f"Node is {'not ' if running_state else ''}running.")
+            raise NodeRunningException(f"Node is {'not ' if running_state else ''}running.")
 
     def start(self, wait: bool = False) -> None:
         """
         Starts the node: server and neighbors(gossip and heartbeat).
 
         Args:
-            wait (bool): If True, the function will wait until the server is terminated.
+            wait: If True, the function will wait until the server is terminated.
 
         Raises:
-            Exception: If the node is already running.
+            NodeRunningException: If the node is already running.
+
         """
         # Check not running
         self.assert_running(False)
@@ -199,7 +208,8 @@ class Node:
         Stops the node: server and neighbors(gossip and heartbeat).
 
         Raises:
-            Exception: If the node is not running.
+            NodeRunningException: If the node is not running.
+
         """
         logger.info(self.addr, "Stopping node...")
         try:
@@ -224,9 +234,15 @@ class Node:
 
         Args:
             data: Dataset to be used in the learning process.
+
+        Raises:
+            LearnerNotSetException: If the learner is already set.
+
         """
         self.data = data
-        self.state.learner.set_data(data)
+        # If learner is already set (raise)
+        if self.state.learner is not None:
+            raise LearnerNotSetException("Data cannot be set after learner is set.")
 
     def set_model(self, model) -> None:
         """
@@ -234,9 +250,15 @@ class Node:
 
         Args:
             model: Model to be used in the learning process.
+
+        Raises:
+            LearnerNotSetException: If the learner is already set.
+
         """
         self.model = model
-        self.state.learner.set_model(model)
+        # If learner is already set (raise)
+        if self.state.learner is not None:
+            raise LearnerNotSetException("Model cannot be set after learner is set.")
 
     ###############################################
     #         Network Learning Management         #
@@ -261,11 +283,15 @@ class Node:
         Args:
             rounds: Number of rounds of the learning process.
             epochs: Number of epochs of the learning process.
+
+        Raises:
+            ZeroRoundsException: If rounds is less than 1.
+
         """
         self.assert_running(True)
 
         if rounds < 1:
-            raise Exception("Rounds and epochs must be greater than 0.")
+            raise ZeroRoundsException("Rounds must be greater than 0.")
 
         if self.state.round is None:
             # Broadcast start Learning

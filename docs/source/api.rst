@@ -1,7 +1,7 @@
-📚 Documentation
+📚 API
 ================
 
 .. toctree::
    :maxdepth: 4
 
-   p2pfl
+   modules/p2pfl

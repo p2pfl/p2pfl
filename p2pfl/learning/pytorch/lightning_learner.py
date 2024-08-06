@@ -72,12 +72,12 @@ class LightningLearner(NodeLearner):
     """
     Learner with PyTorch Lightning.
 
-    Atributes:
-        model: Model to train.
-        data: Data to train the model.
-        log_name: Name of the log.
-        epochs: Number of epochs to train.
-        logger: Logger.
+    Args:
+        model: The model of the learner.
+        data: The data of the learner.
+        self_addr: The address of the learner.
+        epochs: The number of epochs of the model.
+
     """
 
     def __init__(
@@ -101,14 +101,34 @@ class LightningLearner(NodeLearner):
         logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
 
     def set_model(self, model: pl.LightningModule) -> None:
+        """
+        Set the model of the learner.
+
+        Args:
+            model: The model of the learner.
+
+        """
         self.model = model
 
     def set_data(self, data: LightningDataModule) -> None:
+        """
+        Set the data of the learner.
+
+        Args:
+            data: The data of the learner.
+
+        """
         self.data = data
 
     def get_num_samples(self) -> Tuple[int, int]:
         """
-        TODO: USE IT TO OBTAIN A MORE ACCURATE METRIC AGG
+        Get the number of samples in the train and test datasets.
+
+        Args:
+            data: The data of the learner.
+
+        .. todo:: Use it to obtain a more accurate metric aggretation.
+
         """
         train_len = len(self.data.train_dataloader().dataset)  # type: ignore
         test_len = len(self.data.test_dataloader().dataset)  # type: ignore
@@ -119,11 +139,25 @@ class LightningLearner(NodeLearner):
     ####
 
     def encode_parameters(self, params: Optional[LearnerStateDTO] = None) -> bytes:
+        """
+        Encode the parameters of the model.
+
+        Args:
+            params: The parameters of the model.
+
+        """
         if params is None:
             params = self.get_parameters()        
         return pickle.dumps(params) # serializing the entire DTO object
 
     def decode_parameters(self, data: bytes) -> LearnerStateDTO:
+        """
+        Decode the parameters of the model.
+
+        Args:
+            data: The parameters of the model.
+
+        """
         try:
             # params_dict = zip(self.get_parameters().keys(), pickle.loads(data))
             # return OrderedDict({k: torch.tensor(v) for k, v in params_dict})
@@ -133,12 +167,30 @@ class LightningLearner(NodeLearner):
             raise DecodingParamsError("Error decoding parameters: {e}")
 
     def set_parameters(self, params: LearnerStateDTO) -> None:
+        """
+        Set the parameters of the model.
+
+        Args:
+            params: The parameters of the model.
+
+        Raises:
+            ModelNotMatchingError: If the model is not matching the learner.
+
+        """
         try:
             self.model.load_state_dict(params.get_weights())
         except Exception:
             raise ModelNotMatchingError("Not matching models")
 
     def get_parameters(self) -> LearnerStateDTO:
+        """
+        Get the parameters of the model.
+
+        Returns:
+            The parameters of the model
+
+        """
+        raise ESTO DEBE DE SER UN DTO LOCAL MAS BIEN!
         self.learner_state.add_weights_dict(self.model.state_dict())
         return self.learner_state
 
@@ -147,6 +199,13 @@ class LightningLearner(NodeLearner):
     ####
 
     def set_epochs(self, epochs: int) -> None:
+        """
+        Set the number of epochs.
+
+        Args:
+            epochs: The number of epochs.
+
+        """
         self.epochs = epochs
 
     def fit(self) -> None:
@@ -174,6 +233,13 @@ class LightningLearner(NodeLearner):
             self.__trainer = None
 
     def evaluate(self) -> Dict[str, float]:
+        """
+        Evaluate the model with actual parameters.
+
+        Returns:
+            The evaluation results.
+
+        """
         try:
             if self.epochs > 0:
                 self.__trainer = Trainer(

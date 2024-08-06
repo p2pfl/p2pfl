@@ -36,7 +36,16 @@ class ModelsAggregatedCommand(Command):
         return "models_aggregated"
 
     def execute(self, source: str, round: int, *args, **kwargs) -> None:
-        """Execute the command."""
+        """
+        Execute the command.
+
+        Args:
+            source: The source of the command.
+            round: The round of the command.
+            *args: List of models that contribute to the aggregated model.
+            **kwargs: The command keyword arguments.
+
+        """
         if round == self.state.round:
             # esto meterlo en estado o agg
             self.state.models_aggregated[source] = list(args)

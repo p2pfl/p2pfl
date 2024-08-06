@@ -36,7 +36,15 @@ class ModelsReadyCommand(Command):
         return "models_ready"
 
     def execute(self, source: str, round: int, **kwargs) -> None:
-        """Execute the command."""
+        """
+        Execute the command.
+
+        Args:
+            source: The source of the command.
+            round: The round of the command.
+            **kwargs: The command keyword arguments.
+
+        """
         # revisar validación al igual que en VoteTrainSetCommand
         ########################################################
         # try to improve clarity in message moment check

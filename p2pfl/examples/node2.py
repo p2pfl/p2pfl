@@ -40,12 +40,14 @@ def __get_args() -> argparse.Namespace:
 
 
 def node2(port: int) -> None:
-    """Start a node2, connects to another node, start and waits the federated learning process to finish."""
-    node = Node(
-        MLP(),
-        MnistFederatedDM(sub_id=1, number_sub=2),
-        port=int(sys.argv[1]),
-    )
+    """
+    Start a node2, connects to another node, start and waits the federated learning process to finish.
+
+    Args:
+        port: The port to connect.
+
+    """
+    node = Node(MLP(), MnistFederatedDM(sub_id=1, number_sub=2), address=f"127.0.0.1:{int(sys.argv[1])}")
     node.start()
 
     node.connect(f"127.0.0.1:{port}")
