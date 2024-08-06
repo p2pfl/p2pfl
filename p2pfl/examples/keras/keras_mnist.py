@@ -20,13 +20,19 @@ import time
 import matplotlib.pyplot as plt
 from p2pfl.communication.grpc.grpc_communication_protocol import GrpcCommunicationProtocol
 from p2pfl.communication.memory.memory_communication_protocol import InMemoryCommunicationProtocol
-from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
-    MnistFederatedDM,
-)
-from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
+# from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
+#     MnistFederatedDM,
+# )
+import tensorflow as tf
+from p2pfl.learning.tensorflow.mnist_examples.keras_mnist_dataset import MnistFederatedDM
+
+from p2pfl.learning.tensorflow.keras_learner import KerasLearner
+# from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
+from p2pfl.learning.tensorflow.mnist_examples.keras_sample_model import MLP
 from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.utils import (
+    set_test_settings,
     wait_4_results,
     wait_convergence,
 )
@@ -55,30 +61,14 @@ def __parse_args():
 
     return args
 
-def mnist(
-    n: int,
-    r: int,
-    e: int,
-    show_metrics: bool = True,
-    measure_time: bool = False,
-    use_unix_socket: bool = False,
-    use_local_protocol: bool = False,
-) -> None:
-    """
-    P2PFL MNIST experiment.
-
-    Args:
-        n: The number of nodes.
-        r: The number of rounds.
-        e: The number of epochs.
-        show_metrics: Show metrics.
-        measure_time: Measure time.
-        use_unix_socket: Use Unix socket.
-        use_local_protocol: Use local protocol
-
-    """
+def mnist(n, r, e, show_metrics=True, measure_time=False, 
+          use_unix_socket=False, use_local_protocol=False):
     if measure_time:
         start_time = time.time()
+    tf.config.experimental.list_physical_devices()
+    gpu_devices = tf.config.experimental.list_physical_devices('GPU')
+    for device in gpu_devices:
+            tf.config.experimental.set_memory_growth(device, True)
 
     # Node Creation
     nodes = []
@@ -88,12 +78,18 @@ def mnist(
         else:
             address=f"unix:///tmp/p2pfl-{i}.sock" if use_unix_socket else "127.0.0.1"
 
+        data_module = MnistFederatedDM(sub_id=i, number_sub=n)
+        train_dataset, val_dataset, _ = data_module.get_data()
+        
+        # need a way to pass parameters to the learner directly?
         node = Node(
             MLP(),
-            MnistFederatedDM(sub_id=0, number_sub=20),  # sampling for increase speed
+            (train_dataset, val_dataset), 
+            learner=KerasLearner,
             protocol= InMemoryCommunicationProtocol if use_local_protocol else GrpcCommunicationProtocol,
             address=address
         )
+        
         node.start()
         nodes.append(node)
 
@@ -155,13 +151,13 @@ def mnist(
 if __name__ == "__main__":
     # Parse args
     args = __parse_args()
-
+    
     # Set logger
     if args.token != "":
         logger.connect_web("http://localhost:3000/api/v1", args.token)
 
     # Settings
-    # set_test_settings()
+    set_test_settings()
 
     # Launch experiment
     mnist(

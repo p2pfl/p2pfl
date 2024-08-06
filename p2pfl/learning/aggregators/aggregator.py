@@ -20,23 +20,20 @@
 
 import contextlib
 import threading
-from typing import Dict, List, Optional, Tuple, Union
-
-import torch
+from typing import Dict, List, Tuple, Union
 
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
+from p2pfl.learning.LearnerStateDTO import LearnerStateDTO
 
 
 class NoModelsToAggregateError(Exception):
-    """Exception raised when there are no models to aggregate."""
-
     pass
 
 
 class Aggregator:
     """
-    Class to manage the aggregation of models. Aggregate not implemented, strategy pattern.
+    Class to manage the aggregation of models.
 
     Args:
         node_name: String with the name of the node.
@@ -44,11 +41,10 @@ class Aggregator:
     """
 
     def __init__(self, node_name: str = "unknown") -> None:
-        """Initialize the aggregator."""
         self.node_name = node_name
         self.__train_set: List[str] = []
         self.__waiting_aggregated_model = False
-        self.__models: Dict[str, Tuple[Dict[str, torch.Tensor], int]] = {}
+        self.__models: Dict[str, Tuple[LearnerStateDTO, int]] = {}
 
         # Locks
         self.__agg_lock = threading.Lock()
@@ -64,7 +60,7 @@ class Aggregator:
         """
         raise NotImplementedError
 
-    def set_nodes_to_aggregate(self, nodes_to_aggregate: List[str]) -> None:
+    def set_nodes_to_aggregate(self, l: List[str]) -> None:
         """
         List with the name of nodes to aggregate. Be careful, by setting new nodes, the actual aggregation will be lost.
 
@@ -73,13 +69,14 @@ class Aggregator:
 
         Raises:
             Exception: If the aggregation is running.
-
         """
         if not self.__finish_aggregation_lock.locked():
-            self.__train_set = nodes_to_aggregate
+            self.__train_set = l
             self.__finish_aggregation_lock.acquire(timeout=Settings.AGGREGATION_TIMEOUT)
         else:
-            raise Exception("It is not possible to set nodes to aggregate when the aggregation is running.")
+            raise Exception(
+                "It is not possible to set nodes to aggregate when the aggregation is running."
+            )
 
     def set_waiting_aggregated_model(self, nodes: List[str]) -> None:
         """
@@ -93,28 +90,33 @@ class Aggregator:
         self.__waiting_aggregated_model = True
 
     def clear(self) -> None:
-        """Clear the aggregation (remove trainset and release locks)."""
+        """
+        Clear the aggregation (remove trainset and release locks).
+        """
         self.__agg_lock.acquire()
         self.__train_set = []
         self.__models = {}
-        with contextlib.suppress(Exception):
+        try:
             self.__finish_aggregation_lock.release()
+        except Exception:
+            pass
         self.__agg_lock.release()
 
     def get_aggregated_models(self) -> List[str]:
         """
         Get the list of aggregated models.
 
-        Returns
+        Returns:
             Name of nodes that colaborated to get the model.
-
         """
         # Get a list of nodes added
         models_added = [n.split() for n in list(self.__models.keys())]
         # Flatten list
         return [element for sublist in models_added for element in sublist]
 
-    def add_model(self, model: Dict[str, torch.Tensor], contributors: List[str], weight: int) -> List[str]:
+    def add_model(
+        self, model: LearnerStateDTO, contributors: List[str], weight: int
+    ) -> List[str]:
         """
         Add a model. The first model to be added starts the `run` method (timeout).
 
@@ -127,6 +129,7 @@ class Aggregator:
             List of contributors.
 
         """
+
         nodes = list(contributors)
 
         # Verify that contributors are not empty
@@ -151,15 +154,14 @@ class Aggregator:
             # Check if aggregation is needed
             if len(self.__train_set) > len(self.get_aggregated_models()):
                 # Check if all nodes are in the train_set
-                if all(n in self.__train_set for n in nodes):
+                if all([n in self.__train_set for n in nodes]):
                     # Check if the model is a full/partial aggregation
                     if len(nodes) == len(self.__train_set):
                         self.__models = {}
                         self.__models[" ".join(nodes)] = (model, weight)
-                        models_added = str(len(self.get_aggregated_models()))
                         logger.info(
                             self.node_name,
-                            f"Model added ({models_added}/{ str(len(self.__train_set))}) from {str(nodes)}",
+                            f"Model added ({str(len(self.get_aggregated_models()))}/{ str(len(self.__train_set))}) from {str(nodes)}",
                         )
                         # Finish agg
                         self.__finish_aggregation_lock.release()
@@ -167,13 +169,12 @@ class Aggregator:
                         self.__agg_lock.release()
                         return self.get_aggregated_models()
 
-                    elif all(n not in self.get_aggregated_models() for n in nodes):
+                    elif all([n not in self.get_aggregated_models() for n in nodes]):
                         # Aggregate model
                         self.__models[" ".join(nodes)] = (model, weight)
-                        models_added = str(len(self.get_aggregated_models()))
                         logger.info(
                             self.node_name,
-                            f"Model added ({models_added}/{ str(len(self.__train_set))}) from {str(nodes)}",
+                            f"Model added ({str(len(self.get_aggregated_models()))}/{ str(len(self.__train_set))}) from {str(nodes)}",
                         )
 
                         # Check if all models were added
@@ -199,7 +200,9 @@ class Aggregator:
             self.__agg_lock.release()
         return []
 
-    def wait_and_get_aggregation(self, timeout: Optional[int] = None) -> Union[dict, None]:
+    def wait_and_get_aggregation(
+        self, timeout: int = Settings.AGGREGATION_TIMEOUT
+    ) -> Union[dict, None]:
         """
         Wait for aggregation to finish.
 
@@ -211,14 +214,14 @@ class Aggregator:
 
         Raises:
             Exception: If waiting for an aggregated model and several models were received.
-
         """
-        if timeout is None:
-            timeout = Settings.AGGREGATION_TIMEOUT
+
         # Wait for aggregation to finish (then release the lock again)
         self.__finish_aggregation_lock.acquire(timeout=timeout)
-        with contextlib.suppress(Exception):
+        try:
             self.__finish_aggregation_lock.release()
+        except Exception:
+            pass
 
         # If awaiting for an aggregated model, return it
         if self.__waiting_aggregated_model:
@@ -229,16 +232,17 @@ class Aggregator:
                     self.node_name,
                     "Timeout reached by waiting for an aggregated model. Continuing with the local model.",
                 )
-            raise Exception(f"Waiting for an an aggregated but several models were received: {self.__models.keys()}")
+            raise Exception(
+                f"Waiting for an an aggregated but several models were received: {self.__models.keys()}"
+            )
         # Start aggregation
         n_model_aggregated = sum([len(nodes.split()) for nodes in list(self.__models.keys())])
 
         # Timeout / All models
         if n_model_aggregated != len(self.__train_set):
-            missing_models = set(self.__train_set) - set(self.__models.keys())
             logger.info(
                 self.node_name,
-                f"Aggregating models, timeout reached. Missing models: {missing_models}",
+                f"Aggregating models, timeout reached. Missing models: {set(self.__train_set) - set(self.__models.keys())}",
             )
         else:
             logger.info(self.node_name, "Aggregating models.")
@@ -257,7 +261,6 @@ class Aggregator:
 
         Returns:
             Aggregated model, nodes aggregated and aggregation weight.
-
         """
         dict_aux = {}
         nodes_aggregated = []
@@ -265,7 +268,7 @@ class Aggregator:
         models = self.__models.copy()
         for n, (m, s) in list(models.items()):
             splited_nodes = n.split()
-            if all(n not in except_nodes for n in splited_nodes):
+            if all([n not in except_nodes for n in splited_nodes]):
                 dict_aux[n] = (m, s)
                 nodes_aggregated += splited_nodes
                 aggregation_weight += s
