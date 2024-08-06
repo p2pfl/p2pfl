@@ -190,7 +190,6 @@ class LightningLearner(NodeLearner):
             The parameters of the model
 
         """
-        raise ESTO DEBE DE SER UN DTO LOCAL MAS BIEN!
         self.learner_state.add_weights_dict(self.model.state_dict())
         return self.learner_state
 
