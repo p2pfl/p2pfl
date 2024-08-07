@@ -23,6 +23,7 @@ from typing import Dict, Optional, Tuple
 
 import pytorch_lightning as pl
 import torch
+import numpy as np
 from pytorch_lightning import LightningDataModule, Trainer
 
 from p2pfl.learning.exceptions import (
@@ -178,7 +179,9 @@ class LightningLearner(NodeLearner):
 
         """
         try:
-            self.model.load_state_dict(params.get_weights())
+            weights = params.get_weights()
+            state_dict = {layer: torch.tensor(param) if isinstance(param, np.ndarray) else param for layer, param in weights.items()}
+            self.model.load_state_dict(state_dict)
         except Exception:
             raise ModelNotMatchingError("Not matching models")
 
