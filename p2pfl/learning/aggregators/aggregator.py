@@ -50,7 +50,9 @@ class Aggregator:
         self.__agg_lock = threading.Lock()
         self.__finish_aggregation_lock = threading.Lock()
 
-    def aggregate(self, models: Dict[str, Tuple[Dict[str, torch.Tensor], int]]):
+    def aggregate(
+        self, models: Dict[str, Tuple[LearnerStateDTO, int]]
+    ):
         """
         Aggregate the models.
 
