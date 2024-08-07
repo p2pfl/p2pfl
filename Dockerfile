@@ -1,59 +1,28 @@
-FROM ubuntu:22.04
+FROM python:3.9-slim
 
-ARG DEBIAN_FRONTEND=noninteractive
+WORKDIR /app
+
+COPY . .
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100 \
-    POETRY_VERSION=1.7.1 \
-    POETRY_HOME="/opt/poetry" \
+    POETRY_VERSION=1.8.3 \
     POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_CREATE=false \
-    VENV_PATH="/app/.venv"
-    # Use custom venv, avoid auto-creation by Poetry
+    HOME=/app
 
-# Install system tools and libraries.
-# Utilize --mount flag of Docker Buildx to cache downloaded packages, avoiding repeated downloads
-RUN --mount=type=cache,id=apt-build,target=/var/cache/apt \
-    apt-get update && \ 
-    apt-get install -y software-properties-common && \
-    # Add the Deadsnakes PPA for Python 3.9
-    add-apt-repository ppa:deadsnakes/ppa && \
-    apt-get update && apt-get install -y --no-install-recommends \
-        curl \
-        build-essential \
-        python3.9 \
-        python3-pip \
-        python3.9-venv \
-        python3.9-dev && \
-    # Clean up to keep the image size small
-    rm -rf /var/lib/apt/lists/*  && \
-    # Set Python 3.11 as the default Python version
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1 && \
-    update-alternatives --set python3 /usr/bin/python3.9 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1 && \
-    update-alternatives --set python /usr/bin/python3.9
+# Update and install dependencies
 
-# Set PATH to include Poetry and custom venv
-ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
+# Install Poetry
+RUN pip install "poetry==$POETRY_VERSION"
 
-# Install poetry
-RUN curl -sSL https://install.python-poetry.org | python - --version $POETRY_VERSION
+# Install dependencies
+RUN poetry install --without dev,docs
 
-# Create and prepare the virtual environment
-RUN python -m venv $VENV_PATH && \
-    python -m pip install --upgrade pip && \
-    pip cache purge && rm -Rf /root/.cache/pip/http
-    
-WORKDIR /app
+# Install torch (cpu) - poetry present problem with torch-cpu installation
+RUN poetry run pip install torch==2.2.2 torchvision==0.17.2 --index-url https://download.pytorch.org/whl/cpu
 
-# Copy dependency files to the app directory
-COPY . /app/
-
-# Install dependencies with Poetry and Torch with pip, caching downloaded packages
-RUN --mount=type=cache,target=/root/.cache \
-    poetry install --without dev && \
-    pip install torch==2.0.1+cu118 torchvision==0.15.2+cu118 -f https://download.pytorch.org/whl/torch_stable.html 
-
-ENTRYPOINT [ "/bin/bash" ]
+# Install torchmetrics and pytorch-lightning
+RUN poetry run pip install torchmetrics==1.4.0.post0 pytorch-lightning==1.9.5

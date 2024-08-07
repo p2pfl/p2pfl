@@ -20,8 +20,7 @@ For more information, see "[Creating a pull request](https://docs.github.com/en/
 
 In order to maintain a high level of code quality, we expect all contributions to meet the following standards:
 
-- All code should be formatted with [Black](https://github.com/psf/black).
-- All code should pass [Flake8](https://github.com/PyCQA/flake8) linting.
+- All code should be formatted with [Ruff](https://docs.astral.sh/ruff/).
 - All code should pass [mypy](https://github.com/python/mypy) type checking.
 - All code should be accompanied by tests that pass (we use [Pytest](https://docs.pytest.org/) and [Pytest-cov](https://pytest-cov.readthedocs.io/en/latest/)).
 - All code should be accompanied by documentation (we use [Sphinx](https://www.sphinx-doc.org/en/master/)).
@@ -29,9 +28,9 @@ In order to maintain a high level of code quality, we expect all contributions t
 Before submitting a pull request, please run the following commands:
 
 ```bash
-poetry run black --line-length 78 p2pfl
-poetry run flake8 p2pfl
-poetry run mypy p2pfl
+poetry run ruff check p2pfl
+poetry run ruff format p2pfl
+poetry run mypy -p p2pfl
 poetry run pytest -v --cov=p2pfl
 ```
 

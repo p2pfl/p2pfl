@@ -1,0 +1,40 @@
+name: Generate Documentation
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          python -m poetry lock --no-update
+          python -m poetry install -E torch
+
+      - name: Generate documentation
+        run: |
+          cd docs
+          python -m poetry run make clean
+          python -m poetry run sphinx-apidoc -M -e -f -o source/modules ../p2pfl
+          python -m poetry run make html
+          touch ./build/html/.nojekyll
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/build/html
+          publish_branch: docs

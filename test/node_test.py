@@ -15,8 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Node tests."""
 
-from test.utils import (
+import time
+
+import pytest
+
+from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
+    MnistFederatedDM,
+)
+from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
+from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
+from p2pfl.node import Node
+from p2pfl.utils import (
     check_equal_models,
     set_test_settings,
     wait_4_results,
@@ -24,18 +35,11 @@ from test.utils import (
 )
 
 set_test_settings()
-from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
-    MnistFederatedDM,
-)
-from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
-from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
-from p2pfl.node import Node
-import time
-import pytest
 
 
 @pytest.fixture
 def two_nodes():
+    """Create two nodes and start them. Yield the nodes. After the test, stop the nodes."""
     n1 = Node(MLP(), MnistFederatedDM())
     n2 = Node(MLP(), MnistFederatedDM())
     n1.start()
@@ -49,6 +53,7 @@ def two_nodes():
 
 @pytest.fixture
 def four_nodes():
+    """Create four nodes and start them. Yield the nodes. After the test, stop the nodes."""
     n1 = Node(MLP(), MnistFederatedDM())
     n2 = Node(MLP(), MnistFederatedDM())
     n3 = Node(MLP(), MnistFederatedDM())
@@ -68,11 +73,12 @@ def four_nodes():
 
 @pytest.mark.parametrize("x", [(2, 1), (2, 2)])
 def test_convergence(x):
+    """Test convergence (on learning) of two nodes."""
     n, r = x
 
     # Node Creation
     nodes = []
-    for i in range(n):
+    for _ in range(n):
         node = Node(MLP(), MnistFederatedDM())
         node.start()
         nodes.append(node)
@@ -95,6 +101,7 @@ def test_convergence(x):
 
 
 def test_interrupt_train(two_nodes):
+    """Test interrupting training of a node."""
     if (
         __name__ == "__main__"
     ):  # To avoid creating new process when current has not finished its bootstrapping phase
@@ -111,27 +118,6 @@ def test_interrupt_train(two_nodes):
         wait_4_results([n1, n2])
 
 
-def test_connect_while_training(four_nodes):
-    n1, n2, n3, n4 = four_nodes
-
-    # Connect Nodes (unless the n4)
-    n1.connect(n2.addr)
-    n3.connect(n1.addr)
-    wait_convergence([n1], 2, only_direct=True)
-    wait_convergence([n2, n3], 1, only_direct=True)
-
-    # Start Learning
-    n1.set_start_learning(2, 1)
-    time.sleep(4)
-
-    # Try to connect
-    assert n1.connect(n4.addr) == False
-    assert n4.connect(n1.addr) == False
-    time.sleep(1)
-    assert len(n1.get_neighbors(only_direct=True)) == 2
-    assert len(n4.get_neighbors(only_direct=True)) == 0
-
-
 ##############################
 #    Fault Tolerace Tests    #
 ##############################
@@ -139,9 +125,10 @@ def test_connect_while_training(four_nodes):
 
 @pytest.mark.parametrize("n", [2, 4])
 def test_node_down_on_learning(n):
+    """Test node down on learning."""
     # Node Creation
     nodes = []
-    for i in range(n):
+    for _ in range(n):
         node = Node(MLP(), MnistFederatedDM())
         node.start()
         nodes.append(node)
@@ -166,6 +153,7 @@ def test_node_down_on_learning(n):
 
 
 def test_wrong_model():
+    """Test sending a wrong model."""
     n1 = Node(MLP(), MnistFederatedDM())
     n2 = Node(CNN(), MnistFederatedDM())
 

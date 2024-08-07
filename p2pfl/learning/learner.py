@@ -16,35 +16,37 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-################################
-#    NodeLearning Interface    #  -->  Template Pattern
-################################
+"""NodeLearning Interface - Template Pattern."""
 
-
-from typing import Any, Optional, Tuple
-
-
-class ZeroEpochsError(Exception):
-    pass
+from typing import Any, Dict, Optional, Tuple
 
 
 class NodeLearner:
     """
     Template to implement learning processes, including metric monitoring during training.
+
+    Args:
+        model: The model of the learner.
+        data: The data of the learner.
+        self_addr: The address of the learner.
+        epochs: The number of epochs of the model.
+
     """
 
-    def __init__(self, mode, data, self_addr: str):
+    def __init__(self, model: Any, data: Any, self_addr: str, epochs: int) -> None:
+        """Initialize the learner."""
         raise NotImplementedError
 
     def set_model(self, model: Any) -> None:
         """
-        Set the model of the learner. (not wheights)
+        Set the model of the learner (not wheights).
 
         Args:
             model: The model of the learner.
 
         Raises:
             ModelNotMatchingError: If the model is not matching the learner.
+
         """
         raise NotImplementedError
 
@@ -54,13 +56,13 @@ class NodeLearner:
 
         Args:
             data: The data of the learner.
+
         """
         raise NotImplementedError
 
     def encode_parameters(self, params: Optional[Any] = None) -> bytes:
         """
-        Encode the parameters of the model. (binary)
-        If params are not provided, self parameters are encoded.
+        Encode the parameters of the model. (binary) If params are not provided, self parameters are encoded.
 
         Args:
             params: The parameters of the model. (non-binary)
@@ -69,12 +71,13 @@ class NodeLearner:
 
         Returns:
             The encoded parameters of the model.
+
         """
         raise NotImplementedError
 
     def decode_parameters(self, data: bytes) -> Any:
         """
-        Decode the parameters of the model. (binary)
+        Decode the parameters of the model (binary).
 
         Args:
             data: The encoded parameters of the model.
@@ -82,20 +85,6 @@ class NodeLearner:
         Returns:
             The decoded parameters of the model.
 
-        Raises:
-            DecodingParamsError: If the decoding of the parameters fails.
-        """
-        raise NotImplementedError
-
-    def check_parameters(self, params: Any) -> bool:
-        """
-        Check if the parameters are compatible with the model.
-
-        Args:
-            params: The parameters to check. (non-binary)
-
-        Returns:
-            True if the parameters are compatible with the model.
         """
         raise NotImplementedError
 
@@ -108,6 +97,7 @@ class NodeLearner:
 
         Raises:
             ModelNotMatchingError: If the model is not matching the learner.
+
         """
         raise NotImplementedError
 
@@ -115,8 +105,9 @@ class NodeLearner:
         """
         Get the parameters of the model.
 
-        Returns:
+        Returns
             The parameters of the model. (non-binary)
+
         """
         raise NotImplementedError
 
@@ -126,27 +117,25 @@ class NodeLearner:
 
         Args:
             epochs: The number of epochs of the model.
+
         """
         raise NotImplementedError
 
     def fit(self) -> None:
-        """
-        Fit the model.
-        """
+        """Fit the model."""
         raise NotImplementedError
 
     def interrupt_fit(self) -> None:
-        """
-        Interrupt the fit process.
-        """
+        """Interrupt the fit process."""
         raise NotImplementedError
 
-    def evaluate(self) -> Tuple[float, float]:
+    def evaluate(self) -> Dict[str, float]:
         """
         Evaluate the model with actual parameters.
 
-        Raises:
-            ZeroEpochsError: If the number of epochs is zero.
+        Returns:
+            The evaluation results.
+
         """
         raise NotImplementedError
 
@@ -154,7 +143,8 @@ class NodeLearner:
         """
         Get the number of samples of the model.
 
-        Returns:
+        Returns
             The number of samples of the model.
+
         """
         raise NotImplementedError

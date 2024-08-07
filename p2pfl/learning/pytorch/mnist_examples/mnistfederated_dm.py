@@ -16,21 +16,24 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""
+FederatedDataModule for MNIST.
+
+.. todo:: Create a P2PFL Dataset
+"""
+
+from math import floor
 from typing import Optional
+
+from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Subset, random_split
 from torchvision import transforms
 from torchvision.datasets import MNIST
-from math import floor
-from pytorch_lightning import LightningDataModule
 
 # To Avoid Crashes with a lot of nodes
 # import torch.multiprocessing
 # type: ignore
 # torch.multiprocessing.set_sharing_strategy("file_system")
-
-#######################################
-#    FederatedDataModule for MNIST    #
-#######################################
 
 
 class MnistFederatedDM(LightningDataModule):
@@ -43,6 +46,7 @@ class MnistFederatedDM(LightningDataModule):
         batch_size: The batch size of the data.
         num_workers: The number of workers of the data.
         val_percent: The percentage of the validation set.
+
     """
 
     # Singleton
@@ -58,6 +62,18 @@ class MnistFederatedDM(LightningDataModule):
         val_percent: float = 0.1,
         iid: bool = True,
     ) -> None:
+        """
+        Initialize the MNIST Federated DataModule.
+
+        Args:
+            sub_id: Subset id of partition. (0 <= sub_id < number_sub)
+            number_sub: Number of subsets.
+            batch_size: The batch size of the data.
+            num_workers: The number of workers of the data.
+            val_percent: The percentage of the validation set.
+            iid: If True, the data is IID, if False, the data is non-IID.
+
+        """
         super().__init__()
         self.sub_id = sub_id
         self.number_sub = number_sub
@@ -67,17 +83,11 @@ class MnistFederatedDM(LightningDataModule):
 
         # Singletons of MNIST train and test datasets
         if MnistFederatedDM.mnist_train is None:
-            MnistFederatedDM.mnist_train = MNIST(
-                "", train=True, download=True, transform=transforms.ToTensor()
-            )
+            MnistFederatedDM.mnist_train = MNIST("", train=True, download=True, transform=transforms.ToTensor())
             if not iid:
                 sorted_indexes = MnistFederatedDM.mnist_train.targets.sort()[1]
-                MnistFederatedDM.mnist_train.targets = (
-                    MnistFederatedDM.mnist_train.targets[sorted_indexes]
-                )
-                MnistFederatedDM.mnist_train.data = MnistFederatedDM.mnist_train.data[
-                    sorted_indexes
-                ]
+                MnistFederatedDM.mnist_train.targets = MnistFederatedDM.mnist_train.targets[sorted_indexes]
+                MnistFederatedDM.mnist_train.data = MnistFederatedDM.mnist_train.data[sorted_indexes]
         if MnistFederatedDM.mnist_val is None:
             MnistFederatedDM.mnist_val = MNIST(
                 "",
@@ -87,12 +97,8 @@ class MnistFederatedDM(LightningDataModule):
             )
             if not iid:
                 sorted_indexes = MnistFederatedDM.mnist_val.targets.sort()[1]
-                MnistFederatedDM.mnist_val.targets = MnistFederatedDM.mnist_val.targets[
-                    sorted_indexes
-                ]
-                MnistFederatedDM.mnist_val.data = MnistFederatedDM.mnist_val.data[
-                    sorted_indexes
-                ]
+                MnistFederatedDM.mnist_val.targets = MnistFederatedDM.mnist_val.targets[sorted_indexes]
+                MnistFederatedDM.mnist_val.data = MnistFederatedDM.mnist_val.data[sorted_indexes]
         if self.sub_id + 1 > self.number_sub:
             raise ValueError(f"Not exist the subset {self.sub_id}")
 
@@ -144,13 +150,13 @@ class MnistFederatedDM(LightningDataModule):
         # print(f"Train: {len(mnist_train)} Val:{len(mnist_val)} Test:{len(te_subset)}")
 
     def train_dataloader(self) -> DataLoader:
-        """ """
+        """Get the training DataLoader."""
         return self.train_loader
 
     def val_dataloader(self) -> DataLoader:
-        """ """
+        """Get the validation DataLoader."""
         return self.val_loader
 
     def test_dataloader(self) -> DataLoader:
-        """ """
+        """Get the test DataLoader."""
         return self.test_loader

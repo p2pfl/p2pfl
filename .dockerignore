@@ -1,0 +1,10 @@
+.*
+docs
+dist
+htmlcov
+junit
+logs
+MNIST
+other
+__pycache__
+poetry.lock

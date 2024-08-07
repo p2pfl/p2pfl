@@ -16,35 +16,29 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""FedAvg Aggregator."""
+
 from typing import Dict, Tuple
+
 import torch
+
 from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
 
 
 class FedAvg(Aggregator):
-    """
-    Federated Averaging (FedAvg) [McMahan et al., 2016]
-    Paper: https://arxiv.org/abs/1602.05629
-    """
+    """Federated Averaging (FedAvg) [McMahan et al., 2016] | Paper: https://arxiv.org/abs/1602.05629."""
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def aggregate(
-        self, models: Dict[str, Tuple[Dict[str, torch.Tensor], int]]
-    ) -> Dict[str, torch.Tensor]:
+    def aggregate(self, models: Dict[str, Tuple[Dict[str, torch.Tensor], int]]) -> Dict[str, torch.Tensor]:
         """
-        Ponderated average of the models.
+        Aggregate the models.
 
         Args:
-            models: Dictionary with the models (node: model,num_samples).
-        """
+            models: Dictionary with the models to aggregate.
 
+        """
         # Check if there are models to aggregate
         if len(models) == 0:
-            raise NoModelsToAggregateError(
-                f"({self.node_name}) Trying to aggregate models when there is no models"
-            )
+            raise NoModelsToAggregateError(f"({self.node_name}) Trying to aggregate models when there is no models")
 
         models_list = list(models.values())
 
@@ -52,10 +46,7 @@ class FedAvg(Aggregator):
         total_samples = sum([y for _, y in models_list])
 
         # Create a Zero Model
-        accum = {
-            layer: torch.zeros_like(param)
-            for layer, param in models_list[-1][0].items()
-        }
+        accum = {layer: torch.zeros_like(param) for layer, param in models_list[-1][0].items()}
 
         # Add weighted models
         for m, w in models_list:
