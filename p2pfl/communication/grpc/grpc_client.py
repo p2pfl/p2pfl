@@ -22,6 +22,7 @@ from datetime import datetime
 from typing import List, Optional, Union
 
 import grpc
+from os.path import isfile
 
 from p2pfl.communication.client import Client
 from p2pfl.communication.exceptions import NeighborNotConnectedError
@@ -140,7 +141,13 @@ class GrpcClient(Client):
 
             # Check if direct connection
             if node_stub is None and create_connection:
-                channel = grpc.insecure_channel(nei)
+                if Settings.USE_SSL and isfile(Settings.SERVER_CRT):
+                    with open(Settings.SERVER_CRT, 'rb') as f:
+                        trusted_certs = f.read()
+                    creds = grpc.ssl_channel_credentials(root_certificates=trusted_certs)
+                    channel = grpc.secure_channel(nei, creds)
+                else:
+                    channel = grpc.insecure_channel(nei)
                 node_stub = node_pb2_grpc.NodeServicesStub(channel)
 
             # Send

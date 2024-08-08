@@ -22,12 +22,14 @@ from typing import List, Optional, Union
 
 import google.protobuf.empty_pb2
 import grpc
+from os.path import isfile
 
 from p2pfl.commands.command import Command
 from p2pfl.communication.gossiper import Gossiper
 from p2pfl.communication.grpc.grpc_neighbors import GrpcNeighbors
 from p2pfl.communication.grpc.proto import node_pb2, node_pb2_grpc
 from p2pfl.management.logger import logger
+from p2pfl.settings import Settings
 
 
 class GrpcServer(node_pb2_grpc.NodeServicesServicer):
@@ -82,7 +84,14 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
         # Server
         node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.__server)
         try:
-            self.__server.add_insecure_port(self.addr)
+            if Settings.USE_SSL and isfile(Settings.SERVER_KEY) and isfile(Settings.SERVER_CRT):
+                with open(Settings.SERVER_KEY, 'r') as key_file, open(Settings.SERVER_CRT, 'r') as crt_file:
+                    private_key = key_file.read().encode()
+                    certificate_chain = crt_file.read().encode()
+                server_credentials = grpc.ssl_server_credentials(((private_key, certificate_chain),))
+                self.__server.add_secure_port(self.addr, server_credentials)
+            else:
+                self.__server.add_insecure_port(self.addr)
         except Exception as e:
             raise Exception(f"Cannot bind the address ({self.addr}): {e}") from e
         self.__server.start()
