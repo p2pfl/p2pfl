@@ -140,7 +140,13 @@ class GrpcClient(Client):
 
             # Check if direct connection
             if node_stub is None and create_connection:
-                channel = grpc.insecure_channel(nei)
+                if Settings.USE_SSL:
+                    with open(Settings.SERVER_CRT, 'rb') as f:
+                        trusted_certs = f.read()
+                    creds = grpc.ssl_channel_credentials(root_certificates=trusted_certs)
+                    channel = grpc.secure_channel(nei, creds)
+                else:
+                    channel = grpc.insecure_channel(nei)
                 node_stub = node_pb2_grpc.NodeServicesStub(channel)
 
             # Send

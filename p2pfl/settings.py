@@ -18,6 +18,9 @@
 
 """Module to define constants for the p2pfl system."""
 
+import os
+
+
 ###################
 # Global Settings #
 ###################
@@ -84,6 +87,22 @@ class Settings:
     GOSSIP_EXIT_ON_X_EQUAL_ROUNDS: int = 10
     """
     Amount of equal rounds to exit gossiping. Careful, a low value can cause an early stop of gossiping.
+    """
+
+    ######
+    # SSL
+    ######
+    USE_SSL: bool = True
+    """
+    Use SSL on experiments.
+    """
+    SERVER_CRT = f"{os.path.dirname(os.path.abspath(__file__))}/certificates/server.crt"
+    """
+    Server certificate.
+    """
+    SERVER_KEY = f"{os.path.dirname(os.path.abspath(__file__))}/certificates/server.key"
+    """
+    Server private key.
     """
 
     ######

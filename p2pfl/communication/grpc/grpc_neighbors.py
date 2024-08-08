@@ -76,7 +76,13 @@ class GrpcNeighbors(Neighbors):
     ) -> Tuple[Optional[grpc.Channel], Optional[node_pb2_grpc.NodeServicesStub], float]:
         try:
             # Create channel and stub
-            channel = grpc.insecure_channel(addr)
+            if Settings.USE_SSL:
+                with open(Settings.SERVER_CRT, 'rb') as f:
+                    trusted_certs = f.read()
+                creds = grpc.ssl_channel_credentials(root_certificates=trusted_certs)
+                channel = grpc.secure_channel(addr, creds)
+            else:
+                channel = grpc.insecure_channel(addr)
             stub = node_pb2_grpc.NodeServicesStub(channel)
 
             if not stub:
