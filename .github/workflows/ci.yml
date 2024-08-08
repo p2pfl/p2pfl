@@ -38,6 +38,11 @@ jobs:
         run: |
           poetry run mypy -p p2pfl
 
+      - name: Generate certificates
+        run: |
+          cd p2pfl/certificates
+          bash gen_certs.sh
+
       - name: Test (pytest)
         run: |
           poetry run pytest -v --cov=p2pfl

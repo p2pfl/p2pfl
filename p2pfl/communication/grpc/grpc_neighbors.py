@@ -21,6 +21,7 @@ import time
 from typing import Optional, Tuple
 
 import grpc
+from os.path import isfile
 
 from p2pfl.communication.grpc.proto import node_pb2, node_pb2_grpc
 from p2pfl.communication.neighbors import Neighbors
@@ -76,7 +77,7 @@ class GrpcNeighbors(Neighbors):
     ) -> Tuple[Optional[grpc.Channel], Optional[node_pb2_grpc.NodeServicesStub], float]:
         try:
             # Create channel and stub
-            if Settings.USE_SSL:
+            if Settings.USE_SSL and isfile(Settings.SERVER_CRT):
                 with open(Settings.SERVER_CRT, 'rb') as f:
                     trusted_certs = f.read()
                 creds = grpc.ssl_channel_credentials(root_certificates=trusted_certs)

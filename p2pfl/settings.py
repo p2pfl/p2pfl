@@ -96,11 +96,11 @@ class Settings:
     """
     Use SSL on experiments.
     """
-    SERVER_CRT = f"{os.path.dirname(os.path.abspath(__file__))}/certificates/server.crt"
+    SERVER_CRT: str = f"{os.path.dirname(os.path.abspath(__file__))}/certificates/server.crt"
     """
     Server certificate.
     """
-    SERVER_KEY = f"{os.path.dirname(os.path.abspath(__file__))}/certificates/server.key"
+    SERVER_KEY: str = f"{os.path.dirname(os.path.abspath(__file__))}/certificates/server.key"
     """
     Server private key.
     """

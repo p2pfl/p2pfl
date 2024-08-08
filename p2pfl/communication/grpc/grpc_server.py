@@ -22,6 +22,7 @@ from typing import List, Optional, Union
 
 import google.protobuf.empty_pb2
 import grpc
+from os.path import isfile
 
 from p2pfl.commands.command import Command
 from p2pfl.communication.gossiper import Gossiper
@@ -83,7 +84,7 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
         # Server
         node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.__server)
         try:
-            if Settings.USE_SSL:
+            if Settings.USE_SSL and isfile(Settings.SERVER_KEY) and isfile(Settings.SERVER_CRT):
                 with open(Settings.SERVER_KEY, 'r') as key_file, open(Settings.SERVER_CRT, 'r') as crt_file:
                     private_key = key_file.read().encode()
                     certificate_chain = crt_file.read().encode()
