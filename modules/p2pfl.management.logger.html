@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="p2pfl.management.metric_storage module" href="p2pfl.management.metric_storage.html" /><link rel="prev" title="p2pfl.management package" href="p2pfl.management.html" />
 
-    <link rel="shortcut icon" href="../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.07.18 -->
+    <link rel="shortcut icon" href="../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
         <title>p2pfl.management.logger module - p2pfl 0.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=613ab9ff" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
     
     
@@ -643,6 +643,8 @@ So if the program is closed abruptly, the logs may not be saved.</p>
 <dt class="sig sig-object py" id="p2pfl.management.logger.Logger.log_metric">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">log_metric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/management/logger.html#Logger.log_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.management.logger.Logger.log_metric" title="Link to this definition">¶</a></dt>
 <dd><p>Log a metric.</p>
+<p>If the round is not provided, it will try to get it from the node state.</p>
+<p>If the step is not provided, it will log a global metric.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -657,6 +659,7 @@ So if the program is closed abruptly, the logs may not be saved.</p>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
 </dd>
 </dl>
+<p>:: todo: Register remote nodes</p>
 </dd></dl>
 
 <dl class="py method">
@@ -755,6 +758,13 @@ So if the program is closed abruptly, the logs may not be saved.</p>
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="p2pfl.management.logger.NodeNotRegistered">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.management.logger.</span></span><span class="sig-name descname"><span class="pre">NodeNotRegistered</span></span><a class="reference internal" href="../_modules/p2pfl/management/logger.html#NodeNotRegistered"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.management.logger.NodeNotRegistered" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Exception raised when a node is not registered.</p>
 </dd></dl>
 
 <dl class="py class">
@@ -876,6 +886,7 @@ So if the program is closed abruptly, the logs may not be saved.</p>
 <li><a class="reference internal" href="#p2pfl.management.logger.Logger.warning"><code class="docutils literal notranslate"><span class="pre">Logger.warning()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#p2pfl.management.logger.NodeNotRegistered"><code class="docutils literal notranslate"><span class="pre">NodeNotRegistered</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.management.logger.P2pflWebLogHandler"><code class="docutils literal notranslate"><span class="pre">P2pflWebLogHandler</span></code></a><ul>
 <li><a class="reference internal" href="#p2pfl.management.logger.P2pflWebLogHandler.emit"><code class="docutils literal notranslate"><span class="pre">P2pflWebLogHandler.emit()</span></code></a></li>
 </ul>

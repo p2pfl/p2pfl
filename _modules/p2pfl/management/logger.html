@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.07.18 -->
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
         <title>p2pfl.management.logger - p2pfl 0.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=613ab9ff" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
     
     
@@ -509,6 +509,13 @@
 <span class="c1">#    Logger    #</span>
 <span class="c1">################</span>
 
+<div class="viewcode-block" id="NodeNotRegistered">
+<a class="viewcode-back" href="../../../modules/p2pfl.management.logger.html#p2pfl.management.logger.NodeNotRegistered">[docs]</a>
+<span class="k">class</span> <span class="nc">NodeNotRegistered</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised when a node is not registered.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
 
 <div class="viewcode-block" id="Logger">
 <a class="viewcode-back" href="../../../modules/p2pfl.management.logger.html#p2pfl.management.logger.Logger">[docs]</a>
@@ -809,6 +816,10 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Log a metric.</span>
 
+<span class="sd">        If the round is not provided, it will try to get it from the node state. </span>
+
+<span class="sd">        If the step is not provided, it will log a global metric.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            node: The node name.</span>
 <span class="sd">            metric: The metric to log.</span>
@@ -816,35 +827,50 @@
 <span class="sd">            step: The step.</span>
 <span class="sd">            round: The round.</span>
 
+<span class="sd">        :: todo: Register remote nodes</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Get Round</span>
-        <span class="k">if</span> <span class="nb">round</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="nb">round</span> <span class="o">=</span> <span class="n">Logger</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">round</span>
-        <span class="k">if</span> <span class="nb">round</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No round provided. Needed for training metrics.&quot;</span><span class="p">)</span>
+        <span class="c1"># not implemented temporal try</span>
+        <span class="k">try</span><span class="p">:</span>
 
-        <span class="c1"># Get Experiment Name</span>
-        <span class="n">exp</span> <span class="o">=</span> <span class="n">Logger</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">actual_exp_name</span>
-        <span class="k">if</span> <span class="n">exp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No experiment name provided. Needed for training metrics.&quot;</span><span class="p">)</span>
+            <span class="c1"># Try to get the experiment name</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">exp</span> <span class="o">=</span> <span class="n">Logger</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">actual_exp_name</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">NodeNotRegistered</span><span class="p">(</span><span class="s2">&quot;Cannot log metrics. Node not registered.&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
 
-        <span class="c1"># Local storage</span>
-        <span class="k">if</span> <span class="n">step</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># Global Metrics</span>
-            <span class="n">Logger</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span><span class="o">.</span><span class="n">global_metrics</span><span class="o">.</span><span class="n">add_log</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="nb">round</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Local Metrics</span>
-            <span class="n">Logger</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span><span class="o">.</span><span class="n">local_metrics</span><span class="o">.</span><span class="n">add_log</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="nb">round</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+            <span class="c1"># Try to get round</span>
+            <span class="k">if</span> <span class="nb">round</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="nb">round</span> <span class="o">=</span> <span class="n">Logger</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">round</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">NodeNotRegistered</span><span class="p">(</span><span class="s2">&quot;No experiment name provided. Needed to log metrics.&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
 
-        <span class="c1"># Web</span>
-        <span class="n">p2pfl_web_services</span> <span class="o">=</span> <span class="n">Logger</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span><span class="o">.</span><span class="n">p2pfl_web_services</span>
-        <span class="k">if</span> <span class="n">p2pfl_web_services</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Check Nones</span>
+            <span class="k">if</span> <span class="n">exp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">NodeNotRegistered</span><span class="p">(</span><span class="s2">&quot;No experiment name provided. Needed to log metrics.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">round</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">NodeNotRegistered</span><span class="p">(</span><span class="s2">&quot;No round provided. Needed to log metrics.&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Local storage</span>
             <span class="k">if</span> <span class="n">step</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="c1"># Global Metrics</span>
-                <span class="n">p2pfl_web_services</span><span class="o">.</span><span class="n">send_global_metric</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="nb">round</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span><span class="o">.</span><span class="n">global_metrics</span><span class="o">.</span><span class="n">add_log</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="nb">round</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># Local Metrics</span>
-                <span class="n">p2pfl_web_services</span><span class="o">.</span><span class="n">send_local_metric</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="nb">round</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span></div>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span><span class="o">.</span><span class="n">local_metrics</span><span class="o">.</span><span class="n">add_log</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="nb">round</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+
+            <span class="c1"># Web</span>
+            <span class="n">p2pfl_web_services</span> <span class="o">=</span> <span class="n">Logger</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span><span class="o">.</span><span class="n">p2pfl_web_services</span>
+            <span class="k">if</span> <span class="n">p2pfl_web_services</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">step</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># Global Metrics</span>
+                    <span class="n">p2pfl_web_services</span><span class="o">.</span><span class="n">send_global_metric</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="nb">round</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Local Metrics</span>
+                    <span class="n">p2pfl_web_services</span><span class="o">.</span><span class="n">send_local_metric</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="nb">round</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">NodeNotRegistered</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;LOGGER&quot;</span><span class="p">,</span> <span class="s2">&quot;Remote metric logging not implemented yet. Be patient :)&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Logger.log_system_metric">
@@ -982,7 +1008,7 @@
 <span class="sd">            node: The node address.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">Logger</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">&quot;Uncatched Experiment Started on Logger&quot;</span><span class="p">)</span></div>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">&quot;Uncatched Experiment Started on Logger. Coming soon, be patient :)&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Logger.experiment_finished">

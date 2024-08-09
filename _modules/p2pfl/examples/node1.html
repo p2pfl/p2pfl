@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.07.18 -->
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
         <title>p2pfl.examples.node1 - p2pfl 0.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=613ab9ff" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
     
     
@@ -381,6 +381,9 @@
 <span class="kn">from</span> <span class="nn">p2pfl.learning.pytorch.mnist_examples.models.mlp</span> <span class="kn">import</span> <span class="n">MLP</span>
 <span class="kn">from</span> <span class="nn">p2pfl.node</span> <span class="kn">import</span> <span class="n">Node</span>
 
+<span class="c1">#from p2pfl.utils import set_test_settings</span>
+
+<span class="c1">#set_test_settings()</span>
 
 <span class="k">def</span> <span class="nf">__get_args</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">:</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;P2PFL MNIST node using a MLP model and a MnistFederatedDM.&quot;</span><span class="p">)</span>
