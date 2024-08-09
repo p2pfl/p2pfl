@@ -1,8 +1,5 @@
 # 📥 Installation
 
-> **Note**
-> We recommend using Python 3.9 or lower. We have found some compatibility issues with Python 3.10 and PyTorch.
-
 ## 👨🏼‍💻 For users
 
 
