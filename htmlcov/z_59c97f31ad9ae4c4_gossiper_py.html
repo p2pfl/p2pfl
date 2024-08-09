@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Coverage for p2pfl/communication/gossiper.py: 85%</title>
+    <title>Coverage for p2pfl/communication/gossiper.py: 94%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
     <link rel="stylesheet" href="style_cb_8e611ae1.css" type="text/css">
     <script src="coverage_html_cb_6fb7b396.js" defer></script>
@@ -12,7 +12,7 @@
     <div class="content">
         <h1>
             <span class="text">Coverage for </span><b>p2pfl/communication/gossiper.py</b>:
-            <span class="pc_cov">85%</span>
+            <span class="pc_cov">94%</span>
         </h1>
         <aside id="help_panel_wrapper">
             <input id="help_panel_state" type="checkbox">
@@ -55,8 +55,8 @@
         </aside>
         <h2>
             <span class="text">96 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">82<span class="text"> run</span></button>
-            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">14<span class="text"> missing</span></button>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">90<span class="text"> run</span></button>
+            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">6<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
         </h2>
         <p class="text">
@@ -64,8 +64,8 @@
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a id="nextFileLink" class="nav" href="z_59313ec6d0246c5c_address_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.6.0">coverage.py v7.6.0</a>,
-            created at 2024-08-05 01:51 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.6.1">coverage.py v7.6.1</a>,
+            created at 2024-08-09 08:40 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -293,19 +293,19 @@
     <p class="run"><span class="n"><a id="t211" href="#t211">211</a></span><span class="t">            <span class="key">if</span> <span class="nam">len</span><span class="op">(</span><span class="nam">last_x_status</span><span class="op">)</span> <span class="op">!=</span> <span class="nam">Settings</span><span class="op">.</span><span class="nam">GOSSIP_EXIT_ON_X_EQUAL_ROUNDS</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t212" href="#t212">212</a></span><span class="t">                <span class="nam">last_x_status</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">status_fn</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t213" href="#t213">213</a></span><span class="t">            <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t214" href="#t214">214</a></span><span class="t">                <span class="nam">last_x_status</span><span class="op">[</span><span class="nam">j</span><span class="op">]</span> <span class="op">=</span> <span class="nam">str</span><span class="op">(</span><span class="nam">status_fn</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t215" href="#t215">215</a></span><span class="t">                <span class="nam">j</span> <span class="op">=</span> <span class="op">(</span><span class="nam">j</span> <span class="op">+</span> <span class="num">1</span><span class="op">)</span> <span class="op">%</span> <span class="nam">Settings</span><span class="op">.</span><span class="nam">GOSSIP_EXIT_ON_X_EQUAL_ROUNDS</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t214" href="#t214">214</a></span><span class="t">                <span class="nam">last_x_status</span><span class="op">[</span><span class="nam">j</span><span class="op">]</span> <span class="op">=</span> <span class="nam">str</span><span class="op">(</span><span class="nam">status_fn</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t215" href="#t215">215</a></span><span class="t">                <span class="nam">j</span> <span class="op">=</span> <span class="op">(</span><span class="nam">j</span> <span class="op">+</span> <span class="num">1</span><span class="op">)</span> <span class="op">%</span> <span class="nam">Settings</span><span class="op">.</span><span class="nam">GOSSIP_EXIT_ON_X_EQUAL_ROUNDS</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t216" href="#t216">216</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t217" href="#t217">217</a></span><span class="t">                <span class="com"># Check if las messages are the same</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t218" href="#t218">218</a></span><span class="t">                <span class="key">for</span> <span class="nam">i</span> <span class="key">in</span> <span class="nam">range</span><span class="op">(</span><span class="nam">len</span><span class="op">(</span><span class="nam">last_x_status</span><span class="op">)</span> <span class="op">-</span> <span class="num">1</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t219" href="#t219">219</a></span><span class="t">                    <span class="key">if</span> <span class="nam">last_x_status</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span> <span class="op">!=</span> <span class="nam">last_x_status</span><span class="op">[</span><span class="nam">i</span> <span class="op">+</span> <span class="num">1</span><span class="op">]</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t220" href="#t220">220</a></span><span class="t">                        <span class="key">break</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t221" href="#t221">221</a></span><span class="t">                    <span class="nam">logger</span><span class="op">.</span><span class="nam">info</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t218" href="#t218">218</a></span><span class="t">                <span class="key">for</span> <span class="nam">i</span> <span class="key">in</span> <span class="nam">range</span><span class="op">(</span><span class="nam">len</span><span class="op">(</span><span class="nam">last_x_status</span><span class="op">)</span> <span class="op">-</span> <span class="num">1</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t219" href="#t219">219</a></span><span class="t">                    <span class="key">if</span> <span class="nam">last_x_status</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span> <span class="op">!=</span> <span class="nam">last_x_status</span><span class="op">[</span><span class="nam">i</span> <span class="op">+</span> <span class="num">1</span><span class="op">]</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t220" href="#t220">220</a></span><span class="t">                        <span class="key">break</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t221" href="#t221">221</a></span><span class="t">                    <span class="nam">logger</span><span class="op">.</span><span class="nam">info</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t222" href="#t222">222</a></span><span class="t">                        <span class="nam">self</span><span class="op">.</span><span class="nam">__self_addr</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t223" href="#t223">223</a></span><span class="t">                        <span class="fst">f"</span><span class="fst">Gossiping exited for </span><span class="op">{</span><span class="nam">Settings</span><span class="op">.</span><span class="nam">GOSSIP_EXIT_ON_X_EQUAL_ROUNDS</span><span class="op">}</span><span class="fst"> equal rounds.</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t224" href="#t224">224</a></span><span class="t">                    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t225" href="#t225">225</a></span><span class="t">                    <span class="nam">logger</span><span class="op">.</span><span class="nam">debug</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">__self_addr</span><span class="op">,</span> <span class="fst">f"</span><span class="fst">Gossip last status: </span><span class="op">{</span><span class="nam">last_x_status</span><span class="op">[</span><span class="op">-</span><span class="num">1</span><span class="op">]</span><span class="op">}</span><span class="fst">"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t226" href="#t226">226</a></span><span class="t">                    <span class="key">return</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t225" href="#t225">225</a></span><span class="t">                    <span class="nam">logger</span><span class="op">.</span><span class="nam">debug</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">__self_addr</span><span class="op">,</span> <span class="fst">f"</span><span class="fst">Gossip last status: </span><span class="op">{</span><span class="nam">last_x_status</span><span class="op">[</span><span class="op">-</span><span class="num">1</span><span class="op">]</span><span class="op">}</span><span class="fst">"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t226" href="#t226">226</a></span><span class="t">                    <span class="key">return</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t227" href="#t227">227</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t228" href="#t228">228</a></span><span class="t">            <span class="com"># Select a random subset of neighbors</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t229" href="#t229">229</a></span><span class="t">            <span class="nam">samples</span> <span class="op">=</span> <span class="nam">min</span><span class="op">(</span><span class="nam">Settings</span><span class="op">.</span><span class="nam">GOSSIP_MODELS_PER_ROUND</span><span class="op">,</span> <span class="nam">len</span><span class="op">(</span><span class="nam">neis</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -331,8 +331,8 @@
             <a class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a class="nav" href="z_59313ec6d0246c5c_address_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.6.0">coverage.py v7.6.0</a>,
-            created at 2024-08-05 01:51 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.6.1">coverage.py v7.6.1</a>,
+            created at 2024-08-09 08:40 +0000
         </p>
     </div>
 </footer>

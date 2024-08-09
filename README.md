@@ -8,14 +8,14 @@
 | p2pfl/\_\_main\_\_.py                                         |        3 |        3 |      0% |     21-24 |
 | p2pfl/cli.py                                                  |       64 |       64 |      0% |    21-207 |
 | p2pfl/commands/\_\_init\_\_.py                                |        0 |        0 |    100% |           |
-| p2pfl/commands/add\_model\_command.py                         |       38 |       11 |     71% |61, 95-108 |
+| p2pfl/commands/add\_model\_command.py                         |       38 |       10 |     74% |61, 95-105 |
 | p2pfl/commands/command.py                                     |        8 |        2 |     75% |    30, 43 |
 | p2pfl/commands/heartbeat\_command.py                          |       13 |        1 |     92% |        51 |
 | p2pfl/commands/init\_model\_command.py                        |       41 |       12 |     71% |72-73, 79-83, 87-91, 105-106, 112-117 |
 | p2pfl/commands/metrics\_command.py                            |       16 |        5 |     69% |     50-55 |
 | p2pfl/commands/model\_initialized\_command.py                 |       11 |        0 |    100% |           |
 | p2pfl/commands/models\_agregated\_command.py                  |       13 |        0 |    100% |           |
-| p2pfl/commands/models\_ready\_command.py                      |       15 |        2 |     87% |     57-63 |
+| p2pfl/commands/models\_ready\_command.py                      |       15 |        0 |    100% |           |
 | p2pfl/commands/start\_learning\_command.py                    |       13 |        1 |     92% |        59 |
 | p2pfl/commands/stop\_learning\_command.py                     |       19 |        8 |     58% |     50-61 |
 | p2pfl/commands/vote\_train\_set\_command.py                   |       24 |        2 |     92% |     69-74 |
@@ -23,7 +23,7 @@
 | p2pfl/communication/client.py                                 |       15 |        4 |     73% |48, 70, 80, 89 |
 | p2pfl/communication/communication\_protocol.py                |       46 |       14 |     70% |40, 45, 50, 61, 74, 91, 103, 115, 127, 139, 150, 161, 166, 190 |
 | p2pfl/communication/exceptions.py                             |        2 |        0 |    100% |           |
-| p2pfl/communication/gossiper.py                               |       96 |       14 |     85% |118, 145-147, 192, 198-199, 214-226 |
+| p2pfl/communication/gossiper.py                               |       96 |        6 |     94% |118, 145-147, 192, 198-199 |
 | p2pfl/communication/grpc/\_\_init\_\_.py                      |        0 |        0 |    100% |           |
 | p2pfl/communication/grpc/address.py                           |       53 |       23 |     57% |45-46, 52-55, 68-71, 80-82, 93-95, 99, 104-114 |
 | p2pfl/communication/grpc/grpc\_client.py                      |       59 |        9 |     85% |71, 104, 138-139, 154-156, 165-171 |
@@ -44,12 +44,12 @@
 | p2pfl/communication/neighbors.py                              |       50 |        8 |     84% |50, 60, 71, 88-89, 96-98 |
 | p2pfl/examples/\_\_init\_\_.py                                |        0 |        0 |    100% |           |
 | p2pfl/examples/mnist.py                                       |       78 |       78 |      0% |    21-179 |
-| p2pfl/examples/node1.py                                       |       16 |       16 |      0% |     25-58 |
+| p2pfl/examples/node1.py                                       |       17 |       17 |      0% |     25-59 |
 | p2pfl/examples/node2.py                                       |       24 |       24 |      0% |     25-74 |
 | p2pfl/exceptions.py                                           |        6 |        0 |    100% |           |
 | p2pfl/learning/\_\_init\_\_.py                                |        0 |        0 |    100% |           |
 | p2pfl/learning/aggregators/\_\_init\_\_.py                    |        0 |        0 |    100% |           |
-| p2pfl/learning/aggregators/aggregator.py                      |      106 |       21 |     80% |65, 82, 134-136, 140-146, 188-193, 225-232, 238-239 |
+| p2pfl/learning/aggregators/aggregator.py                      |      106 |       20 |     81% |65, 82, 134-136, 140-146, 193, 225-232, 238-239 |
 | p2pfl/learning/aggregators/fedavg.py                          |       16 |        1 |     94% |        41 |
 | p2pfl/learning/exceptions.py                                  |        4 |        0 |    100% |           |
 | p2pfl/learning/learner.py                                     |       26 |       12 |     54% |38, 51, 61, 76, 89, 102, 112, 122, 126, 130, 140, 150 |
@@ -81,7 +81,7 @@
 | p2pfl/stages/stage\_factory.py                                |       24 |        1 |     96% |        59 |
 | p2pfl/stages/workflows.py                                     |       21 |        2 |     90% |    40, 47 |
 | p2pfl/utils.py                                                |       54 |        5 |     91% |28, 71, 78, 102, 127 |
-|                                                     **TOTAL** | **2654** |  **998** | **62%** |           |
+|                                                     **TOTAL** | **2655** |  **987** | **63%** |           |
 
 
 ## Setup coverage badge
