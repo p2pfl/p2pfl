@@ -45,7 +45,8 @@ from p2pfl.node_state import NodeState
 from p2pfl.stages.workflows import LearningWorkflow
 
 # Disbalbe grpc log (pytorch causes warnings)
-os.environ["GRPC_VERBOSITY"] = "NONE"
+if logger.get_level_name(logger.get_level()) != "DEBUG":
+    os.environ["GRPC_VERBOSITY"] = "NONE"
 
 
 class Node:
