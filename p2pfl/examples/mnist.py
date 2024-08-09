@@ -38,8 +38,10 @@ from p2pfl.node import Node
 from p2pfl.utils import (
     wait_4_results,
     wait_convergence,
+    set_test_settings
 )
 
+set_test_settings()
 
 def __parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="P2PFL MNIST experiment using the Web Logger.")
