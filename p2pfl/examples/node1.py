@@ -30,6 +30,9 @@ from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.node import Node
 
+#from p2pfl.utils import set_test_settings
+
+#set_test_settings()
 
 def __get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="P2PFL MNIST node using a MLP model and a MnistFederatedDM.")

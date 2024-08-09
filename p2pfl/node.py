@@ -18,6 +18,7 @@
 """P2PFL Node."""
 
 import contextlib
+import os
 import threading
 from typing import Any, Dict, Type
 
@@ -42,6 +43,9 @@ from p2pfl.learning.pytorch.lightning_learner import LightningLearner
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.workflows import LearningWorkflow
+
+# Disbalbe grpc log (pytorch causes warnings)
+os.environ["GRPC_VERBOSITY"] = "NONE"
 
 
 class Node:
