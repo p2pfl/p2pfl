@@ -41,7 +41,7 @@ jobs:
       - name: Generate certificates
         run: |
           cd p2pfl/certificates
-          bash gen_certs.sh
+          bash gen-certs.sh
 
       - name: Test (pytest)
         run: |
