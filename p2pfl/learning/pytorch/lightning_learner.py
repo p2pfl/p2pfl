@@ -18,12 +18,11 @@
 
 import logging
 import pickle
-from collections import OrderedDict
 from typing import Dict, Optional, Tuple
 
+import numpy as np
 import pytorch_lightning as pl
 import torch
-import numpy as np
 from pytorch_lightning import LightningDataModule, Trainer
 
 from p2pfl.learning.exceptions import (
@@ -31,9 +30,9 @@ from p2pfl.learning.exceptions import (
     ModelNotMatchingError,
 )
 from p2pfl.learning.learner import NodeLearner
+from p2pfl.learning.LearnerStateDTO import LearnerStateDTO
 from p2pfl.learning.pytorch.lightning_logger import FederatedLogger
 from p2pfl.management.logger import logger
-from p2pfl.learning.LearnerStateDTO import LearnerStateDTO
 
 torch.set_num_threads(1)
 
@@ -41,34 +40,7 @@ torch.set_num_threads(1)
 #    LightningLearner     #
 ###########################
 
-"""
----------->  Add information of the node that owns the learner.  <----------
-"""
 
-"""
-        decoded_model = self.learner.decode_parameters(weights)
-        if self.learner.check_parameters(decoded_model):
-            models_added = self.aggregator.add_model(
-                decoded_model,
-                list(contributors),
-                weight,
-            )
-            if models_added != []:
-                # Communicate Aggregation
-                self._neighbors.broadcast_msg(
-                    self._neighbors.build_msg(
-                        LearningNodeMessages.MODELS_AGGREGATED,
-                        models_added,
-                    )
-                )
-        else:
-            raise ModelNotMatchingError(
-                "Not matching models"
-            )  # esta excepción mejor tenerla en add_model (así nos ahorramos in if raise que no aporta robustez en el método que importa)
-
-"""
-
-    
 class LightningLearner(NodeLearner):
     """
     Learner with PyTorch Lightning.
@@ -88,14 +60,15 @@ class LightningLearner(NodeLearner):
         self_addr: str,
         epochs: int,
     ):
+        """Initialize the learner."""
         self.model = model
         self.data = data
         self.__trainer: Optional[Trainer] = None
         self.epochs = epochs
         self.__self_addr = self_addr
-        
+
         self.learner_state = LearnerStateDTO()
-        
+
         # Start logging
         self.logger = FederatedLogger(self_addr)
         # To avoid GPU/TPU printings
@@ -148,8 +121,8 @@ class LightningLearner(NodeLearner):
 
         """
         if params is None:
-            params = self.get_parameters()        
-        return pickle.dumps(params) # serializing the entire DTO object
+            params = self.get_parameters()
+        return pickle.dumps(params)  # serializing the entire DTO object
 
     def decode_parameters(self, data: bytes) -> LearnerStateDTO:
         """
@@ -165,7 +138,7 @@ class LightningLearner(NodeLearner):
             params_dict = pickle.loads(data)
             return params_dict
         except Exception as e:
-            raise DecodingParamsError("Error decoding parameters: {e}")
+            raise DecodingParamsError("Error decoding parameters") from e
 
     def set_parameters(self, params: LearnerStateDTO) -> None:
         """
@@ -180,10 +153,13 @@ class LightningLearner(NodeLearner):
         """
         try:
             weights = params.get_weights()
-            state_dict = {layer: torch.tensor(param) if isinstance(param, np.ndarray) else param for layer, param in weights.items()}
+            state_dict = {
+                layer: torch.tensor(param) if isinstance(param, np.ndarray) else param
+                for layer, param in weights.items()
+            }
             self.model.load_state_dict(state_dict)
-        except Exception:
-            raise ModelNotMatchingError("Not matching models")
+        except Exception as e:
+            raise ModelNotMatchingError("Not matching models") from e
 
     def get_parameters(self) -> LearnerStateDTO:
         """
@@ -211,6 +187,7 @@ class LightningLearner(NodeLearner):
         self.epochs = epochs
 
     def fit(self) -> None:
+        """Fit the model."""
         try:
             if self.epochs > 0:
                 self.__trainer = Trainer(
@@ -230,6 +207,7 @@ class LightningLearner(NodeLearner):
             raise e
 
     def interrupt_fit(self) -> None:
+        """Interrupt the fit."""
         if self.__trainer is not None:
             self.__trainer.should_stop = True
             self.__trainer = None
