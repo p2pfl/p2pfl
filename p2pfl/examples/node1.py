@@ -33,7 +33,7 @@ from p2pfl.node import Node
 
 def __get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="P2PFL MNIST node using a MLP model and a MnistFederatedDM.")
-    parser.add_argument("port", type=int, help="The port.")
+    parser.add_argument("--port", type=int, help="The port.", required=True)
     return parser.parse_args()
 
 
@@ -45,6 +45,7 @@ def node1(port: int) -> None:
         port: The port where the node will be listening.
 
     """
+    print(f"127.0.0.1:{port}")
     node = Node(MLP(), MnistFederatedDM(sub_id=0, number_sub=2), address=f"127.0.0.1:{port}")
     node.start()
 
