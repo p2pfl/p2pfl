@@ -96,13 +96,25 @@ class Settings:
     """
     Use SSL on experiments.
     """
+    CA_CRT: str = f"{os.path.dirname(os.path.abspath(__file__))}/certificates/ca.crt"
+    """
+    CA certificate.
+    """
     SERVER_CRT: str = f"{os.path.dirname(os.path.abspath(__file__))}/certificates/server.crt"
     """
     Server certificate.
     """
+    CLIENT_CRT: str = f"{os.path.dirname(os.path.abspath(__file__))}/certificates/client.crt"
+    """
+    Client certificate.
+    """
     SERVER_KEY: str = f"{os.path.dirname(os.path.abspath(__file__))}/certificates/server.key"
     """
     Server private key.
+    """
+    CLIENT_KEY: str = f"{os.path.dirname(os.path.abspath(__file__))}/certificates/client.key"
+    """
+    Client private key.
     """
 
     ######

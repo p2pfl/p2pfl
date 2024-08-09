@@ -85,10 +85,15 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
         node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.__server)
         try:
             if Settings.USE_SSL and isfile(Settings.SERVER_KEY) and isfile(Settings.SERVER_CRT):
-                with open(Settings.SERVER_KEY, 'r') as key_file, open(Settings.SERVER_CRT, 'r') as crt_file:
+                with open(Settings.SERVER_KEY, 'r') as key_file, open(Settings.SERVER_CRT, 'r') as crt_file, open(Settings.CA_CRT, 'r') as ca_file:
                     private_key = key_file.read().encode()
                     certificate_chain = crt_file.read().encode()
-                server_credentials = grpc.ssl_server_credentials(((private_key, certificate_chain),))
+                    root_certificates = ca_file.read().encode()
+                server_credentials = grpc.ssl_server_credentials(
+                    [(private_key, certificate_chain)], 
+                    root_certificates=root_certificates,
+                    require_client_auth=True
+                )
                 self.__server.add_secure_port(self.addr, server_credentials)
             else:
                 self.__server.add_insecure_port(self.addr)

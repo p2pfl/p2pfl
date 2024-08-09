@@ -78,9 +78,15 @@ class GrpcNeighbors(Neighbors):
         try:
             # Create channel and stub
             if Settings.USE_SSL and isfile(Settings.SERVER_CRT):
-                with open(Settings.SERVER_CRT, 'rb') as f:
-                    trusted_certs = f.read()
-                creds = grpc.ssl_channel_credentials(root_certificates=trusted_certs)
+                with open(Settings.CLIENT_KEY, 'r') as key_file, open(Settings.CLIENT_CRT, 'r') as crt_file, open(Settings.CA_CRT, 'r') as ca_file:
+                    private_key = key_file.read().encode()
+                    certificate_chain = crt_file.read().encode()
+                    root_certificates = ca_file.read().encode()
+                creds = grpc.ssl_channel_credentials(
+                    root_certificates=root_certificates,
+                    private_key=private_key,
+                    certificate_chain=certificate_chain
+                )
                 channel = grpc.secure_channel(addr, creds)
             else:
                 channel = grpc.insecure_channel(addr)

@@ -20,34 +20,18 @@
 #   """Bash script to generate the required certificates for ssl (example)."""
 #
 
+CA_PASS="supersecretpassword"
 
-IPV4_1="127.0.0.1"
-IPV6_1="::1"
+# Generar CA
+openssl genpkey -algorithm RSA -out ca.key -aes256 -pass pass:${CA_PASS}
+openssl req -x509 -new -nodes -key ca.key -sha256 -days 1024 -out ca.crt -config openssl.cnf -passin pass:${CA_PASS}
 
-openssl genpkey -algorithm RSA -out server.key
+# Generar certificado del servidor
+openssl genpkey -algorithm RSA -out server.key -pass pass:${CA_PASS}
+openssl req -new -key server.key -out server.csr -config openssl.cnf
+openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 500 -sha256 -extfile server_ext.cnf -extensions v3_req -passin pass:${CA_PASS}
 
-cat > server.cnf <<EOF
-[ req ]
-default_bits       = 2048
-distinguished_name = req_distinguished_name
-req_extensions     = req_ext
-x509_extensions    = v3_ca
-prompt             = no
-
-[ req_distinguished_name ]
-CN = localhost
-
-[ req_ext ]
-subjectAltName = @alt_names
-
-[ v3_ca ]
-subjectAltName = @alt_names
-
-[ alt_names ]
-IP.1 = $IPV4_1
-IP.3 = $IPV6_1
-EOF
-
-openssl req -new -key server.key -out server.csr -config server.cnf
-
-openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt -extensions v3_ca -extfile server.cnf
+# Generar certificado del cliente
+openssl genpkey -algorithm RSA -out client.key -pass pass:${CA_PASS}
+openssl req -new -key client.key -out client.csr -config openssl.cnf
+openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out client.crt -days 500 -sha256 -extfile client_ext.cnf -extensions v3_req -passin pass:${CA_PASS}
