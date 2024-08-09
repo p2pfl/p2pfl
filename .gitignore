@@ -21,7 +21,7 @@ logs
 *.pem
 *.p12
 *.pfx
-*.cnf
+*.srl
 
 # Distribution / packaging
 .Python
