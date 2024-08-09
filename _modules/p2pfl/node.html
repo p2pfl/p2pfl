@@ -396,7 +396,8 @@
 <span class="kn">from</span> <span class="nn">p2pfl.stages.workflows</span> <span class="kn">import</span> <span class="n">LearningWorkflow</span>
 
 <span class="c1"># Disbalbe grpc log (pytorch causes warnings)</span>
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;GRPC_VERBOSITY&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;NONE&quot;</span>
+<span class="k">if</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_level_name</span><span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">get_level</span><span class="p">())</span> <span class="o">!=</span> <span class="s2">&quot;DEBUG&quot;</span><span class="p">:</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;GRPC_VERBOSITY&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;NONE&quot;</span>
 
 
 <div class="viewcode-block" id="Node">
