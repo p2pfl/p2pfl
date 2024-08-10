@@ -18,6 +18,7 @@
 """gRPC neighbors."""
 
 import time
+from os.path import isfile
 from typing import Optional, Tuple
 
 import grpc
@@ -74,9 +75,26 @@ class GrpcNeighbors(Neighbors):
     def __build_direct_neighbor(
         self, addr: str, handshake_msg: bool
     ) -> Tuple[Optional[grpc.Channel], Optional[node_pb2_grpc.NodeServicesStub], float]:
+        """
+        Build a direct neighbor.
+
+        :: todo: Remove this, some code duplication and in real enviroments this wont be allowed.
+        """
         try:
             # Create channel and stub
-            channel = grpc.insecure_channel(addr)
+            if Settings.USE_SSL and isfile(Settings.SERVER_CRT):
+                with open(Settings.CLIENT_KEY) as key_file, open(Settings.CLIENT_CRT) as crt_file, open(
+                    Settings.CA_CRT
+                ) as ca_file:
+                    private_key = key_file.read().encode()
+                    certificate_chain = crt_file.read().encode()
+                    root_certificates = ca_file.read().encode()
+                creds = grpc.ssl_channel_credentials(
+                    root_certificates=root_certificates, private_key=private_key, certificate_chain=certificate_chain
+                )
+                channel = grpc.secure_channel(addr, creds)
+            else:
+                channel = grpc.insecure_channel(addr)
             stub = node_pb2_grpc.NodeServicesStub(channel)
 
             if not stub:

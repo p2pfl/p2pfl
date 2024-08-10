@@ -17,25 +17,19 @@
 #
 
 from typing import Dict, Tuple
+
 import numpy as np
 
 from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
-from p2pfl.learning.LearnerStateDTO import LearnerStateDTO
+from p2pfl.learning.model_parameters_dto import LearnerStateDTO
 
-from typing import Dict, Tuple
-import numpy as np
-
-from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
-from p2pfl.learning.LearnerStateDTO import LearnerStateDTO
 
 class FedMedian(Aggregator):
     """
     Federated Median (FedMedian) [Yin et al., 2018].
+
     Paper: https://arxiv.org/pdf/1803.01498v1.pdf
     """
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
     def aggregate(self, models: Dict[str, Tuple[LearnerStateDTO, int]]) -> LearnerStateDTO:
         """
@@ -46,31 +40,29 @@ class FedMedian(Aggregator):
 
         Returns:
             LearnerStateDTO: The aggregated model state with median weights.
-        """
 
+        """
         # Check if there are models to aggregate
         if len(models) == 0:
-            raise NoModelsToAggregateError(
-                f"({self.node_name}) Trying to aggregate models when there are no models"
-            )
+            raise NoModelsToAggregateError(f"({self.node_name}) Trying to aggregate models when there are no models")
 
         models_list = list(models.values())  # list of tuples (model, num_samples)
         model_weights_list = [model.get_weights() for model, _ in models_list]
-        
-        first_model_weights = models_list[0][0].get_weights()        
-        
+
+        first_model_weights = models_list[0][0].get_weights()
+
         accum = {layer: np.zeros_like(param) for layer, param in first_model_weights.items()}
-        
-        
+
         # compute the median
         for layer in accum:
             layer_weights = [model[layer] for model in model_weights_list]
-            np.median(layer_weights, axis=0, out=accum[layer],)
-            
+            np.median(
+                layer_weights,
+                axis=0,
+                out=accum[layer],
+            )
+
         # Create a LearnerStateDTO to return
         aggregated_state = LearnerStateDTO()
         aggregated_state.add_weights_dict(accum)
         return aggregated_state
-    
-    
-    

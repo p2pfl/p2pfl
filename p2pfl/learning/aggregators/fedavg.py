@@ -21,7 +21,7 @@ from typing import Dict, Tuple
 import numpy as np
 
 from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
-from p2pfl.learning.LearnerStateDTO import LearnerStateDTO
+from p2pfl.learning.model_parameters_dto import LearnerStateDTO
 
 
 class FedAvg(Aggregator):

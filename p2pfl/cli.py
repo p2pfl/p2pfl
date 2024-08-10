@@ -102,7 +102,8 @@ def launch() -> None:
 exp_app = typer.Typer(help="Run experiments on the p2pfl platform.")
 app.add_typer(exp_app, name="experiment")
 
-EXAMPLES_DIR = pkg_resources.resource_filename('p2pfl', 'examples')
+EXAMPLES_DIR = pkg_resources.resource_filename("p2pfl", "examples")
+
 
 def __get_available_examples() -> Dict[str, str]:
     # Load the available examples

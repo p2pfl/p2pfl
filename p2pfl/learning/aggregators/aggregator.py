@@ -21,7 +21,7 @@
 import threading
 from typing import Dict, List, Tuple, Union
 
-from p2pfl.learning.LearnerStateDTO import LearnerStateDTO
+from p2pfl.learning.model_parameters_dto import LearnerStateDTO
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 import contextlib

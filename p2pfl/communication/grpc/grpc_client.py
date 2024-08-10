@@ -19,6 +19,7 @@
 
 import random
 from datetime import datetime
+from os.path import isfile
 from typing import List, Optional, Union
 
 import grpc
@@ -140,7 +141,21 @@ class GrpcClient(Client):
 
             # Check if direct connection
             if node_stub is None and create_connection:
-                channel = grpc.insecure_channel(nei)
+                if Settings.USE_SSL and isfile(Settings.SERVER_CRT):
+                    with open(Settings.CLIENT_KEY) as key_file, open(Settings.CLIENT_CRT) as crt_file, open(
+                        Settings.CA_CRT
+                    ) as ca_file:
+                        private_key = key_file.read().encode()
+                        certificate_chain = crt_file.read().encode()
+                        root_certificates = ca_file.read().encode()
+                    creds = grpc.ssl_channel_credentials(
+                        root_certificates=root_certificates,
+                        private_key=private_key,
+                        certificate_chain=certificate_chain,
+                    )
+                    channel = grpc.secure_channel(nei, creds)
+                else:
+                    channel = grpc.insecure_channel(nei)
                 node_stub = node_pb2_grpc.NodeServicesStub(channel)
 
             # Send

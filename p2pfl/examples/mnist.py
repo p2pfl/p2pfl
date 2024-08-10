@@ -29,14 +29,11 @@ from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.management.logger import logger
 from p2pfl.node import Node
-from p2pfl.utils import (
-    wait_4_results,
-    wait_convergence,
-)
+from p2pfl.utils import set_test_settings, wait_4_results, wait_convergence
 
-"""
-Example of a P2PFL MNIST experiment, using a MLP model and a MnistFederatedDM.
-"""
+"""Example of a P2PFL MNIST experiment, using a MLP model and a MnistFederatedDM."""
+
+set_test_settings()
 
 
 def __parse_args() -> argparse.Namespace:
@@ -96,7 +93,7 @@ def mnist(
             MLP(),
             MnistFederatedDM(sub_id=0, number_sub=20),  # sampling for increase speed
             protocol=InMemoryCommunicationProtocol if use_local_protocol else GrpcCommunicationProtocol,  # type: ignore
-            address=address
+            address=address,
         )
         node.start()
         nodes.append(node)

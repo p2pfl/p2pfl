@@ -16,6 +16,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""Lightning Learner for P2PFL."""
+
 import logging
 import pickle
 from typing import Dict, Optional, Tuple
@@ -30,7 +32,7 @@ from p2pfl.learning.exceptions import (
     ModelNotMatchingError,
 )
 from p2pfl.learning.learner import NodeLearner
-from p2pfl.learning.LearnerStateDTO import LearnerStateDTO
+from p2pfl.learning.model_parameters_dto import LearnerStateDTO
 from p2pfl.learning.pytorch.lightning_logger import FederatedLogger
 from p2pfl.management.logger import logger
 

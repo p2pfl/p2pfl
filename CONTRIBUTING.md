@@ -28,8 +28,8 @@ In order to maintain a high level of code quality, we expect all contributions t
 Before submitting a pull request, please run the following commands:
 
 ```bash
-poetry run ruff check p2pfl
 poetry run ruff format p2pfl
+poetry run ruff check p2pfl
 poetry run mypy -p p2pfl
 poetry run pytest -v --cov=p2pfl
 ```
