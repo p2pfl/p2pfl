@@ -149,7 +149,6 @@ class InMemoryClient(Client):
                 self.__self_addr,
                 f"Cannot send message {msg['cmd']!r} to {nei}. Error: {str(e)}",
             )
-            print(msg)
             self.__neighbors.remove(nei)
 
     def broadcast(

@@ -140,6 +140,10 @@ class ColoredFormatter(logging.Formatter):
 #    Logger    #
 ################
 
+class NodeNotRegistered(Exception):
+    """Exception raised when a node is not registered."""
+
+    pass
 
 class Logger:
     """
@@ -400,6 +404,10 @@ class Logger:
         """
         Log a metric.
 
+        If the round is not provided, it will try to get it from the node state. 
+
+        If the step is not provided, it will log a global metric.
+
         Args:
             node: The node name.
             metric: The metric to log.
@@ -407,35 +415,50 @@ class Logger:
             step: The step.
             round: The round.
 
+        :: todo: Register remote nodes
+
         """
-        # Get Round
-        if round is None:
-            round = Logger.get_instance().nodes[node][1].round
-        if round is None:
-            raise Exception("No round provided. Needed for training metrics.")
+        # not implemented temporal try
+        try:
 
-        # Get Experiment Name
-        exp = Logger.get_instance().nodes[node][1].actual_exp_name
-        if exp is None:
-            raise Exception("No experiment name provided. Needed for training metrics.")
+            # Try to get the experiment name
+            try:
+                exp = Logger.get_instance().nodes[node][1].actual_exp_name
+            except Exception as e:
+                raise NodeNotRegistered("Cannot log metrics. Node not registered.") from e
 
-        # Local storage
-        if step is None:
-            # Global Metrics
-            Logger.get_instance().global_metrics.add_log(exp, round, metric, node, value)
-        else:
-            # Local Metrics
-            Logger.get_instance().local_metrics.add_log(exp, round, metric, node, value, step)
+            # Try to get round
+            if round is None:
+                try:
+                    round = Logger.get_instance().nodes[node][1].round
+                except Exception as e:
+                    raise NodeNotRegistered("No experiment name provided. Needed to log metrics.") from e
 
-        # Web
-        p2pfl_web_services = Logger.get_instance().p2pfl_web_services
-        if p2pfl_web_services is not None:
+            # Check Nones
+            if exp is None:
+                raise NodeNotRegistered("No experiment name provided. Needed to log metrics.")
+            if round is None:
+                raise NodeNotRegistered("No round provided. Needed to log metrics.")
+
+            # Local storage
             if step is None:
                 # Global Metrics
-                p2pfl_web_services.send_global_metric(exp, round, metric, node, value)
+                Logger.get_instance().global_metrics.add_log(exp, round, metric, node, value)
             else:
                 # Local Metrics
-                p2pfl_web_services.send_local_metric(exp, round, metric, node, value, step)
+                Logger.get_instance().local_metrics.add_log(exp, round, metric, node, value, step)
+
+            # Web
+            p2pfl_web_services = Logger.get_instance().p2pfl_web_services
+            if p2pfl_web_services is not None:
+                if step is None:
+                    # Global Metrics
+                    p2pfl_web_services.send_global_metric(exp, round, metric, node, value)
+                else:
+                    # Local Metrics
+                    p2pfl_web_services.send_local_metric(exp, round, metric, node, value, step)
+        except NodeNotRegistered:
+            Logger.get_instance().warning("LOGGER", "Remote metric logging not implemented yet. Be patient :)")
 
     @staticmethod
     def log_system_metric(node: str, metric: str, value: float, time: datetime.datetime) -> None:
@@ -555,7 +578,7 @@ class Logger:
             node: The node address.
 
         """
-        Logger.get_instance().warning(node, "Uncatched Experiment Started on Logger")
+        Logger.get_instance().warning(node, "Uncatched Experiment Started on Logger. Coming soon, be patient :)")
 
     @staticmethod
     def experiment_finished(node: str) -> None:
