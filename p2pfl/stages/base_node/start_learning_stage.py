@@ -18,6 +18,7 @@
 """Start learning stage."""
 
 import time
+import ray
 from typing import Any, List, Optional, Type, Union
 
 from p2pfl.commands.init_model_command import InitModelCommand
@@ -27,6 +28,7 @@ from p2pfl.learning.learner import NodeLearner
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.settings import Settings
+from p2pfl.simulation.virtual_learner import VirtualNodeLearner
 from p2pfl.stages.stage import Stage
 from p2pfl.stages.stage_factory import StageFactory
 
@@ -64,19 +66,19 @@ class StartLearningStage(Stage):
         ):
             raise Exception("Invalid parameters on StartLearningStage.")
 
-        state.start_thread_lock.acquire()  # Used to avoid create duplicated training threads
+        #state.start_thread_lock.acquire()  # Used to avoid create duplicated training threads
         if state.round is None:
             # Init
             state.set_experiment("experiment", rounds)
-            logger.experiment_started(state.addr)
-            state.learner = learner_class(model, data, state.addr, epochs)
-            state.start_thread_lock.release()
+            logger.experiment_started.remote(state.addr)
+            state.learner = learner_class(model, data, state.addr, epochs) if not state.simulation else VirtualNodeLearner(learner_class, model, data, state.addr, epochs) # In simulation use a Virtual Learner
+            #state.start_thread_lock.release()
             begin = time.time()
 
             # Wait and gossip model inicialization
-            logger.info(state.addr, "Waiting initialization.")
-            state.model_initialized_lock.acquire()
-            logger.info(state.addr, "Gossiping model initialization.")
+            logger.info.remote(state.addr, "Waiting initialization.")
+            #state.model_initialized_lock.acquire()
+            logger.info.remote(state.addr, "Gossiping model initialization.")
             StartLearningStage.__gossip_model(state, communication_protocol, aggregator)
 
             # Wait to guarantee new connection heartbeats convergence
@@ -88,7 +90,7 @@ class StartLearningStage(Stage):
             return StageFactory.get_stage("VoteTrainSetStage")
 
         else:
-            state.start_thread_lock.release()
+            #state.start_thread_lock.release()
             return None
 
     @staticmethod

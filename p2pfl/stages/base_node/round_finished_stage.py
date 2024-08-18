@@ -51,16 +51,16 @@ class RoundFinishedStage(Stage):
 
         # Check if early stopping
         if early_stopping_fn():
-            logger.info(state.addr, "Early stopping.")
+            logger.info.remote(state.addr, "Early stopping.")
             return None
 
         # Set Next Round
         aggregator.clear()
         state.increase_round()
-        logger.round_finished(state.addr)
+        logger.round_finished.remote(state.addr)
 
         # Next Step or Finish
-        logger.info(
+        logger.info.remote(
             state.addr,
             f"Round {state.round} of {state.total_rounds} finished.",
         )
@@ -73,20 +73,20 @@ class RoundFinishedStage(Stage):
             RoundFinishedStage.__evaluate(state, communication_protocol)
             # Finish
             state.clear()
-            state.model_initialized_lock.acquire()
-            logger.info(state.addr, "Training finished!!.")
+            #state.model_initialized_lock.acquire()
+            logger.info.remote(state.addr, "Training finished!!.")
             return None
 
     @staticmethod
     def __evaluate(state: NodeState, communication_protocol: CommunicationProtocol) -> None:
-        logger.info(state.addr, "Evaluating...")
+        logger.info.remote(state.addr, "Evaluating...")
         if state.learner is None:
             raise Exception("Learner not initialized.")
         results = state.learner.evaluate()
-        logger.info(state.addr, f"Evaluated. Results: {results}")
+        logger.info.remote(state.addr, f"Evaluated. Results: {results}")
         # Send metrics
         if len(results) > 0:
-            logger.info(state.addr, "Broadcasting metrics.")
+            logger.info.remote(state.addr, "Broadcasting metrics.")
             flattened_metrics = [str(item) for pair in results.items() for item in pair]
             communication_protocol.broadcast(
                 communication_protocol.build_msg(

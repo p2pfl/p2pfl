@@ -50,7 +50,7 @@ class ModelsAggregatedCommand(Command):
             # esto meterlo en estado o agg
             self.state.models_aggregated[source] = list(args)
         else:
-            logger.debug(
+            logger.debug.remote(
                 self.state.addr,
                 f"Models Aggregated message from {source} in a late round. Ignored. {round} != {self.state.round}",
             )

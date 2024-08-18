@@ -20,6 +20,7 @@
 
 import random
 import threading
+import ray
 import time
 from typing import Any, Callable, List, Optional, Tuple
 
@@ -28,6 +29,7 @@ from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 
 
+#@ray.remote
 class Gossiper(threading.Thread):
     """
     Gossiper for agnostic communication protocol.
@@ -75,12 +77,12 @@ class Gossiper(threading.Thread):
 
     def start(self) -> None:
         """Start the gossiper thread."""
-        logger.info(self.__self_addr, "Starting gossiper...")
+        logger.info.remote(self.__self_addr, "Starting gossiper...")
         return super().start()
 
     def stop(self) -> None:
         """Stop the gossiper thread."""
-        logger.info(self.__self_addr, "Stopping gossiper...")
+        logger.info.remote(self.__self_addr, "Stopping gossiper...")
         self.__gossip_terminate_flag.set()
 
     ###
@@ -195,7 +197,7 @@ class Gossiper(threading.Thread):
 
             # If the trainning has been interrupted, stop waiting
             if early_stopping_fn():
-                logger.info(self.__self_addr, "Stopping model gossip process.")
+                logger.info.remote(self.__self_addr, "Stopping model gossip process.")
                 return
 
             # Get nodes wich need models
@@ -203,11 +205,11 @@ class Gossiper(threading.Thread):
 
             # Determine end of gossip
             if neis == []:
-                logger.info(self.__self_addr, "Gossip finished.")
+                logger.info.remote(self.__self_addr, "Gossip finished.")
                 return
 
             # Save state of neighbors. If nodes are not responding gossip will stop
-            logger.debug(self.__self_addr, f"Gossip remaining nodes: {neis}")
+            logger.debug.remote(self.__self_addr, f"Gossip remaining nodes: {neis}")
             if len(last_x_status) != Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS:
                 last_x_status.append(status_fn())
             else:
@@ -218,11 +220,11 @@ class Gossiper(threading.Thread):
                 for i in range(len(last_x_status) - 1):
                     if last_x_status[i] != last_x_status[i + 1]:
                         break
-                    logger.info(
+                    logger.info.remote(
                         self.__self_addr,
                         f"Gossiping exited for {Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS} equal rounds.",
                     )
-                    logger.debug(self.__self_addr, f"Gossip last status: {last_x_status[-1]}")
+                    logger.debug.remote(self.__self_addr, f"Gossip last status: {last_x_status[-1]}")
                     return
 
             # Select a random subset of neighbors
@@ -235,7 +237,7 @@ class Gossiper(threading.Thread):
                 model = model_fn(nei)
                 if model is None:
                     continue
-                logger.info(self.__self_addr, f"Gossiping model to {nei}.")
+                logger.info.remote(self.__self_addr, f"Gossiping model to {nei}.")
                 self.__client.send(nei, model, create_connection=create_connection)
 
             # Sleep to allow periodicity

@@ -70,7 +70,7 @@ class GossipModelStage(Stage):
             if state.learner is None:
                 raise Exception("Learner not initialized")
             state.learner.set_parameters(params)
-            logger.debug(
+            logger.debug.remote(
                 state.addr,
                 f"Broadcast aggregation done for round {state.round}",
             )
@@ -92,7 +92,7 @@ class GossipModelStage(Stage):
 
         # Wait a model (init or aggregated)
 
-        logger.info(state.addr, "Gossiping aggregated model.")
+        logger.info.remote(state.addr, "Gossiping aggregated model.")
         fixed_round = state.round
         if fixed_round is None:
             raise Exception("Learner not initialized")

@@ -58,7 +58,7 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
         # Server
         self._server = InMemoryServer(self.addr, self._gossiper, self._neighbors, commands)
         # Hearbeat
-        self._heartbeater = Heartbeater(self.addr, self._neighbors, self._client)
+        self._heartbeater = Heartbeater(self.addr, self._neighbors, self._client)#Heartbeater.remote(self.addr, self._neighbors, self._client)
         # Commands
         self._server.add_command(HeartbeatCommand(self._heartbeater))
         if commands is None:
@@ -78,14 +78,14 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
     def start(self) -> None:
         """Start the communication protocol."""
         self._server.start()
-        self._heartbeater.start()
-        self._gossiper.start()
+        self._heartbeater.start()#.remote()
+        self._gossiper.start()#.remote()
 
     def stop(self) -> None:
         """Stop the communication protocol."""
         self._server.stop()
-        self._heartbeater.stop()
-        self._gossiper.stop()
+        self._heartbeater.stop()#.remote()
+        self._gossiper.stop()#.remote()
         self._neighbors.clear_neighbors()
 
     def add_command(self, cmds: Union[Command, List[Command]]) -> None:
@@ -234,4 +234,4 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
             model_fn,
             period,
             create_connection,
-        )
+        )#.remote()

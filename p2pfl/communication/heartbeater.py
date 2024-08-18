@@ -19,6 +19,7 @@
 """Protocol agnostic heartbeater."""
 
 import threading
+import ray
 import time
 from typing import Optional
 
@@ -29,7 +30,7 @@ from p2pfl.settings import Settings
 
 heartbeater_cmd_name = "beat"
 
-
+#@ray.remote
 class Heartbeater(threading.Thread):
     """
     Heartbeater for agnostic communication protocol. Send and update fresh heartbeats.
@@ -94,7 +95,7 @@ class Heartbeater(threading.Thread):
                 neis = self.__neighbors.get_all()
                 for nei in neis:
                     if t - neis[nei][2] > timeout:
-                        logger.info(
+                        logger.info.remote(
                             self.__self_addr,
                             f"Heartbeat timeout for {nei} ({t - neis[nei][2]}). Removing...",
                         )

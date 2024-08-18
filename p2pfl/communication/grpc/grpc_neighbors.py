@@ -43,13 +43,13 @@ class GrpcNeighbors(Neighbors):
         # Update if exists
         if addr in self.neis:
             # Update time
-            self.neis_lock.acquire()
+            #self.neis_lock.acquire()
             self.neis[addr] = (
                 self.neis[addr][0],
                 self.neis[addr][1],
                 time,
             )
-            self.neis_lock.release()
+            #self.neis_lock.release()
         else:
             # Add
             self.add(addr, non_direct=True)
@@ -89,7 +89,7 @@ class GrpcNeighbors(Neighbors):
                     timeout=Settings.GRPC_TIMEOUT,
                 )
                 if res.error:
-                    logger.info(self.self_addr, f"Cannot add a neighbor: {res.error}")
+                    logger.info.remote(self.self_addr, f"Cannot add a neighbor: {res.error}")
                     channel.close()
                     raise Exception(f"Cannot add a neighbor: {res.error}")
 
@@ -97,7 +97,7 @@ class GrpcNeighbors(Neighbors):
             return (channel, stub, time.time())
 
         except Exception as e:
-            logger.info(self.self_addr, f"Crash while adding a neighbor: {e}")
+            logger.info.remote(self.self_addr, f"Crash while adding a neighbor: {e}")
             # Re-raise exception
             raise e
 

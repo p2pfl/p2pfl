@@ -140,12 +140,12 @@ class InMemoryClient(Client):
                 )
 
             if "error" in response:
-                logger.error(
+                logger.error.remote(
                     self.__self_addr,
                     f"Error while sending a message: {msg['cmd']!r} {msg['args']!r}: {response['error']!r}",
                 )
         except Exception as e:
-            logger.info(
+            logger.info.remote(
                 self.__self_addr,
                 f"Cannot send message {msg['cmd']!r} to {nei}. Error: {str(e)}",
             )

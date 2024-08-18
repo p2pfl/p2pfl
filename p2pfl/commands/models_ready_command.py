@@ -54,10 +54,10 @@ class ModelsReadyCommand(Command):
                 self.state.nei_status[source] = self.state.round
             else:
                 # Ignored
-                logger.error(
+                logger.error.remote(
                     self.state.addr,
                     f"Models ready from {source} in a late round. Ignored. {round} "
                     + f"!= {self.state.round} / {self.state.round-1}",
                 )
         else:
-            logger.warning(self.state.addr, "Models ready received when learning is not running")
+            logger.warning.remote(self.state.addr, "Models ready received when learning is not running")

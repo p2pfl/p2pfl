@@ -82,12 +82,12 @@ class InMemoryServer:
         if self.__server is None:
             raise Exception("ServerSingleton instance not created")
         self.__server[self.addr] = self
-        logger.info(self.addr, f"InMemoryServer started at {self.addr}")
+        logger.info.remote(self.addr, f"InMemoryServer started at {self.addr}")
 
     def stop(self) -> None:
         """Stop the in-memory server."""
         self.__server = ServerSingleton.reset_instance()
-        logger.info(self.addr, f"InMemoryServer stopped at {self.addr}")
+        logger.info.remote(self.addr, f"InMemoryServer stopped at {self.addr}")
 
     def wait_for_termination(self) -> None:
         """Wait for termination."""
@@ -129,8 +129,8 @@ class InMemoryServer:
 
         """
         # If not processed
-        if self.__gossiper.check_and_set_processed(request["hash"]):
-            logger.debug(
+        if self.__gossiper.check_and_set_processed(request["hash"]):#.remote():
+            logger.debug.remote(
                 self.addr,
                 f"Received message from {request['source']} > {request['cmd']} {request['args']}",
             )
@@ -139,7 +139,7 @@ class InMemoryServer:
                 # Update ttl and gossip
                 request["ttl"] -= 1
                 pending_neis = [n for n in self.__neighbors.get_all(only_direct=True) if n != request["source"]]
-                self.__gossiper.add_message(request, pending_neis)
+                self.__gossiper.add_message(request, pending_neis)#.remote()
 
             # Process message
             if request["cmd"] in self.__commands:
@@ -147,10 +147,10 @@ class InMemoryServer:
                     self.__commands[request["cmd"]].execute(request["source"], request["round"], *request["args"])
                 except Exception as e:
                     error_text = f"Error while processing command: {request['cmd']} {request['args']}: {e}"
-                    logger.error(self.addr, error_text)
+                    logger.error.remote(self.addr, error_text)
                     return {"error": error_text}
             else:
-                logger.error(
+                logger.error.remote(
                     self.addr,
                     f"Unknown command: {request['cmd']} from {request['source']}",
                 )

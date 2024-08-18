@@ -41,7 +41,7 @@ class WaitAggregatedModelsStage(Stage):
         """Execute the stage."""
         if state is None or aggregator is None:
             raise Exception("Invalid parameters on WaitAggregatedModelsStage.")
-        logger.info(state.addr, "Waiting aregation.")
+        logger.info.remote(state.addr, "Waiting aregation.")
         """
         Quizá pueda ser interesante que la lógica de espera esté aquí
         """

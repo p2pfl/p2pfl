@@ -69,32 +69,32 @@ class InitModelCommand(Command):
 
         """
         if weights is None or contributors is None or weight is None:
-            logger.error(self.state.addr, "Invalid message")
+            logger.error.remote(self.state.addr, "Invalid message")
             return
 
         # Check if Learning is running
         if self.state.learner is not None:
             # Check source
             if round != self.state.round:
-                logger.debug(
+                logger.debug.remote(
                     self.state.addr,
                     f"Model reception in a late round ({round} != {self.state.round}).",
                 )
                 return
 
             # Check moment (not init and invalid round)
-            if not self.state.model_initialized_lock.locked():
-                logger.error(
-                    self.state.addr,
-                    "Model initizalization message when the model is already initialized. Ignored.",
-                )
-                return
+            #if not self.state.model_initialized_lock.locked():
+            #    logger.error(
+            #        self.state.addr,
+            #        "Model initizalization message when the model is already initialized. Ignored.",
+            #    )
+            #    return
 
             try:
                 model = self.state.learner.decode_parameters(weights)
                 self.state.learner.set_parameters(model)
-                self.state.model_initialized_lock.release()
-                logger.info(self.state.addr, "Model Weights Initialized")
+                #self.state.model_initialized_lock.release()
+                logger.info.remote(self.state.addr, "Model Weights Initialized")
                 # Communicate Initialization
                 self.communication_protocol.broadcast(
                     self.communication_protocol.build_msg(ModelInitializedCommand.get_name())
@@ -102,16 +102,16 @@ class InitModelCommand(Command):
 
             # Warning: these stops can cause a denegation of service attack
             except DecodingParamsError:
-                logger.error(self.state.addr, "Error decoding parameters.")
+                logger.error.remote(self.state.addr, "Error decoding parameters.")
                 self.stop()
 
             except ModelNotMatchingError:
-                logger.error(self.state.addr, "Models not matching.")
+                logger.error.remote(self.state.addr, "Models not matching.")
                 self.stop()
 
             except Exception as e:
-                logger.error(self.state.addr, f"Unknown error adding model: {e}")
+                logger.error.remote(self.state.addr, f"Unknown error adding model: {e}")
                 self.stop()
 
         else:
-            logger.debug(self.state.addr, "Tried to add a model while learning is not running")
+            logger.debug.remote(self.state.addr, "Tried to add a model while learning is not running")

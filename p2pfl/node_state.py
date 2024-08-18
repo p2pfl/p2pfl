@@ -21,6 +21,7 @@ import threading
 from typing import Dict, List, Optional
 
 from p2pfl.learning.learner import NodeLearner
+from p2pfl.management.signal import SignalActor
 
 
 class NodeState:
@@ -49,7 +50,7 @@ class NodeState:
 
     """
 
-    def __init__(self, addr: str) -> None:
+    def __init__(self, addr: str, simulation: bool=False) -> None:
         """Initialize the node state."""
         self.addr = addr
         self.status = "Idle"
@@ -58,7 +59,7 @@ class NodeState:
         self.total_rounds: Optional[int] = None
 
         # Simulation
-        self.simulation = False
+        self.simulation = simulation
 
         # Learning
         self.learner: Optional[NodeLearner] = None
@@ -74,11 +75,11 @@ class NodeState:
         self.train_set_votes: Dict[str, Dict[str, int]] = {}
 
         # Locks
-        self.train_set_votes_lock = threading.Lock()
-        self.start_thread_lock = threading.Lock()
-        self.wait_votes_ready_lock = threading.Lock()
-        self.model_initialized_lock = threading.Lock()
-        self.model_initialized_lock.acquire()
+        #self.train_set_votes_lock = threading.Lock()
+        #self.start_thread_lock = threading.Lock()
+        #self.wait_votes_ready_lock = threading.Lock()
+        #self.model_initialized_lock = threading.Lock()
+        #self.model_initialized_lock.acquire()
 
     def set_experiment(self, exp_name: str, total_rounds: int) -> None:
         """
@@ -113,3 +114,7 @@ class NodeState:
         self.actual_exp_name = None
         self.round = None
         self.total_rounds = None
+
+    def __str__(self) -> str:
+        """String representation of the node state."""
+        return f"NodeState(addr={self.addr}, status={self.status}, actual_exp_name={self.actual_exp_name}, round={self.round}, total_rounds={self.total_rounds}, simulation={self.simulation}, learner={self.learner}, models_aggregated={self.models_aggregated}, nei_status={self.nei_status}, train_set={self.train_set}, train_set_votes={self.train_set_votes})"

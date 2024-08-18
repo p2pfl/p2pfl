@@ -87,21 +87,21 @@ class TrainStage(Stage):
 
     @staticmethod
     def __train(state: NodeState) -> None:
-        logger.info(state.addr, "Training...")
+        logger.info.remote(state.addr, "Training...")
         if state.learner is None:
             raise Exception("Learner not initialized.")
         state.learner.fit()
 
     @staticmethod
     def __evaluate(state: NodeState, communication_protocol: CommunicationProtocol) -> None:
-        logger.info(state.addr, "Evaluating...")
+        logger.info.remote(state.addr, "Evaluating...")
         if state.learner is None:
             raise Exception("Learner not initialized.")
         results = state.learner.evaluate()
-        logger.info(state.addr, f"Evaluated. Results: {results}")
+        logger.info.remote(state.addr, f"Evaluated. Results: {results}")
         # Send metrics
         if len(results) > 0:
-            logger.info(state.addr, "Broadcasting metrics.")
+            logger.info.remote(state.addr, "Broadcasting metrics.")
             flattened_metrics = [str(item) for pair in results.items() for item in pair]
             communication_protocol.broadcast(
                 communication_protocol.build_msg(

@@ -24,11 +24,13 @@ import time
 from typing import Dict
 
 import psutil  # type: ignore
+import ray
 
 from p2pfl.settings import Settings
 
 
-class NodeMonitor(threading.Thread):
+#@ray.remote
+class NodeMonitor:
     """
     Node monitor thread.
 

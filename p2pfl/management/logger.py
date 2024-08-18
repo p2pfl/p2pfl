@@ -26,9 +26,9 @@ P2PFL Logger.
 import atexit
 import datetime
 import logging
-import multiprocessing
 import os
-from logging.handlers import QueueHandler, QueueListener, RotatingFileHandler
+import ray
+from logging.handlers import RotatingFileHandler
 from typing import Dict, List, Optional, Tuple
 
 from p2pfl.management.metric_storage import GlobalLogsType, GlobalMetricStorage, LocalLogsType, LocalMetricStorage
@@ -136,11 +136,25 @@ class ColoredFormatter(logging.Formatter):
         return super().format(record)
 
 
+###################
+#    Ray Actor    #
+###################
+
+
+#class LoggerActor:
+#    def __init__(self, p2pfl_web_services: Optional[P2pflWebServices] = None) -> None:
+#        self.logger = Logger(p2pfl_web_services)
+
+#    def get_logger(self) -> "Logger":
+#        return self.logger
+    
+
+
 ################
 #    Logger    #
 ################
 
-
+@ray.remote
 class Logger:
     """
     Singleton class that manages the node logging.
@@ -157,10 +171,9 @@ class Logger:
     # Singleton and instance management
     ######
 
-    __instance = None
+    #__instance = None
 
-    @staticmethod
-    def connect_web(url: str, key: str) -> None:
+    def connect_web(self, url: str, key: str) -> None:
         """
         Connect to the web services.
 
@@ -170,13 +183,19 @@ class Logger:
 
         """
         # Remove the instance if it already exists
-        if Logger.__instance is not None:
-            Logger.__instance.queue_listener.stop()
-            Logger.__instance = None
+        #if Logger.__instance is not None:
+        #    Logger.__instance.queue_listener.stop()
+        #    Logger.__instance = None
 
         # Create the instance
         p2pfl_web = P2pflWebServices(url, key)
-        Logger.__instance = Logger(p2pfl_web_services=p2pfl_web)
+
+        # P2PFL Web Services
+        self.p2pfl_web_services = p2pfl_web
+        if p2pfl_web is not None:
+            web_handler = P2pflWebLogHandler(p2pfl_web)
+            self.logger.addHandler(web_handler)
+        #Logger.__instance = Logger(p2pfl_web_services=p2pfl_web)
 
     def __init__(self, p2pfl_web_services: Optional[P2pflWebServices] = None) -> None:
         """Initialize the logger."""
@@ -222,11 +241,11 @@ class Logger:
         self.logger.addHandler(stream_handler)  # not async
 
         # Asynchronous logging (queue handler)
-        self.log_queue: multiprocessing.Queue[logging.LogRecord] = multiprocessing.Queue()
-        queue_handler = QueueHandler(self.log_queue)
-        self.logger.addHandler(queue_handler)
-        self.queue_listener = QueueListener(self.log_queue, *handlers)
-        self.queue_listener.start()
+        #self.log_queue: multiprocessing.Queue[logging.LogRecord] = multiprocessing.Queue()
+        #queue_handler = QueueHandler(self.log_queue)
+        #self.logger.addHandler(queue_handler)
+        #self.queue_listener = QueueListener(self.log_queue, *handlers)
+        #self.queue_listener.start()
 
         # Register cleanup function to close the queue on exit
         atexit.register(self.cleanup)
@@ -238,35 +257,21 @@ class Logger:
             self.unregister_node(node)
 
         # Stop the queue listener
-        if self.queue_listener:
-            self.queue_listener.stop()
+        #if self.queue_listener:
+        #    self.queue_listener.stop()
 
         # Remove handlers from the logger
         for handler in self.logger.handlers:
             self.logger.removeHandler(handler)
 
         # Close the multiprocessing queue
-        self.log_queue.close()
-
-    @staticmethod
-    def get_instance() -> "Logger":
-        """
-        Return the logger instance.
-
-        Returns
-            The logger instance.
-
-        """
-        if Logger.__instance is None:
-            Logger.__instance = Logger()
-        return Logger.__instance
+        #self.log_queue.close()
 
     ######
     # Application logging
     ######
 
-    @staticmethod
-    def set_level(level: int) -> None:
+    def set_level(self, level: int) -> None:
         """
         Set the logger level.
 
@@ -274,10 +279,10 @@ class Logger:
             level: The logger level.
 
         """
-        Logger.get_instance().logger.setLevel(level)
+        self.logger.setLevel(level)
 
-    @staticmethod
-    def get_level() -> int:
+
+    def get_level(self) -> int:
         """
         Get the logger level.
 
@@ -285,10 +290,9 @@ class Logger:
             The logger level.
 
         """
-        return Logger.get_instance().logger.getEffectiveLevel()
+        return self.logger.getEffectiveLevel()
 
-    @staticmethod
-    def get_level_name(lvl: int) -> str:
+    def get_level_name(self, lvl: int) -> str:
         """
         Get the logger level name.
 
@@ -301,8 +305,7 @@ class Logger:
         """
         return logging.getLevelName(lvl)
 
-    @staticmethod
-    def info(node: str, message: str) -> None:
+    def info(self, node: str, message: str) -> None:
         """
         Log an info message.
 
@@ -311,10 +314,9 @@ class Logger:
             message: The message to log.
 
         """
-        Logger.get_instance().log(logging.INFO, node, message)
+        self.log(logging.INFO, node, message)
 
-    @staticmethod
-    def debug(node: str, message: str) -> None:
+    def debug(self, node: str, message: str) -> None:
         """
         Log a debug message.
 
@@ -323,10 +325,9 @@ class Logger:
             message: The message to log.
 
         """
-        Logger.get_instance().log(logging.DEBUG, node, message)
+        self.log(logging.DEBUG, node, message)
 
-    @staticmethod
-    def warning(node: str, message: str) -> None:
+    def warning(self, node: str, message: str) -> None:
         """
         Log a warning message.
 
@@ -335,10 +336,9 @@ class Logger:
             message: The message to log.
 
         """
-        Logger.get_instance().log(logging.WARNING, node, message)
+        self.log(logging.WARNING, node, message)
 
-    @staticmethod
-    def error(node: str, message: str) -> None:
+    def error(self, node: str, message: str) -> None:
         """
         Log an error message.
 
@@ -347,10 +347,9 @@ class Logger:
             message: The message to log.
 
         """
-        Logger.get_instance().log(logging.ERROR, node, message)
+        self.log(logging.ERROR, node, message)
 
-    @staticmethod
-    def critical(node: str, message: str) -> None:
+    def critical(self, node: str, message: str) -> None:
         """
         Log a critical message.
 
@@ -359,7 +358,7 @@ class Logger:
             message: The message to log.
 
         """
-        Logger.get_instance().log(logging.CRITICAL, node, message)
+        self.log(logging.CRITICAL, node, message)
 
     def log(self, level: int, node: str, message: str) -> None:
         """
@@ -389,8 +388,8 @@ class Logger:
     # Metrics
     ######
 
-    @staticmethod
     def log_metric(
+        self,
         node: str,
         metric: str,
         value: float,
@@ -408,27 +407,29 @@ class Logger:
             round: The round.
 
         """
+        #print("Hey",self.nodes[node])
         # Get Round
         if round is None:
-            round = Logger.get_instance().nodes[node][1].round
+            print("Nodes:",self.nodes[node][1])
+            round = self.nodes[node][1].round
         if round is None:
             raise Exception("No round provided. Needed for training metrics.")
 
         # Get Experiment Name
-        exp = Logger.get_instance().nodes[node][1].actual_exp_name
+        exp = self.nodes[node][1].actual_exp_name
         if exp is None:
             raise Exception("No experiment name provided. Needed for training metrics.")
 
         # Local storage
         if step is None:
             # Global Metrics
-            Logger.get_instance().global_metrics.add_log(exp, round, metric, node, value)
+            self.global_metrics.add_log(exp, round, metric, node, value)
         else:
             # Local Metrics
-            Logger.get_instance().local_metrics.add_log(exp, round, metric, node, value, step)
+            self.local_metrics.add_log(exp, round, metric, node, value, step)
 
         # Web
-        p2pfl_web_services = Logger.get_instance().p2pfl_web_services
+        p2pfl_web_services = self.p2pfl_web_services
         if p2pfl_web_services is not None:
             if step is None:
                 # Global Metrics
@@ -437,8 +438,7 @@ class Logger:
                 # Local Metrics
                 p2pfl_web_services.send_local_metric(exp, round, metric, node, value, step)
 
-    @staticmethod
-    def log_system_metric(node: str, metric: str, value: float, time: datetime.datetime) -> None:
+    def log_system_metric(self, node: str, metric: str, value: float, time: datetime.datetime) -> None:
         """
         Log a system metric. Only on web.
 
@@ -450,12 +450,11 @@ class Logger:
 
         """
         # Web
-        p2pfl_web_services = Logger.get_instance().p2pfl_web_services
+        p2pfl_web_services = self.p2pfl_web_services
         if p2pfl_web_services is not None:
             p2pfl_web_services.send_system_metric(node, metric, value, time)
 
-    @staticmethod
-    def get_local_logs() -> LocalLogsType:
+    def get_local_logs(self) -> LocalLogsType:
         """
         Get the logs.
 
@@ -467,10 +466,9 @@ class Logger:
             The logs.
 
         """
-        return Logger.get_instance().local_metrics.get_all_logs()
+        return self.local_metrics.get_all_logs()
 
-    @staticmethod
-    def get_global_logs() -> GlobalLogsType:
+    def get_global_logs(self) -> GlobalLogsType:
         """
         Get the logs.
 
@@ -482,14 +480,13 @@ class Logger:
             The logs.
 
         """
-        return Logger.get_instance().global_metrics.get_all_logs()
+        return self.global_metrics.get_all_logs()
 
     ######
     # Node registration
     ######
 
-    @staticmethod
-    def register_node(node: str, state: NodeState, simulation: bool) -> None:
+    def register_node(self, node: str, state: NodeState, simulation: bool) -> None:
         """
         Register a node.
 
@@ -501,24 +498,24 @@ class Logger:
         """
         # Web
         node_monitor = None
-        p2pfl_web_services = Logger.get_instance().p2pfl_web_services
+        p2pfl_web_services = self.p2pfl_web_services
         if p2pfl_web_services is not None:
             # Register the node
             p2pfl_web_services.register_node(node, simulation)
 
             # Start the node status reporter
-            node_monitor = NodeMonitor(node, Logger.get_instance().log_system_metric)
-            node_monitor.start()
+            node_monitor = NodeMonitor(node, self.log_system_metric)#NodeMonitor.remote(node, Logger.get_instance().log_system_metric)
+            node_monitor.start()#.remote()
 
         # Node State
-        if Logger.get_instance().nodes.get(node) is None:
+        if self.nodes.get(node) is None:
             # Dict[str, Tuple[NodeMonitor, NodeState]]
-            Logger.get_instance().nodes[node] = (node_monitor, state)
+            self.nodes[node] = (node_monitor, state)
         else:
             raise Exception(f"Node {node} already registered.")
 
     @staticmethod
-    def unregister_node(node: str) -> None:
+    def unregister_node(self, node: str) -> None:
         """
         Unregister a node.
 
@@ -527,18 +524,18 @@ class Logger:
 
         """
         # Web
-        p2pfl_web_services = Logger.get_instance().p2pfl_web_services
+        p2pfl_web_services = self.p2pfl_web_services
         if p2pfl_web_services is not None:
             p2pfl_web_services.unregister_node(node)
 
         # Node state
-        n = Logger.get_instance().nodes[node]
+        n = self.nodes[node]
         if n is not None:
             # Stop the node status reporter
             if n[0] is not None:
                 n[0].stop()
             # Unregister the node
-            Logger.get_instance().nodes.pop(node)
+            self.nodes.pop(node)
         else:
             raise Exception(f"Node {node} not registered.")
 
@@ -546,8 +543,7 @@ class Logger:
     # Node Status
     ######
 
-    @staticmethod
-    def experiment_started(node: str) -> None:
+    def experiment_started(self, node: str) -> None:
         """
         Notify the experiment start.
 
@@ -555,10 +551,9 @@ class Logger:
             node: The node address.
 
         """
-        Logger.get_instance().warning(node, "Uncatched Experiment Started on Logger")
+        self.warning(node, "Uncatched Experiment Started on Logger")
 
-    @staticmethod
-    def experiment_finished(node: str) -> None:
+    def experiment_finished(self, node: str) -> None:
         """
         Notify the experiment end.
 
@@ -566,10 +561,9 @@ class Logger:
             node: The node address.
 
         """
-        Logger.get_instance().warning(node, "Uncatched Experiment Ended on Logger")
+        self.warning(node, "Uncatched Experiment Ended on Logger")
 
-    @staticmethod
-    def round_finished(node: str) -> None:
+    def round_finished(self, node: str) -> None:
         """
         Notify the round end.
 
@@ -577,8 +571,8 @@ class Logger:
             node: The node address.
 
         """
-        r = Logger.get_instance().nodes[node][1].round
-        Logger.get_instance().warning(node, f"Uncatched Round Finished on Logger {r}")
+        r = self.nodes[node][1].round
+        self.warning(node, f"Uncatched Round Finished on Logger {r}")
 
-
-logger = Logger
+# Logger actor singleton
+logger = Logger.options(name="p2pfl_logger", lifetime="detached", get_if_exists=True).remote()

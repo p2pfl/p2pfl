@@ -46,7 +46,7 @@ def __parse_args() -> argparse.Namespace:
     parser.add_argument("--nodes", type=int, help="The number of nodes.", default=2)
     parser.add_argument("--rounds", type=int, help="The number of rounds.", default=2)
     parser.add_argument("--epochs", type=int, help="The number of epochs.", default=0)
-    parser.add_argument("--show_metrics", action="store_true", help="Show metrics.", default=True)
+    parser.add_argument("--show_metrics", action="store_true", help="Show metrics.", default=False)
     parser.add_argument("--measure_time", action="store_true", help="Measure time.", default=False)
     parser.add_argument("--use_unix_socket", action="store_true", help="Use Unix socket.", default=False)
     parser.add_argument(
@@ -122,7 +122,7 @@ def mnist(
 
     # Local Logs
     if show_metrics:
-        local_logs = logger.get_local_logs()
+        local_logs = logger.get_local_logs.remote()
         if local_logs != {}:
             logs_l = list(local_logs.items())[0][1]
             #  Plot experiment metrics
@@ -140,7 +140,7 @@ def mnist(
                         plt.show()
 
         # Global Logs
-        global_logs = logger.get_global_logs()
+        global_logs = logger.get_global_logs.remote()
         if global_logs != {}:
             logs_g = list(global_logs.items())[0][1]  # Accessing the nested dictionary directly
             # Plot experiment metrics
@@ -170,7 +170,7 @@ if __name__ == "__main__":
 
     # Set logger
     if args.token != "":
-        logger.connect_web("http://localhost:3000/api/v1", args.token)
+        logger.connect_web.remote("http://localhost:3000/api/v1", args.token)
 
     # Settings
     # set_test_settings()

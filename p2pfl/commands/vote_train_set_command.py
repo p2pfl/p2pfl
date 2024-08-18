@@ -59,16 +59,16 @@ class VoteTrainSetCommand(Command):
                 for i in range(0, len(votes), 2):
                     tmp_votes[votes[i]] = int(votes[i + 1])
                 # set votes
-                self.state.train_set_votes_lock.acquire()
+                #self.state.train_set_votes_lock.acquire()
                 self.state.train_set_votes[source] = tmp_votes
-                self.state.train_set_votes_lock.release()
+                #self.state.train_set_votes_lock.release()
                 # Communicate to the training process that a vote has been received
-                with contextlib.suppress(Exception):
-                    self.state.wait_votes_ready_lock.release()
+                #with contextlib.suppress(Exception):
+                #    self.state.wait_votes_ready_lock.release()
             else:
-                logger.error(
+                logger.error.remote(
                     self.state.addr,
                     f"Vote received in a late round. Ignored. {round} != {self.state.round} / {self.state.round+1}",
                 )
         else:
-            logger.error(self.state.addr, "Vote received when learning is not running")
+            logger.error.remote(self.state.addr, "Vote received when learning is not running")

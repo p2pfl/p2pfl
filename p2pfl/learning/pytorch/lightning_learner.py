@@ -21,6 +21,7 @@
 import logging
 import pickle
 from collections import OrderedDict
+import traceback
 from typing import Dict, Optional, Tuple
 
 import pytorch_lightning as pl
@@ -191,7 +192,8 @@ class LightningLearner(NodeLearner):
                 self.__trainer.fit(self.model, self.data)
                 self.__trainer = None
         except Exception as e:
-            logger.error(
+            print(traceback.format_exc())
+            logger.error.remote(
                 self.__self_addr,
                 f"Fit error. Something went wrong with pytorch lightning. {e}",
             )
@@ -224,12 +226,12 @@ class LightningLearner(NodeLearner):
                 self.__trainer = None
                 # Log metrics
                 for k, v in results.items():
-                    logger.log_metric(self.__self_addr, k, v)
+                    logger.log_metric.remote(self.__self_addr, k, v)
                 return results
             else:
                 return {}
         except Exception as e:
-            logger.error(
+            logger.error.remote(
                 self.__self_addr,
                 f"Evaluation error. Something went wrong with pytorch lightning. {e}",
             )

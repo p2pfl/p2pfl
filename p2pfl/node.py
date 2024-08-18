@@ -84,6 +84,7 @@ class Node:
         learner: Type[NodeLearner] = LightningLearner,
         aggregator: Type[Aggregator] = FedAvg,
         protocol: Type[CommunicationProtocol] = GrpcCommunicationProtocol,
+        simulation: bool = False,
         **kwargs,
     ) -> None:
         """Initialize a node."""
@@ -101,7 +102,10 @@ class Node:
 
         # State
         self.__running = False
-        self.state = NodeState(self.addr)
+        self.state = NodeState(
+            self.addr,
+            simulation=simulation
+        )
 
         # Workflow
         self.learning_workflow = LearningWorkflow()
@@ -151,7 +155,7 @@ class Node:
         # Check running
         self.assert_running(True)
         # Connect
-        logger.info(self.addr, f"Connecting to {addr}...")
+        logger.info.remote(self.addr, f"Connecting to {addr}...")
         return self._communication_protocol.connect(addr)
 
     def get_neighbors(self, only_direct: bool = False) -> Dict[str, Any]:
@@ -178,7 +182,7 @@ class Node:
         # Check running
         self.assert_running(True)
         # Disconnect
-        logger.info(self.addr, f"Removing {addr}...")
+        logger.info.remote(self.addr, f"Removing {addr}...")
         self._communication_protocol.disconnect(addr, disconnect_msg=True)
 
     #######################################
@@ -216,13 +220,14 @@ class Node:
         self.assert_running(False)
         # Set running
         self.__running = True
+
         # P2PFL Web Services
-        logger.register_node(self.addr, self.state, self.state.simulation)
+        logger.register_node.remote(self.addr, self.state, self.state.simulation)
         # Communication Protocol
         self._communication_protocol.start()
         if wait:
             self._communication_protocol.wait_for_termination()
-            logger.info(self.addr, "gRPC terminated.")
+            logger.info.remote(self.addr, "gRPC terminated.")
 
     def stop(self) -> None:
         """
@@ -232,7 +237,7 @@ class Node:
             NodeRunningException: If the node is not running.
 
         """
-        logger.info(self.addr, "Stopping node...")
+        logger.info.remote(self.addr, "Stopping node...")
         try:
             # Stop server
             self._communication_protocol.stop()
@@ -241,7 +246,7 @@ class Node:
             # State
             self.state.clear()
             # Unregister node
-            logger.unregister_node(self.addr)
+            logger.unregister_node.remote(self.addr)
         except Exception:
             pass
 
@@ -313,12 +318,12 @@ class Node:
 
         if self.state.round is None:
             # Broadcast start Learning
-            logger.info(self.addr, "Broadcasting start learning...")
+            logger.info.remote(self.addr, "Broadcasting start learning...")
             self._communication_protocol.broadcast(
                 self._communication_protocol.build_msg(StartLearningCommand.get_name(), [str(rounds), str(epochs)])
             )
             # Set model initialized
-            self.state.model_initialized_lock.release()
+            #self.state.model_initialized_lock.release()
             # Broadcast initialize model
             self._communication_protocol.broadcast(
                 self._communication_protocol.build_msg(ModelInitializedCommand.get_name())
@@ -326,7 +331,7 @@ class Node:
             # Learning Thread
             self.__start_learning_thread(rounds, epochs)
         else:
-            logger.info(self.addr, "Learning already started")
+            logger.info.remote(self.addr, "Learning already started")
 
     def set_stop_learning(self) -> None:
         """Stop the learning process in the entire network."""
@@ -338,7 +343,7 @@ class Node:
             # stop learning
             self.__stop_learning()
         else:
-            logger.info(self.addr, "Learning already stopped")
+            logger.info.remote(self.addr, "Learning already stopped")
 
     ##################################
     #         Local Learning         #
@@ -358,13 +363,13 @@ class Node:
                 learner_class=self.learner_class,
             )
         except Exception as e:
-            if logger.get_level_name(logger.get_level()) == "DEBUG":
+            if logger.get_level_name.remote(logger.get_level.remote()) == "DEBUG":
                 raise e
-            logger.error(self.addr, f"Error: {e}")
+            logger.error.remote(self.addr, f"Error: {e}")
             self.stop()
 
     def __stop_learning(self) -> None:
-        logger.info(self.addr, "Stopping learning")
+        logger.info.remote(self.addr, "Stopping learning")
         # Leraner
         if self.state.learner is not None:
             self.state.learner.interrupt_fit()
@@ -372,7 +377,7 @@ class Node:
         self.aggregator.clear()
         # State
         self.state.clear()
-        logger.experiment_finished(self.addr)
+        logger.experiment_finished.remote(self.addr)
         # Try to free wait locks
-        with contextlib.suppress(Exception):
-            self.state.wait_votes_ready_lock.release()
+        #with contextlib.suppress(Exception):
+        #    self.state.wait_votes_ready_lock.release()

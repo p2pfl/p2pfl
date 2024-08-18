@@ -39,13 +39,13 @@ class InMemoryNeighbors(Neighbors):
         """
         # Update if exists
         if addr in self.neis:
-            with self.neis_lock:
-                # Update time
-                self.neis[addr] = (
-                    self.neis[addr][0],
-                    self.neis[addr][1],
-                    time,
-                )
+            #with self.neis_lock:
+            # Update time
+            self.neis[addr] = (
+                self.neis[addr][0],
+                self.neis[addr][1],
+                time,
+            )
         else:
             # Add
             self.add(addr, non_direct=True)
@@ -76,13 +76,13 @@ class InMemoryNeighbors(Neighbors):
             if handshake_msg:
                 response = server.handshake({"addr": self.self_addr})
                 if response.get("error"):
-                    logger.info(self.self_addr, f"Cannot add a neighbor: {response['error']}")
+                    logger.info.remote(self.self_addr, f"Cannot add a neighbor: {response['error']}")
                     raise Exception(f"Cannot add a neighbor: {response['error']}")
 
             return (None, server, time.time())
 
         except Exception as e:
-            logger.info(self.self_addr, f"Crash while adding a neighbor: {e}")
+            logger.info.remote(self.self_addr, f"Crash while adding a neighbor: {e}")
             # Re-raise exception
             raise e
 
@@ -106,4 +106,4 @@ class InMemoryNeighbors(Neighbors):
                 node_server.disconnect({"addr": self.self_addr})
 
         except Exception as e:
-            logger.error(self.self_addr, f"Error while disconnecting from {addr}: {e}")
+            logger.error.remote(self.self_addr, f"Error while disconnecting from {addr}: {e}")

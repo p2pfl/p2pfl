@@ -137,8 +137,8 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
 
         """
         # If not processed
-        if self.__gossiper.check_and_set_processed(request.hash):
-            logger.debug(
+        if self.__gossiper.check_and_set_processed(request.hash):#.remote():
+            logger.debug.remote(
                 self.addr,
                 f"Received message from {request.source} > {request.cmd} {request.args}",
             )
@@ -147,7 +147,7 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
                 # Update ttl and gossip
                 request.ttl -= 1
                 pending_neis = [n for n in self.__neighbors.get_all(only_direct=True) if n != request.source]
-                self.__gossiper.add_message(request, pending_neis)
+                self.__gossiper.add_message(request, pending_neis)#.remote()
 
             # Process message
             if request.cmd in self.__commands:
@@ -156,11 +156,11 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
 
                 except Exception as e:
                     error_text = f"Error while processing command: {request.cmd} {request.args}: {e}"
-                    logger.error(self.addr, error_text)
+                    logger.error.remote(self.addr, error_text)
                     return node_pb2.ResponseMessage(error=error_text)
             else:
                 # disconnect node
-                logger.error(self.addr, f"Unknown command: {request.cmd} from {request.source}")
+                logger.error.remote(self.addr, f"Unknown command: {request.cmd} from {request.source}")
                 return node_pb2.ResponseMessage(error=f"Unknown command: {request.cmd}")
 
         return node_pb2.ResponseMessage()
@@ -188,11 +188,11 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
                 )
             except Exception as e:
                 error_text = f"Error while processing model: {request.cmd}: {e}"
-                logger.error(self.addr, error_text)
+                logger.error.remote(self.addr, error_text)
                 return node_pb2.ResponseMessage(error=error_text)
         else:
             # disconnect node
-            logger.error(self.addr, f"Unknown command: {request.cmd} from {request.source}")
+            logger.error.remote(self.addr, f"Unknown command: {request.cmd} from {request.source}")
             return node_pb2.ResponseMessage(error=f"Unknown command: {request.cmd}")
         return node_pb2.ResponseMessage()
 
