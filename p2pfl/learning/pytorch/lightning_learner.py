@@ -20,6 +20,7 @@
 
 import logging
 import pickle
+import ray
 from collections import OrderedDict
 import traceback
 from typing import Dict, Optional, Tuple
@@ -226,7 +227,8 @@ class LightningLearner(NodeLearner):
                 self.__trainer = None
                 # Log metrics
                 for k, v in results.items():
-                    logger.log_metric.remote(self.__self_addr, k, v)
+                    state = ray.get(logger.get_node_state.remote(self.__self_addr))
+                    logger.log_metric.remote(state, k, v)
                 return results
             else:
                 return {}

@@ -19,6 +19,7 @@
 
 import contextlib
 import threading
+import traceback
 from typing import Any, Dict, Type
 
 from p2pfl.commands.add_model_command import AddModelCommand
@@ -106,6 +107,7 @@ class Node:
             self.addr,
             simulation=simulation
         )
+        self.simulation = simulation
 
         # Workflow
         self.learning_workflow = LearningWorkflow()
@@ -222,7 +224,7 @@ class Node:
         self.__running = True
 
         # P2PFL Web Services
-        logger.register_node.remote(self.addr, self.state, self.state.simulation)
+        logger.register_node.remote(self.addr, self.state, self.simulation)
         # Communication Protocol
         self._communication_protocol.start()
         if wait:
@@ -244,6 +246,7 @@ class Node:
             # Set not running
             self.__running = False
             # State
+            self.state.refresh_state()
             self.state.clear()
             # Unregister node
             logger.unregister_node.remote(self.addr)
@@ -267,6 +270,7 @@ class Node:
         """
         self.data = data
         # If learner is already set (raise)
+        self.state.refresh_state()
         if self.state.learner is not None:
             raise LearnerNotSetException("Data cannot be set after learner is set.")
 
@@ -316,6 +320,7 @@ class Node:
         if rounds < 1:
             raise ZeroRoundsException("Rounds must be greater than 0.")
 
+        self.state.refresh_state()
         if self.state.round is None:
             # Broadcast start Learning
             logger.info.remote(self.addr, "Broadcasting start learning...")
@@ -365,12 +370,13 @@ class Node:
         except Exception as e:
             if logger.get_level_name.remote(logger.get_level.remote()) == "DEBUG":
                 raise e
-            logger.error.remote(self.addr, f"Error: {e}")
+            logger.error.remote(self.addr, f"Error: {traceback.format_exc()}")
             self.stop()
 
     def __stop_learning(self) -> None:
         logger.info.remote(self.addr, "Stopping learning")
-        # Leraner
+        # Learner
+        self.state.refresh_state()
         if self.state.learner is not None:
             self.state.learner.interrupt_fit()
         # Aggregator

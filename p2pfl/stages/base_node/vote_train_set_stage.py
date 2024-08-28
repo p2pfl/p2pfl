@@ -83,7 +83,7 @@ class VoteTrainSetStage(Stage):
 
         # Adding votes
         #state.train_set_votes_lock.acquire()
-        state.train_set_votes[state.addr] = dict(votes)
+        state.add_train_set_votes(state.addr, dict(votes))
         #state.train_set_votes_lock.release()
 
         # Send and wait for votes

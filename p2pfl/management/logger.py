@@ -390,7 +390,7 @@ class Logger:
 
     def log_metric(
         self,
-        node: str,
+        state: NodeState,
         metric: str,
         value: float,
         step: Optional[int] = None,
@@ -407,36 +407,34 @@ class Logger:
             round: The round.
 
         """
-        #print("Hey",self.nodes[node])
         # Get Round
         if round is None:
-            print("Nodes:",self.nodes[node][1])
-            round = self.nodes[node][1].round
+            round = state.round
         if round is None:
             raise Exception("No round provided. Needed for training metrics.")
 
         # Get Experiment Name
-        exp = self.nodes[node][1].actual_exp_name
+        exp = state.actual_exp_name
         if exp is None:
             raise Exception("No experiment name provided. Needed for training metrics.")
 
         # Local storage
         if step is None:
             # Global Metrics
-            self.global_metrics.add_log(exp, round, metric, node, value)
+            self.global_metrics.add_log(exp, round, metric, state.addr, value)
         else:
             # Local Metrics
-            self.local_metrics.add_log(exp, round, metric, node, value, step)
+            self.local_metrics.add_log(exp, round, metric, state.addr, value, step)
 
         # Web
         p2pfl_web_services = self.p2pfl_web_services
         if p2pfl_web_services is not None:
             if step is None:
                 # Global Metrics
-                p2pfl_web_services.send_global_metric(exp, round, metric, node, value)
+                p2pfl_web_services.send_global_metric(exp, round, metric, state.addr, value)
             else:
                 # Local Metrics
-                p2pfl_web_services.send_local_metric(exp, round, metric, node, value, step)
+                p2pfl_web_services.send_local_metric(exp, round, metric, state.addr, value, step)
 
     def log_system_metric(self, node: str, metric: str, value: float, time: datetime.datetime) -> None:
         """
@@ -538,6 +536,23 @@ class Logger:
             self.nodes.pop(node)
         else:
             raise Exception(f"Node {node} not registered.")
+        
+    def get_node_state(self, node: str) -> NodeState:
+        """
+        Get the node state.
+
+        Args:
+            node: The node address.
+
+        Returns:
+            The node state.
+
+        """
+        if self.nodes[node][1]:
+            self.nodes[node][1].refresh_state()
+            return self.nodes[node][1]
+        
+        return None
 
     ######
     # Node Status

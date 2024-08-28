@@ -38,6 +38,7 @@ class StageWokflow:
         state: Optional[NodeState] = kwargs.get("state")
         if state:
             while True:
+                state.refresh_state()
                 logger.debug.remote(state.addr, f"Running stage: {(self.current_stage.name())}")
                 next_stage = self.current_stage.execute(**kwargs)
                 if next_stage is None:

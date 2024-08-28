@@ -131,8 +131,14 @@ class NodeStateActor:
     def set_learner(self, learner: NodeLearner):
         self.learner = learner
 
+    def add_models_aggregated(self, addr: str, models: List[str]):
+        self.models_aggregated[addr] = models
+
     def set_models_aggregated(self, models_aggregated: Dict[str, List[str]]):
         self.models_aggregated = models_aggregated
+
+    def add_nei_status(self, addr: str, value: int):
+        self.nei_status[addr] = value
 
     def set_nei_status(self, nei_status: Dict[str, int]):
         self.nei_status = nei_status
@@ -146,6 +152,8 @@ class NodeStateActor:
     def set_train_set_votes(self, train_set_votes: Dict[str, Dict[str, int]]):
         self.train_set_votes = train_set_votes
 
+    def add_train_set_votes(self, addr: str, train_set_votes: Dict[str, int]):
+        self.train_set_votes[addr] = train_set_votes
 
     
     def set_experiment(self, exp_name: str, total_rounds: int) -> None:
@@ -188,10 +196,15 @@ class NodeStateActor:
 
 class NodeState():
     def __init__(self, addr: str, simulation: bool=False) -> None:
-        self.state = ray.put(NodeStateActor.remote(
+        self.state_addr = ray.put(NodeStateActor.remote(
             addr,
             simulation=simulation
         ))
+
+        self.state = None
+
+    def refresh_state(self) -> None:
+        self.state = ray.get(self.state_addr)
 
     @property 
     def addr(self) -> str:
@@ -201,8 +214,7 @@ class NodeState():
         Returns:
             The address of the node.
         """
-        state = ray.get(self.state)
-        return ray.get(state.get_addr.remote())
+        return ray.get(self.state.get_addr.remote())
     
     @addr.setter
     def addr(self, addr: str) -> None:
@@ -212,8 +224,7 @@ class NodeState():
         Args:
             addr: The address to set.
         """
-        state = ray.get(self.state)
-        return state.set_addr.remote(addr)
+        return self.state.set_addr.remote(addr)
 
     @property 
     def status(self) -> str:
@@ -223,8 +234,7 @@ class NodeState():
         Returns:
             str: The status of the node.
         """
-        state = ray.get(self.state)
-        return ray.get(state.get_status.remote())
+        return ray.get(self.state.get_status.remote())
     
     @status.setter
     def status(self, status: str) -> None:
@@ -234,8 +244,7 @@ class NodeState():
         Args:
             status: The status to set.
         """
-        state = ray.get(self.state)
-        return state.set_status.remote(status)
+        return self.state.set_status.remote(status)
 
     @property 
     def actual_exp_name(self) -> str:
@@ -245,8 +254,7 @@ class NodeState():
         Returns:
             str: The actual experiment name.
         """
-        state = ray.get(self.state)
-        return ray.get(state.get_actual_exp_name.remote())
+        return ray.get(self.state.get_actual_exp_name.remote())
     
     @actual_exp_name.setter
     def actual_exp_name(self, exp_name: str) -> None:
@@ -256,8 +264,7 @@ class NodeState():
         Args:
             exp_name: The experiment name to set.
         """
-        state = ray.get(self.state)
-        return state.set_actual_exp_name.remote(exp_name)
+        return self.state.set_actual_exp_name.remote(exp_name)
 
     @property 
     def total_rounds(self) -> int:
@@ -267,8 +274,7 @@ class NodeState():
         Returns:
             int: The total number of rounds.
         """
-        state = ray.get(self.state)
-        return ray.get(state.get_total_rounds.remote())
+        return ray.get(self.state.get_total_rounds.remote())
     
     @total_rounds.setter
     def total_rounds(self, total_rounds: int) -> None:      
@@ -278,8 +284,7 @@ class NodeState():
         Args:
             total_rounds: The total number of rounds to set.
         """
-        state = ray.get(self.state)
-        return state.set_total_rounds.remote(total_rounds)
+        return self.state.set_total_rounds.remote(total_rounds)
 
     @property 
     def simulation(self) -> bool:
@@ -289,8 +294,7 @@ class NodeState():
         Returns:
             bool: The simulation state of the node.
         """
-        state = ray.get(self.state)
-        return ray.get(state.get_simulation.remote())
+        return ray.get(self.state.get_simulation.remote())
     
     @simulation.setter
     def simulation(self, simulation: bool) -> None:
@@ -300,8 +304,7 @@ class NodeState():
         Args:
             simulation: The simulation state to set.
         """
-        state = ray.get(self.state)
-        return state.set_simulation.remote(simulation)
+        return self.state.set_simulation.remote(simulation)
 
     @property 
     def learner(self) -> NodeLearner:
@@ -311,8 +314,7 @@ class NodeState():
         Returns:
             NodeLearner: The learner object associated with the node.
         """
-        state = ray.get(self.state)
-        return ray.get(state.get_learner.remote())
+        return ray.get(self.state.get_learner.remote())
     
     @learner.setter
     def learner(self, learner: NodeLearner) -> None:
@@ -322,8 +324,7 @@ class NodeState():
         Args:
             learner: The learner object to set.
         """
-        state = ray.get(self.state)
-        return state.set_learner.remote(learner)
+        return self.state.set_learner.remote(learner)
 
     @property 
     def models_aggregated(self) -> Dict[str, List[str]]:
@@ -333,8 +334,7 @@ class NodeState():
         Returns:
             A dictionary containing the aggregated models, where the keys are strings and the values are lists of strings.
         """
-        state = ray.get(self.state)
-        return ray.get(state.get_models_aggregated.remote())
+        return ray.get(self.state.get_models_aggregated.remote())
     
     @models_aggregated.setter
     def models_aggregated(self, models_aggregated: Dict[str, List[str]]) -> None:
@@ -344,8 +344,17 @@ class NodeState():
         Args:
             models_aggregated: The aggregated models to set.
         """
-        state = ray.get(self.state)
-        return state.set_models_aggregated.remote(models_aggregated)
+        return self.state.set_models_aggregated.remote(models_aggregated)
+    
+    def add_models_aggregated(self, addr: str, models: List[str]) -> None:
+        """
+        Add aggregated models to the state.
+
+        Args:
+            addr: The address of the node.
+            models: The models to add.
+        """
+        return self.state.add_models_aggregated.remote(addr, models)
 
     @property 
     def nei_status(self) -> Dict[str, int]:
@@ -355,8 +364,7 @@ class NodeState():
         Returns:
             A dictionary containing the neighbor status, where the keys are the neighbor names and the values are the status codes.
         """
-        state = ray.get(self.state)
-        return ray.get(state.get_nei_status.remote())
+        return ray.get(self.state.get_nei_status.remote())
     
     @nei_status.setter
     def nei_status(self, nei_status: Dict[str, int]) -> None:
@@ -366,8 +374,16 @@ class NodeState():
         Args:
             nei_status: The neighbor status to set.
         """
-        state = ray.get(self.state)
-        return state.set_nei_status.remote(nei_status)
+        return self.state.set_nei_status.remote(nei_status)
+    
+    def add_nei_status(self, addr: str, value: int) -> None:
+        """
+        Add a neighbor status.
+
+        Args:
+            nei_status: The neighbor status to set.
+        """
+        return self.state.add_nei_status.remote(addr, value)
 
     @property
     def round(self) -> int | None:
@@ -377,8 +393,7 @@ class NodeState():
         Returns:
             int: The current round number.
         """
-        state = ray.get(self.state)
-        return ray.get(state.get_round.remote())
+        return ray.get(self.state.get_round.remote())
     
     @round.setter
     def round(self, round: int) -> None:
@@ -388,8 +403,7 @@ class NodeState():
         Args:
             round: The round number to set.
         """
-        state = ray.get(self.state)
-        return state.set_round.remote(round)
+        return self.state.set_round.remote(round)
     
     @property 
     def train_set(self) -> List[str]:
@@ -399,8 +413,7 @@ class NodeState():
         Returns:
             A list of strings representing the training set.
         """
-        state = ray.get(self.state)
-        return ray.get(state.get_train_set.remote())
+        return ray.get(self.state.get_train_set.remote())
     
     @train_set.setter
     def train_set(self, train_set: List[str]) -> None:
@@ -410,8 +423,7 @@ class NodeState():
         Args:
             train_set: The training set to set.
         """
-        state = ray.get(self.state)
-        return state.set_train_set.remote(train_set)
+        return self.state.set_train_set.remote(train_set)
 
     @property 
     def train_set_votes(self) -> Dict[str, Dict[str, int]]:
@@ -422,8 +434,7 @@ class NodeState():
             A dictionary containing the train set votes, where the keys are strings representing the train set names,
             and the values are dictionaries mapping the vote names to the corresponding vote counts.
         """
-        state = ray.get(self.state)
-        return ray.get(state.get_train_set_votes.remote())
+        return ray.get(self.state.get_train_set_votes.remote())
     
     @train_set_votes.setter
     def train_set_votes(self, train_set_votes: Dict[str, Dict[str, int]]) -> None:
@@ -433,8 +444,17 @@ class NodeState():
         Args:
             train_set_votes: The train set votes to set.
         """
-        state = ray.get(self.state)
-        return state.set_train_set_votes.remote(train_set_votes)
+        return self.state.set_train_set_votes.remote(train_set_votes)
+    
+    def add_train_set_votes(self, addr: str, train_set_votes: Dict[str, int]) -> None:
+        """
+        Add train set votes to the node's state.
+
+        Args:
+            addr: The address of the node.
+            train_set_votes: The train set votes to add.
+        """
+        return self.state.add_train_set_votes.remote(addr, train_set_votes)
 
     def set_experiment(self, exp_name: str, total_rounds: int) -> None:
         """
@@ -445,8 +465,7 @@ class NodeState():
             total_rounds: The total rounds of the experiment.
 
         """
-        state = ray.get(self.state)
-        return state.set_experiment.remote(exp_name, total_rounds)
+        return self.state.set_experiment.remote(exp_name, total_rounds)
 
     def increase_round(self) -> None:
         """
@@ -456,15 +475,12 @@ class NodeState():
             ValueError: If the round is not initialized.
 
         """
-        state = ray.get(self.state)
-        return state.increase_round.remote()
+        return self.state.increase_round.remote()
 
     def clear(self) -> None:
         """Clear the state."""
-        state = ray.get(self.state)
-        return state.clear.remote()
+        return self.state.clear.remote()
 
     def __str__(self) -> str:
         """String representation of the node state."""
-        state = ray.get(self.state)
-        return state.__str__.remote()
+        return ray.get(self.state.__str__.remote())

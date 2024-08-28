@@ -60,7 +60,7 @@ class VoteTrainSetCommand(Command):
                     tmp_votes[votes[i]] = int(votes[i + 1])
                 # set votes
                 #self.state.train_set_votes_lock.acquire()
-                self.state.train_set_votes[source] = tmp_votes
+                self.state.add_train_set_votes(source, tmp_votes)
                 #self.state.train_set_votes_lock.release()
                 # Communicate to the training process that a vote has been received
                 #with contextlib.suppress(Exception):
