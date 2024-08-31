@@ -246,7 +246,6 @@ class Node:
             # Set not running
             self.__running = False
             # State
-            self.state.refresh_state()
             self.state.clear()
             # Unregister node
             logger.unregister_node.remote(self.addr)
@@ -270,7 +269,6 @@ class Node:
         """
         self.data = data
         # If learner is already set (raise)
-        self.state.refresh_state()
         if self.state.learner is not None:
             raise LearnerNotSetException("Data cannot be set after learner is set.")
 
@@ -320,7 +318,6 @@ class Node:
         if rounds < 1:
             raise ZeroRoundsException("Rounds must be greater than 0.")
 
-        self.state.refresh_state()
         if self.state.round is None:
             # Broadcast start Learning
             logger.info.remote(self.addr, "Broadcasting start learning...")
@@ -376,7 +373,6 @@ class Node:
     def __stop_learning(self) -> None:
         logger.info.remote(self.addr, "Stopping learning")
         # Learner
-        self.state.refresh_state()
         if self.state.learner is not None:
             self.state.learner.interrupt_fit()
         # Aggregator

@@ -45,4 +45,4 @@ class ModelInitializedCommand(Command):
             **kwargs: The command keyword arguments.
 
         """
-        self.state.add_nei_status(source, -1)
+        self.state.nei_status[source] = -1

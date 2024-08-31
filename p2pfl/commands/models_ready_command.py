@@ -51,7 +51,7 @@ class ModelsReadyCommand(Command):
         ########################################################
         if self.state.round is not None:
             if round in [self.state.round - 1, self.state.round]:
-                self.state.add_nei_status(source, self.state.round)
+                self.state.nei_status[source] = self.state.round
             else:
                 # Ignored
                 logger.error.remote(

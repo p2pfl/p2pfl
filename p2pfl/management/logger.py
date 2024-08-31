@@ -200,7 +200,7 @@ class Logger:
     def __init__(self, p2pfl_web_services: Optional[P2pflWebServices] = None) -> None:
         """Initialize the logger."""
         # Node States
-        self.nodes: Dict[str, Tuple[Optional[NodeMonitor], NodeState]] = {}
+        self.nodes: Dict[str, Tuple[Optional[NodeMonitor]]] = {}
 
         # Experiment Metrics
         self.local_metrics = LocalMetricStorage()
@@ -407,6 +407,7 @@ class Logger:
             round: The round.
 
         """
+        print(state)
         # Get Round
         if round is None:
             round = state.round
@@ -507,8 +508,8 @@ class Logger:
 
         # Node State
         if self.nodes.get(node) is None:
-            # Dict[str, Tuple[NodeMonitor, NodeState]]
-            self.nodes[node] = (node_monitor, state)
+            # Dict[str, Tuple[NodeMonitor]]
+            self.nodes[node] = (node_monitor)
         else:
             raise Exception(f"Node {node} already registered.")
 
@@ -537,22 +538,6 @@ class Logger:
         else:
             raise Exception(f"Node {node} not registered.")
         
-    def get_node_state(self, node: str) -> NodeState:
-        """
-        Get the node state.
-
-        Args:
-            node: The node address.
-
-        Returns:
-            The node state.
-
-        """
-        if self.nodes[node][1]:
-            self.nodes[node][1].refresh_state()
-            return self.nodes[node][1]
-        
-        return None
 
     ######
     # Node Status
@@ -586,8 +571,8 @@ class Logger:
             node: The node address.
 
         """
-        r = self.nodes[node][1].round
-        self.warning(node, f"Uncatched Round Finished on Logger {r}")
+        #r = self.nodes[node][1].round
+        self.warning(node, f"Uncatched Round Finished on Logger")
 
 # Logger actor singleton
 logger = Logger.options(name="p2pfl_logger", lifetime="detached", get_if_exists=True).remote()

@@ -48,7 +48,7 @@ class ModelsAggregatedCommand(Command):
         """
         if round == self.state.round:
             # esto meterlo en estado o agg
-            self.state.add_models_aggregated(source, list(args))
+            self.state.models_aggregated[source] = list(args)
         else:
             logger.debug.remote(
                 self.state.addr,

@@ -71,7 +71,7 @@ class StartLearningStage(Stage):
             # Init
             state.set_experiment("experiment", rounds)
             logger.experiment_started.remote(state.addr)
-            state.learner = learner_class(model, data, state.addr, epochs) if not state.simulation else VirtualNodeLearner(learner_class, model, data, state.addr, epochs) # In simulation use a Virtual Learner
+            state.learner = learner_class(model, data, state, epochs) if not state.simulation else VirtualNodeLearner(learner_class, model, data, state, epochs) # In simulation use a Virtual Learner
             #state.start_thread_lock.release()
             begin = time.time()
 
