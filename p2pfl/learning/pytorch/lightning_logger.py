@@ -57,7 +57,7 @@ class FederatedLogger(Logger):
     def log_metrics(self, metrics: dict, step: int) -> None:
         """Log metrics (in a pytorch format)."""
         for k, v in metrics.items():
-            P2PLogger.log_metric.remote(self.state, k, v, step)
+            P2PLogger.log_metric.remote(self.state.to_training_state(), k, v, step)
 
     def save(self) -> None:
         """Save the logger."""

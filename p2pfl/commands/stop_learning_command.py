@@ -57,5 +57,5 @@ class StopLearningCommand(Command):
         self.state.clear()
         logger.experiment_finished.remote(self.state.addr)
         # Try to free wait locks
-        #with contextlib.suppress(Exception):
-        #    self.state.wait_votes_ready_lock.release()
+        with contextlib.suppress(Exception):
+            self.state.wait_votes_ready_lock.release()

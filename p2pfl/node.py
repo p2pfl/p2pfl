@@ -224,7 +224,7 @@ class Node:
         self.__running = True
 
         # P2PFL Web Services
-        logger.register_node.remote(self.addr, self.state, self.simulation)
+        logger.register_node.remote(self.addr, self.simulation)
         # Communication Protocol
         self._communication_protocol.start()
         if wait:
@@ -325,7 +325,7 @@ class Node:
                 self._communication_protocol.build_msg(StartLearningCommand.get_name(), [str(rounds), str(epochs)])
             )
             # Set model initialized
-            #self.state.model_initialized_lock.release()
+            self.state.model_initialized_lock.release()
             # Broadcast initialize model
             self._communication_protocol.broadcast(
                 self._communication_protocol.build_msg(ModelInitializedCommand.get_name())
@@ -381,5 +381,5 @@ class Node:
         self.state.clear()
         logger.experiment_finished.remote(self.addr)
         # Try to free wait locks
-        #with contextlib.suppress(Exception):
-        #    self.state.wait_votes_ready_lock.release()
+        with contextlib.suppress(Exception):
+            self.state.wait_votes_ready_lock.release()

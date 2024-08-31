@@ -34,7 +34,7 @@ from typing import Dict, List, Optional, Tuple
 from p2pfl.management.metric_storage import GlobalLogsType, GlobalMetricStorage, LocalLogsType, LocalMetricStorage
 from p2pfl.management.node_monitor import NodeMonitor
 from p2pfl.management.p2pfl_web_services import P2pflWebServices
-from p2pfl.node_state import NodeState
+from p2pfl.node_state import NodeState, TrainingState
 from p2pfl.settings import Settings
 
 #########################################
@@ -390,7 +390,7 @@ class Logger:
 
     def log_metric(
         self,
-        state: NodeState,
+        state: TrainingState,
         metric: str,
         value: float,
         step: Optional[int] = None,
@@ -407,7 +407,6 @@ class Logger:
             round: The round.
 
         """
-        print(state)
         # Get Round
         if round is None:
             round = state.round
@@ -415,7 +414,7 @@ class Logger:
             raise Exception("No round provided. Needed for training metrics.")
 
         # Get Experiment Name
-        exp = state.actual_exp_name
+        exp = state.experiment_name
         if exp is None:
             raise Exception("No experiment name provided. Needed for training metrics.")
 
@@ -485,13 +484,12 @@ class Logger:
     # Node registration
     ######
 
-    def register_node(self, node: str, state: NodeState, simulation: bool) -> None:
+    def register_node(self, node: str, simulation: bool) -> None:
         """
         Register a node.
 
         Args:
             node: The node address.
-            state: The node state.
             simulation: If the node is a simulation.
 
         """

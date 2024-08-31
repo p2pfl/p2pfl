@@ -21,8 +21,13 @@ import threading
 from typing import Dict, List, Optional
 
 from p2pfl.learning.learner import NodeLearner
-from p2pfl.management.signal import SignalActor
+#from p2pfl.management.signal import SignalActor
 
+class TrainingState:
+    def __init__(self, addr: Optional[str], round: Optional[int], experiment_name: Optional[str]) -> None:
+        self.addr = addr
+        self.round = round
+        self.experiment_name = experiment_name
 
 class NodeState:
     """
@@ -75,11 +80,11 @@ class NodeState:
         self.train_set_votes: Dict[str, Dict[str, int]] = {}
 
         # Locks
-        #self.train_set_votes_lock = threading.Lock()
-        #self.start_thread_lock = threading.Lock()
-        #self.wait_votes_ready_lock = threading.Lock()
-        #self.model_initialized_lock = threading.Lock()
-        #self.model_initialized_lock.acquire()
+        self.train_set_votes_lock = threading.Lock()
+        self.start_thread_lock = threading.Lock()
+        self.wait_votes_ready_lock = threading.Lock()
+        self.model_initialized_lock = threading.Lock()
+        self.model_initialized_lock.acquire()
 
     def set_experiment(self, exp_name: str, total_rounds: int) -> None:
         """
@@ -115,6 +120,15 @@ class NodeState:
         self.round = None
         self.total_rounds = None
 
+    def to_training_state(self) -> TrainingState:
+        """
+        Create a TrainState object containing only the round and experiment_name.
+        
+        Returns:
+            TrainingState: A new TrainingState instance with the current round and experiment_name.
+        """
+        return TrainingState(addr=self.addr, round=self.round, experiment_name=self.actual_exp_name)
+    
     def __str__(self) -> str:
         """String representation of the node state."""
         return f"NodeState(addr={self.addr}, status={self.status}, actual_exp_name={self.actual_exp_name}, round={self.round}, total_rounds={self.total_rounds}, simulation={self.simulation}, learner={self.learner}, models_aggregated={self.models_aggregated}, nei_status={self.nei_status}, train_set={self.train_set}, train_set_votes={self.train_set_votes})"

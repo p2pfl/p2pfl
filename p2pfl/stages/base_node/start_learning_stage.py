@@ -66,18 +66,18 @@ class StartLearningStage(Stage):
         ):
             raise Exception("Invalid parameters on StartLearningStage.")
 
-        #state.start_thread_lock.acquire()  # Used to avoid create duplicated training threads
+        state.start_thread_lock.acquire()  # Used to avoid create duplicated training threads
         if state.round is None:
             # Init
             state.set_experiment("experiment", rounds)
             logger.experiment_started.remote(state.addr)
             state.learner = learner_class(model, data, state, epochs) if not state.simulation else VirtualNodeLearner(learner_class, model, data, state, epochs) # In simulation use a Virtual Learner
-            #state.start_thread_lock.release()
+            state.start_thread_lock.release()
             begin = time.time()
 
             # Wait and gossip model inicialization
             logger.info.remote(state.addr, "Waiting initialization.")
-            #state.model_initialized_lock.acquire()
+            state.model_initialized_lock.acquire()
             logger.info.remote(state.addr, "Gossiping model initialization.")
             StartLearningStage.__gossip_model(state, communication_protocol, aggregator)
 
@@ -90,7 +90,7 @@ class StartLearningStage(Stage):
             return StageFactory.get_stage("VoteTrainSetStage")
 
         else:
-            #state.start_thread_lock.release()
+            state.start_thread_lock.release()
             return None
 
     @staticmethod

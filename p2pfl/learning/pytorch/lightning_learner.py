@@ -71,7 +71,7 @@ class LightningLearner(NodeLearner):
         self.epochs = epochs
         self.__state = state
         # Start logging
-        self.logger = FederatedLogger(state.addr)
+        self.logger = FederatedLogger(state)
         # To avoid GPU/TPU printings
         logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
 
@@ -228,7 +228,7 @@ class LightningLearner(NodeLearner):
                 self.__trainer = None
                 # Log metrics
                 for k, v in results.items():
-                    logger.log_metric.remote(self.__state, k, v)
+                    logger.log_metric.remote(self.__state.to_training_state(), k, v)
                 return results
             else:
                 return {}

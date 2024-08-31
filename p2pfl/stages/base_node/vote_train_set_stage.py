@@ -82,9 +82,9 @@ class VoteTrainSetStage(Stage):
         votes = list(zip(nodes_voted, weights))
 
         # Adding votes
-        #state.train_set_votes_lock.acquire()
+        state.train_set_votes_lock.acquire()
         state.train_set_votes[state.addr] = dict(votes)
-        #state.train_set_votes_lock.release()
+        state.train_set_votes_lock.release()
 
         # Send and wait for votes
         logger.info.remote(state.addr, "Sending train set vote.")
@@ -117,13 +117,13 @@ class VoteTrainSetStage(Stage):
             timeout = count > Settings.VOTE_TIMEOUT
 
             # Clear non candidate votes
-            #state.train_set_votes_lock.acquire()
+            state.train_set_votes_lock.acquire()
             nc_votes = {
                 k: v
                 for k, v in state.train_set_votes.items()
                 if k in list(communication_protocol.get_neighbors(only_direct=False)) or k == state.addr
             }
-            #state.train_set_votes_lock.release()
+            state.train_set_votes_lock.release()
 
             # Determine if all votes are received
             needed_votes = set(list(communication_protocol.get_neighbors(only_direct=False)) + [state.addr])
@@ -163,7 +163,7 @@ class VoteTrainSetStage(Stage):
                 return [i[0] for i in results_ordered]
 
             # Wait for votes or refresh every 2 seconds
-            #state.wait_votes_ready_lock.acquire(timeout=2)
+            state.wait_votes_ready_lock.acquire(timeout=2)
             time.sleep(2)
 
     @staticmethod

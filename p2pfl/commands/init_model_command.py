@@ -83,17 +83,17 @@ class InitModelCommand(Command):
                 return
 
             # Check moment (not init and invalid round)
-            #if not self.state.model_initialized_lock.locked():
-            #    logger.error(
-            #        self.state.addr,
-            #        "Model initizalization message when the model is already initialized. Ignored.",
-            #    )
-            #    return
+            if not self.state.model_initialized_lock.locked():
+                logger.error(
+                    self.state.addr,
+                    "Model initizalization message when the model is already initialized. Ignored.",
+                )
+                return
 
             try:
                 model = self.state.learner.decode_parameters(weights)
                 self.state.learner.set_parameters(model)
-                #self.state.model_initialized_lock.release()
+                self.state.model_initialized_lock.release()
                 logger.info.remote(self.state.addr, "Model Weights Initialized")
                 # Communicate Initialization
                 self.communication_protocol.broadcast(

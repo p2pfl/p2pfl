@@ -73,7 +73,7 @@ class RoundFinishedStage(Stage):
             RoundFinishedStage.__evaluate(state, communication_protocol)
             # Finish
             state.clear()
-            #state.model_initialized_lock.acquire()
+            state.model_initialized_lock.acquire()
             logger.info.remote(state.addr, "Training finished!!.")
             return None
 
