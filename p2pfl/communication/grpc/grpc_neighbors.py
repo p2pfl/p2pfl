@@ -43,13 +43,13 @@ class GrpcNeighbors(Neighbors):
         # Update if exists
         if addr in self.neis:
             # Update time
-            #self.neis_lock.acquire()
+            self.neis_lock.acquire()
             self.neis[addr] = (
                 self.neis[addr][0],
                 self.neis[addr][1],
                 time,
             )
-            #self.neis_lock.release()
+            self.neis_lock.release()
         else:
             # Add
             self.add(addr, non_direct=True)

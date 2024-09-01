@@ -37,7 +37,7 @@ class Neighbors:
         """Initialize the neighbor management class."""
         self.self_addr = self_addr
         self.neis: Dict[str, Any] = {}
-        #self.neis_lock = threading.Lock()
+        self.neis_lock = threading.Lock()
 
     def connect(self, addr: str) -> Any:
         """
@@ -89,12 +89,12 @@ class Neighbors:
             return False
 
         # Lock
-        #self.neis_lock.acquire()
+        self.neis_lock.acquire()
 
         # Cannot add duplicates
         if self.exists(addr):
             logger.info.remote(self.self_addr, f"Cannot add duplicates. {addr} already exists.")
-            #self.neis_lock.release()
+            self.neis_lock.release()
             return False
 
         # Add
@@ -102,11 +102,11 @@ class Neighbors:
             self.neis[addr] = self.connect(addr, *args, **kargs)
         except Exception as e:
             logger.error.remote(self.self_addr, f"Cannot add {addr}: {e}")
-            #self.neis_lock.release()
+            self.neis_lock.release()
             return False
 
         # Release
-        #self.neis_lock.release()
+        self.neis_lock.release()
         return True
 
     def remove(self, addr: str, *args, **kargs) -> None:
@@ -121,13 +121,13 @@ class Neighbors:
             kargs: Additional keyword arguments for the disconnect method (focused reimplementation).
 
         """
-        #self.neis_lock.acquire()
+        self.neis_lock.acquire()
         # Disconnect
         self.disconnect(addr, *args, **kargs)
         # Remove neighbor
         if addr in self.neis:
             del self.neis[addr]
-        #self.neis_lock.release()
+        self.neis_lock.release()
 
     def get(self, addr: str) -> Any:
         """
