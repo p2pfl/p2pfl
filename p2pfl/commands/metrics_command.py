@@ -52,4 +52,4 @@ class MetricsCommand(Command):
         for i in range(0, len(args), 2):
             key = args[i]
             value = float(args[i + 1])
-            logger.log_metric.remote(self.state.to_training_state(), key, value, round=round)
+            logger.log_metric.remote(self.state.to_training_state(), key, value)

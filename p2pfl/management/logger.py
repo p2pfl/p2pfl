@@ -154,6 +154,11 @@ class ColoredFormatter(logging.Formatter):
 #    Logger    #
 ################
 
+class ExperimentInfo:
+    def __init__(self) -> None:
+        self.experiment_name = None
+        self.round = None
+
 @ray.remote
 class Logger:
     """
@@ -200,7 +205,7 @@ class Logger:
     def __init__(self, p2pfl_web_services: Optional[P2pflWebServices] = None) -> None:
         """Initialize the logger."""
         # Node States
-        self.nodes: Dict[str, Tuple[Optional[NodeMonitor]]] = {}
+        self.nodes: Dict[str, Tuple[Optional[NodeMonitor], ExperimentInfo]] = {}
 
         # Experiment Metrics
         self.local_metrics = LocalMetricStorage()
@@ -394,7 +399,6 @@ class Logger:
         metric: str,
         value: float,
         step: Optional[int] = None,
-        round: Optional[int] = None,
     ) -> None:
         """
         Log a metric.
@@ -408,33 +412,36 @@ class Logger:
 
         """
         # Get Round
-        if round is None:
-            round = state.round
+        round = state.round if state.round is not None else self.nodes[state.addr][1].round
         if round is None:
             raise Exception("No round provided. Needed for training metrics.")
+        
+        self.nodes[state.addr][1].round = round
 
         # Get Experiment Name
-        exp = state.experiment_name
+        exp = state.experiment_name if state.experiment_name is not None else self.nodes[state.addr][1].experiment_name
         if exp is None:
             raise Exception("No experiment name provided. Needed for training metrics.")
+        
+        self.nodes[state.addr][1].experiment_name = exp
 
         # Local storage
         if step is None:
             # Global Metrics
-            self.global_metrics.add_log(exp, round, metric, state.addr, value)
+            self.global_metrics.add_log(exp, state.round, metric, state.addr, value)
         else:
             # Local Metrics
-            self.local_metrics.add_log(exp, round, metric, state.addr, value, step)
+            self.local_metrics.add_log(exp, state.round, metric, state.addr, value, step)
 
         # Web
         p2pfl_web_services = self.p2pfl_web_services
         if p2pfl_web_services is not None:
             if step is None:
                 # Global Metrics
-                p2pfl_web_services.send_global_metric(exp, round, metric, state.addr, value)
+                p2pfl_web_services.send_global_metric(exp, state.round, metric, state.addr, value)
             else:
                 # Local Metrics
-                p2pfl_web_services.send_local_metric(exp, round, metric, state.addr, value, step)
+                p2pfl_web_services.send_local_metric(exp, state.round, metric, state.addr, value, step)
 
     def log_system_metric(self, node: str, metric: str, value: float, time: datetime.datetime) -> None:
         """
@@ -506,8 +513,8 @@ class Logger:
 
         # Node State
         if self.nodes.get(node) is None:
-            # Dict[str, Tuple[NodeMonitor]]
-            self.nodes[node] = (node_monitor)
+            # Dict[str, Tuple[NodeMonitor, ExperimentInfo]]
+            self.nodes[node] = (node_monitor, ExperimentInfo())
         else:
             raise Exception(f"Node {node} already registered.")
 
