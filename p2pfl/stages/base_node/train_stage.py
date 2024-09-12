@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,16 +17,18 @@
 #
 """Train stage."""
 
-from typing import Any, Callable, List, Optional, Type, Union
+from typing import Any, List, Optional, Type, Union
 
-from p2pfl.commands.add_model_command import AddModelCommand
-from p2pfl.commands.metrics_command import MetricsCommand
-from p2pfl.commands.models_agregated_command import ModelsAggregatedCommand
-from p2pfl.communication.communication_protocol import CommunicationProtocol
-from p2pfl.learning.aggregators.aggregator import Aggregator
+from p2pfl.communication.commands.message.metrics_command import MetricsCommand
+from p2pfl.communication.commands.message.models_agregated_command import ModelsAggregatedCommand
+from p2pfl.communication.commands.message.models_ready_command import ModelsReadyCommand
+from p2pfl.communication.commands.weights.partial_model_command import PartialModelCommand
+from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
+from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
+from p2pfl.learning.learner import NodeLearner
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
-from p2pfl.stages.stage import Stage
+from p2pfl.stages.stage import EarlyStopException, Stage, check_early_stop
 from p2pfl.stages.stage_factory import StageFactory
 
 
@@ -42,37 +44,37 @@ class TrainStage(Stage):
     def execute(
         state: Optional[NodeState] = None,
         communication_protocol: Optional[CommunicationProtocol] = None,
+        learner: Optional[NodeLearner] = None,
         aggregator: Optional[Aggregator] = None,
-        early_stopping_fn: Optional[Callable[[], bool]] = None,
         **kwargs,
     ) -> Union[Type["Stage"], None]:
         """Execute the stage."""
-        if state is None or communication_protocol is None or aggregator is None or early_stopping_fn is None:
+        if state is None or communication_protocol is None or aggregator is None or learner is None:
             raise Exception("Invalid parameters on TrainStage.")
 
-        # Set nodes to agg
-        if not early_stopping_fn():
+        try:
+            check_early_stop(state)
+
             # Set Models To Aggregate
             aggregator.set_nodes_to_aggregate(state.train_set)
 
-        # Evaluate and send metrics
-        if not early_stopping_fn():
-            TrainStage.__evaluate(state, communication_protocol)
+            check_early_stop(state)
 
-        # Train
-        if not early_stopping_fn():
-            TrainStage.__train(state)
+            # Evaluate and send metrics
+            TrainStage.__evaluate(state, learner, communication_protocol)
 
-        # Aggregate Model
-        if not early_stopping_fn():  # eliminar esto, directamente comprobar si estan los atributos correspondientes
-            if state.learner is None:
-                raise Exception("Learner not initialized.")
-            models_added = aggregator.add_model(
-                state.learner.get_parameters(),
-                [state.addr],
-                state.learner.get_num_samples()[0],
-            )
+            check_early_stop(state)
+
+            # Train
+            logger.info(state.addr, "Training...")
+            learner.fit()
+
+            check_early_stop(state)
+
+            # Aggregate Model
+            models_added = aggregator.add_model(learner.get_model())
             # send model added msg ---->> redundant (a node always owns its model)
+            print("Broadcast redundante)")
             communication_protocol.broadcast(
                 communication_protocol.build_msg(
                     ModelsAggregatedCommand.get_name(),
@@ -82,22 +84,27 @@ class TrainStage(Stage):
             )
             TrainStage.__gossip_model_aggregation(state, communication_protocol, aggregator)
 
-        # Next stage
-        return StageFactory.get_stage("GossipModelStage")
+            check_early_stop(state)
+
+            # Set aggregated model
+            agg_model = aggregator.wait_and_get_aggregation()
+            logger.info(state.addr, "Aggregated model seted.")
+            learner.set_model(agg_model)
+
+            # Share that aggregation is done
+            communication_protocol.broadcast(
+                communication_protocol.build_msg(ModelsReadyCommand.get_name(), [], round=state.round)
+            )
+
+            # Next stage
+            return StageFactory.get_stage("GossipModelStage")
+        except EarlyStopException:
+            return None
 
     @staticmethod
-    def __train(state: NodeState) -> None:
-        logger.info(state.addr, "Training...")
-        if state.learner is None:
-            raise Exception("Learner not initialized.")
-        state.learner.fit()
-
-    @staticmethod
-    def __evaluate(state: NodeState, communication_protocol: CommunicationProtocol) -> None:
+    def __evaluate(state: NodeState, learner: NodeLearner, communication_protocol: CommunicationProtocol) -> None:
         logger.info(state.addr, "Evaluating...")
-        if state.learner is None:
-            raise Exception("Learner not initialized.")
-        results = state.learner.evaluate()
+        results = learner.evaluate()
         logger.info(state.addr, f"Evaluated. Results: {results}")
         # Send metrics
         if len(results) > 0:
@@ -149,22 +156,19 @@ class TrainStage(Stage):
             ]
 
         def model_fn(node: str) -> Any:
-            model, contributors, weight = aggregator.get_partial_aggregation(
-                TrainStage.__get_aggregated_models(node, state)  # reemplazar por Aggregator - borrarlo de node
-            )
-            if model is None or contributors is None or weight is None:
+            try:
+                model = aggregator.get_partial_aggregation(TrainStage.__get_aggregated_models(node, state))
+            except NoModelsToAggregateError:
                 return None
-            if state.learner is None:
-                raise Exception("Learner not initialized.")
             if state.round is None:
                 raise Exception("Round not initialized.")
-            encoded_model = state.learner.encode_parameters(params=model)
+
             return communication_protocol.build_weights(
-                AddModelCommand.get_name(),
+                PartialModelCommand.get_name(),
                 state.round,
-                encoded_model,
-                contributors,
-                weight,
+                model.encode_parameters(),
+                model.get_contributors(),
+                model.get_num_samples(),
             )
 
         # Gossip

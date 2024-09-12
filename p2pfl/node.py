@@ -1,5 +1,5 @@
 #
-# This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/federated_learning_p2p).
+# This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,25 +20,29 @@
 import contextlib
 import os
 import threading
+import traceback
 from typing import Any, Dict, Type
 
-from p2pfl.commands.add_model_command import AddModelCommand
-from p2pfl.commands.init_model_command import InitModelCommand
-from p2pfl.commands.metrics_command import MetricsCommand
-from p2pfl.commands.model_initialized_command import ModelInitializedCommand
-from p2pfl.commands.models_agregated_command import ModelsAggregatedCommand
-from p2pfl.commands.models_ready_command import ModelsReadyCommand
-from p2pfl.commands.start_learning_command import StartLearningCommand
-from p2pfl.commands.stop_learning_command import StopLearningCommand
-from p2pfl.commands.vote_train_set_command import VoteTrainSetCommand
-from p2pfl.communication.communication_protocol import CommunicationProtocol
-from p2pfl.communication.grpc.grpc_communication_protocol import (
+from p2pfl.communication.commands.message.metrics_command import MetricsCommand
+from p2pfl.communication.commands.message.model_initialized_command import ModelInitializedCommand
+from p2pfl.communication.commands.message.models_agregated_command import ModelsAggregatedCommand
+from p2pfl.communication.commands.message.models_ready_command import ModelsReadyCommand
+from p2pfl.communication.commands.message.start_learning_command import StartLearningCommand
+from p2pfl.communication.commands.message.stop_learning_command import StopLearningCommand
+from p2pfl.communication.commands.message.vote_train_set_command import VoteTrainSetCommand
+from p2pfl.communication.commands.weights.full_model_command import FullModelCommand
+from p2pfl.communication.commands.weights.init_model_command import InitModelCommand
+from p2pfl.communication.commands.weights.partial_model_command import PartialModelCommand
+from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
+from p2pfl.communication.protocols.grpc.grpc_communication_protocol import (
     GrpcCommunicationProtocol,
 )
-from p2pfl.exceptions import LearnerNotSetException, NodeRunningException, ZeroRoundsException
+from p2pfl.exceptions import LearnerRunningException, NodeRunningException, ZeroRoundsException
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.aggregators.fedavg import FedAvg
+from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.learner import NodeLearner
+from p2pfl.learning.p2pfl_model import P2PFLModel
 from p2pfl.learning.pytorch.lightning_learner import LightningLearner
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
@@ -83,8 +87,8 @@ class Node:
 
     def __init__(
         self,
-        model,
-        data,
+        model: P2PFLModel,
+        data: P2PFLDataset,
         address: str = "127.0.0.1",
         learner: Type[NodeLearner] = LightningLearner,
         aggregator: Type[Aggregator] = FedAvg,
@@ -97,16 +101,16 @@ class Node:
         self.addr = self._communication_protocol.get_address()
 
         # Learning
-        self.data = data
-        self.model = model
-        self.learner_class = learner
-        self.aggregator = aggregator(
-            node_name=self.addr
-        )  # Ponerlo como learner (que se vaya instanciando dinamicamente)
+        self.learner = learner(model, data, self.addr)
+        self.aggregator = aggregator(node_name=self.addr)
 
         # State
         self.__running = False
         self.state = NodeState(self.addr)
+
+        print("REVISAR REINICIO DE AGG Y LEARNER")
+        print("DOCU!!!")
+        print(logger.get_level_name(logger.get_level()))
 
         # Workflow
         self.learning_workflow = LearningWorkflow()
@@ -114,26 +118,17 @@ class Node:
         # Commands
         commands = [
             StartLearningCommand(self.__start_learning_thread),
-            StopLearningCommand(self.state, self.aggregator),
+            StopLearningCommand(self.state, self.aggregator, self.learner),
             ModelInitializedCommand(self.state),
             VoteTrainSetCommand(self.state),
             ModelsAggregatedCommand(self.state),
             ModelsReadyCommand(self.state),
             MetricsCommand(self.state),
-            InitModelCommand(
-                self.state,
-                self.stop,
-                self.aggregator,
-                self._communication_protocol,
-            ),
-            AddModelCommand(
-                self.state,
-                self.stop,
-                self.aggregator,
-                self._communication_protocol,
-            ),
+            InitModelCommand(self.state, self.stop, self.aggregator, self.learner),
+            PartialModelCommand(self.state, self.stop, self.aggregator, self._communication_protocol, self.learner),
+            FullModelCommand(self.state, self.stop, self.aggregator, self.learner),
         ]
-        self._communication_protocol.add_command(commands)  # no esta en la interfaz
+        self._communication_protocol.add_command(commands)
 
     #############################
     #  Neighborhood management  #
@@ -189,6 +184,10 @@ class Node:
     #######################################
     #   Node Management (servicer loop)   #
     #######################################
+
+    """
+    -> reemplazarlo por un decorador (y esto creo que se puede reemplazar por el estado del comm proto -> incluso importarlo de ahí)
+    """
 
     def assert_running(self, running: bool) -> None:
         """
@@ -254,23 +253,22 @@ class Node:
     #    Learning Setters    #
     ##########################
 
-    def set_data(self, data) -> None:
+    def set_learner(self, learner: NodeLearner) -> None:
         """
-        Set the data to be used in the learning process (by the learner).
+        Set the learner to be used in the learning process.
 
         Args:
-            data: Dataset to be used in the learning process.
+            learner: The learner to be used in the learning process.
 
         Raises:
-            LearnerNotSetException: If the learner is already set.
+            LearnerRunningException: If the learner is already set.
 
         """
-        self.data = data
-        # If learner is already set (raise)
-        if self.state.learner is not None:
-            raise LearnerNotSetException("Data cannot be set after learner is set.")
+        if self.state.round is not None:
+            raise LearnerRunningException("Learner cannot be set after learning is started.")
+        self.learner = learner
 
-    def set_model(self, model) -> None:
+    def set_model(self, model: P2PFLModel) -> None:
         """
         Set the model to be used in the learning process (by the learner).
 
@@ -278,13 +276,28 @@ class Node:
             model: Model to be used in the learning process.
 
         Raises:
-            LearnerNotSetException: If the learner is already set.
+            LearnerRunningException: If the learner is already set.
 
         """
-        self.model = model
-        # If learner is already set (raise)
-        if self.state.learner is not None:
-            raise LearnerNotSetException("Model cannot be set after learner is set.")
+        if self.state.round is not None:
+            raise LearnerRunningException("Data cannot be set after learner is set.")
+        self.learner.set_model(model)
+
+    def set_data(self, data: P2PFLDataset) -> None:
+        """
+        Set the data to be used in the learning process (by the learner).
+
+        Args:
+            data: Dataset to be used in the learning process.
+
+        Raises:
+            LearnerRunningException: If the learner is already set.
+
+        """
+        # Cannot change during training (raise)
+        if self.state.round is not None:
+            raise LearnerRunningException("Data cannot be set after learner is set.")
+        self.learner.set_data(data)
 
     ###############################################
     #         Network Learning Management         #
@@ -355,24 +368,18 @@ class Node:
                 rounds=rounds,
                 epochs=epochs,
                 state=self.state,
-                model=self.model,
-                data=self.data,
+                learner=self.learner,
                 communication_protocol=self._communication_protocol,
-                early_stopping_fn=lambda: self.state.round is None,
                 aggregator=self.aggregator,
-                learner_class=self.learner_class,
             )
         except Exception as e:
-            if logger.get_level_name(logger.get_level()) == "DEBUG":
-                raise e
-            logger.error(self.addr, f"Error: {e}")
+            logger.error(self.addr, f"Error {type(e).__name__}: {e}\n{traceback.format_exc()}")
             self.stop()
 
     def __stop_learning(self) -> None:
         logger.info(self.addr, "Stopping learning")
         # Leraner
-        if self.state.learner is not None:
-            self.state.learner.interrupt_fit()
+        self.learner.interrupt_fit()
         # Aggregator
         self.aggregator.clear()
         # State

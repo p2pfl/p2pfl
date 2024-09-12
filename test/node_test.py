@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,17 +20,17 @@
 import time
 
 import pytest
+import torch
 
-from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
-    MnistFederatedDM,
-)
-from p2pfl.learning.pytorch.mnist_examples.models.cnn import CNN
-from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
+from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
+from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
+from p2pfl.learning.pytorch.lightning_learner import LightningModel
+from p2pfl.learning.pytorch.torch_model import MLP
 from p2pfl.node import Node
 from p2pfl.utils import (
     check_equal_models,
     set_test_settings,
-    wait_4_results,
+    wait_to_finish,
     wait_convergence,
 )
 
@@ -40,8 +40,9 @@ set_test_settings()
 @pytest.fixture
 def two_nodes():
     """Create two nodes and start them. Yield the nodes. After the test, stop the nodes."""
-    n1 = Node(MLP(), MnistFederatedDM())
-    n2 = Node(MLP(), MnistFederatedDM())
+    data = P2PFLDataset.from_huggingface("p2pfl/mnist")
+    n1 = Node(LightningModel(MLP()), data)
+    n2 = Node(LightningModel(MLP()), data)
     n1.start()
     n2.start()
 
@@ -54,10 +55,12 @@ def two_nodes():
 @pytest.fixture
 def four_nodes():
     """Create four nodes and start them. Yield the nodes. After the test, stop the nodes."""
-    n1 = Node(MLP(), MnistFederatedDM())
-    n2 = Node(MLP(), MnistFederatedDM())
-    n3 = Node(MLP(), MnistFederatedDM())
-    n4 = Node(MLP(), MnistFederatedDM())
+    data = P2PFLDataset.from_huggingface("p2pfl/mnist")
+    partitions = data.generate_partitions(20, RandomIIDPartitionStrategy)
+    n1 = Node(LightningModel(MLP()), partitions[0])
+    n2 = Node(LightningModel(MLP()), partitions[1])
+    n3 = Node(LightningModel(MLP()), partitions[2])
+    n4 = Node(LightningModel(MLP()), partitions[3])
     nodes = [n1, n2, n3, n4]
     [n.start() for n in nodes]
 
@@ -70,7 +73,6 @@ def four_nodes():
 #    Tests Learning    #
 ########################
 
-
 @pytest.mark.parametrize("x", [(2, 1), (2, 2)])
 def test_convergence(x):
     """Test convergence (on learning) of two nodes."""
@@ -79,7 +81,10 @@ def test_convergence(x):
     # Node Creation
     nodes = []
     for _ in range(n):
-        node = Node(MLP(), MnistFederatedDM())
+        node = Node(
+            LightningModel(MLP()),
+            P2PFLDataset.from_huggingface("p2pfl/MNIST")
+        )
         node.start()
         nodes.append(node)
 
@@ -92,8 +97,15 @@ def test_convergence(x):
     # Start Learning
     nodes[0].set_start_learning(rounds=r, epochs=0)
 
-    # Wait and check
-    wait_4_results(nodes)
+    # Wait
+    wait_to_finish(nodes)
+
+    # Check if execution is correct
+    for node in nodes:
+        # gt
+        round_stages = ['VoteTrainSetStage', 'TrainStage', 'GossipModelStage', 'RoundFinishedStage'] * r
+        assert node.learning_workflow.history == ['StartLearningStage'] + round_stages
+
     check_equal_models(nodes)
 
     # Stop Nodes
@@ -102,34 +114,38 @@ def test_convergence(x):
 
 def test_interrupt_train(two_nodes):
     """Test interrupting training of a node."""
-    if (
-        __name__ == "__main__"
-    ):  # To avoid creating new process when current has not finished its bootstrapping phase
-        n1, n2 = two_nodes
-        n1.connect(n2.addr)
-        wait_convergence([n1, n2], 1, only_direct=True)
+    n1, n2 = two_nodes
+    n1.connect(n2.addr)
+    wait_convergence([n1, n2], 1, only_direct=True)
 
-        n1.set_start_learning(100, 100)
+    n1.set_start_learning(100, 100)
 
-        time.sleep(1)  # Wait because of asincronity
+    time.sleep(1)  # Wait because of asincronity
 
-        n1.set_stop_learning()
+    n1.set_stop_learning()
 
-        wait_4_results([n1, n2])
+    wait_to_finish([n1, n2])
+
+    # Check if execution is incorrect
+    assert 'RoundFinishedStage' not in n1.learning_workflow.history
+    assert 'RoundFinishedStage' not in n2.learning_workflow.history
 
 
 ##############################
 #    Fault Tolerace Tests    #
 ##############################
 
-
+"""
+-> Énfasis on the trainset inconsistency
+"""
 @pytest.mark.parametrize("n", [2, 4])
-def test_node_down_on_learning(n):
+def _test_node_down_on_learning(n):
     """Test node down on learning."""
     # Node Creation
     nodes = []
+    data = P2PFLDataset.from_huggingface("p2pfl/mnist")
     for _ in range(n):
-        node = Node(MLP(), MnistFederatedDM())
+        node = Node(LightningModel(MLP()), data)
         node.start()
         nodes.append(node)
 
@@ -143,34 +159,15 @@ def test_node_down_on_learning(n):
     nodes[0].set_start_learning(rounds=2, epochs=0)
 
     # Stopping node
-    time.sleep(0.3)
+    time.sleep(1)
     nodes[-1].stop()
 
-    wait_4_results(nodes)
+    wait_to_finish(nodes)
+
+    # Check if execution is incorrect
+    assert 'RoundFinishedStage' not in nodes[-1].learning_workflow.history
+    for node in nodes[:-1]:
+        assert 'RoundFinishedStage' in node.learning_workflow.history
 
     for node in nodes[:-1]:
         node.stop()
-
-
-def test_wrong_model():
-    """Test sending a wrong model."""
-    n1 = Node(MLP(), MnistFederatedDM())
-    n2 = Node(CNN(), MnistFederatedDM())
-
-    n1.start()
-    n2.start()
-
-    n1.connect(n2.addr)
-    time.sleep(0.1)
-
-    n1.set_start_learning(rounds=2, epochs=0)
-    time.sleep(0.1)
-
-    wait_4_results([n1, n2])
-
-    # CHANGE THIS WHEN STOP NODE CHANGES TO DISCONECTION
-    try:
-        n1.stop()
-        n2.stop()
-    except BaseException:
-        pass

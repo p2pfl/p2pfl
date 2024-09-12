@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,13 +16,17 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""Example of a P2PFL MNIST experiment, using a MLP model and a MnistFederatedDM."""
+
+"""
 import argparse
 import time
 
 import matplotlib.pyplot as plt
 
-from p2pfl.communication.grpc.grpc_communication_protocol import GrpcCommunicationProtocol
-from p2pfl.communication.memory.memory_communication_protocol import InMemoryCommunicationProtocol
+from p2pfl.communication.protocols.grpc.grpc_communication_protocol import GrpcCommunicationProtocol
+from p2pfl.communication.protocols.memory.memory_communication_protocol import InMemoryCommunicationProtocol
+from p2pfl.learning.pytorch.lightning_learner import LightningDataset, LightningLearner, LightningModel
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
     MnistFederatedDM,
 )
@@ -30,8 +34,6 @@ from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.utils import set_test_settings, wait_4_results, wait_convergence
-
-"""Example of a P2PFL MNIST experiment, using a MLP model and a MnistFederatedDM."""
 
 set_test_settings()
 
@@ -54,6 +56,7 @@ def __parse_args() -> argparse.Namespace:
         parser.error("Cannot use the unix socket and the local protocol at the same time.")
 
     return args
+"""
 
 
 def mnist(
@@ -78,6 +81,7 @@ def mnist(
         use_local_protocol: Use local protocol
 
     """
+    """
     if measure_time:
         start_time = time.time()
 
@@ -89,9 +93,9 @@ def mnist(
         else:
             address = f"unix:///tmp/p2pfl-{i}.sock" if use_unix_socket else "127.0.0.1"
 
+        learner = LightningLearner(LightningModel(MLP()), LightningDataset(MnistFederatedDM(sub_id=0, number_sub=2)))
         node = Node(
-            MLP(),
-            MnistFederatedDM(sub_id=0, number_sub=20),  # sampling for increase speed
+            learner,
             protocol=InMemoryCommunicationProtocol if use_local_protocol else GrpcCommunicationProtocol,  # type: ignore
             address=address,
         )
@@ -175,3 +179,4 @@ if __name__ == "__main__":
         use_unix_socket=args.use_unix_socket,
         use_local_protocol=args.use_local_protocol,
     )
+    """

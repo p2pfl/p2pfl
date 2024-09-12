@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -42,6 +42,10 @@ class Settings:
     LOG_DIR: str = "logs"
     """
     Directory to save logs.
+    """
+    EXCLUDE_BEAT_LOGS: bool = False
+    """
+    Exclude heartbeat logs.
     """
 
     ######

@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,12 @@
 
 """NodeLearning Interface - Template Pattern."""
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Dict, List, Union
+
+import numpy as np
+
+from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
+from p2pfl.learning.p2pfl_model import P2PFLModel
 
 
 class NodeLearner:
@@ -29,15 +34,24 @@ class NodeLearner:
         model: The model of the learner.
         data: The data of the learner.
         self_addr: The address of the learner.
-        epochs: The number of epochs of the model.
 
     """
 
-    def __init__(self, model: Any, data: Any, self_addr: str, epochs: int) -> None:
+    def __init__(self, model: P2PFLModel, data: P2PFLDataset, self_addr: str) -> None:
         """Initialize the learner."""
         raise NotImplementedError
 
-    def set_model(self, model: Any) -> None:
+    def set_addr(self, addr: str) -> None:
+        """
+        Set the address of the learner.
+
+        Args:
+            addr: The address of the learner.
+
+        """
+        raise NotImplementedError
+
+    def set_model(self, model: Union[P2PFLModel, List[np.ndarray], bytes]) -> None:
         """
         Set the model of the learner (not wheights).
 
@@ -50,7 +64,17 @@ class NodeLearner:
         """
         raise NotImplementedError
 
-    def set_data(self, data: Any) -> None:
+    def get_model(self) -> P2PFLModel:
+        """
+        Get the model of the learner.
+
+        Returns:
+            The model of the learner.
+
+        """
+        raise NotImplementedError
+
+    def set_data(self, data: P2PFLDataset) -> None:
         """
         Set the data of the learner. It is used to fit the model.
 
@@ -60,53 +84,12 @@ class NodeLearner:
         """
         raise NotImplementedError
 
-    def encode_parameters(self, params: Optional[Any] = None) -> bytes:
+    def get_data(self) -> P2PFLDataset:
         """
-        Encode the parameters of the model. (binary) If params are not provided, self parameters are encoded.
-
-        Args:
-            params: The parameters of the model. (non-binary)
-            contributors: The contributors of the model.
-            weight: The weight of the model.
+        Get the data of the learner.
 
         Returns:
-            The encoded parameters of the model.
-
-        """
-        raise NotImplementedError
-
-    def decode_parameters(self, data: bytes) -> Any:
-        """
-        Decode the parameters of the model (binary).
-
-        Args:
-            data: The encoded parameters of the model.
-
-        Returns:
-            The decoded parameters of the model.
-
-        """
-        raise NotImplementedError
-
-    def set_parameters(self, params: Any) -> None:
-        """
-        Set the parameters of the model.
-
-        Args:
-            params: The parameters of the model. (non-binary)
-
-        Raises:
-            ModelNotMatchingError: If the model is not matching the learner.
-
-        """
-        raise NotImplementedError
-
-    def get_parameters(self) -> Any:
-        """
-        Get the parameters of the model.
-
-        Returns
-            The parameters of the model. (non-binary)
+            The data of the learner.
 
         """
         raise NotImplementedError
@@ -135,16 +118,6 @@ class NodeLearner:
 
         Returns:
             The evaluation results.
-
-        """
-        raise NotImplementedError
-
-    def get_num_samples(self) -> Tuple[int, int]:
-        """
-        Get the number of samples of the model.
-
-        Returns
-            The number of samples of the model.
 
         """
         raise NotImplementedError

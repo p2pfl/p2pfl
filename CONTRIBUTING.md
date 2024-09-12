@@ -4,11 +4,11 @@
 
 ### 🐞 Reporting bugs
 
-If you find a bug, please open an issue in the [issue tracker](https://github.com/pguijas/federated_learning_p2p/issues/new). Please include as much information as possible, including the version of p2pfl you are using, the operating system, and any relevant stack traces or error messages.
+If you find a bug, please open an issue in the [issue tracker](https://github.com/pguijas/p2pfl/issues/new). Please include as much information as possible, including the version of p2pfl you are using, the operating system, and any relevant stack traces or error messages.
 
 ### 💡 Suggesting enhancements
 
-If you have an idea for a new feature, please open an issue in the [issue tracker](https://github.com/pguijas/federated_learning_p2p/issues/new). Please include as much information as possible, including a clear and descriptive title, a description of the problem you're trying to solve, and a description of the feature you'd like to see.
+If you have an idea for a new feature, please open an issue in the [issue tracker](https://github.com/pguijas/p2pfl/issues/new). Please include as much information as possible, including a clear and descriptive title, a description of the problem you're trying to solve, and a description of the feature you'd like to see.
 
 ### 💻 Contributing code
 

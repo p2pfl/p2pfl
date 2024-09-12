@@ -54,3 +54,24 @@ A brief description of each module will be given below:
 - `Learner`: This module is responsible for managing the learning process. Remark again the **template pattern**, which will make it possible to integrate different machine learning frameworks over the same API.
 - `Aggregator`: This module is responsible for managing the aggregation process. It is possible to implement different aggregation strategies using the **strategy pattern**.
 - `Workflow`: This module is responsible for managing the node's workflow. It is possible to implement different workflows using the **strategy pattern**.
+
+## Main workflow
+
+The main workflow of the library is as follows:
+
+> TENGO QUE ACTUALZARLO, CAMBIADO | AGREGAR DESCRIPCIONES DE CADA ETAPA
+
+```{eval-rst}
+.. mermaid::
+    :align: center
+
+    graph LR
+        A(StartLearningStage) --> B(VoteTrainSetStage)
+        B -- Node in trainset? --> C(TrainStage)
+        B -- Node not in trainset? --> D(WaitAggregatedModelsStage)
+        C --> E(GossipModelStage) 
+        D --> E
+        E --> F(RoundFinishedStage)
+        F -- No more rounds? --> Finished
+        F -- More rounds? --> B
+```
