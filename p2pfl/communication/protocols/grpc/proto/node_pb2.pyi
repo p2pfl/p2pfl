@@ -7,11 +7,10 @@ python -m grpc_tools.protoc -I=p2pfl/proto --python_out=p2pfl/proto --grpc_pytho
 
 import builtins
 import collections.abc
-import typing
-
 import google.protobuf.descriptor
 import google.protobuf.internal.containers
 import google.protobuf.message
+import typing
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
@@ -40,46 +39,12 @@ class RootMessage(google.protobuf.message.Message):
         message: global___Message | None = ...,
         weights: global___Weights | None = ...,
     ) -> None: ...
-    def HasField(
-        self,
-        field_name: typing.Literal[
-            "_round",
-            b"_round",
-            "message",
-            b"message",
-            "payload_type",
-            b"payload_type",
-            "round",
-            b"round",
-            "weights",
-            b"weights",
-        ],
-    ) -> builtins.bool: ...
-    def ClearField(
-        self,
-        field_name: typing.Literal[
-            "_round",
-            b"_round",
-            "cmd",
-            b"cmd",
-            "message",
-            b"message",
-            "payload_type",
-            b"payload_type",
-            "round",
-            b"round",
-            "source",
-            b"source",
-            "weights",
-            b"weights",
-        ],
-    ) -> None: ...
+    def HasField(self, field_name: typing.Literal["_round", b"_round", "message", b"message", "payload_type", b"payload_type", "round", b"round", "weights", b"weights"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["_round", b"_round", "cmd", b"cmd", "message", b"message", "payload_type", b"payload_type", "round", b"round", "source", b"source", "weights", b"weights"]) -> None: ...
     @typing.overload
     def WhichOneof(self, oneof_group: typing.Literal["_round", b"_round"]) -> typing.Literal["round"] | None: ...
     @typing.overload
-    def WhichOneof(
-        self, oneof_group: typing.Literal["payload_type", b"payload_type"]
-    ) -> typing.Literal["message", "weights"] | None: ...
+    def WhichOneof(self, oneof_group: typing.Literal["payload_type", b"payload_type"]) -> typing.Literal["message", "weights"] | None: ...
 
 global___RootMessage = RootMessage
 
@@ -123,12 +88,7 @@ class Weights(google.protobuf.message.Message):
         contributors: collections.abc.Iterable[builtins.str] | None = ...,
         num_samples: builtins.int = ...,
     ) -> None: ...
-    def ClearField(
-        self,
-        field_name: typing.Literal[
-            "contributors", b"contributors", "num_samples", b"num_samples", "weights", b"weights"
-        ],
-    ) -> None: ...
+    def ClearField(self, field_name: typing.Literal["contributors", b"contributors", "num_samples", b"num_samples", "weights", b"weights"]) -> None: ...
 
 global___Weights = Weights
 

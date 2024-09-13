@@ -23,7 +23,6 @@ from typing import Callable, Generator, Optional, Union
 
 import torchvision.datasets as datasets
 from datasets import Dataset, DatasetDict  # type: ignore
-from lightning import LightningDataModule
 from torch.utils.data import DataLoader
 
 from p2pfl.learning.dataset.p2pfl_dataset import DataExportStrategy, P2PFLDataset

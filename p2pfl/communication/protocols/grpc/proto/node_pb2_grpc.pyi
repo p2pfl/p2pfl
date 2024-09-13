@@ -7,17 +7,16 @@ python -m grpc_tools.protoc -I=p2pfl/proto --python_out=p2pfl/proto --grpc_pytho
 
 import abc
 import collections.abc
-import typing
-
 import google.protobuf.empty_pb2
-
 import grpc
-import grpc.aio  # type: ignore
+import grpc.aio # type: ignore
 from p2pfl.communication.protocols.grpc.proto import node_pb2
+import typing
 
 _T = typing.TypeVar("_T")
 
 class _MaybeAsyncIterator(collections.abc.AsyncIterator[_T], collections.abc.Iterator[_T], metaclass=abc.ABCMeta): ...
+
 class _ServicerContext(grpc.ServicerContext, grpc.aio.ServicerContext):  # type: ignore[misc, type-arg]
     ...
 
@@ -61,12 +60,14 @@ class NodeServicesServicer(metaclass=abc.ABCMeta):
         request: node_pb2.HandShakeRequest,
         context: _ServicerContext,
     ) -> typing.Union[node_pb2.ResponseMessage, collections.abc.Awaitable[node_pb2.ResponseMessage]]: ...
+
     @abc.abstractmethod
     def disconnect(
         self,
         request: node_pb2.HandShakeRequest,
         context: _ServicerContext,
     ) -> typing.Union[google.protobuf.empty_pb2.Empty, collections.abc.Awaitable[google.protobuf.empty_pb2.Empty]]: ...
+
     @abc.abstractmethod
     def send(
         self,
@@ -74,6 +75,4 @@ class NodeServicesServicer(metaclass=abc.ABCMeta):
         context: _ServicerContext,
     ) -> typing.Union[node_pb2.ResponseMessage, collections.abc.Awaitable[node_pb2.ResponseMessage]]: ...
 
-def add_NodeServicesServicer_to_server(
-    servicer: NodeServicesServicer, server: typing.Union[grpc.Server, grpc.aio.Server]
-) -> None: ...
+def add_NodeServicesServicer_to_server(servicer: NodeServicesServicer, server: typing.Union[grpc.Server, grpc.aio.Server]) -> None: ...
