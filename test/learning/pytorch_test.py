@@ -21,11 +21,11 @@ import numpy as np
 import pytest
 import torch
 from datasets import DatasetDict, load_dataset
-from pytorch_lightning import LightningDataModule
+from torch.utils.data import DataLoader
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.exceptions import ModelNotMatchingError
-from p2pfl.learning.pytorch.lightning_learner import LightningModel
+from p2pfl.learning.pytorch.lightning_learner import LightningLearner, LightningModel
 from p2pfl.learning.pytorch.torch_dataset import PyTorchExportStrategy, TorchvisionDatasetFactory
 from p2pfl.learning.pytorch.torch_model import MLP
 
@@ -103,18 +103,18 @@ def test_pytorch_export_strategy():
     dataset = TorchvisionDatasetFactory.get_mnist(cache_dir=".", train=True, download=True)
 
     export_strategy = PyTorchExportStrategy()
-    data_module = dataset.export(export_strategy)
+    train_dataloader = dataset.export(export_strategy, train_loader=True)
+    test_dataloader = dataset.export(export_strategy, train_loader=False)
 
-    assert isinstance(data_module, LightningDataModule)
+    assert isinstance(train_dataloader, DataLoader)
+    assert isinstance(test_dataloader, DataLoader)
 
     # Check if data
-    train_loader = data_module.train_dataloader()
-    test_loader = data_module.test_dataloader()
-    assert len(train_loader) > 0
-    assert len(test_loader) > 0
+    assert len(train_dataloader) > 0
+    assert len(test_dataloader) > 0
 
     # Check if the data is loaded correctly
-    sample = next(iter(train_loader))
+    sample = next(iter(train_dataloader))
     assert "image" in sample
     assert "label" in sample
 
@@ -136,13 +136,14 @@ def test_learner_train():
     )
 
     # Create the model
-    p2pfl_model = LightningModel(MLP(), dataset)
+    p2pfl_model = LightningModel(MLP())
 
-    # Export the dataset
-    data_module = dataset.export(PyTorchExportStrategy(), batch_size=1)
+    # Learner
+    learner = LightningLearner(p2pfl_model, dataset)
 
     # Train
-    p2pfl_model.train(data_module, max_epochs=1)
+    learner.set_epochs(1)
+    learner.fit()
 
     # Test
-    p2pfl_model.test(data_module)
+    learner.evaluate()

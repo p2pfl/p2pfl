@@ -174,9 +174,8 @@ def test_neightboor_management_and_gossip(protocol_class: Type[CommunicationProt
 
     # Wait for convergence
     wait_convergence([protocol4, protocol5], 1, wait=Settings.HEARTBEAT_TIMEOUT * 2, only_direct=False)
-    assert len(protocol1.get_neighbors(only_direct=False)) == 1
-    assert len(protocol2.get_neighbors(only_direct=False)) == 1
-    assert len(protocol3.get_neighbors(only_direct=False)) == 0
+    wait_convergence([protocol1, protocol2], 1, wait=Settings.HEARTBEAT_TIMEOUT * 2, only_direct=False)
+    wait_convergence([protocol3], 0, wait=Settings.HEARTBEAT_TIMEOUT * 2, only_direct=False)
 
     # Check neighbors (only direct)
     assert len(protocol1.get_neighbors(only_direct=True)) == 1

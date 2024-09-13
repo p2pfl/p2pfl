@@ -21,10 +21,11 @@
 import logging
 from typing import Dict, List, Optional, Tuple, Union
 
+import lightning as L
 import numpy as np
-import pytorch_lightning as pl
 import torch
-from pytorch_lightning import Trainer
+from lightning import Trainer
+from torch.utils.data import DataLoader
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.exceptions import (
@@ -55,7 +56,7 @@ class LightningModel(P2PFLModel):
 
     def __init__(
         self,
-        model: pl.LightningModule,
+        model: L.LightningModule,
         params: Optional[Union[List[np.ndarray], bytes]] = None,
         num_samples: Optional[int] = None,
         contributors: Optional[List[str]] = None,
@@ -201,14 +202,14 @@ class LightningLearner(NodeLearner):
         """
         self.epochs = epochs
 
-    def __get_pt_model_data(self) -> Tuple[pl.LightningModule, pl.LightningDataModule]:
+    def __get_pt_model_data(self, train: bool = True) -> Tuple[L.LightningModule, DataLoader]:
         # Get Model
         pt_model = self.model.get_model()
-        if not isinstance(pt_model, pl.LightningModule):
+        if not isinstance(pt_model, L.LightningModule):
             raise ValueError("The model must be a PyTorch Lightning model")
         # Get Data
-        pt_data = self.data.export(PyTorchExportStrategy)
-        if not isinstance(pt_data, pl.LightningDataModule):
+        pt_data = self.data.export(PyTorchExportStrategy, train=train)
+        if not isinstance(pt_data, DataLoader):
             raise ValueError("The data must be a PyTorch DataLoader")
         return pt_model, pt_data
 
@@ -265,7 +266,8 @@ class LightningLearner(NodeLearner):
                 # Log metrics
                 for k, v in results.items():
                     logger.log_metric(self.__self_addr, k, v)
-                return results
+                return dict(results)
+
             else:
                 return {}
         except Exception as e:

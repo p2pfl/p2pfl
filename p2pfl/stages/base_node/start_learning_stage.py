@@ -85,7 +85,6 @@ class StartLearningStage(Stage):
         # Vote
         return StageFactory.get_stage("VoteTrainSetStage")
 
-
     @staticmethod
     def __gossip_model(
         state: NodeState,

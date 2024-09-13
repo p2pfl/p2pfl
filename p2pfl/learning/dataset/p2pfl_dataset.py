@@ -1,7 +1,26 @@
+#
+# This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/p2pfl).
+# Copyright (c) 2022 Pedro Guijas Bravo.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+"""P2PFL dataset abstraction."""
+
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Type, Union
 
-import pandas as pd
+import pandas as pd  # type: ignore
 from datasets import Dataset, DatasetDict, load_dataset  # type: ignore
 
 from p2pfl.learning.dataset.partition_strategies import DataPartitionStrategy
@@ -16,19 +35,21 @@ class DataExportStrategy(ABC):
     """Abstract base class for export strategies."""
 
     @staticmethod
-    def export(train_data: Dataset, test_data: Dataset, transforms: Optional[Callable] = None, **kwargs) -> Any:
+    @abstractmethod
+    def export(data: Dataset, transforms: Optional[Callable] = None, **kwargs) -> Any:
         """
         Export the data using the specific strategy.
 
         Args:
             data: The data to export.
-            XXXX
+            transforms: The transforms to apply to the data.
+            **kwargs: Additional keyword arguments for the export strategy.
 
         Return:
             The exported data.
 
         """
-        raise NotImplementedError
+        pass
 
 
 class P2PFLDataset:
@@ -86,7 +107,10 @@ class P2PFLDataset:
         Initialize the P2PFLDataset object.
 
         Args:
-            data: A `datasets.Dataset` (single daatasource) or `datasets.DatasetDict` (multiple or splitted datasources) object.
+            data: The dataset to use.
+            train_split_name: The name of the training split.
+            test_split_name: The name of the test split.
+            transforms: The transforms to apply to the data.
 
         """
         self._data = data
@@ -94,7 +118,7 @@ class P2PFLDataset:
         self._test_split_name = test_split_name
         self._transforms = transforms
 
-    def get(self, idx, train: bool = True, partition_id: Optional[int] = None) -> Dict[str, Any]:
+    def get(self, idx, train: bool = True) -> Dict[str, Any]:
         """
         Get the item at the given index.
 
@@ -128,7 +152,11 @@ class P2PFLDataset:
         Generate a train/test split of the dataset.
 
         Args:
-            ...
+            test_size: The proportion of the dataset to include in the test split.
+            seed: The random seed to use for reproducibility.
+            shuffle: Whether to shuffle the data before splitting.
+            **kwargs: Additional keyword arguments to pass to the train_test_split method.
+
         """
         if isinstance(self._data, Dataset):
             self._data = self._data.train_test_split()
@@ -140,7 +168,7 @@ class P2PFLDataset:
         Get the number of samples in the dataset.
 
         Args:
-            split: The split to get the number of samples for (e.g., "train", "test"). If None, returns the total number of samples.
+            train: If True, get the number of samples in the training split. Otherwise, get the number of samples in the test split.
 
         Returns:
             The number of samples in the dataset.
@@ -163,6 +191,8 @@ class P2PFLDataset:
         Args:
             num_partitions: The number of partitions to generate.
             strategy: The partition strategy to use.
+            seed: The random seed to use for reproducibility.
+            label_tag: The tag to use for the label.
 
         Returns:
             An iterable of P2PFLDataset objects.
@@ -187,6 +217,7 @@ class P2PFLDataset:
     def export(
         self,
         strategy: Type[DataExportStrategy],
+        train: bool = True,
         **kwargs,
     ) -> Any:
         """
@@ -194,6 +225,8 @@ class P2PFLDataset:
 
         Args:
             strategy: The export strategy to use.
+            train: If True, export the training data. Otherwise, export the test data.
+            **kwargs: Additional keyword arguments for the export strategy.
 
         Returns:
             The exported data.
@@ -204,9 +237,8 @@ class P2PFLDataset:
             raise ValueError("Cannot export single datasets. Need to generate train/test splits first.")
 
         # Export
-        return strategy.export(
-            self._data[self._train_split_name], self._data[self._test_split_name], transforms=self._transforms, **kwargs
-        )
+        split = self._train_split_name if train else self._test_split_name
+        return strategy.export(self._data[split], transforms=self._transforms, **kwargs)
 
     @classmethod
     def from_csv(cls, data_files: DataFilesType, **kwargs) -> "P2PFLDataset":

@@ -19,14 +19,6 @@ Each data point is a pair:
 - **image:** A visual captured (stored as a PIL Image).
 - **label:** The corresponding label (an integer representing the class).
 
-## 🚀 How to Use this Dataset
-
-```python
-from datasets import load_dataset
-
-dataset = load_dataset('{{ dataset_name }}')
-```
-
 ## 🗄️ Source Data
 
 {{ source_data | default("[More Information Needed]", true) }}

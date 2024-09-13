@@ -21,13 +21,12 @@ poetry run python p2pfl/learning/pytorch/utils/torchvision_to_datasets.py \
 import argparse
 import os
 import shutil
-from typing import Any, Callable, Dict, Generator, Optional
+from typing import Any
 
 import huggingface_hub  # type: ignore
 from datasets import Dataset, DatasetDict  # type: ignore
 from huggingface_hub import DatasetCard, DatasetCardData
 from torchvision import datasets
-from torchvision.datasets.vision import VisionDataset
 
 SUPPORTED_DATASETS = [
     "CIFAR10",
@@ -170,13 +169,14 @@ if __name__ == "__main__":
     card_data["multilinguality"] = "monolingual"
     card_data["pretty_name"] = args.dataset_name
 
+    link = f"[{args.dataset_name}]({args.official_link})"
     card = DatasetCard.from_template(
         card_data=DatasetCardData(**card_data),
         template_path=template_path,
         dataset_summary=args.dataset_summary,
         dataset_description=args.dataset_description,
         dataset_name=args.dataset_name,
-        source_data=f"Auto-generated from PyTorch Vision, please check the original [{args.dataset_name}]({args.official_link}) for more info.",
+        source_data=f"Auto-generated from PyTorch Vision, please check the original {link} for more info.",
     )
 
     print(f"Pushing dataset card to the Hugging Face Hub: {full_repo_name}")

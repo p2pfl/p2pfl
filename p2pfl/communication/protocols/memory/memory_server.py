@@ -144,7 +144,7 @@ class InMemoryServer:
         """
         # If not processed
         if self.__gossiper.check_and_set_processed(request["hash"]):
-            if Settings.EXCLUDE_BEAT_LOGS and request.cmd == "beat":
+            if Settings.EXCLUDE_BEAT_LOGS and request["cmd"] == "beat":
                 logger.debug(
                     self.addr,
                     f"Received message from {request['source']} > {request['cmd']} {request['args']}",

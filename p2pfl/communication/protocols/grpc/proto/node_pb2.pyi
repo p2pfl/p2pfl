@@ -7,10 +7,11 @@ python -m grpc_tools.protoc -I=p2pfl/proto --python_out=p2pfl/proto --grpc_pytho
 
 import builtins
 import collections.abc
+import typing
+
 import google.protobuf.descriptor
 import google.protobuf.internal.containers
 import google.protobuf.message
-import typing
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 

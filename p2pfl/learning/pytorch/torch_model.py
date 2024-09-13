@@ -1,7 +1,7 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
 # (see https://github.com/pguijas/p2pfl).
-# Copyright (c) 2022 Pedro Guijas Bravo.
+# Copyright (c) 2024 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,10 +18,10 @@
 
 """Convolutional Neural Network (for MNIST) with PyTorch Lightning."""
 
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 
+import lightning as L
 import numpy as np
-import pytorch_lightning as pl
 import torch
 from torchmetrics import Accuracy, Metric
 
@@ -44,7 +44,7 @@ class LightningModel(P2PFLModel):
 
     def __init__(
         self,
-        model: pl.LightningModule,
+        model: L.LightningModule,
         params: Optional[Union[List[np.ndarray], bytes]] = None,
         num_samples: Optional[int] = None,
         contributors: Optional[List[str]] = None,
@@ -97,7 +97,7 @@ class LightningModel(P2PFLModel):
 ####
 
 
-class MLP(pl.LightningModule):
+class MLP(L.LightningModule):
     """Multilayer Perceptron (MLP) with configurable parameters."""
 
     def __init__(
@@ -151,7 +151,7 @@ class MLP(pl.LightningModule):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass of the MLP."""
         # Flatten the input
-        batch_size, channels, width, height = x.size()
+        batch_size, _, _ = x.size()
         x = x.view(batch_size, -1)
 
         for layer in self.layers:
@@ -164,16 +164,18 @@ class MLP(pl.LightningModule):
         """Configure the optimizer."""
         return torch.optim.Adam(self.parameters(), lr=self.lr_rate)
 
-    def training_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_id: int) -> torch.Tensor:
+    def training_step(self, batch: Dict[str, torch.Tensor], batch_id: int) -> torch.Tensor:
         """Training step of the MLP."""
-        x, y = batch
+        x = batch["image"].float()
+        y = batch["label"]
         loss = torch.nn.functional.cross_entropy(self(x), y)
         self.log("train_loss", loss, prog_bar=True)
         return loss
 
-    def validation_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_id: int) -> torch.Tensor:
+    def validation_step(self, batch: Dict[str, torch.Tensor], batch_id: int) -> torch.Tensor:
         """Perform validation step for the MLP."""
-        x, y = batch
+        x = batch["image"].float()
+        y = batch["label"]
         logits = self(x)
         loss = torch.nn.functional.cross_entropy(self(x), y)
         out = torch.argmax(logits, dim=1)
@@ -182,9 +184,10 @@ class MLP(pl.LightningModule):
         self.log("val_metric", metric, prog_bar=True)
         return loss
 
-    def test_step(self, batch: Tuple[torch.Tensor, torch.Tensor], batch_id: int) -> torch.Tensor:
+    def test_step(self, batch: Dict[str, torch.Tensor], batch_id: int) -> torch.Tensor:
         """Test step for the MLP."""
-        x, y = batch
+        x = batch["image"].float()
+        y = batch["label"]
         logits = self(x)
         loss = torch.nn.functional.cross_entropy(self(x), y)
         out = torch.argmax(logits, dim=1)

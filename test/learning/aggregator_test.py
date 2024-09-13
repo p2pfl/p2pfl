@@ -24,7 +24,6 @@ import numpy as np
 import pytest
 
 from p2pfl.learning.aggregators.fedavg import FedAvg
-from p2pfl.learning.aggregators.fedmedian import FedMedian
 from p2pfl.learning.p2pfl_model import P2PFLModel
 from p2pfl.learning.pytorch.lightning_learner import LightningModel
 from p2pfl.learning.pytorch.torch_model import MLP
@@ -77,10 +76,12 @@ def test_avg_simple():
     assert np.array_equal(res.get_parameters()[0], np.array([4, 5, 6]))
     assert set(res.get_contributors()) == {"1", "2", "3"}
 
+
 def test_avg_complex():
     """Test complex aggregation (models)."""
     # Initial Model
-    model = LightningModel(MLP(), num_samples=1)
+    model = LightningModel(MLP(), num_samples=1, contributors=["1"])
+
     params = model.get_parameters()
 
     # Model 1
@@ -98,14 +99,15 @@ def test_avg_complex():
     res = aggregator.aggregate(
         [
             model,
-            LightningModel(MLP(), params=params1, num_samples=2),
-            LightningModel(MLP(), params=params2, num_samples=2),
+            LightningModel(MLP(), params=params1, num_samples=2, contributors=["2"]),
+            LightningModel(MLP(), params=params2, num_samples=2, contributors=["3"]),
         ]
     )
 
     # Assertion: Check if the aggregated parameters are equal to the initial model's parameters
     for i, layer in enumerate(res.get_parameters()):
         assert np.allclose(layer, model.get_parameters()[i], atol=1e-7), f"Layer {i} does not match"
+    assert set(res.get_contributors()) == {"1", "2", "3"}
 
 
 def test_aggregator_lifecicle():

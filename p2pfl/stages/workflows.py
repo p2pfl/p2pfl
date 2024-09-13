@@ -17,7 +17,7 @@
 #
 """Workflows."""
 
-from typing import Optional, Type
+from typing import List, Optional, Type
 
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
@@ -31,7 +31,7 @@ class StageWokflow:
     def __init__(self, first_stage: Type[Stage]) -> None:
         """Initialize the workflow."""
         self.current_stage = first_stage
-        self.history = []
+        self.history: List[str] = []
         self.finished = False
 
     def run(self, **kwargs) -> None:

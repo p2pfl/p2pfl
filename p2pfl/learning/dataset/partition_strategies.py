@@ -15,6 +15,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""Data partitioning strategies for P2PFL Datasets."""
+
 import random
 from abc import ABC, abstractmethod
 from typing import List, Tuple
@@ -65,6 +67,7 @@ class RandomIIDPartitionStrategy(DataPartitionStrategy):
             train_data: The training Dataset object to partition.
             test_data: The test Dataset object to partition.
             num_partitions: The number of partitions to create.
+            seed: The random seed to use for reproducibility.
             **kwargs: Additional keyword arguments that may be required by specific strategies.
 
         Returns:
@@ -122,7 +125,8 @@ class LabelSkewedPartitionStrategy(DataPartitionStrategy):
             train_data: The training Dataset object to partition.
             test_data: The test Dataset object to partition.
             num_partitions: The number of partitions to create.
-            label:
+            seed: The random seed to use for reproducibility.
+            label_tag: The name of the column containing the labels.
             **kwargs: Additional keyword arguments that may be required by specific strategies.
 
         Returns:
@@ -151,8 +155,12 @@ class LabelSkewedPartitionStrategy(DataPartitionStrategy):
 
 
 class DirichletPartitionStrategy(DataPartitionStrategy):
+    """Not implemented yet."""
+
     pass
 
 
 class PercentageBasedNonIIDPartitionStrategy(DataPartitionStrategy):
+    """Not implemented yet."""
+
     pass

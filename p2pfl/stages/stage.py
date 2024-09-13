@@ -42,6 +42,7 @@ class EarlyStopException(Exception):
 
     pass
 
+
 def check_early_stop(state: NodeState, raise_exception: bool = True) -> bool:
     """
     Check if early stopping is required.
@@ -60,5 +61,6 @@ def check_early_stop(state: NodeState, raise_exception: bool = True) -> bool:
     if state.round is None:
         logger.info(state.addr, "Stopping Wokflow.")
         if raise_exception:
-           raise EarlyStopException("Early stopping.")
+            raise EarlyStopException("Early stopping.")
         return True
+    return False

@@ -20,7 +20,6 @@
 import time
 
 import pytest
-import torch
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
@@ -30,8 +29,8 @@ from p2pfl.node import Node
 from p2pfl.utils import (
     check_equal_models,
     set_test_settings,
-    wait_to_finish,
     wait_convergence,
+    wait_to_finish,
 )
 
 set_test_settings()
@@ -73,6 +72,7 @@ def four_nodes():
 #    Tests Learning    #
 ########################
 
+
 @pytest.mark.parametrize("x", [(2, 1), (2, 2)])
 def test_convergence(x):
     """Test convergence (on learning) of two nodes."""
@@ -81,10 +81,7 @@ def test_convergence(x):
     # Node Creation
     nodes = []
     for _ in range(n):
-        node = Node(
-            LightningModel(MLP()),
-            P2PFLDataset.from_huggingface("p2pfl/MNIST")
-        )
+        node = Node(LightningModel(MLP()), P2PFLDataset.from_huggingface("p2pfl/MNIST"))
         node.start()
         nodes.append(node)
 
@@ -103,8 +100,8 @@ def test_convergence(x):
     # Check if execution is correct
     for node in nodes:
         # gt
-        round_stages = ['VoteTrainSetStage', 'TrainStage', 'GossipModelStage', 'RoundFinishedStage'] * r
-        assert node.learning_workflow.history == ['StartLearningStage'] + round_stages
+        round_stages = ["VoteTrainSetStage", "TrainStage", "GossipModelStage", "RoundFinishedStage"] * r
+        assert node.learning_workflow.history == ["StartLearningStage"] + round_stages
 
     check_equal_models(nodes)
 
@@ -127,8 +124,8 @@ def test_interrupt_train(two_nodes):
     wait_to_finish([n1, n2])
 
     # Check if execution is incorrect
-    assert 'RoundFinishedStage' not in n1.learning_workflow.history
-    assert 'RoundFinishedStage' not in n2.learning_workflow.history
+    assert "RoundFinishedStage" not in n1.learning_workflow.history
+    assert "RoundFinishedStage" not in n2.learning_workflow.history
 
 
 ##############################
@@ -138,6 +135,8 @@ def test_interrupt_train(two_nodes):
 """
 -> Énfasis on the trainset inconsistency
 """
+
+
 @pytest.mark.parametrize("n", [2, 4])
 def _test_node_down_on_learning(n):
     """Test node down on learning."""
@@ -165,9 +164,9 @@ def _test_node_down_on_learning(n):
     wait_to_finish(nodes)
 
     # Check if execution is incorrect
-    assert 'RoundFinishedStage' not in nodes[-1].learning_workflow.history
+    assert "RoundFinishedStage" not in nodes[-1].learning_workflow.history
     for node in nodes[:-1]:
-        assert 'RoundFinishedStage' in node.learning_workflow.history
+        assert "RoundFinishedStage" in node.learning_workflow.history
 
     for node in nodes[:-1]:
         node.stop()
