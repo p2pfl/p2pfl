@@ -21,6 +21,28 @@ import ray
 
 from p2pfl.management.logger import logger
 
+def check_client_resources(client_resources: Dict[str, Union[int, float]]) -> Dict[str, Union[int, float]]:
+    """Check if client_resources are valid and return them."""
+    if client_resources is None:
+        logger.info.remote("localhost",
+            "No `client_resources` specified. Using minimal resources for clients.",
+        )
+        client_resources = {"num_cpus": 1, "num_gpus": 0.0}
+
+    # Each client needs at the very least one CPU
+    if "num_cpus" not in client_resources:
+        logger.debug.remote("localhost",
+            f"No `num_cpus` specified in `client_resources`. "+
+            "Using `num_cpus=1` for each client."
+        )
+        client_resources["num_cpus"] = 1
+
+    logger.info.remote("localhost",
+        f"Resources for each Virtual Client: {client_resources}"
+    )
+
+    return client_resources
+
 def pool_size_from_resources(client_resources: Dict[str, Union[int, float]]) -> int:
     """Calculate number of Actors that fit in the cluster.
 
@@ -36,6 +58,7 @@ def pool_size_from_resources(client_resources: Dict[str, Union[int, float]]) -> 
     # pool with 2 Actors. This, however, doesn't fit in the cluster since only one of
     # the nodes can fit one Actor.
     nodes = ray.nodes()
+
     for node in nodes:
         node_resources = node["Resources"]
 

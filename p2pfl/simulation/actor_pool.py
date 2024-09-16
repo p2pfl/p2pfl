@@ -80,7 +80,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.simulation.actor import VirtualLearnerActor
-from p2pfl.simulation.utils import pool_size_from_resources
+from p2pfl.simulation.utils import pool_size_from_resources, check_client_resources
 from p2pfl.management.logger import logger
 
 import ray
@@ -106,10 +106,10 @@ class SuperActorPool(ActorPool):
             actor_list (List[Type[VirtualLearnerActor]], optional): List of pre-created actor instances. Defaults to None.
         """
         if not hasattr(self, 'initialized'):  # To avoid reinitialization
-            self.resources = resources or {}
+            self.resources = check_client_resources(resources)
 
             if actor_list is None:
-                num_actors = pool_size_from_resources(resources)
+                num_actors = pool_size_from_resources(self.resources)
                 actors = [self.create_actor() for _ in range(num_actors)]
             else:
                 actors = actor_list
