@@ -17,10 +17,8 @@
 #
 
 from p2pfl.learning.learner import NodeLearner
-from p2pfl.node_state import NodeState
 from p2pfl.simulation.actor_pool import SuperActorPool
-import ray
-from typing import Any, Optional, Tuple, Type
+from typing import Any, Optional, Tuple
 
 
 class VirtualNodeLearner(NodeLearner):
@@ -31,12 +29,12 @@ class VirtualNodeLearner(NodeLearner):
                  learner: NodeLearner,
                  model: Any,
                  data: Any,
-                 state: NodeState,
+                 addr: str,
                  epochs: int
         ):
-        self.learner = learner(model, data, state, epochs)
+        self.learner = learner(model, data, addr, epochs)
         self.actor_pool = SuperActorPool()
-        self.addr = state.addr
+        self.addr = addr
 
     def set_model(self, model: Any) -> None:
         self.learner.set_model(model)

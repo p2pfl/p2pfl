@@ -60,4 +60,4 @@ if __name__ == "__main__":
     # Settings
     set_test_settings()
     # Launch experiment
-    test_convergence(2, 2, epochs=0)
+    test_convergence(5, 2, epochs=0)

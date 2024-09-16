@@ -27,6 +27,7 @@ import atexit
 import datetime
 import logging
 import os
+from p2pfl.experiment import Experiment
 import ray
 from logging.handlers import RotatingFileHandler
 from typing import Dict, List, Optional, Tuple
@@ -34,7 +35,6 @@ from typing import Dict, List, Optional, Tuple
 from p2pfl.management.metric_storage import GlobalLogsType, GlobalMetricStorage, LocalLogsType, LocalMetricStorage
 from p2pfl.management.node_monitor import NodeMonitor
 from p2pfl.management.p2pfl_web_services import P2pflWebServices
-from p2pfl.node_state import NodeState, TrainingState
 from p2pfl.settings import Settings
 
 #########################################
@@ -153,12 +153,6 @@ class ColoredFormatter(logging.Formatter):
 ################
 #    Logger    #
 ################
-
-class ExperimentInfo:
-    def __init__(self) -> None:
-        self.experiment_name = None
-        self.round = None
-
 @ray.remote
 class Logger:
     """
@@ -205,7 +199,7 @@ class Logger:
     def __init__(self, p2pfl_web_services: Optional[P2pflWebServices] = None) -> None:
         """Initialize the logger."""
         # Node States
-        self.nodes: Dict[str, Tuple[Optional[NodeMonitor], ExperimentInfo]] = {}
+        self.nodes: Dict[str, Tuple[Optional[NodeMonitor], Experiment]] = {}
 
         # Experiment Metrics
         self.local_metrics = LocalMetricStorage()
@@ -395,9 +389,11 @@ class Logger:
 
     def log_metric(
         self,
-        state: TrainingState,
+        addr: str,
+        experiment: Experiment,
         metric: str,
         value: float,
+        round: Optional[int] = None,
         step: Optional[int] = None,
     ) -> None:
         """
@@ -412,36 +408,34 @@ class Logger:
 
         """
         # Get Round
-        round = state.round if state.round is not None else self.nodes[state.addr][1].round
+        round = experiment.round if experiment.round is not None else self.nodes[addr][1].round
         if round is None:
             raise Exception("No round provided. Needed for training metrics.")
         
-        self.nodes[state.addr][1].round = round
-
         # Get Experiment Name
-        exp = state.experiment_name if state.experiment_name is not None else self.nodes[state.addr][1].experiment_name
+        exp = experiment.exp_name if experiment.exp_name is not None else self.nodes[addr][1].exp_name
         if exp is None:
             raise Exception("No experiment name provided. Needed for training metrics.")
         
-        self.nodes[state.addr][1].experiment_name = exp
+        #self.nodes[addr][1] = experiment
 
         # Local storage
         if step is None:
             # Global Metrics
-            self.global_metrics.add_log(exp, state.round, metric, state.addr, value)
+            self.global_metrics.add_log(exp, experiment.round, metric, addr, value)
         else:
             # Local Metrics
-            self.local_metrics.add_log(exp, state.round, metric, state.addr, value, step)
+            self.local_metrics.add_log(exp, experiment.round, metric, addr, value, step)
 
         # Web
         p2pfl_web_services = self.p2pfl_web_services
         if p2pfl_web_services is not None:
             if step is None:
                 # Global Metrics
-                p2pfl_web_services.send_global_metric(exp, state.round, metric, state.addr, value)
+                p2pfl_web_services.send_global_metric(exp, experiment.round, metric, addr, value)
             else:
                 # Local Metrics
-                p2pfl_web_services.send_local_metric(exp, state.round, metric, state.addr, value, step)
+                p2pfl_web_services.send_local_metric(exp, experiment.round, metric, addr, value, step)
 
     def log_system_metric(self, node: str, metric: str, value: float, time: datetime.datetime) -> None:
         """
@@ -514,7 +508,7 @@ class Logger:
         # Node State
         if self.nodes.get(node) is None:
             # Dict[str, Tuple[NodeMonitor, ExperimentInfo]]
-            self.nodes[node] = (node_monitor, ExperimentInfo())
+            self.nodes[node] = (node_monitor, None)
         else:
             raise Exception(f"Node {node} already registered.")
 

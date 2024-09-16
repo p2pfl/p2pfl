@@ -18,6 +18,7 @@
 
 """Metrics command."""
 
+import ray
 from p2pfl.commands.command import Command
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
@@ -52,4 +53,4 @@ class MetricsCommand(Command):
         for i in range(0, len(args), 2):
             key = args[i]
             value = float(args[i + 1])
-            logger.log_metric.remote(self.state.to_training_state(), key, value)
+            logger.log_metric.remote(self.state.addr, ray.get(self.state.experiment.get_experiment.remote()), key, value, round=round)

@@ -104,6 +104,7 @@ def mnist(
             MnistFederatedDM(sub_id=0, number_sub=20),  # sampling for increase speed
             protocol=(InMemoryCommunicationProtocol if use_local_protocol else GrpcCommunicationProtocol),  # type: ignore
             address=address,
+            simulation=True
         )
         node.start()
         nodes.append(node)

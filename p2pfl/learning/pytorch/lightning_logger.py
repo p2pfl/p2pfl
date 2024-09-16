@@ -18,7 +18,6 @@
 
 """Lightning Logger for P2PFL."""
 
-from p2pfl.node_state import NodeState
 import ray
 
 from pytorch_lightning.loggers.logger import Logger
@@ -35,10 +34,10 @@ class FederatedLogger(Logger):
 
     """
 
-    def __init__(self, state: NodeState) -> None:
+    def __init__(self, addr: str) -> None:
         """Initialize the logger."""
         super().__init__()
-        self.state = state
+        self.__addr = addr
 
     @property
     def name(self) -> None:
@@ -57,7 +56,8 @@ class FederatedLogger(Logger):
     def log_metrics(self, metrics: dict, step: int) -> None:
         """Log metrics (in a pytorch format)."""
         for k, v in metrics.items():
-            P2PLogger.log_metric.remote(self.state.to_training_state(), k, v, step)
+            experiment_actor = ray.get_actor(self.__addr, namespace="experiments")
+            P2PLogger.log_metric.remote(self.__addr, ray.get(experiment_actor.get_experiment.remote()), k, v, step)
 
     def save(self) -> None:
         """Save the logger."""

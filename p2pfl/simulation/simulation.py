@@ -16,6 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import time
 from typing import Any, Dict, Optional
 
 from p2pfl.communication.memory.memory_communication_protocol import InMemoryCommunicationProtocol
@@ -68,18 +69,18 @@ def start_simulation(model, data, num_nodes,
     logger.info.remote("localhost", "Starting simulation...")
 
     # Default arguments for Ray initialization
-    if not ray_init_args:
-        ray_init_args = {
-            "ignore_reinit_error": True,
-            "include_dashboard": True,
-        }
+    #if not ray_init_args:
+    #    ray_init_args = {
+    #        "ignore_reinit_error": True,
+    #        "include_dashboard": True,
+    #    }
 
-    if ray.is_initialized():
-        ray.shutdown()
+    #if ray.is_initialized():
+    #    ray.shutdown()
 
     # Initialize Ray
-    context = ray.init(**ray_init_args)
-    logger.info.remote("localhost", f"Ray dashboard url: {context.dashboard_url}")
+    #context = ray.init(**ray_init_args)
+    #logger.info.remote("localhost", f"Ray dashboard url: {context.dashboard_url}")
 
     cluster_resources = ray.cluster_resources()
     logger.info.remote("localhost", f"Ray initialized with resources: {cluster_resources}")
@@ -134,6 +135,12 @@ def start_simulation(model, data, num_nodes,
         node.start()
         nodes.append(node)
 
+    # Node Connection
+    for i in range(len(nodes) - 1):
+        nodes[i + 1].connect(nodes[i].addr)
+        time.sleep(0.1)
+    wait_convergence(nodes, num_nodes - 1, only_direct=False)
+
     # Start Learning
     try:
         # Start Learning
@@ -143,41 +150,19 @@ def start_simulation(model, data, num_nodes,
         wait_4_results(nodes)
 
         # Local Logs
-        local_logs = logger.get_local_logs.remote()
+        local_logs = ray.get(logger.get_local_logs.remote())
         if local_logs != {}:
             logs = list(local_logs.items())[0][1]
             #  Plot experiment metrics
-            for round_num, round_metrics in logs.items():
-                for node_name, node_metrics in round_metrics.items():
-                    for metric, values in node_metrics.items():
-                        x, y = zip(*values)
-                        plt.plot(x, y, label=metric)
-                        # Add a red point to the last data point
-                        plt.scatter(x[-1], y[-1], color="red")
-                        plt.title(f"Round {round_num} - {node_name}")
-                        plt.xlabel("Epoch")
-                        plt.ylabel(metric)
-                        plt.legend()
-                        plt.show()
+            print(logs)
 
         # Global Logs
-        global_logs = logger.get_global_logs.remote()
+        global_logs = ray.get(logger.get_global_logs.remote())
         if global_logs != {}:
             logs = list(global_logs.items())[0][
                 1
             ]  # Accessing the nested dictionary directly
-            # Plot experiment metrics
-            for node_name, node_metrics in logs.items():
-                for metric, values in node_metrics.items():
-                    x, y = zip(*values)
-                    plt.plot(x, y, label=metric)
-                    # Add a red point to the last data point
-                    plt.scatter(x[-1], y[-1], color="red")
-                    plt.title(f"{node_name} - {metric}")
-                    plt.xlabel("Epoch")
-                    plt.ylabel(metric)
-                    plt.legend()
-                    plt.show()
+            print(logs)
 
         # Stop Nodes
         [n.stop() for n in nodes]

@@ -20,7 +20,6 @@
 
 import logging
 import pickle
-from p2pfl.node_state import NodeState
 import ray
 from collections import OrderedDict
 import traceback
@@ -61,7 +60,7 @@ class LightningLearner(NodeLearner):
         self,
         model: pl.LightningModule,
         data: LightningDataModule,
-        state: NodeState,
+        addr: str,
         epochs: int,
     ):
         """Initialize the learner."""
@@ -69,9 +68,9 @@ class LightningLearner(NodeLearner):
         self.data = data
         self.__trainer: Optional[Trainer] = None
         self.epochs = epochs
-        self.__state = state
+        self.__addr = addr
         # Start logging
-        self.logger = FederatedLogger(state)
+        self.logger = FederatedLogger(addr)
         # To avoid GPU/TPU printings
         logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
 
@@ -196,7 +195,7 @@ class LightningLearner(NodeLearner):
         except Exception as e:
             print(traceback.format_exc())
             logger.error.remote(
-                self.__state.addr,
+                self.__addr,
                 f"Fit error. Something went wrong with pytorch lightning. {e}",
             )
             raise e
@@ -228,13 +227,14 @@ class LightningLearner(NodeLearner):
                 self.__trainer = None
                 # Log metrics
                 for k, v in results.items():
-                    logger.log_metric.remote(self.__state.to_training_state(), k, v)
+                    experiment_actor = ray.get_actor(self.__addr, namespace="experiments")
+                    logger.log_metric.remote(self.__addr, ray.get(experiment_actor.get_experiment.remote()), k, v)
                 return results
             else:
                 return {}
         except Exception as e:
             logger.error.remote(
-                self.__state.addr,
+                self.__addr,
                 f"Evaluation error. Something went wrong with pytorch lightning. {e}",
             )
             raise e

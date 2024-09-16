@@ -116,7 +116,7 @@ class SuperActorPool(ActorPool):
 
             super().__init__(actors)
 
-            # A dict that maps cid to another dict containing: a reference to the remote job
+            # A dict that maps addr to another dict containing: a reference to the remote job
             # and its status (i.e. whether it is ready or not)
             self._addr_to_future: Dict[
                 str, Dict[str, Union[bool, Optional[ObjectRef[Any]]]]
@@ -131,8 +131,6 @@ class SuperActorPool(ActorPool):
     def __reduce__(self):
         return SuperActorPool, (
             self.resources,
-            self.model,
-            self.data,
             self._idle_actors,
         )
 
@@ -184,13 +182,13 @@ class SuperActorPool(ActorPool):
             actor_fn (Any): Function to be executed by the actor.
             job (Tuple[str, NodeLearner]): Tuple containing address and learner information.
         """
-        addr, learner = job 
+        addr, _ = job 
         with self.lock:
             self._reset_addr_to_future_dict(addr)
             if self._idle_actors:
                 self.submit(actor_fn, job)
             else:
-                self._pending_submits.append((actor_fn, learner))
+                self._pending_submits.append((actor_fn, job))
 
     def _flag_future_as_ready(self, addr: str) -> None:
         """

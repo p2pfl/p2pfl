@@ -17,9 +17,11 @@
 #
 """Node state."""
 
+import ray
 import threading
 from typing import Dict, List, Optional
 
+from p2pfl.experiment import ExperimentActor
 from p2pfl.learning.learner import NodeLearner
 #from p2pfl.management.signal import SignalActor
 
@@ -59,9 +61,6 @@ class NodeState:
         """Initialize the node state."""
         self.addr = addr
         self.status = "Idle"
-        self.actual_exp_name: Optional[str] = None
-        self.round: Optional[int] = None
-        self.total_rounds: Optional[int] = None
 
         # Simulation
         self.simulation = simulation
@@ -79,6 +78,9 @@ class NodeState:
         self.train_set: List[str] = []
         self.train_set_votes: Dict[str, Dict[str, int]] = {}
 
+        # Actual experiment
+        self.experiment: ExperimentActor = None
+
         # Locks
         self.train_set_votes_lock = threading.Lock()
         self.start_thread_lock = threading.Lock()
@@ -86,48 +88,50 @@ class NodeState:
         self.model_initialized_lock = threading.Lock()
         self.model_initialized_lock.acquire()
 
-    def set_experiment(self, exp_name: str, total_rounds: int) -> None:
+    @property
+    def round(self) -> Optional[int]:
+        """Get the round."""
+        return ray.get(self.experiment.self.remote("round")) if self.experiment is not None else None
+    
+    @property
+    def total_rounds(self) -> Optional[int]:
+        """Get the total rounds."""
+        return ray.get(self.experiment.self.remote("total_rounds")) if self.experiment is not None else None
+
+    @property
+    def actual_exp_name(self) -> Optional[str]:
+        """Get the actual experiment name."""
+        return ray.get(self.experiment.self.remote("exp_name")) if self.experiment is not None else None
+    
+    def start_experiment(self, exp_name: str, total_rounds: int) -> None:
         """
-        Set the experiment name.
+        Start a new experiment.
 
         Args:
-            exp_name: The name of the experiment.
-            total_rounds: The total rounds of the experiment.
-
+            exp_name (str): The name of the experiment.
+            total_rounds (int): The total rounds of the experiment.
         """
         self.status = "Learning"
-        self.actual_exp_name = exp_name
-        self.total_rounds = total_rounds
-        self.round = 0
+        self.experiment = ExperimentActor.options(name=self.addr, namespace="experiments").remote(exp_name, total_rounds)
 
     def increase_round(self) -> None:
         """
         Increase the round number.
 
         Raises:
-            ValueError: If the round is not initialized.
+            ValueError: If the experiment is not initialized.
 
         """
-        if self.round is None:
-            raise ValueError("Round not initialized")
-        self.round += 1
-        self.models_aggregated = {}
+        try:
+            ray.get(self.experiment.increase_round.remote())
+            self.models_aggregated = {}
+        except ValueError:
+            raise ValueError("Experiment not initialized")
 
     def clear(self) -> None:
         """Clear the state."""
         self.status = "Idle"
-        self.actual_exp_name = None
-        self.round = None
-        self.total_rounds = None
-
-    def to_training_state(self) -> TrainingState:
-        """
-        Create a TrainState object containing only the round and experiment_name.
-        
-        Returns:
-            TrainingState: A new TrainingState instance with the current round and experiment_name.
-        """
-        return TrainingState(addr=self.addr, round=self.round, experiment_name=self.actual_exp_name)
+        self.experiment = None
     
     def __str__(self) -> str:
         """String representation of the node state."""
