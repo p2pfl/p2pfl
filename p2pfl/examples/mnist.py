@@ -98,12 +98,11 @@ def mnist(
         address = f"node-{i}" if use_local_protocol else f"unix:///tmp/p2pfl-{i}.sock" if use_unix_socket else "127.0.0.1"
 
         # Create the model
+        p2pfl_model: P2PFLModel = LightningModel(MLP())
         if use_tensorflow:
             model = MLP_KERAS() # type: ignore
             model(tf.zeros((1, 28, 28, 1))) # type: ignore
-            p2pfl_model: P2PFLModel = KerasModel(model)
-        else:
-            p2pfl_model: P2PFLModel = LightningModel(MLP())
+            p2pfl_model = KerasModel(model)
 
         # Nodes
         node = Node(
@@ -126,7 +125,7 @@ def mnist(
     nodes[0].set_start_learning(rounds=r, epochs=e)
 
     # Wait and check
-    wait_to_finish(nodes)
+    wait_to_finish(nodes, timeout=60*60)  # 1 hour
 
     # Local Logs
     if show_metrics:
