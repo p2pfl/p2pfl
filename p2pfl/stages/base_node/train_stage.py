@@ -17,7 +17,7 @@
 #
 """Train stage."""
 
-from typing import Any, List, Optional, Type, Union
+from typing import Any, List, Optional, Set, Type, Union
 
 from p2pfl.communication.commands.message.metrics_command import MetricsCommand
 from p2pfl.communication.commands.message.models_agregated_command import ModelsAggregatedCommand
@@ -66,7 +66,7 @@ class TrainStage(Stage):
             check_early_stop(state)
 
             # Train
-            logger.info(state.addr, "Training...")
+            logger.info(state.addr, "🏋️‍♀️ Training...")
             learner.fit()
 
             check_early_stop(state)
@@ -74,7 +74,7 @@ class TrainStage(Stage):
             # Aggregate Model
             models_added = aggregator.add_model(learner.get_model())
             # send model added msg ---->> redundant (a node always owns its model)
-            print("Broadcast redundante)")
+            # TODO: print("Broadcast redundante")
             communication_protocol.broadcast(
                 communication_protocol.build_msg(
                     ModelsAggregatedCommand.get_name(),
@@ -88,13 +88,10 @@ class TrainStage(Stage):
 
             # Set aggregated model
             agg_model = aggregator.wait_and_get_aggregation()
-            logger.info(state.addr, "Aggregated model seted.")
             learner.set_model(agg_model)
 
             # Share that aggregation is done
-            communication_protocol.broadcast(
-                communication_protocol.build_msg(ModelsReadyCommand.get_name(), [], round=state.round)
-            )
+            communication_protocol.broadcast(communication_protocol.build_msg(ModelsReadyCommand.get_name(), [], round=state.round))
 
             # Next stage
             return StageFactory.get_stage("GossipModelStage")
@@ -103,12 +100,12 @@ class TrainStage(Stage):
 
     @staticmethod
     def __evaluate(state: NodeState, learner: NodeLearner, communication_protocol: CommunicationProtocol) -> None:
-        logger.info(state.addr, "Evaluating...")
+        logger.info(state.addr, "🔬 Evaluating...")
         results = learner.evaluate()
-        logger.info(state.addr, f"Evaluated. Results: {results}")
+        logger.info(state.addr, f"📈 Evaluated. Results: {results}")
         # Send metrics
         if len(results) > 0:
-            logger.info(state.addr, "Broadcasting metrics.")
+            logger.info(state.addr, "📢 Broadcasting metrics.")
             flattened_metrics = [str(item) for pair in results.items() for item in pair]
             communication_protocol.broadcast(
                 communication_protocol.build_msg(
@@ -139,11 +136,8 @@ class TrainStage(Stage):
             return state.round is None
 
         def get_candidates_fn() -> List[str]:
-            return [
-                n
-                for n in communication_protocol.get_neighbors(only_direct=False)
-                if (n not in aggregator.get_aggregated_models()) and (n in state.train_set)
-            ]
+            candidates = set(state.train_set) - {state.addr}
+            return [n for n in candidates if len(TrainStage.__get_remaining_nodes(n, state)) != 0]
 
         def status_fn() -> Any:
             return [
@@ -186,3 +180,7 @@ class TrainStage(Stage):
             return state.models_aggregated[node]
         except KeyError:
             return []
+
+    @staticmethod
+    def __get_remaining_nodes(node: str, state: NodeState) -> Set[str]:
+        return set(state.train_set) - set(TrainStage.__get_aggregated_models(node, state))

@@ -40,7 +40,7 @@ set_test_settings()
 class MockCommand(Command):
     """Mock command for testing purposes."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the mock command."""
         self.flag = False
 

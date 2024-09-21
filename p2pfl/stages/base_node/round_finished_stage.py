@@ -58,7 +58,7 @@ class RoundFinishedStage(Stage):
         # Next Step or Finish
         logger.info(
             state.addr,
-            f"Round {state.round} of {state.total_rounds} finished.",
+            f"🎉 Round {state.round} of {state.total_rounds} finished.",
         )
         if state.round is None or state.total_rounds is None:
             raise ValueError("Round or total rounds not set.")
@@ -70,17 +70,17 @@ class RoundFinishedStage(Stage):
             RoundFinishedStage.__evaluate(state, learner, communication_protocol)
             # Finish
             state.clear()
-            logger.info(state.addr, "Training finished!!.")
+            logger.info(state.addr, "😋 Training finished!!")
             return None
 
     @staticmethod
     def __evaluate(state: NodeState, learner: NodeLearner, communication_protocol: CommunicationProtocol) -> None:
-        logger.info(state.addr, "Evaluating...")
+        logger.info(state.addr, "🔬 Evaluating...")
         results = learner.evaluate()
-        logger.info(state.addr, f"Evaluated. Results: {results}")
+        logger.info(state.addr, f"📈 Evaluated. Results: {results}")
         # Send metrics
         if len(results) > 0:
-            logger.info(state.addr, "Broadcasting metrics.")
+            logger.info(state.addr, "📢 Broadcasting metrics.")
             flattened_metrics = [str(item) for pair in results.items() for item in pair]
             communication_protocol.broadcast(
                 communication_protocol.build_msg(

@@ -50,9 +50,7 @@ class GrpcClient(Client):
     # Message Building
     ####
 
-    def build_message(
-        self, cmd: str, args: Optional[List[str]] = None, round: Optional[int] = None
-    ) -> node_pb2.RootMessage:
+    def build_message(self, cmd: str, args: Optional[List[str]] = None, round: Optional[int] = None) -> node_pb2.RootMessage:
         """
         Build a RootMessage to send to the neighbors.
 
@@ -152,9 +150,7 @@ class GrpcClient(Client):
             # Check if direct connection
             if node_stub is None and create_connection:
                 if Settings.USE_SSL and isfile(Settings.SERVER_CRT):
-                    with open(Settings.CLIENT_KEY) as key_file, open(Settings.CLIENT_CRT) as crt_file, open(
-                        Settings.CA_CRT
-                    ) as ca_file:
+                    with open(Settings.CLIENT_KEY) as key_file, open(Settings.CLIENT_CRT) as crt_file, open(Settings.CA_CRT) as ca_file:
                         private_key = key_file.read().encode()
                         certificate_chain = crt_file.read().encode()
                         root_certificates = ca_file.read().encode()
@@ -173,9 +169,7 @@ class GrpcClient(Client):
                 # Send message
                 res = node_stub.send(msg, timeout=Settings.GRPC_TIMEOUT)
             else:
-                raise NeighborNotConnectedError(
-                    "Neighbor not directly connected (Stub not defined and create_connection is false)."
-                )
+                raise NeighborNotConnectedError("Neighbor not directly connected (Stub not defined and create_connection is false).")
             if res.error:
                 raise CommunicationError(f"Error while sending a message: {msg.cmd}: {res.error}")
         except Exception as e:

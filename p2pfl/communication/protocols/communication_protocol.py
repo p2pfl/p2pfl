@@ -91,14 +91,21 @@ class CommunicationProtocol(ABC):
         pass
 
     @abstractmethod
-    def send(self, nei: str, message: Any, raise_error: bool = False) -> None:
+    def send(
+        self,
+        nei: str,
+        msg: Any,
+        raise_error: bool = False,
+        remove_on_error: bool = True,
+    ) -> None:
         """
         Send a message to a neighbor.
 
         Args:
             nei: The neighbor to send the message.
-            message: The message to send.
+            msg: The message to send.
             raise_error: If raise error.
+            remove_on_error: If remove on error.
 
         """
         pass

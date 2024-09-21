@@ -58,7 +58,7 @@ class GossipModelStage(Stage):
         communication_protocol: CommunicationProtocol,
         learner: NodeLearner,
     ) -> None:
-        logger.info(state.addr, "Gossiping aggregated model.")
+        logger.info(state.addr, "🗣️ Gossiping aggregated model.")
         fixed_round = state.round
         if fixed_round is None:
             raise Exception("Learner not initialized")

@@ -28,85 +28,13 @@ from lightning import Trainer
 from torch.utils.data import DataLoader
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-from p2pfl.learning.exceptions import (
-    ModelNotMatchingError,
-)
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.p2pfl_model import P2PFLModel
+from p2pfl.learning.pytorch.lightning_dataset import PyTorchExportStrategy
 from p2pfl.learning.pytorch.lightning_logger import FederatedLogger
-from p2pfl.learning.pytorch.torch_dataset import PyTorchExportStrategy
 from p2pfl.management.logger import logger
 
 torch.set_num_threads(1)
-
-
-#########################
-#    LightningModel     #
-#########################
-
-
-class LightningModel(P2PFLModel):
-    """
-    P2PFL model abstraction for PyTorch Lightning.
-
-    Args:
-        model: The model to encapsulate.
-
-    """
-
-    def __init__(
-        self,
-        model: L.LightningModule,
-        params: Optional[Union[List[np.ndarray], bytes]] = None,
-        num_samples: Optional[int] = None,
-        contributors: Optional[List[str]] = None,
-        aditional_info: Optional[Dict[str, str]] = None,
-    ) -> None:
-        """Initialize the model."""
-        super().__init__(model, params, num_samples, contributors, aditional_info)
-
-    def get_parameters(self) -> List[np.ndarray]:
-        """
-        Get the parameters of the model.
-
-        Returns:
-            The parameters of the model
-
-        """
-        return [param.cpu().numpy() for _, param in self.model.state_dict().items()]
-
-    def set_parameters(self, params: Union[List[np.ndarray], bytes]) -> None:
-        """
-        Set the parameters of the model.
-
-        Args:
-            params: The parameters of the model.
-
-        Raises:
-            ModelNotMatchingError: If parameters don't match the model.
-
-        """
-        # Decode parameters
-        if isinstance(params, bytes):
-            params = self.decode_parameters(params)
-
-        # Build state_dict
-        state_dict = self.model.state_dict()
-        for (layer_name, param), new_param in zip(state_dict.items(), params):
-            if param.shape != new_param.shape:
-                raise ModelNotMatchingError("Not matching models")
-            state_dict[layer_name] = torch.tensor(new_param)
-
-        # Load
-        try:
-            self.model.load_state_dict(state_dict)
-        except Exception as e:
-            raise ModelNotMatchingError("Not matching models") from e
-
-
-###########################
-#    LightningLearner     #
-###########################
 
 
 class LightningLearner(NodeLearner):
@@ -137,17 +65,6 @@ class LightningLearner(NodeLearner):
         self.logger = FederatedLogger(self_addr)
         # To avoid GPU/TPU printings
         logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
-
-    def set_addr(self, addr: str) -> None:
-        """
-        Set the address of the learner.
-
-        Args:
-            addr: The address of the learner.
-
-        """
-        print("BORRAME, INICIAME COMO ANTES")
-        self.__self_addr = addr
 
     def set_model(self, model: Union[P2PFLModel, List[np.ndarray], bytes]) -> None:
         """
@@ -253,15 +170,9 @@ class LightningLearner(NodeLearner):
         """
         try:
             if self.epochs > 0:
-                self.__trainer = Trainer(
-                    max_epochs=self.epochs,
-                    accelerator="auto",
-                    logger=False,
-                    log_every_n_steps=0,
-                    enable_checkpointing=False,
-                )
+                self.__trainer = Trainer()
                 pt_model, pt_data = self.__get_pt_model_data()
-                results = self.__trainer.test(pt_model, pt_data, verbose=False)[0]
+                results = self.__trainer.test(pt_model, pt_data, verbose=True)[0]
                 self.__trainer = None
                 # Log metrics
                 for k, v in results.items():

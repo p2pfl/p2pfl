@@ -50,9 +50,7 @@ class InMemoryNeighbors(Neighbors):
             # Add
             self.add(addr, non_direct=True)
 
-    def connect(
-        self, addr: str, non_direct: bool = False, handshake_msg: bool = True
-    ) -> Tuple[None, Optional[str], float]:
+    def connect(self, addr: str, non_direct: bool = False, handshake_msg: bool = True) -> Tuple[None, Optional[str], float]:
         """
         Connect to a neighbor.
 

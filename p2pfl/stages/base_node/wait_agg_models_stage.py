@@ -46,7 +46,7 @@ class WaitAggregatedModelsStage(Stage):
             raise Exception("Invalid parameters on WaitAggregatedModelsStage.")
 
         # Wait for aggregation to finish (then release the lock again)
-        logger.info(state.addr, "Waiting aregation.")
+        logger.info(state.addr, "⏳ Waiting aregation.")
         state.wait_aggregated_model_lock.acquire(timeout=Settings.AGGREGATION_TIMEOUT)
         with contextlib.suppress(Exception):
             state.wait_aggregated_model_lock.release()
@@ -57,8 +57,6 @@ class WaitAggregatedModelsStage(Stage):
             f"Broadcast aggregation done for round {state.round}",
         )
         # Share that aggregation is done
-        communication_protocol.broadcast(
-            communication_protocol.build_msg(ModelsReadyCommand.get_name(), [], round=state.round)
-        )
+        communication_protocol.broadcast(communication_protocol.build_msg(ModelsReadyCommand.get_name(), [], round=state.round))
 
         return StageFactory.get_stage("GossipModelStage")

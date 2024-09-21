@@ -87,9 +87,7 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
         node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.__server)
         try:
             if Settings.USE_SSL and isfile(Settings.SERVER_KEY) and isfile(Settings.SERVER_CRT):
-                with open(Settings.SERVER_KEY) as key_file, open(Settings.SERVER_CRT) as crt_file, open(
-                    Settings.CA_CRT
-                ) as ca_file:
+                with open(Settings.SERVER_KEY) as key_file, open(Settings.SERVER_CRT) as crt_file, open(Settings.CA_CRT) as ca_file:
                     private_key = key_file.read().encode()
                     certificate_chain = crt_file.read().encode()
                     root_certificates = ca_file.read().encode()
@@ -141,9 +139,7 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
         else:
             return node_pb2.ResponseMessage(error="Cannot add the node (duplicated or wrong direction)")
 
-    def disconnect(
-        self, request: node_pb2.HandShakeRequest, _: grpc.ServicerContext
-    ) -> google.protobuf.empty_pb2.Empty:
+    def disconnect(self, request: node_pb2.HandShakeRequest, _: grpc.ServicerContext) -> google.protobuf.empty_pb2.Empty:
         """
         GRPC service. It is called when a node disconnects from another.
 
@@ -164,16 +160,20 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
             _: Context.
 
         """
-        # If message already processed, return
+        # If message already proce
+        # ssed, return
         if request.HasField("message") and not self.__gossiper.check_and_set_processed(request.message.hash):
-            logger.debug(self.addr, f"Message already processed: {request.cmd} (id {request.message.hash})")
+            """
+            if request.cmd != "beat" or (not Settings.EXCLUDE_BEAT_LOGS and request.source == "beat"):
+                logger.debug(self.addr, f"🙅 Message already processed: {request.cmd} (id {request.message.hash})")
+            """
             return node_pb2.ResponseMessage()
 
         # Process message/model
-        if Settings.EXCLUDE_BEAT_LOGS and request.cmd == "beat":
+        if request.cmd != "beat" or (not Settings.EXCLUDE_BEAT_LOGS and request.source == "beat"):
             logger.debug(
                 self.addr,
-                f"Received message from {request.source} > {request.cmd}",
+                f"📫 {request.cmd.upper()} received from {request.source}",
             )
         if request.cmd in self.__commands:
             try:

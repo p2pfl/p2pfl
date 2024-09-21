@@ -25,8 +25,7 @@ import pytest
 
 from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.p2pfl_model import P2PFLModel
-from p2pfl.learning.pytorch.lightning_learner import LightningModel
-from p2pfl.learning.pytorch.torch_model import MLP
+from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
 
 
 class P2PFLModelMock(P2PFLModel):
@@ -42,8 +41,8 @@ class P2PFLModelMock(P2PFLModel):
     ) -> None:
         """Initialize the model."""
         self.params = params
-        self.num_samples = num_samples
-        self.contributors = contributors
+        self.num_samples = num_samples # type: ignore
+        self.contributors = contributors # type: ignore
 
     def get_parameters(self):
         """Get the model parameters."""
@@ -134,11 +133,8 @@ def test_aggregator_lifecicle():
     aggregator.add_model(model23)
 
     # Get partial aggregation
-    partial_model = aggregator.get_partial_aggregation([])
-    assert all(
-        (partial_model.get_parameters()[i] == model1.get_parameters()[i]).all()
-        for i in range(len(partial_model.get_parameters()))
-    )
+    partial_model = aggregator.get_partial_aggregation(["node2", "node3"])
+    assert all((partial_model.get_parameters()[i] == model1.get_parameters()[i]).all() for i in range(len(partial_model.get_parameters())))
 
     # Check if the model was added
     assert set(aggregator.get_aggregated_models()) == {"node1", "node2", "node3"}

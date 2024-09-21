@@ -82,9 +82,7 @@ class GrpcNeighbors(Neighbors):
         try:
             # Create channel and stub
             if Settings.USE_SSL and isfile(Settings.SERVER_CRT):
-                with open(Settings.CLIENT_KEY) as key_file, open(Settings.CLIENT_CRT) as crt_file, open(
-                    Settings.CA_CRT
-                ) as ca_file:
+                with open(Settings.CLIENT_KEY) as key_file, open(Settings.CLIENT_CRT) as crt_file, open(Settings.CA_CRT) as ca_file:
                     private_key = key_file.read().encode()
                     certificate_chain = crt_file.read().encode()
                     root_certificates = ca_file.read().encode()

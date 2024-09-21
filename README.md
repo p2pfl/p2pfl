@@ -33,6 +33,10 @@ P2PFL offers a range of features designed to make decentralized federated learni
 
 > todo
 
+- Hugging Face Datasets
+- PyTorch
+- Tensorflow
+
 ## 📥 Installation
 
 > **Note:** We recommend using Python 3.9 or lower. We have found some compatibility issues with Python 3.10 and PyTorch.

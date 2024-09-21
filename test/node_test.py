@@ -20,11 +20,15 @@
 import time
 
 import pytest
+import tensorflow as tf
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
-from p2pfl.learning.pytorch.lightning_learner import LightningModel
-from p2pfl.learning.pytorch.torch_model import MLP
+from p2pfl.learning.pytorch.lightning_learner import LightningLearner
+from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
+from p2pfl.learning.tensorflow.keras_learner import KerasLearner
+from p2pfl.learning.tensorflow.keras_model import MLP as MLP_KERAS
+from p2pfl.learning.tensorflow.keras_model import KerasModel
 from p2pfl.node import Node
 from p2pfl.utils import (
     check_equal_models,
@@ -39,7 +43,7 @@ set_test_settings()
 @pytest.fixture
 def two_nodes():
     """Create two nodes and start them. Yield the nodes. After the test, stop the nodes."""
-    data = P2PFLDataset.from_huggingface("p2pfl/mnist")
+    data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
     n1 = Node(LightningModel(MLP()), data)
     n2 = Node(LightningModel(MLP()), data)
     n1.start()
@@ -51,29 +55,12 @@ def two_nodes():
     n2.stop()
 
 
-@pytest.fixture
-def four_nodes():
-    """Create four nodes and start them. Yield the nodes. After the test, stop the nodes."""
-    data = P2PFLDataset.from_huggingface("p2pfl/mnist")
-    partitions = data.generate_partitions(20, RandomIIDPartitionStrategy)
-    n1 = Node(LightningModel(MLP()), partitions[0])
-    n2 = Node(LightningModel(MLP()), partitions[1])
-    n3 = Node(LightningModel(MLP()), partitions[2])
-    n4 = Node(LightningModel(MLP()), partitions[3])
-    nodes = [n1, n2, n3, n4]
-    [n.start() for n in nodes]
-
-    yield (n1, n2, n3, n4)
-
-    [n.stop() for n in nodes]
-
-
 ########################
 #    Tests Learning    #
 ########################
 
 
-@pytest.mark.parametrize("x", [(2, 1), (2, 2)])
+@pytest.mark.parametrize("x", [(2, 1), (2, 2), (6, 3)])
 def test_convergence(x):
     """Test convergence (on learning) of two nodes."""
     n, r = x
@@ -99,9 +86,21 @@ def test_convergence(x):
 
     # Check if execution is correct
     for node in nodes:
-        # gt
-        round_stages = ["VoteTrainSetStage", "TrainStage", "GossipModelStage", "RoundFinishedStage"] * r
-        assert node.learning_workflow.history == ["StartLearningStage"] + round_stages
+        # History
+        history = node.learning_workflow.history
+        assert history[0] == "StartLearningStage"
+        history = history[1:]
+        # Pattern
+        stage_pattern = ["VoteTrainSetStage", ["TrainStage", "WaitAggregatedModelsStage"], "GossipModelStage", "RoundFinishedStage"]
+        # Get batches (len(stage_pattern))
+        assert int(len(history) / len(stage_pattern)) == r
+        # Check pattern
+        for i in range(r):
+            for gt, st in zip(stage_pattern, history[i * len(stage_pattern) : (i + 1) * len(stage_pattern)]):
+                if isinstance(gt, list):
+                    assert st in gt
+                else:
+                    assert st == gt
 
     check_equal_models(nodes)
 
@@ -142,7 +141,7 @@ def _test_node_down_on_learning(n):
     """Test node down on learning."""
     # Node Creation
     nodes = []
-    data = P2PFLDataset.from_huggingface("p2pfl/mnist")
+    data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
     for _ in range(n):
         node = Node(LightningModel(MLP()), data)
         node.start()
@@ -170,3 +169,86 @@ def _test_node_down_on_learning(n):
 
     for node in nodes[:-1]:
         node.stop()
+
+
+#####
+# Training with other frameworks
+#####
+
+
+def test_tensorflow_node():
+    """Test a TensorFlow node."""
+    # Data
+    data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
+    partitions = data.generate_partitions(400, RandomIIDPartitionStrategy)
+
+    # Create the model
+    model = MLP_KERAS()
+    model(tf.zeros((1, 28, 28, 1)))
+    p2pfl_model = KerasModel(model)
+
+    # Nodes
+    n1 = Node(p2pfl_model, partitions[0], learner=KerasLearner)
+    n2 = Node(p2pfl_model.build_copy(), partitions[1], learner=KerasLearner)
+
+    # Start
+    n1.start()
+    n2.start()
+
+    # Connect
+    n2.connect(n1.addr)
+    wait_convergence([n1, n2], 1, only_direct=True)
+
+    # Start Learning
+    n1.set_start_learning(rounds=1, epochs=1)
+
+    # Wait
+    wait_to_finish([n1, n2], timeout=120)
+
+    # Check if execution is correct
+    for node in [n1, n2]:
+        assert "RoundFinishedStage" in node.learning_workflow.history
+
+    check_equal_models([n1, n2])
+
+    # Stop
+    n1.stop()
+    n2.stop()
+
+
+def test_torch_node():
+    """Test a TensorFlow node."""
+    # Data
+    data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
+    partitions = data.generate_partitions(400, RandomIIDPartitionStrategy)
+
+    # Create the model
+    p2pfl_model = LightningModel(MLP())
+
+    # Nodes
+    n1 = Node(p2pfl_model, partitions[0], learner=LightningLearner)
+    n2 = Node(p2pfl_model.build_copy(), partitions[1], learner=LightningLearner)
+
+    # Start
+    n1.start()
+    n2.start()
+
+    # Connect
+    n2.connect(n1.addr)
+    wait_convergence([n1, n2], 1, only_direct=True)
+
+    # Start Learning
+    n1.set_start_learning(rounds=1, epochs=1)
+
+    # Wait
+    wait_to_finish([n1, n2], timeout=120)
+
+    # Check if execution is correct
+    for node in [n1, n2]:
+        assert "RoundFinishedStage" in node.learning_workflow.history
+
+    check_equal_models([n1, n2])
+
+    # Stop
+    n1.stop()
+    n2.stop()

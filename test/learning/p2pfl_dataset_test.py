@@ -18,7 +18,7 @@
 """P2PFL dataset tests."""
 
 import pytest
-from datasets import DatasetDict, load_dataset
+from datasets import DatasetDict, load_dataset  # type: ignore
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
@@ -29,21 +29,15 @@ def mnist_dataset() -> P2PFLDataset:
     """Load a small subset of the MNIST dataset."""
     hg_ds = DatasetDict(
         {
-            "train": load_dataset("p2pfl/mnist", split="train[:100]"),
-            "test": load_dataset("p2pfl/mnist", split="test[:10]"),
+            "train": load_dataset("p2pfl/MNIST", split="train[:100]"),
+            "test": load_dataset("p2pfl/MNIST", split="test[:10]"),
         }
     )
 
     return P2PFLDataset(hg_ds)
 
 
-def test_mnist(mnist_dataset):
-    """Test the data loading for the MNIST dataset."""
-    assert mnist_dataset.get_num_samples(train=True) == 100
-    assert mnist_dataset.get_num_samples(train=False) == 10
-
-    item = mnist_dataset.get(0, train=True)
-
+def __test_mnist_sample(item):
     assert "image" in item
     assert "label" in item
 
@@ -51,9 +45,19 @@ def test_mnist(mnist_dataset):
     assert item["label"] in range(10)
 
 
+def test_mnist_sample(mnist_dataset):
+    """Test the data loading for the MNIST dataset."""
+    assert mnist_dataset.get_num_samples(train=True) == 100
+    assert mnist_dataset.get_num_samples(train=False) == 10
+
+    item = mnist_dataset.get(0, train=True)
+
+    __test_mnist_sample(item)
+
+
 def test_generate_train_test_split():
     """Test the generation of train-test splits."""
-    dataset = P2PFLDataset.from_huggingface("p2pfl/mnist", split="train[:100]")
+    dataset = P2PFLDataset.from_huggingface("p2pfl/MNIST", split="train[:100]")
     dataset.generate_train_test_split(test_size=0.2, seed=42)
     assert isinstance(dataset._data, DatasetDict)
     assert "train" in dataset._data
@@ -62,7 +66,7 @@ def test_generate_train_test_split():
 
 def test_partition_without_split():
     """Test the export of the dataset without a split."""
-    dataset = P2PFLDataset(load_dataset("p2pfl/mnist", split="train[:100]"))
+    dataset = P2PFLDataset(load_dataset("p2pfl/MNIST", split="train[:100]"))
 
     # Check that assert
     with pytest.raises(ValueError):
@@ -71,7 +75,7 @@ def test_partition_without_split():
 
 def test_export_without_split_partition():
     """Test the export of the dataset without a split."""
-    dataset = P2PFLDataset(load_dataset("p2pfl/mnist", split="train[:100]"))
+    dataset = P2PFLDataset(load_dataset("p2pfl/MNIST", split="train[:100]"))
 
     # Check that assert (no split)
     with pytest.raises(ValueError):
@@ -80,7 +84,7 @@ def test_export_without_split_partition():
 
 def test_generate_partitions(mnist_dataset):
     """Test the generation of partitions."""
-    strategy = RandomIIDPartitionStrategy()
+    strategy = RandomIIDPartitionStrategy
     num_partitions = 3
     partitions = mnist_dataset.generate_partitions(num_partitions=num_partitions, strategy=strategy)
 
@@ -95,3 +99,7 @@ def test_generate_partitions(mnist_dataset):
     partitions_test_samples = sum([partition.get_num_samples(train=False) for partition in partitions])
     assert partitions_train_samples == train_size
     assert partitions_test_samples == test_size
+
+    # Check item
+    item = partitions[0].get(0, train=True)
+    __test_mnist_sample(item)

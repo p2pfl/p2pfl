@@ -138,9 +138,7 @@ class InMemoryClient(Client):
             if node_server is not None:
                 res = node_server.send_weights(msg) if "weight" in msg else node_server.send_message(msg)
             else:
-                raise NeighborNotConnectedError(
-                    "Neighbor not directly connected (Stub not defined and create_connection is false)."
-                )
+                raise NeighborNotConnectedError("Neighbor not directly connected (Stub not defined and create_connection is false).")
             if "error" in res:
                 raise CommunicationError(f"Error while sending a message: {msg['cmd']!r}: {res['error']!r}")
 

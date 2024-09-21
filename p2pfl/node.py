@@ -108,10 +108,6 @@ class Node:
         self.__running = False
         self.state = NodeState(self.addr)
 
-        print("REVISAR REINICIO DE AGG Y LEARNER")
-        print("DOCU!!!")
-        print(logger.get_level_name(logger.get_level()))
-
         # Workflow
         self.learning_workflow = LearningWorkflow()
 
@@ -151,7 +147,6 @@ class Node:
         # Check running
         self.assert_running(True)
         # Connect
-        logger.info(self.addr, f"Connecting to {addr}...")
         return self._communication_protocol.connect(addr)
 
     def get_neighbors(self, only_direct: bool = False) -> Dict[str, Any]:
@@ -331,16 +326,14 @@ class Node:
 
         if self.state.round is None:
             # Broadcast start Learning
-            logger.info(self.addr, "Broadcasting start learning...")
+            logger.info(self.addr, "🚀 Broadcasting start learning...")
             self._communication_protocol.broadcast(
                 self._communication_protocol.build_msg(StartLearningCommand.get_name(), [str(rounds), str(epochs)])
             )
             # Set model initialized
             self.state.model_initialized_lock.release()
             # Broadcast initialize model
-            self._communication_protocol.broadcast(
-                self._communication_protocol.build_msg(ModelInitializedCommand.get_name())
-            )
+            self._communication_protocol.broadcast(self._communication_protocol.build_msg(ModelInitializedCommand.get_name()))
             # Learning Thread
             self.__start_learning_thread(rounds, epochs)
         else:
@@ -350,9 +343,7 @@ class Node:
         """Stop the learning process in the entire network."""
         if self.state.round is not None:
             # send stop msg
-            self._communication_protocol.broadcast(
-                self._communication_protocol.build_msg(StopLearningCommand.get_name())
-            )
+            self._communication_protocol.broadcast(self._communication_protocol.build_msg(StopLearningCommand.get_name()))
             # stop learning
             self.__stop_learning()
         else:

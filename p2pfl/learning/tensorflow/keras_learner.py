@@ -16,193 +16,142 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""Keras learner."""
+"""Keras learner for P2PFL."""
 
-# import logging
-# from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple, Union
 
-# import numpy as np
-# import tensorflow as tf
-# from tensorflow import keras
+import numpy as np
+import tensorflow as tf
 
-# from p2pfl.learning.exceptions import ModelNotMatchingError
-# from p2pfl.learning.learner import NodeLearner
-# from p2pfl.learning.p2pfl_model import P2PFLModel
-# from p2pfl.learning.pytorch.lightning_logger import FederatedLogger
-# from p2pfl.management.logger import logger
-
-# print("AL IGUAL QUE CON PYTORCH, FACILITAR LA INICIALIZACI'ON DE MODELOS")
+from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
+from p2pfl.learning.learner import NodeLearner
+from p2pfl.learning.p2pfl_model import P2PFLModel
+from p2pfl.learning.tensorflow.keras_dataset import KerasExportStrategy
+from p2pfl.learning.tensorflow.keras_logger import FederatedLogger
+from p2pfl.learning.tensorflow.keras_model import KerasModel
+from p2pfl.management.logger import logger
 
 
-# ###########################
-# #    LightningDataset     #
-# ###########################
+class KerasLearner(NodeLearner):
+    """
+    Learner for TensorFlow/Keras models in P2PFL.
 
+    Args:
+        model: The KerasModel instance.
+        data: The P2PFLDataset instance.
+        self_addr: The address of this node.
 
-# class KerasDataset:
-#     pass
+    """
 
+    def __init__(self, model: KerasModel, data: P2PFLDataset, self_addr: str = "unknown-node") -> None:
+        """Initialize the KerasLearner."""
+        self.model = model
+        self.data = data
+        self.__self_addr = self_addr
+        self.epochs = 1  # Default epochs
 
-# #########################
-# #    LightningModel     #
-# #########################
+        # Compile the model (you might need to customize this)
+        self.model.model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
 
+    def set_model(self, model: Union[P2PFLModel, List[np.ndarray], bytes]) -> None:
+        """
+        Set the model of the learner.
 
-# class KerasModel(P2PFLModel):
-#     """
-#     P2PFL model abstraction for PyTorch Lightning.
+        Args:
+            model: The model of the learner.
 
-#     Args:
-#         model: The model to encapsulate.
+        """
+        if isinstance(model, KerasModel):
+            self.model = model
+        elif isinstance(model, (list, bytes)):
+            self.model.set_parameters(model)
 
-#     """
+    def get_model(self) -> KerasModel:
+        """
+        Get the model of the learner.
 
-#     def __init__(
-#         self, model: tf.keras.Model, input_shape: Tuple[int, ...], aditional_info: Optional[Dict[str, str]] = None
-#     ) -> None:
-#         """Initialize the model."""
-#         self.model = model
-#         self.additional_info = aditional_info
-#         self.contributors: Dict[str, int] = {}
-#         if self.additional_info is not None:
-#             self.additional_info = aditional_info
+        Returns:
+            The model of the learner.
 
-#         # Force initialization by calling the model on a dummy input
-#         self.model(keras.Input(shape=input_shape))
+        """
+        return self.model
 
-#     def get_parameters(self) -> List[np.ndarray]:
-#         """
-#         Get the parameters of the model.
+    def set_data(self, data: P2PFLDataset) -> None:
+        """
+        Set the data of the learner.
 
-#         Returns:
-#             The parameters of the model
+        Args:
+            data: The data of the learner.
 
-#         """
-#         return self.model.get_weights()
+        """
+        self.data = data
 
-#     def set_parameters(self, params: List[np.ndarray]) -> None:
-#         """
-#         Set the parameters of the model.
+    def get_data(self) -> P2PFLDataset:
+        """
+        Get the data of the learner.
 
-#         Args:
-#             params: The parameters of the model.
+        Returns:
+            The data of the learner.
 
-#         Raises:
-#             ModelNotMatchingError: If parameters don't match the model.
+        """
+        return self.data
 
-#         """
-#         try:
-#             self.model.set_weights(params)
-#         except Exception as e:
-#             raise ModelNotMatchingError(f"Not matching models: {e}") from e
+    def set_epochs(self, epochs: int) -> None:
+        """
+        Set the number of epochs.
 
+        Args:
+            epochs: The number of epochs.
 
-# class KerasLearner(NodeLearner):
-#     """
-#     Learner with Tensorflow Keras.
+        """
+        self.epochs = epochs
 
-#     Args:
-#         model: The model of the learner.
-#         data: The data of the learner.
-#         self_addr: The address of the learner.
-#         epochs: The number of epochs of the model.
+    def __get_tf_model_data(self, train: bool = True) -> Tuple[tf.keras.Model, tf.data.Dataset]:
+        # Get Model
+        tf_model = self.model.get_model()
+        if not isinstance(tf_model, tf.keras.Model):
+            raise ValueError("The model must be a TensorFlow Keras model")
+        # Get Data
+        data = self.data.export(KerasExportStrategy, train=train)
+        if not isinstance(data, tf.data.Dataset):
+            raise ValueError("The data must be a TensorFlow Dataset")
+        return tf_model, data
 
-#     """
+    def fit(self) -> None:
+        """Fit the model."""
+        try:
+            if self.epochs > 0:
+                model, data = self.__get_tf_model_data(train=True)
+                model.fit(
+                    data,
+                    epochs=self.epochs,
+                    callbacks=[FederatedLogger(self.__self_addr)],
+                )
+            # Set model contribution
+            self.model.set_contribution([self.__self_addr], self.data.get_num_samples(train=True))
+        except Exception as e:
+            logger.error(self.__self_addr, f"Error in training with Keras: {e}")
 
-#     def __init__(self, model: KerasModel, data: KerasDataset, self_addr: str, epochs: int) -> None:
-#         """Initialize the learner."""
-#         self.model = model
-#         self.data = data
-#         self.__self_addr = self_addr
-#         self.epochs = epochs
+    def interrupt_fit(self) -> None:
+        """Interrupt the training process."""
+        # Keras doesn't have a direct way to interrupt fit.
+        # Need to implement a custom callback or use a flag to stop training.
+        logger.error(self.__self_addr, "Interrupting training (not fully implemented for Keras).")
 
-#         # Start logging
-#         print("HACER EL LOGGER")
-
-#     def set_model(self, model: tf.keras.Model) -> None:
-#         """
-#         Set the model of the learner.
-
-#         Args:
-#             model: The model of the learner.
-
-#         """
-#         self.model = model
-
-#     def set_data(self, data: KerasDataset) -> None:
-#         """
-#         Set the data of the learner.
-
-#         Args:
-#             data: The data of the learner.
-
-#         """
-#         self.data = data
-#         print("esto estaba hardcodeado a tuplas")
-
-#     def get_num_samples(self) -> Tuple[int, int]:
-#         """
-#         Get the number of samples in the train and test datasets.
-
-#         Args:
-#             data: The data of the learner.
-
-#         .. todo:: Use it to obtain a more accurate metric aggretation.
-
-#         """
-#         raise NotImplementedError
-
-#     ####
-#     # Training
-#     ####
-
-#     def set_epochs(self, epochs: int) -> None:
-#         """
-#         Set the number of epochs.
-
-#         Args:
-#             epochs: The number of epochs.
-
-#         """
-#         self.epochs = epochs
-
-#     def fit(self) -> None:
-#         """Fit the model."""
-#         try:
-#             if self.epochs > 0:
-#                 raise NotImplementedError
-#                 self.model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
-#                 self.model.fit(self.data[0], epochs=self.epochs, validation_data=self.data[1], verbose=0)
-#         except Exception as e:
-#             logger.error(self.__self_addr, f"Error in training with Keras: {e}")
-
-#     def interrupt_fit(self) -> None:
-#         """Interrupt the fit."""
-#         raise NotImplementedError
-#         logger.log_info(self.__self_addr, "Interrupting training.")
-#         self.model.stop_training = True
-
-#     def evaluate(self) -> Dict[str, float]:
-#         """
-#         Evaluate the model with actual parameters.
-
-#         Returns:
-#             The evaluation results.
-
-#         """
-#         raise NotImplementedError
-#         try:
-#             if self.epochs > 0:
-#                 results = self.model.evaluate(self.data[1], verbose=0)
-#                 results_dict = dict(zip(self.model.metrics_names, results))
-#                 for k, v in results_dict.items():
-#                     logger.log_metric(self.__self_addr, k, v)
-#                 return results_dict
-#             else:
-#                 return {}
-#         except Exception as e:
-#             logger.error(
-#                 self.__self_addr,
-#                 f"Evaluation error. Something went wrong with Keras. {e}",
-#             )
-#             raise e
+    def evaluate(self) -> Dict[str, float]:
+        """Evaluate the Keras model."""
+        try:
+            if self.epochs > 0:
+                model, data = self.__get_tf_model_data(train=False)
+                results = model.evaluate(data, verbose=0)
+                if not isinstance(results, list):
+                    results = [results]
+                results_dict = dict(zip(model.metrics_names, results))
+                for k, v in results_dict.items():
+                    logger.log_metric(self.__self_addr, k, v)
+                return results_dict
+            else:
+                return {}
+        except Exception as e:
+            logger.error(self.__self_addr, f"Evaluation error with Keras: {e}")
+            raise e

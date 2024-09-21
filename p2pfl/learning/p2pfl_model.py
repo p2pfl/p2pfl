@@ -18,6 +18,7 @@
 
 """P2PFL model abstraction."""
 
+import copy
 import pickle
 from typing import Any, Dict, List, Optional, Union
 
@@ -174,5 +175,4 @@ class P2PFLModel:
             A copy of the model.
 
         """
-        # Create a new model (of the same subclass)
-        return self.__class__(self.model, **kwargs)
+        return self.__class__(copy.deepcopy(self.model), **kwargs)

@@ -31,9 +31,7 @@ from p2pfl.node_state import NodeState
 class InitModelCommand(Command):
     """InitModelCommand."""
 
-    def __init__(
-        self, state: NodeState, stop: Callable[[], None], aggregator: Aggregator, learner: NodeLearner
-    ) -> None:
+    def __init__(self, state: NodeState, stop: Callable[[], None], aggregator: Aggregator, learner: NodeLearner) -> None:
         """Initialize InitModelCommand."""
         self.state = state
         self.stop = stop
@@ -80,7 +78,7 @@ class InitModelCommand(Command):
                 self.learner.set_model(weights)
                 # Release lock
                 self.state.model_initialized_lock.release()
-                logger.info(self.state.addr, "Model Weights Initialized")
+                logger.info(self.state.addr, "🤖 Model Weights Initialized")
 
             # Warning: these stops can cause a denegation of service attack
             except DecodingParamsError:

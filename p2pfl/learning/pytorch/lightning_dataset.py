@@ -100,6 +100,4 @@ class PyTorchExportStrategy(DataExportStrategy):
             raise NotImplementedError("Transforms are not supported in this export strategy.")
 
         # Export to a PyTorch dataloader
-        return DataLoader(
-            data.with_format(type="torch", output_all_columns=True), batch_size=batch_size, num_workers=num_workers
-        )
+        return DataLoader(data.with_format(type="torch", output_all_columns=True), batch_size=batch_size, num_workers=num_workers)

@@ -18,13 +18,13 @@
 """Data partitioning strategies for P2PFL Datasets."""
 
 import random
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import List, Tuple
 
 from datasets import Dataset  # type: ignore
 
 
-class DataPartitionStrategy(ABC):
+class DataPartitionStrategy:
     """
     Abstract class for defining data partitioning strategies in federated learning.
 
@@ -32,9 +32,10 @@ class DataPartitionStrategy(ABC):
     to simulate different data distributions across clients.
     """
 
+    @staticmethod
     @abstractmethod
     def generate_partitions(
-        self, train_data: Dataset, test_data: Dataset, num_partitions: int, **kwargs
+        train_data: Dataset, test_data: Dataset, num_partitions: int, **kwargs
     ) -> Tuple[List[List[int]], List[List[int]]]:
         """
         Generate partitions of the dataset based on the specific strategy.
@@ -57,8 +58,9 @@ class DataPartitionStrategy(ABC):
 class RandomIIDPartitionStrategy(DataPartitionStrategy):
     """Partition the dataset randomly, resulting in an IID distribution of data across clients."""
 
+    @staticmethod
     def generate_partitions(
-        self, train_data: Dataset, test_data: Dataset, num_partitions: int, seed: int = 666, **kwargs
+        train_data: Dataset, test_data: Dataset, num_partitions: int, seed: int = 666, **kwargs
     ) -> Tuple[List[List[int]], List[List[int]]]:
         """
         Generate partitions of the dataset using random sampling.
@@ -76,11 +78,13 @@ class RandomIIDPartitionStrategy(DataPartitionStrategy):
                 - The second list contains lists of indices for the test data partitions.
 
         """
-        return self.__partition_data(train_data, seed, num_partitions), self.__partition_data(
-            test_data, seed, num_partitions
+        return (
+            RandomIIDPartitionStrategy.__partition_data(train_data, seed, num_partitions),
+            RandomIIDPartitionStrategy.__partition_data(test_data, seed, num_partitions),
         )
 
-    def __partition_data(self, data: Dataset, seed: int, num_partitions: int) -> List[List[int]]:
+    @staticmethod
+    def __partition_data(data: Dataset, seed: int, num_partitions: int) -> List[List[int]]:
         # Shuffle the indices
         indices = list(range(len(data)))
         random.seed(seed)
@@ -93,9 +97,7 @@ class RandomIIDPartitionStrategy(DataPartitionStrategy):
         # Partition the data using list comprehension
         # Each partition gets 'samples_per_partition' samples, and the first 'remainder' partitions get an extra sample
         return [
-            indices[
-                i * samples_per_partition + min(i, remainder) : (i + 1) * samples_per_partition + min(i + 1, remainder)
-            ]
+            indices[i * samples_per_partition + min(i, remainder) : (i + 1) * samples_per_partition + min(i + 1, remainder)]
             for i in range(num_partitions)
         ]
 
@@ -109,8 +111,8 @@ class LabelSkewedPartitionStrategy(DataPartitionStrategy):
 
     # CUANDO SE HAGA LA OTRA (NO-IID GENERALIZARLA)
 
+    @staticmethod
     def generate_partitions(
-        self,
         train_data: Dataset,
         test_data: Dataset,
         num_partitions: int,

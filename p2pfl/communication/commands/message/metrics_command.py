@@ -47,8 +47,6 @@ class MetricsCommand(Command):
             **kwargs: The command keyword arguments.
 
         """
-        logger.info(self.state.addr, f"Metrics received from {source}")
-        # process metrics
         for i in range(0, len(args), 2):
             key = args[i]
             value = float(args[i + 1])

@@ -4,7 +4,7 @@
 name = "absl-py"
 version = "2.1.0"
 description = "Abseil Python Common Libraries, see https://github.com/abseil/abseil-py."
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "absl-py-2.1.0.tar.gz", hash = "sha256:7820790efbb316739cde8b4e19357243fc3608a152024288513dd968d7d959ff"},
@@ -1171,7 +1171,7 @@ setuptools = "*"
 name = "h5py"
 version = "3.11.0"
 description = "Read and write HDF5 files from Python"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "h5py-3.11.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:1625fd24ad6cfc9c1ccd44a66dac2396e7ee74940776792772819fc69f3a3731"},
@@ -1466,13 +1466,13 @@ test = ["ipykernel", "pre-commit", "pytest (<8)", "pytest-cov", "pytest-timeout"
 
 [[package]]
 name = "keras"
-version = "3.4.1"
+version = "3.5.0"
 description = "Multi-backend Keras."
-optional = true
+optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "keras-3.4.1-py3-none-any.whl", hash = "sha256:15599c51e2090c12f39de6db6489a0cf265ddf6653f0731b82db5af2bfa19105"},
-    {file = "keras-3.4.1.tar.gz", hash = "sha256:34cd9aeaa008914715149234c215657ca758e1b473bd2aab2e211ac967d1f8fe"},
+    {file = "keras-3.5.0-py3-none-any.whl", hash = "sha256:d37a3c623935713473ceb25241b52bce9d1e0ff5b36e5d0f6f47ed55f8500c9a"},
+    {file = "keras-3.5.0.tar.gz", hash = "sha256:53ae4f9472ec9d9c6941c82a3fda86969724ace3b7630a94ba0a1f17ba1065c3"},
 ]
 
 [package.dependencies]
@@ -1892,7 +1892,7 @@ files = [
 name = "ml-dtypes"
 version = "0.3.2"
 description = ""
-optional = true
+optional = false
 python-versions = ">=3.9"
 files = [
     {file = "ml_dtypes-0.3.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:7afde548890a92b41c0fed3a6c525f1200a5727205f73dc21181a2726571bb53"},
@@ -1916,9 +1916,9 @@ files = [
 
 [package.dependencies]
 numpy = [
+    {version = ">=1.23.3", markers = "python_version >= \"3.11\" and python_version < \"3.12\""},
     {version = ">=1.21.2", markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
     {version = ">1.20", markers = "python_version < \"3.10\""},
-    {version = ">=1.23.3", markers = "python_version >= \"3.11\" and python_version < \"3.12\""},
     {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
 ]
 
@@ -2172,7 +2172,7 @@ testing-docutils = ["pygments", "pytest (>=7,<8)", "pytest-param-files (>=0.3.4,
 name = "namex"
 version = "0.0.8"
 description = "A simple utility to separate the implementation of your Python package and its public API surface."
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "namex-0.0.8-py3-none-any.whl", hash = "sha256:7ddb6c2bb0e753a311b7590f84f6da659dd0c05e65cb89d519d54c0a250c0487"},
@@ -2417,7 +2417,7 @@ tests = ["pytest", "pytest-cov", "pytest-pep8"]
 name = "optree"
 version = "0.12.1"
 description = "Optimized PyTree Utilities."
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "optree-0.12.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:349aafac463642979f7fe7ca3aa9e2fa8a5a0f81ef7af6946a075b797673e600"},
@@ -2553,8 +2553,8 @@ files = [
 
 [package.dependencies]
 numpy = [
-    {version = ">=1.22.4", markers = "python_version < \"3.11\""},
     {version = ">=1.23.2", markers = "python_version == \"3.11\""},
+    {version = ">=1.22.4", markers = "python_version < \"3.11\""},
     {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
 ]
 python-dateutil = ">=2.8.2"
@@ -4066,6 +4066,22 @@ files = [
 urllib3 = ">=2"
 
 [[package]]
+name = "types-tensorflow"
+version = "2.17.0.20240820"
+description = "Typing stubs for tensorflow"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-tensorflow-2.17.0.20240820.tar.gz", hash = "sha256:8259f4458776cad1abc799fc996c38e74f5d3b7b150f6683315f40164af71414"},
+    {file = "types_tensorflow-2.17.0.20240820-py3-none-any.whl", hash = "sha256:705d34b541b126d3b350e749de81db9a34bbe22a4c2bb6d491925c758144fe33"},
+]
+
+[package.dependencies]
+numpy = ">=1.20,<2.1.0"
+types-protobuf = "*"
+types-requests = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.12.2"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -4482,4 +4498,4 @@ torch = ["torch", "torchmetrics", "torchvision"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "3e066b714501169ddd3e32cafb036499356185544d79e0cbe4ea9cbdfc5fdd45"
+content-hash = "4899b01973d71dc9bc70de4af60e4892bde6120194e7e887d37707967a589b57"

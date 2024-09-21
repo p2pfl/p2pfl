@@ -44,7 +44,9 @@ class Aggregator:
 
     def __init__(self, node_name: str = "unknown") -> None:
         """Initialize the aggregator."""
-        print("ESTAS COSAS DEL ESTADO, METERLAS EN EL ESTADO (esto que se instancie dinamicamente como el learner)")
+        #
+        # TODO> REVISAR INICIALIZACIÓN DE ATRIBUTOS RELACIONADAS CON EL AGREGADOR (quiza mejor en state)
+        #
         self.node_name = node_name
         self.__train_set: List[str] = []
         self.__models: List[P2PFLModel] = []
@@ -122,34 +124,45 @@ class Aggregator:
         # Lock
         self.__agg_lock.acquire()
 
-        print("Si llega un modelo completamente agregado, se tiene que saltar todo esto")
+        #
+        # TODO: (optimiazacion) Si llega un modelo completamente agregado, se tiene que saltar todo esto
+        # TODO: A veces se agregan repetidos
+        #
 
         # Check if aggregation is needed
         if len(self.__train_set) > len(self.get_aggregated_models()):
             # Check if all nodes are in the train_set
             if all(n in self.__train_set for n in model.get_contributors()):
-                # Aggregate model
-                self.__models.append(model)
-                models_added = str(len(self.get_aggregated_models()))
-                logger.info(
-                    self.node_name,
-                    f"Model added ({models_added}/{ str(len(self.__train_set))}) from {str(model.get_contributors())}",
-                )
+                # Check if any model was added
+                any_model_added = any(n in self.get_aggregated_models() for n in model.get_contributors())
+                if not any_model_added:
+                    # Aggregate model
+                    self.__models.append(model)
+                    models_added = str(len(self.get_aggregated_models()))
+                    logger.info(
+                        self.node_name,
+                        f"🧩 Model added ({models_added}/{ str(len(self.__train_set))}) from {str(model.get_contributors())}",
+                    )
 
-                # Check if all models were added
-                if len(self.get_aggregated_models()) >= len(self.__train_set):
-                    self._finish_aggregation_lock.release()
+                    # Check if all models were added
+                    if len(self.get_aggregated_models()) >= len(self.__train_set):
+                        self._finish_aggregation_lock.release()
 
-                # Unloock and Return
-                self.__agg_lock.release()
-                return self.get_aggregated_models()
+                    # Unloock and Return
+                    self.__agg_lock.release()
+                    return self.get_aggregated_models()
+                else:
+                    logger.debug(
+                        self.node_name,
+                        f"Can't add a model from a node ({model.get_contributors()}) that is already in the training set.",
+                    )
             else:
                 logger.debug(
                     self.node_name,
                     f"Can't add a model from a node ({model.get_contributors()}) that is not in the training test.",
                 )
         else:
-            logger.debug(self.node_name, "Received a model when is not needed (already aggregated).")
+            logger.debug(self.node_name, "🚫 Received a model when is not needed (already aggregated).")
 
         # Release and return
         self.__agg_lock.release()
@@ -182,10 +195,10 @@ class Aggregator:
         if len(missing_models) > 0:
             logger.info(
                 self.node_name,
-                f"Aggregating models, timeout reached. Missing models: {missing_models}",
+                f"❌ Aggregating models, timeout reached. Missing models: {missing_models}",
             )
         else:
-            logger.info(self.node_name, "Aggregating models.")
+            logger.info(self.node_name, "🧠 Aggregating models.")
 
         # Notify node
         return self.aggregate(self.__models)

@@ -200,7 +200,7 @@ class P2PFLDataset:
         """
         if isinstance(self._data, Dataset):
             raise ValueError("Cannot generate partitions for single datasets. ")
-        train_partition, test_partition = strategy.generate_partitions(
+        train_partition_idxs, test_partition_idxs = strategy.generate_partitions(
             self._data[self._train_split_name],
             self._data[self._test_split_name],
             num_partitions,
@@ -209,7 +209,12 @@ class P2PFLDataset:
         )
         return [
             P2PFLDataset(
-                DatasetDict({self._train_split_name: train_partition[i], self._test_split_name: test_partition[i]})
+                DatasetDict(
+                    {
+                        self._train_split_name: self._data[self._train_split_name].select(train_partition_idxs[i]),
+                        self._test_split_name: self._data[self._test_split_name].select(test_partition_idxs[i]),
+                    }
+                )
             )
             for i in range(num_partitions)
         ]

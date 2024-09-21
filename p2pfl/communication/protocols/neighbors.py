@@ -81,11 +81,11 @@ class Neighbors:
 
         """
         # Log
-        logger.info(self.self_addr, f"Adding {addr}")
+        logger.info(self.self_addr, f"🤝 Adding {addr}")
 
         # Cannot add itself
         if addr == self.self_addr:
-            logger.info(self.self_addr, "Cannot add itself")
+            logger.info(self.self_addr, "❌ Cannot add itself")
             return False
 
         # Lock
@@ -93,7 +93,7 @@ class Neighbors:
 
         # Cannot add duplicates
         if self.exists(addr):
-            logger.info(self.self_addr, f"Cannot add duplicates. {addr} already exists.")
+            logger.info(self.self_addr, f"❌ Cannot add duplicates. {addr} already exists.")
             self.neis_lock.release()
             return False
 
@@ -101,7 +101,7 @@ class Neighbors:
         try:
             self.neis[addr] = self.connect(addr, *args, **kargs)
         except Exception as e:
-            logger.error(self.self_addr, f"Cannot add {addr}: {e}")
+            logger.error(self.self_addr, f"❌ Cannot add {addr}: {e}")
             self.neis_lock.release()
             return False
 

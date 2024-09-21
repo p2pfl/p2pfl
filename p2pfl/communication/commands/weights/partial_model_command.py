@@ -83,9 +83,7 @@ class PartialModelCommand(Command):
 
             try:
                 # Add model to aggregator
-                model = self.laerner.get_model().build_copy(
-                    params=weights, num_samples=num_samples, contributors=list(contributors)
-                )
+                model = self.laerner.get_model().build_copy(params=weights, num_samples=num_samples, contributors=list(contributors))
                 models_added = self.aggregator.add_model(model)
                 if models_added != []:
                     # Communicate Aggregation
