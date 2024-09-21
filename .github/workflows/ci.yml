@@ -17,13 +17,13 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.12'
 
       - name: Install dependencies (poetry)
         run: |
           pip install poetry
           python -m poetry lock --no-update
-          python -m poetry install -E torch tensorflow
+          python -m poetry install --all-extras
 
       - name: Format (ruff)
         run: |
