@@ -18,24 +18,25 @@
 
 """Example of a P2PFL MNIST experiment, using a MLP model and a MnistFederatedDM."""
 
-"""
 import argparse
 import time
 
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
 from p2pfl.communication.protocols.grpc.grpc_communication_protocol import GrpcCommunicationProtocol
 from p2pfl.communication.protocols.memory.memory_communication_protocol import InMemoryCommunicationProtocol
-from p2pfl.learning.pytorch.lightning_learner import LightningDataset, LightningLearner, LightningModel
-from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
-    MnistFederatedDM,
-)
-from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
+from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
+from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
+from p2pfl.learning.p2pfl_model import P2PFLModel
+from p2pfl.learning.pytorch.lightning_learner import LightningLearner
+from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
+from p2pfl.learning.tensorflow.keras_learner import KerasLearner
+from p2pfl.learning.tensorflow.keras_model import MLP as MLP_KERAS
+from p2pfl.learning.tensorflow.keras_model import KerasModel
 from p2pfl.management.logger import logger
 from p2pfl.node import Node
-from p2pfl.utils import set_test_settings, wait_4_results, wait_convergence
-
-set_test_settings()
+from p2pfl.utils import wait_convergence, wait_to_finish
 
 
 def __parse_args() -> argparse.Namespace:
@@ -48,6 +49,7 @@ def __parse_args() -> argparse.Namespace:
     parser.add_argument("--use_unix_socket", action="store_true", help="Use Unix socket.", default=False)
     parser.add_argument("--use_local_protocol", action="store_true", help="Use local protocol.", default=False)
     parser.add_argument("--token", type=str, help="The API token for the Web Logger.", default="")
+    parser.add_argument("--tensorflow", action="store_true", help="Use TensorFlow.", default=False)
 
     # check (cannot use the unix socket and the local protocol at the same time)
     args = parser.parse_args()
@@ -56,7 +58,6 @@ def __parse_args() -> argparse.Namespace:
         parser.error("Cannot use the unix socket and the local protocol at the same time.")
 
     return args
-"""
 
 
 def mnist(
@@ -67,6 +68,7 @@ def mnist(
     measure_time: bool = False,
     use_unix_socket: bool = False,
     use_local_protocol: bool = False,
+    use_tensorflow: bool = False,
 ) -> None:
     """
     P2PFL MNIST experiment.
@@ -79,25 +81,37 @@ def mnist(
         measure_time: Measure time.
         use_unix_socket: Use Unix socket.
         use_local_protocol: Use local protocol
+        use_tensorflow: Use TensorFlow.
 
-    """
     """
     if measure_time:
         start_time = time.time()
 
+
+    # Data
+    data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
+    partitions = data.generate_partitions(n, RandomIIDPartitionStrategy) # type: ignore
+
     # Node Creation
     nodes = []
     for i in range(n):
-        if use_local_protocol:
-            address = f"node-{i}"
-        else:
-            address = f"unix:///tmp/p2pfl-{i}.sock" if use_unix_socket else "127.0.0.1"
+        address = f"node-{i}" if use_local_protocol else f"unix:///tmp/p2pfl-{i}.sock" if use_unix_socket else "127.0.0.1"
 
-        learner = LightningLearner(LightningModel(MLP()), LightningDataset(MnistFederatedDM(sub_id=0, number_sub=2)))
+        # Create the model
+        if use_tensorflow:
+            model = MLP_KERAS() # type: ignore
+            model(tf.zeros((1, 28, 28, 1))) # type: ignore
+            p2pfl_model: P2PFLModel = KerasModel(model)
+        else:
+            p2pfl_model: P2PFLModel = LightningModel(MLP())
+
+        # Nodes
         node = Node(
-            learner,
+            p2pfl_model,
+            partitions[i],
+            learner=KerasLearner if use_tensorflow else LightningLearner,  # type: ignore
             protocol=InMemoryCommunicationProtocol if use_local_protocol else GrpcCommunicationProtocol,  # type: ignore
-            address=address,
+            address=address
         )
         node.start()
         nodes.append(node)
@@ -106,13 +120,13 @@ def mnist(
     for i in range(len(nodes) - 1):
         nodes[i + 1].connect(nodes[i].addr)
         time.sleep(0.1)
-    wait_convergence(nodes, n - 1, only_direct=False)
+    wait_convergence(nodes, n - 1, only_direct=False)  # type: ignore
 
     # Start Learning
     nodes[0].set_start_learning(rounds=r, epochs=e)
 
     # Wait and check
-    wait_4_results(nodes)
+    wait_to_finish(nodes)
 
     # Local Logs
     if show_metrics:
@@ -166,9 +180,6 @@ if __name__ == "__main__":
     if args.token != "":
         logger.connect_web("http://localhost:3000/api/v1", args.token)
 
-    # Settings
-    # set_test_settings()
-
     # Launch experiment
     mnist(
         args.nodes,
@@ -179,4 +190,3 @@ if __name__ == "__main__":
         use_unix_socket=args.use_unix_socket,
         use_local_protocol=args.use_local_protocol,
     )
-    """

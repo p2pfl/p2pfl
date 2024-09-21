@@ -22,15 +22,12 @@ Example of a P2PFL MNIST node using a MLP model and a MnistFederatedDM.
 This node will be connected to node1 and then, the federated learning process will start.
 """
 
-"""
 import argparse
 import time
 
-from p2pfl.learning.pytorch.lightning_learner import LightningDataset, LightningLearner, LightningModel
-from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
-    MnistFederatedDM,
-)
-from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
+from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
+from p2pfl.learning.pytorch.lightning_learner import LightningLearner
+from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
 from p2pfl.node import Node
 from p2pfl.utils import set_test_settings
 
@@ -41,7 +38,6 @@ def __get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="P2PFL MNIST node using a MLP model and a MnistFederatedDM.")
     parser.add_argument("--port", type=int, help="The port to connect.", required=True)
     return parser.parse_args()
-"""
 
 
 def node2(port: int) -> None:
@@ -52,12 +48,8 @@ def node2(port: int) -> None:
         port: The port to connect.
 
     """
-    """
-    learner = LightningLearner(LightningModel(MLP()), LightningDataset(MnistFederatedDM(sub_id=0, number_sub=2)))
-
-    node = Node(learner, address="127.0.0.1")
+    node = Node(LightningModel(MLP()), P2PFLDataset.from_huggingface("p2pfl/MNIST"), address="127.0.0.1", learner=LightningLearner)
     node.start()
-
     node.connect(f"127.0.0.1:{port}")
     time.sleep(4)
 
@@ -73,14 +65,11 @@ def node2(port: int) -> None:
             break
 
     node.stop()
-    """
 
 
 if __name__ == "__main__":
-    """
     # Get arguments
     args = __get_args()
 
     # Run node2
     node2(args.port)
-    """
