@@ -2,8 +2,8 @@
 
 # P2PFL - Federated Learning over P2P networks
 
-[![GitHub license](https://img.shields.io/github/license/pguijas/federated_learning_p2p)](https://github.com/pguijas/federated_learning_p2p/blob/main/LICENSE.md)
-[![GitHub issues](https://img.shields.io/github/issues/pguijas/federated_learning_p2p)](https://github.com/pguijas/federated_learning_p2p/issues)
+[![GitHub license](https://img.shields.io/github/license/pguijas/federated_learning_p2p)](https://github.com/pguijas/p2pfl/blob/main/LICENSE.md)
+[![GitHub issues](https://img.shields.io/github/issues/pguijas/federated_learning_p2p)](https://github.com/pguijas/p2pfl/issues)
 ![GitHub contributors](https://img.shields.io/github/contributors/pguijas/federated_learning_p2p)
 ![GitHub forks](https://img.shields.io/github/forks/pguijas/federated_learning_p2p)
 ![GitHub stars](https://img.shields.io/github/stars/pguijas/federated_learning_p2p)
@@ -28,6 +28,15 @@ P2PFL offers a range of features designed to make decentralized federated learni
 | 📈 Real-time Monitoring | Manage and track experiment through [P2PFL Web Services](https://p2pfl.com). | 
 | 🧠 Model Agnostic | Use any machine learning model you prefer (e.g., PyTorch models). |
 | 📡 Communication Protocol Agnostic | Choose the communication protocol that best suits your needs (e.g., gRPC). |
+
+## 🔌 Integrations
+
+> todo
+
+- Hugging Face Datasets
+- PyTorch
+- Tensorflow
+
 ## 📥 Installation
 
 > **Note:** We recommend using Python 3.9 or lower. We have found some compatibility issues with Python 3.10 and PyTorch.

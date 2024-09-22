@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -24,15 +24,14 @@ This node only starts, create a node2 and connect to it in order to start the fe
 
 import argparse
 
-from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
-    MnistFederatedDM,
-)
-from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
+from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
+from p2pfl.learning.pytorch.lightning_learner import LightningLearner
+from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
 from p2pfl.node import Node
+from p2pfl.utils import set_test_settings
 
-#from p2pfl.utils import set_test_settings
+set_test_settings()
 
-#set_test_settings()
 
 def __get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="P2PFL MNIST node using a MLP model and a MnistFederatedDM.")
@@ -48,8 +47,7 @@ def node1(port: int) -> None:
         port: The port where the node will be listening.
 
     """
-    print(f"127.0.0.1:{port}")
-    node = Node(MLP(), MnistFederatedDM(sub_id=0, number_sub=2), address=f"127.0.0.1:{port}")
+    node = Node(LightningModel(MLP()), P2PFLDataset.from_huggingface("p2pfl/MNIST"), address=f"127.0.0.1:{port}", learner=LightningLearner)
     node.start()
 
     input("Press any key to stop\n")

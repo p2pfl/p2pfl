@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2024 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -102,7 +102,8 @@ def launch() -> None:
 exp_app = typer.Typer(help="Run experiments on the p2pfl platform.")
 app.add_typer(exp_app, name="experiment")
 
-EXAMPLES_DIR = pkg_resources.resource_filename('p2pfl', 'examples')
+EXAMPLES_DIR = pkg_resources.resource_filename("p2pfl", "examples")
+
 
 def __get_available_examples() -> Dict[str, str]:
     # Load the available examples

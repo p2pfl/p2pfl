@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -22,12 +22,12 @@ import random
 import time
 from typing import Dict, List, Optional, Type, Union
 
-from p2pfl.commands.vote_train_set_command import VoteTrainSetCommand
-from p2pfl.communication.communication_protocol import CommunicationProtocol
+from p2pfl.communication.commands.message.vote_train_set_command import VoteTrainSetCommand
+from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.settings import Settings
-from p2pfl.stages.stage import Stage
+from p2pfl.stages.stage import EarlyStopException, Stage, check_early_stop
 from p2pfl.stages.stage_factory import StageFactory
 
 
@@ -49,22 +49,30 @@ class VoteTrainSetStage(Stage):
         if state is None or communication_protocol is None:
             raise Exception("Invalid parameters on VoteTrainSetStage.")
 
-        VoteTrainSetStage.__vote(state, communication_protocol)
-        state.train_set = VoteTrainSetStage.__validate_train_set(
-            VoteTrainSetStage.__aggregate_votes(state, communication_protocol),
-            state,
-            communication_protocol,
-        )
-        logger.info(
-            state.addr,
-            f"Train set of {len(state.train_set)} nodes: {state.train_set}",
-        )
+        try:
+            # Vote
+            VoteTrainSetStage.__vote(state, communication_protocol)
 
-        # Next stage
-        if state.addr in state.train_set:
-            return StageFactory.get_stage("TrainStage")
-        else:
-            return StageFactory.get_stage("WaitAggregatedModelsStage")
+            # Aggregate votes
+            state.train_set = VoteTrainSetStage.__validate_train_set(
+                VoteTrainSetStage.__aggregate_votes(state, communication_protocol),
+                state,
+                communication_protocol,
+            )
+            logger.info(
+                state.addr,
+                f"🚂 Train set of {len(state.train_set)} nodes: {state.train_set}",
+            )
+
+            # Next stage
+            if state.addr in state.train_set:
+                return StageFactory.get_stage("TrainStage")
+            else:
+                # Set state as waiting for aggregated model
+                state.wait_aggregated_model_lock.acquire(timeout=Settings.AGGREGATION_TIMEOUT)
+                return StageFactory.get_stage("WaitAggregatedModelsStage")
+        except EarlyStopException:
+            return None
 
     @staticmethod
     def __vote(state: NodeState, communication_protocol: CommunicationProtocol) -> None:
@@ -72,7 +80,7 @@ class VoteTrainSetStage(Stage):
         candidates = list(communication_protocol.get_neighbors(only_direct=False))
         if state.addr not in candidates:
             candidates.append(state.addr)
-        logger.debug(state.addr, f"{len(candidates)} candidates to train set")
+        logger.debug(state.addr, f"👨‍🏫 {len(candidates)} candidates to train set")
 
         # Send vote
         samples = min(Settings.TRAIN_SET_SIZE, len(candidates))
@@ -86,8 +94,8 @@ class VoteTrainSetStage(Stage):
         state.train_set_votes_lock.release()
 
         # Send and wait for votes
-        logger.info(state.addr, "Sending train set vote.")
-        logger.debug(state.addr, f"Self Vote: {votes}")
+        logger.info(state.addr, "🗳️ Sending train set vote.")
+        logger.debug(state.addr, f"🪞🗳️ Self Vote: {votes}")
         communication_protocol.broadcast(
             communication_protocol.build_msg(
                 VoteTrainSetCommand.get_name(),
@@ -98,7 +106,7 @@ class VoteTrainSetStage(Stage):
 
     @staticmethod
     def __aggregate_votes(state: NodeState, communication_protocol: CommunicationProtocol) -> List[str]:
-        logger.debug(state.addr, "Waiting other node votes.")
+        logger.debug(state.addr, "⏳ Waiting other node votes.")
 
         # Get time
         count = 0.0
@@ -106,9 +114,7 @@ class VoteTrainSetStage(Stage):
 
         while True:
             # If the trainning has been interrupted, stop waiting
-            if state.round is None:
-                logger.info(state.addr, "Stopping on_round_finished process.")
-                return []
+            check_early_stop(state)
 
             # Update time counters (timeout)
             count = count + (time.time() - begin)
@@ -130,9 +136,7 @@ class VoteTrainSetStage(Stage):
 
             if votes_ready or timeout:
                 if timeout and not votes_ready:
-                    missing_votes = set(
-                        list(communication_protocol.get_neighbors(only_direct=False)) + [state.addr]
-                    ) - set(nc_votes.keys())
+                    missing_votes = set(list(communication_protocol.get_neighbors(only_direct=False)) + [state.addr]) - set(nc_votes.keys())
                     logger.info(
                         state.addr,
                         f"Timeout for vote aggregation. Missing votes from {missing_votes}",
@@ -158,7 +162,7 @@ class VoteTrainSetStage(Stage):
 
                 # Clear votes
                 state.train_set_votes = {}
-                logger.info(state.addr, f"Computed {len(nc_votes)} votes.")
+                logger.info(state.addr, f"🔢 Computed {len(nc_votes)} votes.")
                 return [i[0] for i in results_ordered]
 
             # Wait for votes or refresh every 2 seconds

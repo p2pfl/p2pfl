@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,11 +18,12 @@
 
 """Round Finished Stage."""
 
-from typing import Callable, Optional, Type, Union
+from typing import Optional, Type, Union
 
-from p2pfl.commands.metrics_command import MetricsCommand
-from p2pfl.communication.communication_protocol import CommunicationProtocol
+from p2pfl.communication.commands.message.metrics_command import MetricsCommand
+from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
+from p2pfl.learning.learner import NodeLearner
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.stage import Stage
@@ -40,19 +41,14 @@ class RoundFinishedStage(Stage):
     @staticmethod
     def execute(
         state: Optional[NodeState] = None,
+        learner: Optional[NodeLearner] = None,
         communication_protocol: Optional[CommunicationProtocol] = None,
         aggregator: Optional[Aggregator] = None,
-        early_stopping_fn: Optional[Callable[[], bool]] = None,
         **kwargs,
     ) -> Union[Type["Stage"], None]:
         """Execute the stage."""
-        if state is None or communication_protocol is None or aggregator is None or early_stopping_fn is None:
+        if state is None or communication_protocol is None or aggregator is None or learner is None:
             raise Exception("Invalid parameters on RoundFinishedStage.")
-
-        # Check if early stopping
-        if early_stopping_fn():
-            logger.info(state.addr, "Early stopping.")
-            return None
 
         # Set Next Round
         aggregator.clear()
@@ -62,31 +58,29 @@ class RoundFinishedStage(Stage):
         # Next Step or Finish
         logger.info(
             state.addr,
-            f"Round {state.round} of {state.total_rounds} finished.",
+            f"🎉 Round {state.round} of {state.total_rounds} finished.",
         )
         if state.round is None or state.total_rounds is None:
-            raise Exception("Round or total rounds not set.")
+            raise ValueError("Round or total rounds not set.")
+
         if state.round < state.total_rounds:
-            return StageFactory.get_stage("TrainStage")
+            return StageFactory.get_stage("VoteTrainSetStage")
         else:
             # At end, all nodes compute metrics
-            RoundFinishedStage.__evaluate(state, communication_protocol)
+            RoundFinishedStage.__evaluate(state, learner, communication_protocol)
             # Finish
             state.clear()
-            state.model_initialized_lock.acquire()
-            logger.info(state.addr, "Training finished!!.")
+            logger.info(state.addr, "😋 Training finished!!")
             return None
 
     @staticmethod
-    def __evaluate(state: NodeState, communication_protocol: CommunicationProtocol) -> None:
-        logger.info(state.addr, "Evaluating...")
-        if state.learner is None:
-            raise Exception("Learner not initialized.")
-        results = state.learner.evaluate()
-        logger.info(state.addr, f"Evaluated. Results: {results}")
+    def __evaluate(state: NodeState, learner: NodeLearner, communication_protocol: CommunicationProtocol) -> None:
+        logger.info(state.addr, "🔬 Evaluating...")
+        results = learner.evaluate()
+        logger.info(state.addr, f"📈 Evaluated. Results: {results}")
         # Send metrics
         if len(results) > 0:
-            logger.info(state.addr, "Broadcasting metrics.")
+            logger.info(state.addr, "📢 Broadcasting metrics.")
             flattened_metrics = [str(item) for pair in results.items() for item in pair]
             communication_protocol.broadcast(
                 communication_protocol.build_msg(

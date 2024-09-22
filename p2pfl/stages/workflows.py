@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,11 @@
 #
 """Workflows."""
 
-from typing import Optional, Type
+from typing import List, Optional, Type
 
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
-from p2pfl.stages.stage import Stage
+from p2pfl.stages.stage import Stage, check_early_stop
 from p2pfl.stages.stage_factory import StageFactory
 
 
@@ -31,16 +31,21 @@ class StageWokflow:
     def __init__(self, first_stage: Type[Stage]) -> None:
         """Initialize the workflow."""
         self.current_stage = first_stage
+        self.history: List[str] = []
+        self.finished = False
 
     def run(self, **kwargs) -> None:
         """Run the workflow."""
-        # get state
+        self.finished = False
+        # get state (need info from state)
         state: Optional[NodeState] = kwargs.get("state")
         if state:
             while True:
-                logger.debug(state.addr, f"Running stage: {(self.current_stage.name())}")
+                logger.debug(state.addr, f"🏃 Running stage: {(self.current_stage.name())}")
+                self.history.append(self.current_stage.name())
                 next_stage = self.current_stage.execute(**kwargs)
-                if next_stage is None:
+                if next_stage is None or check_early_stop(state, raise_exception=False):
+                    self.finished = True
                     break
                 self.current_stage = next_stage
         else:

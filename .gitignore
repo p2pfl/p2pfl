@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Fast tests
+Untitled-1.ipynb
+test.py
+
 # C extensions
 *.so
 
@@ -11,6 +15,7 @@ MNIST/
 
 # Logs
 *.log
+lightning_logs/
 training_logs/
 logs
 

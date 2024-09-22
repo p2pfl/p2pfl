@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -29,7 +29,7 @@ import logging
 import multiprocessing
 import os
 from logging.handlers import QueueHandler, QueueListener, RotatingFileHandler
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from p2pfl.management.metric_storage import GlobalLogsType, GlobalMetricStorage, LocalLogsType, LocalMetricStorage
 from p2pfl.management.node_monitor import NodeMonitor
@@ -140,10 +140,12 @@ class ColoredFormatter(logging.Formatter):
 #    Logger    #
 ################
 
+
 class NodeNotRegistered(Exception):
     """Exception raised when a node is not registered."""
 
     pass
+
 
 class Logger:
     """
@@ -270,7 +272,7 @@ class Logger:
     ######
 
     @staticmethod
-    def set_level(level: int) -> None:
+    def set_level(level: Union[int, str]) -> None:
         """
         Set the logger level.
 
@@ -278,7 +280,10 @@ class Logger:
             level: The logger level.
 
         """
-        Logger.get_instance().logger.setLevel(level)
+        if isinstance(level, str):
+            Logger.get_instance().logger.setLevel(logging.getLevelName(level))
+        else:
+            Logger.get_instance().logger.setLevel(level)
 
     @staticmethod
     def get_level() -> int:
@@ -404,7 +409,7 @@ class Logger:
         """
         Log a metric.
 
-        If the round is not provided, it will try to get it from the node state. 
+        If the round is not provided, it will try to get it from the node state.
 
         If the step is not provided, it will log a global metric.
 
@@ -415,12 +420,11 @@ class Logger:
             step: The step.
             round: The round.
 
-        :: todo: Register remote nodes
+        .. todo:: Register remote nodes
 
         """
         # not implemented temporal try
         try:
-
             # Try to get the experiment name
             try:
                 exp = Logger.get_instance().nodes[node][1].actual_exp_name
@@ -458,6 +462,7 @@ class Logger:
                     # Local Metrics
                     p2pfl_web_services.send_local_metric(exp, round, metric, node, value, step)
         except NodeNotRegistered:
+            pass
             Logger.get_instance().warning("LOGGER", "Remote metric logging not implemented yet. Be patient :)")
 
     @staticmethod

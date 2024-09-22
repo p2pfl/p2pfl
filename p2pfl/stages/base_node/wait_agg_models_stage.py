@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,14 @@
 #
 """Wait aggregated models stage."""
 
+import contextlib
 from typing import Optional, Type, Union
 
-from p2pfl.learning.aggregators.aggregator import Aggregator
+from p2pfl.communication.commands.message.models_ready_command import ModelsReadyCommand
+from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
+from p2pfl.settings import Settings
 from p2pfl.stages.stage import Stage
 from p2pfl.stages.stage_factory import StageFactory
 
@@ -36,14 +39,24 @@ class WaitAggregatedModelsStage(Stage):
 
     @staticmethod
     def execute(
-        state: Optional[NodeState] = None, aggregator: Optional[Aggregator] = None, **kwargs
+        state: Optional[NodeState] = None, communication_protocol: Optional[CommunicationProtocol] = None, **kwargs
     ) -> Union[Type["Stage"], None]:
         """Execute the stage."""
-        if state is None or aggregator is None:
+        if state is None or communication_protocol is None:
             raise Exception("Invalid parameters on WaitAggregatedModelsStage.")
-        logger.info(state.addr, "Waiting aregation.")
-        """
-        Quizá pueda ser interesante que la lógica de espera esté aquí
-        """
-        aggregator.set_waiting_aggregated_model(state.train_set)
+
+        # Wait for aggregation to finish (then release the lock again)
+        logger.info(state.addr, "⏳ Waiting aregation.")
+        state.wait_aggregated_model_lock.acquire(timeout=Settings.AGGREGATION_TIMEOUT)
+        with contextlib.suppress(Exception):
+            state.wait_aggregated_model_lock.release()
+
+        # Get aggregated model
+        logger.debug(
+            state.addr,
+            f"Broadcast aggregation done for round {state.round}",
+        )
+        # Share that aggregation is done
+        communication_protocol.broadcast(communication_protocol.build_msg(ModelsReadyCommand.get_name(), [], round=state.round))
+
         return StageFactory.get_stage("GossipModelStage")

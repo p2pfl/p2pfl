@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2024 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,6 @@
 
 import threading
 from typing import Dict, List, Optional
-
-from p2pfl.learning.learner import NodeLearner
 
 
 class NodeState:
@@ -61,7 +59,7 @@ class NodeState:
         self.simulation = False
 
         # Learning
-        self.learner: Optional[NodeLearner] = None
+        self.experiment_config = None  # NOT IMPLEMENTED YET
 
         # Aggregator (TRATAR DE MOVERLO A LA CLASE AGGREGATOR)
         self.models_aggregated: Dict[str, List[str]] = {}
@@ -79,6 +77,9 @@ class NodeState:
         self.wait_votes_ready_lock = threading.Lock()
         self.model_initialized_lock = threading.Lock()
         self.model_initialized_lock.acquire()
+        self.wait_aggregated_model_lock = threading.Lock()
+
+        # puede quedar guay el privatizar todos los locks y meter métodos que al mismo tiempo seteen un estado (string)
 
     def set_experiment(self, exp_name: str, total_rounds: int) -> None:
         """
@@ -109,7 +110,4 @@ class NodeState:
 
     def clear(self) -> None:
         """Clear the state."""
-        self.status = "Idle"
-        self.actual_exp_name = None
-        self.round = None
-        self.total_rounds = None
+        type(self).__init__(self, self.addr)

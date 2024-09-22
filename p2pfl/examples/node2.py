@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -25,15 +25,13 @@ This node will be connected to node1 and then, the federated learning process wi
 import argparse
 import time
 
-from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
-    MnistFederatedDM,
-)
-from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
+from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
+from p2pfl.learning.pytorch.lightning_learner import LightningLearner
+from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
 from p2pfl.node import Node
+from p2pfl.utils import set_test_settings
 
-#from p2pfl.utils import set_test_settings
-
-#set_test_settings()
+set_test_settings()
 
 
 def __get_args() -> argparse.Namespace:
@@ -50,12 +48,12 @@ def node2(port: int) -> None:
         port: The port to connect.
 
     """
-    node = Node(MLP(), MnistFederatedDM(sub_id=1, number_sub=2), address="127.0.0.1")
+    node = Node(LightningModel(MLP()), P2PFLDataset.from_huggingface("p2pfl/MNIST"), address="127.0.0.1", learner=LightningLearner)
     node.start()
-
     node.connect(f"127.0.0.1:{port}")
     time.sleep(4)
 
+    print("Start learning")
     node.set_start_learning(rounds=2, epochs=1)
 
     # Wait 4 results
