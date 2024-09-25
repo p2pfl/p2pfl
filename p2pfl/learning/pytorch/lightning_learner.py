@@ -171,7 +171,7 @@ class LightningLearner(NodeLearner):
         try:
             if self.epochs > 0:
                 self.__trainer = Trainer()
-                pt_model, pt_data = self.__get_pt_model_data()
+                pt_model, pt_data = self.__get_pt_model_data(train=False)
                 results = self.__trainer.test(pt_model, pt_data, verbose=True)[0]
                 self.__trainer = None
                 # Log metrics
