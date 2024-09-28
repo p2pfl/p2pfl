@@ -67,7 +67,7 @@ class GrpcNeighbors(Neighbors):
 
         """
         if non_direct:
-            logger.info(self.self_addr, f"🔍 Found node {addr}")
+            logger.debug(self.self_addr, f"🔍 Found node {addr}")
             return self.__build_non_direct_neighbor(addr)
         else:
             logger.info(self.self_addr, f"🤝 Adding {addr}")
