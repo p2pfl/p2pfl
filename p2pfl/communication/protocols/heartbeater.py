@@ -34,6 +34,8 @@ class Heartbeater(threading.Thread):
     """
     Heartbeater for agnostic communication protocol. Send and update fresh heartbeats.
 
+    TODO: Merge heartbeats to increase efficiency.
+
     Args:
         self_addr: Address of the node.
         neighbors: Neighbors to update.

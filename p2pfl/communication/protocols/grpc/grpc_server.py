@@ -170,7 +170,7 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
             return node_pb2.ResponseMessage()
 
         # Process message/model
-        if request.cmd != "beat" or (not Settings.EXCLUDE_BEAT_LOGS and request.source == "beat"):
+        if request.cmd != "beat" or (not Settings.EXCLUDE_BEAT_LOGS and request.cmd == "beat"):
             logger.debug(
                 self.addr,
                 f"📫 {request.cmd.upper()} received from {request.source}",
@@ -201,7 +201,7 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
             return node_pb2.ResponseMessage(error=f"Unknown command: {request.cmd}")
 
         # If message gossip
-        if request.HasField("message") and request.message.ttl > 1:
+        if request.HasField("message") and request.message.ttl > 0:
             # Update ttl and gossip
             request.message.ttl -= 1
             pending_neis = [n for n in self.__neighbors.get_all(only_direct=True) if n != request.source]

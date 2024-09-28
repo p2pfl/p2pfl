@@ -144,13 +144,16 @@ class InMemoryServer:
         """
         # If not processed
         if self.__gossiper.check_and_set_processed(request["hash"]):
-            if Settings.EXCLUDE_BEAT_LOGS and request["cmd"] == "beat":
+            if request["cmd"] != "beat" or (not Settings.EXCLUDE_BEAT_LOGS and request["cmd"] == "beat"):
+                source = request["source"]
+                cmd = request["cmd"].upper()
+                ttl = request["ttl"]
                 logger.debug(
                     self.addr,
-                    f"Received message from {request['source']} > {request['cmd']} {request['args']}",
+                    f"📫 {cmd} received from {source} ({ttl=})",
                 )
             # Gossip
-            if request["ttl"] > 1:
+            if request["ttl"] > 0:
                 # Update ttl and gossip
                 request["ttl"] -= 1
                 pending_neis = [n for n in self.__neighbors.get_all(only_direct=True) if n != request["source"]]

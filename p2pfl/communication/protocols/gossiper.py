@@ -129,28 +129,25 @@ class Gossiper(threading.Thread):
             messages_left = self.messages_per_period
 
             # Lock
-            self.__pending_msgs_lock.acquire()
+            with self.__pending_msgs_lock:
 
-            # Select the max amount of messages to send
-            while messages_left > 0 and len(self.__pending_msgs) > 0:
-                head_msg = self.__pending_msgs[0]
-                # Select msgs
-                if len(head_msg[1]) < messages_left:
-                    # Select all
-                    messages_to_send.append(head_msg)
-                    # Remove from pending
-                    self.__pending_msgs.pop(0)
-                else:
-                    # Select only the first neis
-                    messages_to_send.append((head_msg[0], head_msg[1][:messages_left]))
-                    # Remove from pending
-                    self.__pending_msgs[0] = (
-                        self.__pending_msgs[0][0],
-                        self.__pending_msgs[0][1][messages_left:],
-                    )
-
-            # Unlock
-            self.__pending_msgs_lock.release()
+                # Select the max amount of messages to send
+                while messages_left > 0 and len(self.__pending_msgs) > 0:
+                    head_msg = self.__pending_msgs[0]
+                    # Select msgs
+                    if len(head_msg[1]) < messages_left:
+                        # Select all
+                        messages_to_send.append(head_msg)
+                        # Remove from pending
+                        self.__pending_msgs.pop(0)
+                    else:
+                        # Select only the first neis
+                        messages_to_send.append((head_msg[0], head_msg[1][:messages_left]))
+                        # Remove from pending
+                        self.__pending_msgs[0] = (
+                            self.__pending_msgs[0][0],
+                            self.__pending_msgs[0][1][messages_left:],
+                        )
 
             # Send messages
             for msg, neis in messages_to_send:

@@ -10,6 +10,9 @@ test.py
 # C extensions
 *.so
 
+# Profiling
+profile/
+
 # Mnist
 MNIST/
 
