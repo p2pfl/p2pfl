@@ -18,8 +18,8 @@
 
 """Example of a P2PFL MNIST experiment, using a MLP model and a MnistFederatedDM."""
 
-#poetry run snakeviz _MainThread-0.pstat
-#poetry run gprof2dot -f pstats Gossiper-10.pstat | dot -Tpng -o output.png && open output.png
+# poetry run snakeviz _MainThread-0.pstat
+# poetry run gprof2dot -f pstats Gossiper-10.pstat | dot -Tpng -o output.png && open output.png
 
 import argparse
 import time
@@ -67,6 +67,7 @@ def set_standalone_settings() -> None:
     Settings.EXCLUDE_BEAT_LOGS = True
     logger.set_level(Settings.LOG_LEVEL)  # Refresh (maybe already initialized)
 
+
 def get_neighbour_graph(n: int) -> np.ndarray:
     """
     Get the neighbour graph for the given number of nodes.
@@ -81,6 +82,7 @@ def get_neighbour_graph(n: int) -> np.ndarray:
 
     """
     raise NotImplementedError("This function is not implemented yet.")
+
 
 def __parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="P2PFL MNIST experiment using the Web Logger.")
@@ -133,11 +135,13 @@ def mnist(
 
     # Check settings
     if n > Settings.TTL:
-        raise ValueError("For in-line topology TTL must be greater than the number of nodes. Otherwise, some messages will not be delivered.")
+        raise ValueError(
+            "For in-line topology TTL must be greater than the number of nodes." "Otherwise, some messages will not be delivered."
+        )
 
     # Data
     data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
-    partitions = data.generate_partitions(n, RandomIIDPartitionStrategy) # type: ignore
+    partitions = data.generate_partitions(n, RandomIIDPartitionStrategy)  # type: ignore
 
     # Node Creation
     nodes = []
@@ -147,8 +151,8 @@ def mnist(
         # Create the model
         p2pfl_model: P2PFLModel = LightningModel(MLP())
         if use_tensorflow:
-            model = MLP_KERAS() # type: ignore
-            model(tf.zeros((1, 28, 28, 1))) # type: ignore
+            model = MLP_KERAS()  # type: ignore
+            model(tf.zeros((1, 28, 28, 1)))  # type: ignore
             p2pfl_model = KerasModel(model)
 
         # Nodes
@@ -157,7 +161,7 @@ def mnist(
             partitions[i],
             learner=KerasLearner if use_tensorflow else LightningLearner,  # type: ignore
             protocol=InMemoryCommunicationProtocol if use_local_protocol else GrpcCommunicationProtocol,  # type: ignore
-            address=address
+            address=address,
         )
         node.start()
         nodes.append(node)
@@ -169,14 +173,14 @@ def mnist(
             time.sleep(0.1)
         wait_convergence(nodes, n - 1, only_direct=False, wait=60)  # type: ignore
 
-        if r>1:
+        if r > 1:
             raise ValueError("Skipping training, amount of round is less than 1")
 
         # Start Learning
         nodes[0].set_start_learning(rounds=r, epochs=e)
 
         # Wait and check
-        wait_to_finish(nodes, timeout=60*60)  # 1 hour
+        wait_to_finish(nodes, timeout=60 * 60)  # 1 hour
 
         # Local Logs
         if show_metrics:
@@ -242,7 +246,7 @@ if __name__ == "__main__":
 
     if args.profiling:
         import os  # noqa: I001
-        import yappi # type: ignore
+        import yappi  # type: ignore
 
         # Start profiler
         yappi.start()
@@ -271,4 +275,3 @@ if __name__ == "__main__":
             os.makedirs(profile_dir, exist_ok=True)
             for thread in yappi.get_thread_stats():
                 yappi.get_func_stats(ctx_id=thread.id).save(f"{profile_dir}/{thread.name}-{thread.id}.pstat", type="pstat")
-

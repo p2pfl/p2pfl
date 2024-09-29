@@ -41,8 +41,8 @@ class P2PFLModelMock(P2PFLModel):
     ) -> None:
         """Initialize the model."""
         self.params = params
-        self.num_samples = num_samples # type: ignore
-        self.contributors = contributors # type: ignore
+        self.num_samples = num_samples  # type: ignore
+        self.contributors = contributors  # type: ignore
 
     def get_parameters(self):
         """Get the model parameters."""

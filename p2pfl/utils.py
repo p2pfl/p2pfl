@@ -56,7 +56,9 @@ def set_test_settings() -> None:
     logger.set_level(Settings.LOG_LEVEL)  # Refresh (maybe already initialized)
 
 
-def wait_convergence(nodes: List[Union[Node, CommunicationProtocol]], n_neis: int, wait: Union[int, float] = 5, only_direct: bool = False) -> None:
+def wait_convergence(
+    nodes: List[Union[Node, CommunicationProtocol]], n_neis: int, wait: Union[int, float] = 5, only_direct: bool = False
+) -> None:
     """
     Wait until all nodes have n_neis neighbors.
 

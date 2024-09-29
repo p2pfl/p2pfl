@@ -86,22 +86,24 @@ class Neighbors:
             return False
 
         # Lock
-        with self.neis_lock:
+        self.neis_lock.acquire()
 
-            # Cannot add duplicates
-            if self.exists(addr):
-                logger.info(self.self_addr, f"❌ Cannot add duplicates. {addr} already exists.")
-                self.neis_lock.release()
-                return False
+        # Cannot add duplicates
+        if self.exists(addr):
+            logger.info(self.self_addr, f"❌ Cannot add duplicates. {addr} already exists.")
+            self.neis_lock.release()
+            return False
 
-            # Add
-            try:
-                self.neis[addr] = self.connect(addr, *args, **kargs)
-            except Exception as e:
-                logger.error(self.self_addr, f"❌ Cannot add {addr}: {e}")
-                self.neis_lock.release()
-                return False
+        # Add
+        try:
+            self.neis[addr] = self.connect(addr, *args, **kargs)
+        except Exception as e:
+            logger.error(self.self_addr, f"❌ Cannot add {addr}: {e}")
+            self.neis_lock.release()
+            return False
 
+        # Release
+        self.neis_lock.release()
         return True
 
     def remove(self, addr: str, *args, **kargs) -> None:

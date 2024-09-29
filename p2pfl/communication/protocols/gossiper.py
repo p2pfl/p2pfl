@@ -130,7 +130,6 @@ class Gossiper(threading.Thread):
 
             # Lock
             with self.__pending_msgs_lock:
-
                 # Select the max amount of messages to send
                 while messages_left > 0 and len(self.__pending_msgs) > 0:
                     head_msg = self.__pending_msgs[0]
