@@ -25,7 +25,7 @@ from p2pfl.node import Node
 from p2pfl.simulation.actor_pool import SuperActorPool
 from p2pfl.simulation.virtual_learner import VirtualNodeLearner
 import ray
-from p2pfl.management.logger import Logger, logger
+from p2pfl.management.logger.logger import Logger, logger
 import matplotlib.pyplot as plt
 
 from p2pfl.utils import (
@@ -66,7 +66,7 @@ def start_simulation(model, data, num_nodes,
         arguments from being passed to ray.init.
     """
     
-    logger.info.remote("localhost", "Starting simulation...")
+    logger.info("localhost", "Starting simulation...")
 
     # Default arguments for Ray initialization
     #if not ray_init_args:
@@ -80,27 +80,27 @@ def start_simulation(model, data, num_nodes,
 
     # Initialize Ray
     #context = ray.init(**ray_init_args)
-    #logger.info.remote("localhost", f"Ray dashboard url: {context.dashboard_url}")
+    #logger.info("localhost", f"Ray dashboard url: {context.dashboard_url}")
 
     cluster_resources = ray.cluster_resources()
-    logger.info.remote("localhost", f"Ray initialized with resources: {cluster_resources}")
+    logger.info("localhost", f"Ray initialized with resources: {cluster_resources}")
 
     # Log the resources that a single client will be able to use
     if client_resources is None:
-        logger.info.remote("localhost",
+        logger.info("localhost",
             "No `client_resources` specified. Using minimal resources for clients.",
         )
         client_resources = {"num_cpus": 1, "num_gpus": 0.0}
 
     # Each client needs at the very least one CPU
     if "num_cpus" not in client_resources:
-        logger.debug.remote("localhost",
+        logger.debug("localhost",
             f"No `num_cpus` specified in `client_resources`. "+
             "Using `num_cpus=1` for each client."
         )
         client_resources["num_cpus"] = 1
 
-    logger.info.remote("localhost",
+    logger.info("localhost",
         f"Resources for each Virtual Client: {client_resources}"
     )
 
@@ -112,7 +112,7 @@ def start_simulation(model, data, num_nodes,
     #f_stop = threading.Event()
     
     # List actors
-    logger.info.remote("localhost",
+    logger.info("localhost",
         f"Creating {pool.__class__.__name__} with {pool.num_actors} actors"
     )
 
@@ -150,14 +150,14 @@ def start_simulation(model, data, num_nodes,
         wait_4_results(nodes)
 
         # Local Logs
-        local_logs = ray.get(logger.get_local_logs.remote())
+        local_logs = ray.get(logger.get_local_logs())
         if local_logs != {}:
             logs = list(local_logs.items())[0][1]
             #  Plot experiment metrics
             print(logs)
 
         # Global Logs
-        global_logs = ray.get(logger.get_global_logs.remote())
+        global_logs = ray.get(logger.get_global_logs())
         if global_logs != {}:
             logs = list(global_logs.items())[0][
                 1
@@ -168,9 +168,9 @@ def start_simulation(model, data, num_nodes,
         [n.stop() for n in nodes]
 
     except Exception as ex:
-        logger.error.remote("localhost", str(ex))
+        logger.error("localhost", str(ex))
         #logger.error("localhost", traceback.format_exc())
-        logger.error.remote("localhost",
+        logger.error("localhost",
             "Your simulation crashed :(. This could be because of several reasons. "+
             "The most common are: "+
             "\n\t > Sometimes, issues in the simulation code itself can cause crashes. "+

@@ -52,11 +52,11 @@ class GrpcCommunicationProtocol(CommunicationProtocol):
         # GRPC Client
         self._client = GrpcClient(self.addr, self._neighbors)
         # Gossip
-        self._gossiper = Gossiper(self.addr, self._client)#Gossiper.remote(self.addr, self._client)
+        self._gossiper = Gossiper(self.addr, self._client)
         # GRPC
         self._server = GrpcServer(self.addr, self._gossiper, self._neighbors, commands)
         # Hearbeat
-        self._heartbeater = Heartbeater(self.addr, self._neighbors, self._client)#Heartbeater.remote(self.addr, self._neighbors, self._client)
+        self._heartbeater = Heartbeater(self.addr, self._neighbors, self._client)
         # Commands
         self._server.add_command(HeartbeatCommand(self._heartbeater))
         if commands is None:
@@ -76,14 +76,14 @@ class GrpcCommunicationProtocol(CommunicationProtocol):
     def start(self) -> None:
         """Start the GRPC communication protocol."""
         self._server.start()
-        self._heartbeater.start()#.remote()
-        self._gossiper.start()#.remote()
+        self._heartbeater.start()
+        self._gossiper.start()
 
     def stop(self) -> None:
         """Stop the GRPC communication protocol."""
         self._server.stop()
-        self._heartbeater.stop()#.remote()
-        self._gossiper.stop()#.remote()
+        self._heartbeater.stop()
+        self._gossiper.stop()
         self._neighbors.clear_neighbors()
 
     def add_command(self, cmds: Union[Command, List[Command]]) -> None:

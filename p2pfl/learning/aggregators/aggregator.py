@@ -24,7 +24,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import torch
 
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 from p2pfl.settings import Settings
 
 
@@ -131,14 +131,14 @@ class Aggregator:
 
         # Verify that contributors are not empty
         if contributors == []:
-            logger.debug.remote(self.node_name, "Received a model without a list of contributors.")
+            logger.debug(self.node_name, "Received a model without a list of contributors.")
             self.__agg_lock.release()
             return []
 
         # Diffusion / Aggregation
         if self.__waiting_aggregated_model and self.__models == {}:
             if set(contributors) == set(self.__train_set):
-                logger.info.remote(self.node_name, "Received an aggregated model.")
+                logger.info(self.node_name, "Received an aggregated model.")
                 self.__models = {}
                 self.__models = {" ".join(nodes): (model, 1)}
                 self.__waiting_aggregated_model = False
@@ -157,7 +157,7 @@ class Aggregator:
                         self.__models = {}
                         self.__models[" ".join(nodes)] = (model, weight)
                         models_added = str(len(self.get_aggregated_models()))
-                        logger.info.remote(
+                        logger.info(
                             self.node_name,
                             f"Model added ({models_added}/{ str(len(self.__train_set))}) from {str(nodes)}",
                         )
@@ -171,7 +171,7 @@ class Aggregator:
                         # Aggregate model
                         self.__models[" ".join(nodes)] = (model, weight)
                         models_added = str(len(self.get_aggregated_models()))
-                        logger.info.remote(
+                        logger.info(
                             self.node_name,
                             f"Model added ({models_added}/{ str(len(self.__train_set))}) from {str(nodes)}",
                         )
@@ -185,17 +185,17 @@ class Aggregator:
                         return self.get_aggregated_models()
 
                     else:
-                        logger.debug.remote(
+                        logger.debug(
                             self.node_name,
                             f"Can't add a model that has already been added {nodes} / {self.get_aggregated_models()}",
                         )
                 else:
-                    logger.debug.remote(
+                    logger.debug(
                         self.node_name,
                         f"Can't add a model from a node ({nodes}) that is not in the training test.",
                     )
             else:
-                logger.debug.remote(self.node_name, "Received a model when is not needed.")
+                logger.debug(self.node_name, "Received a model when is not needed.")
             self.__agg_lock.release()
         return []
 
@@ -225,7 +225,7 @@ class Aggregator:
             if len(self.__models) == 1:
                 return list(self.__models.values())[0][0]
             elif len(self.__models) == 0:
-                logger.info.remote(
+                logger.info(
                     self.node_name,
                     "Timeout reached by waiting for an aggregated model. Continuing with the local model.",
                 )
@@ -236,12 +236,12 @@ class Aggregator:
         # Timeout / All models
         if n_model_aggregated != len(self.__train_set):
             missing_models = set(self.__train_set) - set(self.__models.keys())
-            logger.info.remote(
+            logger.info(
                 self.node_name,
                 f"Aggregating models, timeout reached. Missing models: {missing_models}",
             )
         else:
-            logger.info.remote(self.node_name, "Aggregating models.")
+            logger.info(self.node_name, "Aggregating models.")
 
         # Notify node
         return self.aggregate(self.__models)

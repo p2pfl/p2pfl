@@ -20,7 +20,7 @@
 from typing import Optional, Type, Union
 
 from p2pfl.learning.aggregators.aggregator import Aggregator
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.stage import Stage
 from p2pfl.stages.stage_factory import StageFactory
@@ -41,7 +41,7 @@ class WaitAggregatedModelsStage(Stage):
         """Execute the stage."""
         if state is None or aggregator is None:
             raise Exception("Invalid parameters on WaitAggregatedModelsStage.")
-        logger.info.remote(state.addr, "Waiting aregation.")
+        logger.info(state.addr, "Waiting aregation.")
         """
         Quizá pueda ser interesante que la lógica de espera esté aquí
         """

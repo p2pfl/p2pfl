@@ -22,7 +22,7 @@ from typing import Optional, Tuple
 
 from p2pfl.communication.memory.server_singleton import ServerSingleton
 from p2pfl.communication.neighbors import Neighbors
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 
 
 class InMemoryNeighbors(Neighbors):
@@ -76,13 +76,13 @@ class InMemoryNeighbors(Neighbors):
             if handshake_msg:
                 response = server.handshake({"addr": self.self_addr})
                 if response.get("error"):
-                    logger.info.remote(self.self_addr, f"Cannot add a neighbor: {response['error']}")
+                    logger.info(self.self_addr, f"Cannot add a neighbor: {response['error']}")
                     raise Exception(f"Cannot add a neighbor: {response['error']}")
 
             return (None, server, time.time())
 
         except Exception as e:
-            logger.info.remote(self.self_addr, f"Crash while adding a neighbor: {e}")
+            logger.info(self.self_addr, f"Crash while adding a neighbor: {e}")
             # Re-raise exception
             raise e
 
@@ -106,4 +106,4 @@ class InMemoryNeighbors(Neighbors):
                 node_server.disconnect({"addr": self.self_addr})
 
         except Exception as e:
-            logger.error.remote(self.self_addr, f"Error while disconnecting from {addr}: {e}")
+            logger.error(self.self_addr, f"Error while disconnecting from {addr}: {e}")

@@ -23,7 +23,7 @@ from p2pfl.commands.add_model_command import AddModelCommand
 from p2pfl.commands.models_ready_command import ModelsReadyCommand
 from p2pfl.communication.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.stage import Stage
 from p2pfl.stages.stage_factory import StageFactory
@@ -70,7 +70,7 @@ class GossipModelStage(Stage):
             if state.learner is None:
                 raise Exception("Learner not initialized")
             state.learner.set_parameters(params)
-            logger.debug.remote(
+            logger.debug(
                 state.addr,
                 f"Broadcast aggregation done for round {state.round}",
             )
@@ -92,7 +92,7 @@ class GossipModelStage(Stage):
 
         # Wait a model (init or aggregated)
 
-        logger.info.remote(state.addr, "Gossiping aggregated model.")
+        logger.info(state.addr, "Gossiping aggregated model.")
         fixed_round = state.round
         if fixed_round is None:
             raise Exception("Learner not initialized")

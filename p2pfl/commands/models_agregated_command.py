@@ -19,7 +19,7 @@
 """ModelsAggregated command."""
 
 from p2pfl.commands.command import Command
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 from p2pfl.node_state import NodeState
 
 
@@ -50,7 +50,7 @@ class ModelsAggregatedCommand(Command):
             # esto meterlo en estado o agg
             self.state.models_aggregated[source] = list(args)
         else:
-            logger.debug.remote(
+            logger.debug(
                 self.state.addr,
                 f"Models Aggregated message from {source} in a late round. Ignored. {round} != {self.state.round}",
             )

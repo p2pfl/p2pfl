@@ -1,0 +1,209 @@
+#
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
+# Copyright (c) 2022 Pedro Guijas Bravo.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+"""
+P2PFL Logger.
+
+.. note:: Not all is typed because the python logger is not typed (yep, is a TODO...).
+
+"""
+
+import datetime
+import logging
+from p2pfl.experiment import Experiment
+from typing import Any, Dict, Optional
+
+from p2pfl.management.metric_storage import GlobalLogsType, LocalLogsType
+
+#########################################
+#    Logging handler (transmit logs)    #
+#########################################
+
+
+class DictFormatter(logging.Formatter):
+    """Formatter (logging) that returns a dictionary with the log record attributes."""
+
+    def format(self, record):
+        """
+        Format the log record as a dictionary.
+
+        Args:
+            record: The log record.
+
+        """
+        # Get node
+        if not hasattr(record, "node"):
+            raise ValueError("The log record must have a 'node' attribute.")
+        log_dict = {
+            "timestamp": datetime.datetime.fromtimestamp(record.created),
+            "level": record.levelname,
+            "node": record.node,  # type: ignore
+            "message": record.getMessage(),
+        }
+        return log_dict
+
+
+
+
+#########################
+#    Colored logging    #
+#########################
+
+# COLORS
+GRAY = "\033[90m"
+RED = "\033[91m"
+YELLOW = "\033[93m"
+GREEN = "\033[92m"
+BLUE = "\033[94m"
+CYAN = "\033[96m"
+RESET = "\033[0m"
+
+
+class ColoredFormatter(logging.Formatter):
+    """Formatter that adds color to the log messages."""
+
+    def format(self, record):
+        """
+        Format the log record with color.
+
+        Args:
+            record: The log record.
+
+        """
+        # Warn level color
+        if record.levelname == "DEBUG":
+            record.levelname = BLUE + record.levelname + RESET
+        elif record.levelname == "INFO":
+            record.levelname = GREEN + record.levelname + RESET
+        elif record.levelname == "WARNING":
+            record.levelname = YELLOW + record.levelname + RESET
+        elif record.levelname == "ERROR" or record.levelname == "CRITICAL":
+            record.levelname = RED + record.levelname + RESET
+        return super().format(record)
+
+
+###################
+#    Interface    #
+###################
+
+from abc import ABC, abstractmethod
+
+class P2PFLogger(ABC):
+    ######
+    # Singleton and instance management
+    ######
+
+    #__instance = None
+    _logger: logging.Logger = None
+    _nodes: Dict[str, Dict[Any,Any]]
+
+    ######
+    # Application logging
+    ######
+
+    @abstractmethod
+    def set_level(self, level: int) -> None:
+        pass
+
+    @abstractmethod
+    def get_level(self) -> int:
+        pass
+
+    @abstractmethod
+    def get_level_name(self, lvl: int) -> str:
+        pass
+
+    @abstractmethod
+    def info(self, node: str, message: str) -> None:
+        pass
+
+    @abstractmethod
+    def debug(self, node: str, message: str) -> None:
+        pass
+
+    @abstractmethod
+    def warning(self, node: str, message: str) -> None:
+        pass
+
+    @abstractmethod
+    def error(self, node: str, message: str) -> None:
+        pass
+
+    @abstractmethod
+    def critical(self, node: str, message: str) -> None:
+        pass
+
+    @abstractmethod
+    def log(self, level: int, node: str, message: str) -> None:
+        pass
+
+    ######
+    # Metrics
+    ######
+
+    @abstractmethod
+    def log_metric(self, addr: str, experiment: Experiment, metric: str,
+                   value: float, round: Optional[int] = None,
+                   step: Optional[int] = None) -> None:
+        pass
+
+    @abstractmethod
+    def get_local_logs(self) -> LocalLogsType:
+        pass
+
+    @abstractmethod
+    def get_global_logs(self) -> GlobalLogsType:
+        pass
+
+    ######
+    # Node registration
+    ######
+
+    @abstractmethod
+    def register_node(self, node: str, simulation: bool) -> None:
+        pass
+
+    @abstractmethod
+    def unregister_node(self, node: str) -> None:
+        pass
+
+    ######
+    # Node Status
+    ######
+
+    @abstractmethod
+    def experiment_started(self, node: str) -> None:
+        pass
+
+    @abstractmethod
+    def experiment_finished(self, node: str) -> None:
+        pass
+
+    @abstractmethod
+    def round_finished(self, node: str) -> None:
+        pass
+
+    @abstractmethod
+    def cleanup(self) -> None:
+        pass
+
+from p2pfl.management.logger.ray_logger import RayP2PFLogger
+from p2pfl.management.logger.simple_logger import SimpleP2PFLogger
+
+# Logger actor singleton
+logger = RayP2PFLogger(SimpleP2PFLogger())

@@ -21,7 +21,7 @@
 import contextlib
 
 from p2pfl.commands.command import Command
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 
 
 class StopLearningCommand(Command):
@@ -47,7 +47,7 @@ class StopLearningCommand(Command):
             **kwargs: The command keyword arguments.
 
         """
-        logger.info.remote(self.state.addr, "Stopping learning")
+        logger.info(self.state.addr, "Stopping learning")
         # Leraner
         self.state.learner.interrupt_fit()
         self.state.learner = None
@@ -55,7 +55,7 @@ class StopLearningCommand(Command):
         self.aggregator.clear()
         # State
         self.state.clear()
-        logger.experiment_finished.remote(self.state.addr)
+        logger.experiment_finished(self.state.addr)
         # Try to free wait locks
         with contextlib.suppress(Exception):
             self.state.wait_votes_ready_lock.release()

@@ -40,7 +40,7 @@ from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.pytorch.lightning_learner import LightningLearner
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.workflows import LearningWorkflow
 
@@ -157,7 +157,7 @@ class Node:
         # Check running
         self.assert_running(True)
         # Connect
-        logger.info.remote(self.addr, f"Connecting to {addr}...")
+        logger.info(self.addr, f"Connecting to {addr}...")
         return self._communication_protocol.connect(addr)
 
     def get_neighbors(self, only_direct: bool = False) -> Dict[str, Any]:
@@ -184,7 +184,7 @@ class Node:
         # Check running
         self.assert_running(True)
         # Disconnect
-        logger.info.remote(self.addr, f"Removing {addr}...")
+        logger.info(self.addr, f"Removing {addr}...")
         self._communication_protocol.disconnect(addr, disconnect_msg=True)
 
     #######################################
@@ -224,12 +224,12 @@ class Node:
         self.__running = True
 
         # P2PFL Web Services
-        logger.register_node.remote(self.addr, self.simulation)
+        logger.register_node(self.addr, self.simulation)
         # Communication Protocol
         self._communication_protocol.start()
         if wait:
             self._communication_protocol.wait_for_termination()
-            logger.info.remote(self.addr, "gRPC terminated.")
+            logger.info(self.addr, "gRPC terminated.")
 
     def stop(self) -> None:
         """
@@ -239,7 +239,7 @@ class Node:
             NodeRunningException: If the node is not running.
 
         """
-        logger.info.remote(self.addr, "Stopping node...")
+        logger.info(self.addr, "Stopping node...")
         try:
             # Stop server
             self._communication_protocol.stop()
@@ -248,7 +248,7 @@ class Node:
             # State
             self.state.clear()
             # Unregister node
-            logger.unregister_node.remote(self.addr)
+            logger.unregister_node(self.addr)
         except Exception:
             pass
 
@@ -320,7 +320,7 @@ class Node:
 
         if self.state.round is None:
             # Broadcast start Learning
-            logger.info.remote(self.addr, "Broadcasting start learning...")
+            logger.info(self.addr, "Broadcasting start learning...")
             self._communication_protocol.broadcast(
                 self._communication_protocol.build_msg(StartLearningCommand.get_name(), [str(rounds), str(epochs)])
             )
@@ -333,7 +333,7 @@ class Node:
             # Learning Thread
             self.__start_learning_thread(rounds, epochs)
         else:
-            logger.info.remote(self.addr, "Learning already started")
+            logger.info(self.addr, "Learning already started")
 
     def set_stop_learning(self) -> None:
         """Stop the learning process in the entire network."""
@@ -345,7 +345,7 @@ class Node:
             # stop learning
             self.__stop_learning()
         else:
-            logger.info.remote(self.addr, "Learning already stopped")
+            logger.info(self.addr, "Learning already stopped")
 
     ##################################
     #         Local Learning         #
@@ -365,13 +365,13 @@ class Node:
                 learner_class=self.learner_class,
             )
         except Exception as e:
-            if logger.get_level_name.remote(logger.get_level.remote()) == "DEBUG":
+            if logger.get_level_name(logger.get_level()) == "DEBUG":
                 raise e
-            logger.error.remote(self.addr, f"Error: {traceback.format_exc()}")
+            logger.error(self.addr, f"Error: {traceback.format_exc()}")
             self.stop()
 
     def __stop_learning(self) -> None:
-        logger.info.remote(self.addr, "Stopping learning")
+        logger.info(self.addr, "Stopping learning")
         # Learner
         if self.state.learner is not None:
             self.state.learner.interrupt_fit()
@@ -379,7 +379,7 @@ class Node:
         self.aggregator.clear()
         # State
         self.state.clear()
-        logger.experiment_finished.remote(self.addr)
+        logger.experiment_finished(self.addr)
         # Try to free wait locks
         with contextlib.suppress(Exception):
             self.state.wait_votes_ready_lock.release()

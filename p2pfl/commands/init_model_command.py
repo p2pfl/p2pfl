@@ -23,7 +23,7 @@ from typing import List, Optional
 from p2pfl.commands.command import Command
 from p2pfl.commands.model_initialized_command import ModelInitializedCommand
 from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 
 
 class InitModelCommand(Command):
@@ -69,14 +69,14 @@ class InitModelCommand(Command):
 
         """
         if weights is None or contributors is None or weight is None:
-            logger.error.remote(self.state.addr, "Invalid message")
+            logger.error(self.state.addr, "Invalid message")
             return
 
         # Check if Learning is running
         if self.state.learner is not None:
             # Check source
             if round != self.state.round:
-                logger.debug.remote(
+                logger.debug(
                     self.state.addr,
                     f"Model reception in a late round ({round} != {self.state.round}).",
                 )
@@ -94,7 +94,7 @@ class InitModelCommand(Command):
                 model = self.state.learner.decode_parameters(weights)
                 self.state.learner.set_parameters(model)
                 self.state.model_initialized_lock.release()
-                logger.info.remote(self.state.addr, "Model Weights Initialized")
+                logger.info(self.state.addr, "Model Weights Initialized")
                 # Communicate Initialization
                 self.communication_protocol.broadcast(
                     self.communication_protocol.build_msg(ModelInitializedCommand.get_name())
@@ -102,16 +102,16 @@ class InitModelCommand(Command):
 
             # Warning: these stops can cause a denegation of service attack
             except DecodingParamsError:
-                logger.error.remote(self.state.addr, "Error decoding parameters.")
+                logger.error(self.state.addr, "Error decoding parameters.")
                 self.stop()
 
             except ModelNotMatchingError:
-                logger.error.remote(self.state.addr, "Models not matching.")
+                logger.error(self.state.addr, "Models not matching.")
                 self.stop()
 
             except Exception as e:
-                logger.error.remote(self.state.addr, f"Unknown error adding model: {e}")
+                logger.error(self.state.addr, f"Unknown error adding model: {e}")
                 self.stop()
 
         else:
-            logger.debug.remote(self.state.addr, "Tried to add a model while learning is not running")
+            logger.debug(self.state.addr, "Tried to add a model while learning is not running")

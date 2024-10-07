@@ -27,7 +27,7 @@ from p2pfl.communication.client import Client
 from p2pfl.communication.exceptions import NeighborNotConnectedError
 from p2pfl.communication.grpc.grpc_neighbors import GrpcNeighbors
 from p2pfl.communication.grpc.proto import node_pb2, node_pb2_grpc
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 from p2pfl.settings import Settings
 
 
@@ -158,12 +158,12 @@ class GrpcClient(Client):
                 )
             if res.error:
                 if isinstance(msg, node_pb2.Message):
-                    logger.error.remote(
+                    logger.error(
                         self.__self_addr,
                         f"Error while sending a message: {msg.cmd} {msg.args}: {res.error}",
                     )
                 elif isinstance(msg, node_pb2.Weights):
-                    logger.error.remote(
+                    logger.error(
                         self.__self_addr,
                         f"Error while sending a message: {msg.cmd}: {res.error}",
                     )
@@ -172,7 +172,7 @@ class GrpcClient(Client):
                 self.__neighbors.remove(nei, disconnect_msg=True)
         except Exception as e:
             # Remove neighbor
-            logger.info.remote(
+            logger.info(
                 self.__self_addr,
                 f"Cannot send message {msg.cmd} to {nei}. Error: {str(e)}",
             )

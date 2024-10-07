@@ -24,7 +24,7 @@ import grpc
 
 from p2pfl.communication.grpc.proto import node_pb2, node_pb2_grpc
 from p2pfl.communication.neighbors import Neighbors
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 from p2pfl.settings import Settings
 
 
@@ -89,7 +89,7 @@ class GrpcNeighbors(Neighbors):
                     timeout=Settings.GRPC_TIMEOUT,
                 )
                 if res.error:
-                    logger.info.remote(self.self_addr, f"Cannot add a neighbor: {res.error}")
+                    logger.info(self.self_addr, f"Cannot add a neighbor: {res.error}")
                     channel.close()
                     raise Exception(f"Cannot add a neighbor: {res.error}")
 
@@ -97,7 +97,7 @@ class GrpcNeighbors(Neighbors):
             return (channel, stub, time.time())
 
         except Exception as e:
-            logger.info.remote(self.self_addr, f"Crash while adding a neighbor: {e}")
+            logger.info(self.self_addr, f"Crash while adding a neighbor: {e}")
             # Re-raise exception
             raise e
 

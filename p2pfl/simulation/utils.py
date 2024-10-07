@@ -19,25 +19,25 @@
 from typing import Dict, Union
 import ray
 
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 
 def check_client_resources(client_resources: Dict[str, Union[int, float]]) -> Dict[str, Union[int, float]]:
     """Check if client_resources are valid and return them."""
     if client_resources is None:
-        logger.info.remote("localhost",
+        logger.info("localhost",
             "No `client_resources` specified. Using minimal resources for clients.",
         )
         client_resources = {"num_cpus": 1, "num_gpus": 0.0}
 
     # Each client needs at the very least one CPU
     if "num_cpus" not in client_resources:
-        logger.debug.remote("localhost",
+        logger.debug("localhost",
             f"No `num_cpus` specified in `client_resources`. "+
             "Using `num_cpus=1` for each client."
         )
         client_resources["num_cpus"] = 1
 
-    logger.info.remote("localhost",
+    logger.info("localhost",
         f"Resources for each Virtual Client: {client_resources}"
     )
 
@@ -83,7 +83,7 @@ def pool_size_from_resources(client_resources: Dict[str, Union[int, float]]) -> 
         total_num_actors += num_actors
 
     if total_num_actors == 0:
-        logger.debug.remote(
+        logger.debug(
             "localhost",
             f"The ActorPool is empty. The system (CPUs={num_cpus}, GPUs={num_gpus})"+
             "does not meet the criteria to host at least one client with resources:"+

@@ -18,14 +18,14 @@
 
 from typing import Tuple
 from p2pfl.learning.learner import NodeLearner
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 import ray
 
 @ray.remote
 class VirtualLearnerActor:
     def terminate(self) -> None:
         """Manually terminate Actor object."""
-        logger.debug.remote(self.__class__.__name__, f"Manually terminating {self.__class__.__name__}")
+        logger.debug(self.__class__.__name__, f"Manually terminating {self.__class__.__name__}")
         ray.actor.exit_actor()
 
     def fit(self,

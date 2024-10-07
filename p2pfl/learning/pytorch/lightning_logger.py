@@ -22,7 +22,7 @@ import ray
 
 from pytorch_lightning.loggers.logger import Logger
 
-from p2pfl.management.logger import logger as P2PLogger
+from p2pfl.management.logger.logger import logger as P2PLogger
 
 
 class FederatedLogger(Logger):
@@ -57,7 +57,7 @@ class FederatedLogger(Logger):
         """Log metrics (in a pytorch format)."""
         for k, v in metrics.items():
             experiment_actor = ray.get_actor(self.__addr, namespace="experiments")
-            P2PLogger.log_metric.remote(self.__addr, ray.get(experiment_actor.get_experiment.remote()), k, v, step)
+            P2PLogger.log_metric(self.__addr, ray.get(experiment_actor.get_experiment.remote()), k, v, step)
 
     def save(self) -> None:
         """Save the logger."""

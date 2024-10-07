@@ -25,7 +25,7 @@ from typing import Optional
 
 from p2pfl.communication.client import Client
 from p2pfl.communication.neighbors import Neighbors
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 from p2pfl.settings import Settings
 
 heartbeater_cmd_name = "beat"
@@ -95,7 +95,7 @@ class Heartbeater(threading.Thread):
                 neis = self.__neighbors.get_all()
                 for nei in neis:
                     if t - neis[nei][2] > timeout:
-                        logger.info.remote(
+                        logger.info(
                             self.__self_addr,
                             f"Heartbeat timeout for {nei} ({t - neis[nei][2]}). Removing...",
                         )

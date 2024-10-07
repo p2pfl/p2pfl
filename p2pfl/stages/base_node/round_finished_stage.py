@@ -23,7 +23,7 @@ from typing import Callable, Optional, Type, Union
 from p2pfl.commands.metrics_command import MetricsCommand
 from p2pfl.communication.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.stage import Stage
 from p2pfl.stages.stage_factory import StageFactory
@@ -51,16 +51,16 @@ class RoundFinishedStage(Stage):
 
         # Check if early stopping
         if early_stopping_fn():
-            logger.info.remote(state.addr, "Early stopping.")
+            logger.info(state.addr, "Early stopping.")
             return None
 
         # Set Next Round
         aggregator.clear()
         state.increase_round()
-        logger.round_finished.remote(state.addr)
+        logger.round_finished(state.addr)
 
         # Next Step or Finish
-        logger.info.remote(
+        logger.info(
             state.addr,
             f"Round {state.round} of {state.total_rounds} finished.",
         )
@@ -74,19 +74,19 @@ class RoundFinishedStage(Stage):
             # Finish
             state.clear()
             state.model_initialized_lock.acquire()
-            logger.info.remote(state.addr, "Training finished!!.")
+            logger.info(state.addr, "Training finished!!.")
             return None
 
     @staticmethod
     def __evaluate(state: NodeState, communication_protocol: CommunicationProtocol) -> None:
-        logger.info.remote(state.addr, "Evaluating...")
+        logger.info(state.addr, "Evaluating...")
         if state.learner is None:
             raise Exception("Learner not initialized.")
         results = state.learner.evaluate()
-        logger.info.remote(state.addr, f"Evaluated. Results: {results}")
+        logger.info(state.addr, f"Evaluated. Results: {results}")
         # Send metrics
         if len(results) > 0:
-            logger.info.remote(state.addr, "Broadcasting metrics.")
+            logger.info(state.addr, "Broadcasting metrics.")
             flattened_metrics = [str(item) for pair in results.items() for item in pair]
             communication_protocol.broadcast(
                 communication_protocol.build_msg(

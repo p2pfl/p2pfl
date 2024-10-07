@@ -21,7 +21,7 @@
 import contextlib
 
 from p2pfl.commands.command import Command
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 from p2pfl.node_state import NodeState
 
 
@@ -66,9 +66,9 @@ class VoteTrainSetCommand(Command):
                 with contextlib.suppress(Exception):
                     self.state.wait_votes_ready_lock.release()
             else:
-                logger.error.remote(
+                logger.error(
                     self.state.addr,
                     f"Vote received in a late round. Ignored. {round} != {self.state.round} / {self.state.round+1}",
                 )
         else:
-            logger.error.remote(self.state.addr, "Vote received when learning is not running")
+            logger.error(self.state.addr, "Vote received when learning is not running")

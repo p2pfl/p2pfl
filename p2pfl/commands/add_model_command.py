@@ -23,7 +23,7 @@ from typing import List, Optional
 from p2pfl.commands.command import Command
 from p2pfl.commands.models_agregated_command import ModelsAggregatedCommand
 from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 
 
 class AddModelCommand(Command):
@@ -63,7 +63,7 @@ class AddModelCommand(Command):
         if self.state.round is not None:
             # Check source
             if round != self.state.round:
-                logger.debug.remote(
+                logger.debug(
                     self.state.addr,
                     f"Model reception in a late round ({round} != {self.state.round}).",
                 )
@@ -71,7 +71,7 @@ class AddModelCommand(Command):
 
             # Check moment (not init and invalid round)
             if len(self.state.train_set) == 0:
-                logger.error.remote(self.state.addr, "Model Reception when there is no trainset")
+                logger.error(self.state.addr, "Model Reception when there is no trainset")
                 return
 
             try:
@@ -93,16 +93,16 @@ class AddModelCommand(Command):
 
             # Warning: these stops can cause a denegation of service attack
             except DecodingParamsError:
-                logger.error.remote(self.state.addr, "Error decoding parameters.")
+                logger.error(self.state.addr, "Error decoding parameters.")
                 self.stop()
 
             except ModelNotMatchingError:
-                logger.error.remote(self.state.addr, "Models not matching.")
+                logger.error(self.state.addr, "Models not matching.")
                 self.stop()
 
             except Exception as e:
-                logger.error.remote(self.state.addr, f"Unknown error adding model: {e}")
+                logger.error(self.state.addr, f"Unknown error adding model: {e}")
                 self.stop()
 
         else:
-            logger.debug.remote(self.state.addr, "Tried to add a model while learning is not running")
+            logger.debug(self.state.addr, "Tried to add a model while learning is not running")

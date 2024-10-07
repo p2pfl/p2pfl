@@ -25,7 +25,7 @@ from p2pfl.communication.client import Client
 from p2pfl.communication.exceptions import NeighborNotConnectedError
 from p2pfl.communication.memory.memory_neighbors import InMemoryNeighbors
 from p2pfl.communication.memory.server_singleton import ServerSingleton
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 from p2pfl.settings import Settings
 
 
@@ -140,12 +140,12 @@ class InMemoryClient(Client):
                 )
 
             if "error" in response:
-                logger.error.remote(
+                logger.error(
                     self.__self_addr,
                     f"Error while sending a message: {msg['cmd']!r} {msg['args']!r}: {response['error']!r}",
                 )
         except Exception as e:
-            logger.info.remote(
+            logger.info(
                 self.__self_addr,
                 f"Cannot send message {msg['cmd']!r} to {nei}. Error: {str(e)}",
             )

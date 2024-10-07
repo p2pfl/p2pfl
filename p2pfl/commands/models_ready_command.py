@@ -19,7 +19,7 @@
 """ModelsReady command."""
 
 from p2pfl.commands.command import Command
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 from p2pfl.node_state import NodeState
 
 
@@ -54,10 +54,10 @@ class ModelsReadyCommand(Command):
                 self.state.nei_status[source] = self.state.round
             else:
                 # Ignored
-                logger.error.remote(
+                logger.error(
                     self.state.addr,
                     f"Models ready from {source} in a late round. Ignored. {round} "
                     + f"!= {self.state.round} / {self.state.round-1}",
                 )
         else:
-            logger.warning.remote(self.state.addr, "Models ready received when learning is not running")
+            logger.warning(self.state.addr, "Models ready received when learning is not running")

@@ -35,7 +35,7 @@ from p2pfl.learning.exceptions import (
 )
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.pytorch.lightning_logger import FederatedLogger
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 
 torch.set_num_threads(1)
 
@@ -194,7 +194,7 @@ class LightningLearner(NodeLearner):
                 self.__trainer = None
         except Exception as e:
             print(traceback.format_exc())
-            logger.error.remote(
+            logger.error(
                 self.__addr,
                 f"Fit error. Something went wrong with pytorch lightning. {e}",
             )
@@ -228,12 +228,12 @@ class LightningLearner(NodeLearner):
                 # Log metrics
                 for k, v in results.items():
                     experiment_actor = ray.get_actor(self.__addr, namespace="experiments")
-                    logger.log_metric.remote(self.__addr, ray.get(experiment_actor.get_experiment.remote()), k, v)
+                    logger.log_metric(self.__addr, ray.get(experiment_actor.get_experiment.remote()), k, v)
                 return results
             else:
                 return {}
         except Exception as e:
-            logger.error.remote(
+            logger.error(
                 self.__addr,
                 f"Evaluation error. Something went wrong with pytorch lightning. {e}",
             )

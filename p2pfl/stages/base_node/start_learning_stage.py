@@ -24,7 +24,7 @@ from p2pfl.commands.init_model_command import InitModelCommand
 from p2pfl.communication.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.learner import NodeLearner
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.settings import Settings
 from p2pfl.simulation.virtual_learner import VirtualNodeLearner
@@ -69,15 +69,15 @@ class StartLearningStage(Stage):
         if state.round is None:
             # Init
             state.start_experiment("experiment", rounds)
-            logger.experiment_started.remote(state.addr)
+            logger.experiment_started(state.addr)
             state.learner = learner_class(model, data, state.addr, epochs) if not state.simulation else VirtualNodeLearner(learner_class, model, data, state.addr, epochs) # In simulation use a Virtual Learner
             state.start_thread_lock.release()
             begin = time.time()
 
             # Wait and gossip model inicialization
-            logger.info.remote(state.addr, "Waiting initialization.")
+            logger.info(state.addr, "Waiting initialization.")
             state.model_initialized_lock.acquire()
-            logger.info.remote(state.addr, "Gossiping model initialization.")
+            logger.info(state.addr, "Gossiping model initialization.")
             StartLearningStage.__gossip_model(state, communication_protocol, aggregator)
 
             # Wait to guarantee new connection heartbeats convergence

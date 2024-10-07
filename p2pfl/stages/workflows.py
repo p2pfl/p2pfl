@@ -19,7 +19,7 @@
 
 from typing import Optional, Type
 
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.stage import Stage
 from p2pfl.stages.stage_factory import StageFactory
@@ -38,7 +38,7 @@ class StageWokflow:
         state: Optional[NodeState] = kwargs.get("state")
         if state:
             while True:
-                logger.debug.remote(state.addr, f"Running stage: {(self.current_stage.name())}")
+                logger.debug(state.addr, f"Running stage: {(self.current_stage.name())}")
                 next_stage = self.current_stage.execute(**kwargs)
                 if next_stage is None:
                     break

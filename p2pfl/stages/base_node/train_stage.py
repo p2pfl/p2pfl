@@ -24,7 +24,7 @@ from p2pfl.commands.metrics_command import MetricsCommand
 from p2pfl.commands.models_agregated_command import ModelsAggregatedCommand
 from p2pfl.communication.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
-from p2pfl.management.logger import logger
+from p2pfl.management.logger.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.stage import Stage
 from p2pfl.stages.stage_factory import StageFactory
@@ -87,21 +87,21 @@ class TrainStage(Stage):
 
     @staticmethod
     def __train(state: NodeState) -> None:
-        logger.info.remote(state.addr, "Training...")
+        logger.info(state.addr, "Training...")
         if state.learner is None:
             raise Exception("Learner not initialized.")
         state.learner.fit()
 
     @staticmethod
     def __evaluate(state: NodeState, communication_protocol: CommunicationProtocol) -> None:
-        logger.info.remote(state.addr, "Evaluating...")
+        logger.info(state.addr, "Evaluating...")
         if state.learner is None:
             raise Exception("Learner not initialized.")
         results = state.learner.evaluate()
-        logger.info.remote(state.addr, f"Evaluated. Results: {results}")
+        logger.info(state.addr, f"Evaluated. Results: {results}")
         # Send metrics
         if len(results) > 0:
-            logger.info.remote(state.addr, "Broadcasting metrics.")
+            logger.info(state.addr, "Broadcasting metrics.")
             flattened_metrics = [str(item) for pair in results.items() for item in pair]
             communication_protocol.broadcast(
                 communication_protocol.build_msg(
