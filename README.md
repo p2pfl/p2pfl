@@ -1,6 +1,6 @@
 # Repository Coverage
 
-[Full report](https://htmlpreview.github.io/?https://github.com/pguijas/p2pfl/blob/python-coverage-comment-action-data/htmlcov/index.html)
+[Full report](https://htmlpreview.github.io/?https://github.com/p2pfl/p2pfl/blob/python-coverage-comment-action-data/htmlcov/index.html)
 
 | Name                                                          |    Stmts |     Miss |   Cover |   Missing |
 |-------------------------------------------------------------- | -------: | -------: | ------: | --------: |
@@ -15,7 +15,7 @@
 | p2pfl/commands/metrics\_command.py                            |       16 |        5 |     69% |     50-55 |
 | p2pfl/commands/model\_initialized\_command.py                 |       11 |        0 |    100% |           |
 | p2pfl/commands/models\_agregated\_command.py                  |       13 |        0 |    100% |           |
-| p2pfl/commands/models\_ready\_command.py                      |       15 |        1 |     93% |        57 |
+| p2pfl/commands/models\_ready\_command.py                      |       15 |        2 |     87% |     57-63 |
 | p2pfl/commands/start\_learning\_command.py                    |       13 |        1 |     92% |        59 |
 | p2pfl/commands/stop\_learning\_command.py                     |       19 |        8 |     58% |     50-61 |
 | p2pfl/commands/vote\_train\_set\_command.py                   |       24 |        2 |     92% |     69-74 |
@@ -26,7 +26,7 @@
 | p2pfl/communication/gossiper.py                               |       96 |       14 |     85% |118, 145-147, 192, 198-199, 214-226 |
 | p2pfl/communication/grpc/\_\_init\_\_.py                      |        0 |        0 |    100% |           |
 | p2pfl/communication/grpc/address.py                           |       53 |       23 |     57% |45-46, 52-55, 68-71, 80-82, 93-95, 99, 104-114 |
-| p2pfl/communication/grpc/grpc\_client.py                      |       59 |        7 |     88% |71, 104, 154-156, 165-171 |
+| p2pfl/communication/grpc/grpc\_client.py                      |       59 |        9 |     85% |71, 104, 138-139, 154-156, 165-171 |
 | p2pfl/communication/grpc/grpc\_communication\_protocol.py     |       62 |        3 |     95% |155, 167, 198 |
 | p2pfl/communication/grpc/grpc\_neighbors.py                   |       46 |        4 |     91% | 83, 92-94 |
 | p2pfl/communication/grpc/grpc\_server.py                      |       71 |       15 |     79% |86-87, 96, 114, 157-160, 189-196, 217 |
@@ -49,7 +49,7 @@
 | p2pfl/exceptions.py                                           |        6 |        0 |    100% |           |
 | p2pfl/learning/\_\_init\_\_.py                                |        0 |        0 |    100% |           |
 | p2pfl/learning/aggregators/\_\_init\_\_.py                    |        0 |        0 |    100% |           |
-| p2pfl/learning/aggregators/aggregator.py                      |      106 |       20 |     81% |65, 82, 134-136, 140-146, 193, 225-232, 238-239 |
+| p2pfl/learning/aggregators/aggregator.py                      |      106 |       21 |     80% |65, 82, 134-136, 140-146, 188-193, 225-232, 238-239 |
 | p2pfl/learning/aggregators/fedavg.py                          |       16 |        1 |     94% |        41 |
 | p2pfl/learning/exceptions.py                                  |        4 |        0 |    100% |           |
 | p2pfl/learning/learner.py                                     |       26 |       12 |     54% |38, 51, 61, 76, 89, 102, 112, 122, 126, 130, 140, 150 |
@@ -81,7 +81,7 @@
 | p2pfl/stages/stage\_factory.py                                |       24 |        1 |     96% |        59 |
 | p2pfl/stages/workflows.py                                     |       21 |        2 |     90% |    40, 47 |
 | p2pfl/utils.py                                                |       54 |        5 |     91% |28, 71, 78, 102, 127 |
-|                                                     **TOTAL** | **2668** | **1002** | **62%** |           |
+|                                                     **TOTAL** | **2668** | **1006** | **62%** |           |
 
 
 ## Setup coverage badge
@@ -90,20 +90,20 @@ Below are examples of the badges you can use in your main branch `README` file.
 
 ### Direct image
 
-[![Coverage badge](https://raw.githubusercontent.com/pguijas/p2pfl/python-coverage-comment-action-data/badge.svg)](https://htmlpreview.github.io/?https://github.com/pguijas/p2pfl/blob/python-coverage-comment-action-data/htmlcov/index.html)
+[![Coverage badge](https://raw.githubusercontent.com/p2pfl/p2pfl/python-coverage-comment-action-data/badge.svg)](https://htmlpreview.github.io/?https://github.com/p2pfl/p2pfl/blob/python-coverage-comment-action-data/htmlcov/index.html)
 
 This is the one to use if your repository is private or if you don't want to customize anything.
 
 ### [Shields.io](https://shields.io) Json Endpoint
 
-[![Coverage badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/pguijas/p2pfl/python-coverage-comment-action-data/endpoint.json)](https://htmlpreview.github.io/?https://github.com/pguijas/p2pfl/blob/python-coverage-comment-action-data/htmlcov/index.html)
+[![Coverage badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/p2pfl/p2pfl/python-coverage-comment-action-data/endpoint.json)](https://htmlpreview.github.io/?https://github.com/p2pfl/p2pfl/blob/python-coverage-comment-action-data/htmlcov/index.html)
 
 Using this one will allow you to [customize](https://shields.io/endpoint) the look of your badge.
 It won't work with private repositories. It won't be refreshed more than once per five minutes.
 
 ### [Shields.io](https://shields.io) Dynamic Badge
 
-[![Coverage badge](https://img.shields.io/badge/dynamic/json?color=brightgreen&label=coverage&query=%24.message&url=https%3A%2F%2Fraw.githubusercontent.com%2Fpguijas%2Fp2pfl%2Fpython-coverage-comment-action-data%2Fendpoint.json)](https://htmlpreview.github.io/?https://github.com/pguijas/p2pfl/blob/python-coverage-comment-action-data/htmlcov/index.html)
+[![Coverage badge](https://img.shields.io/badge/dynamic/json?color=brightgreen&label=coverage&query=%24.message&url=https%3A%2F%2Fraw.githubusercontent.com%2Fp2pfl%2Fp2pfl%2Fpython-coverage-comment-action-data%2Fendpoint.json)](https://htmlpreview.github.io/?https://github.com/p2pfl/p2pfl/blob/python-coverage-comment-action-data/htmlcov/index.html)
 
 This one will always be the same color. It won't work for private repos. I'm not even sure why we included it.
 
