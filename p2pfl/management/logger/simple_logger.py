@@ -20,9 +20,47 @@ import logging
 from p2pfl.experiment import Experiment
 from typing import Any, Dict, Optional
 
-from p2pfl.management.logger.logger import *
+from p2pfl.management.logger.logger import P2PFLogger
 from p2pfl.management.metric_storage import GlobalLogsType, GlobalMetricStorage, LocalLogsType, LocalMetricStorage
 from p2pfl.settings import Settings
+
+
+#########################
+#    Colored logging    #
+#########################
+
+# COLORS
+GRAY = "\033[90m"
+RED = "\033[91m"
+YELLOW = "\033[93m"
+GREEN = "\033[92m"
+BLUE = "\033[94m"
+CYAN = "\033[96m"
+RESET = "\033[0m"
+
+
+class ColoredFormatter(logging.Formatter):
+    """Formatter that adds color to the log messages."""
+
+    def format(self, record):
+        """
+        Format the log record with color.
+
+        Args:
+            record: The log record.
+
+        """
+        # Warn level color
+        if record.levelname == "DEBUG":
+            record.levelname = BLUE + record.levelname + RESET
+        elif record.levelname == "INFO":
+            record.levelname = GREEN + record.levelname + RESET
+        elif record.levelname == "WARNING":
+            record.levelname = YELLOW + record.levelname + RESET
+        elif record.levelname == "ERROR" or record.levelname == "CRITICAL":
+            record.levelname = RED + record.levelname + RESET
+        return super().format(record)
+
 
 ################
 #    Logger    #

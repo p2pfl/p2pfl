@@ -20,7 +20,7 @@ from typing import Optional
 import ray
 
 from p2pfl.experiment import Experiment
-from p2pfl.management.logger.logger import *
+from p2pfl.management.logger.logger import P2PFLogger
 from p2pfl.management.metric_storage import GlobalLogsType, LocalLogsType
 
 @ray.remote

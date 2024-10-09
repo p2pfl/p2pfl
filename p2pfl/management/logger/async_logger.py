@@ -21,7 +21,7 @@ from logging.handlers import QueueHandler, QueueListener
 import multiprocessing
 from typing import Dict, List, Tuple
 from p2pfl.experiment import Experiment
-from p2pfl.management.logger.logger import *
+from p2pfl.management.logger.logger import P2PFLogger
 
 class AsyncLocalLogger(P2PFLogger):
     _p2pflogger: P2PFLogger = None

@@ -16,6 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import datetime
 import logging
 from typing import List, Tuple
 
@@ -23,6 +24,32 @@ from p2pfl.management.logger.logger import *
 from p2pfl.management.node_monitor import NodeMonitor
 from p2pfl.management.p2pfl_web_services import P2pflWebServices
 
+#########################################
+#    Logging handler (transmit logs)    #
+#########################################
+
+class DictFormatter(logging.Formatter):
+    """Formatter (logging) that returns a dictionary with the log record attributes."""
+
+    def format(self, record):
+        """
+        Format the log record as a dictionary.
+
+        Args:
+            record: The log record.
+
+        """
+        # Get node
+        if not hasattr(record, "node"):
+            raise ValueError("The log record must have a 'node' attribute.")
+        log_dict = {
+            "timestamp": datetime.datetime.fromtimestamp(record.created),
+            "level": record.levelname,
+            "node": record.node,  # type: ignore
+            "message": record.getMessage(),
+        }
+        return log_dict
+    
 class P2pflWebLogHandler(logging.Handler):
     """
     Custom logging handler that sends log entries to the API.
