@@ -44,12 +44,17 @@ class WaitAggregatedModelsStage(Stage):
         """Execute the stage."""
         if state is None or communication_protocol is None:
             raise Exception("Invalid parameters on WaitAggregatedModelsStage.")
-
-        # Wait for aggregation to finish (then release the lock again)
-        logger.info(state.addr, "⏳ Waiting aregation.")
-        state.wait_aggregated_model_lock.acquire(timeout=Settings.AGGREGATION_TIMEOUT)
-        with contextlib.suppress(Exception):
-            state.wait_aggregated_model_lock.release()
+        # clear here instead of aquiring in vote_train_set_stage
+        state.wait_aggregated_model_event.clear()
+        event_set = state.wait_aggregated_model_event.wait(timeout=Settings.AGGREGATION_TIMEOUT)
+        # Wait for aggregation to finish, if time over timeout log a warning message
+        logger.info(state.addr, "⏳ Waiting aggregation.")
+        if event_set:
+            # The event was set before the timeout
+            logger.info(state.addr, "✅ Aggregation event received.")
+        else:
+            # The timeout occurred before the event was set
+            logger.warning(state.addr, "⏰ Aggregation timeout occurred.")
 
         # Get aggregated model
         logger.debug(
