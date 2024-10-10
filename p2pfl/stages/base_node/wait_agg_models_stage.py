@@ -46,9 +46,10 @@ class WaitAggregatedModelsStage(Stage):
             raise Exception("Invalid parameters on WaitAggregatedModelsStage.")
         # clear here instead of aquiring in vote_train_set_stage
         state.wait_aggregated_model_event.clear()
-        event_set = state.wait_aggregated_model_event.wait(timeout=Settings.AGGREGATION_TIMEOUT)
-        # Wait for aggregation to finish, if time over timeout log a warning message
         logger.info(state.addr, "⏳ Waiting aggregation.")
+        # Wait for aggregation to finish, if time over timeout log a warning message
+        event_set = state.wait_aggregated_model_event.wait(timeout=Settings.AGGREGATION_TIMEOUT)
+        
         if event_set:
             # The event was set before the timeout
             logger.info(state.addr, "✅ Aggregation event received.")
