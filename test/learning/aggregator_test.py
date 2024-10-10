@@ -109,7 +109,7 @@ def test_avg_complex():
     assert set(res.get_contributors()) == {"1", "2", "3"}
 
 
-def test_aggregator_lifecicle():
+def test_aggregator_lifecycle():
     """Test the aggregator lock."""
     aggregator = FedAvg()
     aggregator.set_nodes_to_aggregate(["node1", "node2", "node3"])
@@ -122,8 +122,8 @@ def test_aggregator_lifecicle():
     model1 = LightningModel(MLP(), num_samples=1, contributors=["node1"])
     aggregator.add_model(model1)
 
-    # Ensure that the lock is not released
-    assert aggregator._finish_aggregation_lock.locked()
+    # Ensure that the previous lock, now an event is cleared (equivalent to locked)
+    assert not aggregator._finish_aggregation_event.is_set()
 
     # Check if the model was added
     assert aggregator.get_aggregated_models() == ["node1"]

@@ -17,7 +17,6 @@
 #
 """Wait aggregated models stage."""
 
-import contextlib
 from typing import Optional, Type, Union
 
 from p2pfl.communication.commands.message.models_ready_command import ModelsReadyCommand
@@ -49,7 +48,7 @@ class WaitAggregatedModelsStage(Stage):
         logger.info(state.addr, "⏳ Waiting aggregation.")
         # Wait for aggregation to finish, if time over timeout log a warning message
         event_set = state.wait_aggregated_model_event.wait(timeout=Settings.AGGREGATION_TIMEOUT)
-        
+
         if event_set:
             # The event was set before the timeout
             logger.info(state.addr, "✅ Aggregation event received.")

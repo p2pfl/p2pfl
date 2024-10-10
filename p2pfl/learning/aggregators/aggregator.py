@@ -18,7 +18,6 @@
 
 """Abstract aggregator."""
 
-import contextlib
 import threading
 from typing import List
 
@@ -77,7 +76,7 @@ class Aggregator:
             Exception: If the aggregation is running.
 
         """
-        if self._finish_aggregation_event.is_set(): 
+        if self._finish_aggregation_event.is_set():
             self.__train_set = nodes_to_aggregate
             self._finish_aggregation_event.clear()
         else:
@@ -85,7 +84,7 @@ class Aggregator:
 
     def clear(self) -> None:
         """Clear the aggregation (remove trainset and release locks)."""
-        with self.__agg_lock: 
+        with self.__agg_lock:
             self.__train_set = []
             self.__models = []
             self._finish_aggregation_event.set()
@@ -186,9 +185,9 @@ class Aggregator:
         # Check that the aggregation is finished
         missing_models = self.get_missing_models()
         # Check if aggregation has timed out or event has been set correctly
-        if not event_set: 
+        if not event_set:
             logger.info(self.node_name, f"⏳ Aggregation wait timed out. Missing models: {missing_models}")
-        else: 
+        else:
             if len(missing_models) > 0:
                 logger.info(
                     self.node_name,
@@ -196,24 +195,24 @@ class Aggregator:
                 )
             else:
                 logger.info(self.node_name, "🧠 Aggregating models.")
-        
+
         # Notify node
         return self.aggregate(self.__models)
 
-    def get_missing_models(self) -> set: 
+    def get_missing_models(self) -> set:
         """
         Obtain missing models for the aggregation.
 
-        Return:
-            A set of missing models. 
-        """
+        Returns:
+            A set of missing models.
 
+        """
         agg_models = []
         for m in self.__models:
             agg_models += m.get_contributors()
         missing_models = set(self.__train_set) - set(agg_models)
         return missing_models
-    
+
     def get_partial_aggregation(self, except_nodes: List[str]) -> P2PFLModel:
         """
         Obtain a partial aggregation.
