@@ -77,9 +77,8 @@ class NodeState:
         self.wait_votes_ready_lock = threading.Lock()
         self.model_initialized_lock = threading.Lock()
         self.model_initialized_lock.acquire()
-        # initally set the event, gets clearend in wait_agg_models_stage, wait is called after
-        self.wait_aggregated_model_event = threading.Event()
-        self.wait_aggregated_model_event.set()
+        self.aggregated_model_event = threading.Event()
+        self.aggregated_model_event.set()
 
         # puede quedar guay el privatizar todos los locks y meter métodos que al mismo tiempo seteen un estado (string)
 

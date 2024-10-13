@@ -68,10 +68,6 @@ class VoteTrainSetStage(Stage):
             if state.addr in state.train_set:
                 return StageFactory.get_stage("TrainStage")
             else:
-                # Set lock aquire removed, since using threading.Event instead of threading.Lock theres no need to
-                # aquire a lock before proceeding to WaitAggregatedModelsStage
-                # In the original code it was intended to block the node until the agg model was received/timeout,
-                # with the change to event this sync happens in WaitAggregatedModlelsStage
                 logger.debug(state.addr, "Node not in train set. Proceeding to WaitAggregatedModelsStage.")
                 return StageFactory.get_stage("WaitAggregatedModelsStage")
         except EarlyStopException:
