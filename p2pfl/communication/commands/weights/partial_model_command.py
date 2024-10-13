@@ -22,7 +22,7 @@ from typing import Callable, List, Optional
 
 from p2pfl.communication.commands.command import Command
 from p2pfl.communication.commands.message.models_agregated_command import ModelsAggregatedCommand
-from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
+from p2pfl.communication.protocols.p2p.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
 from p2pfl.learning.learner import NodeLearner

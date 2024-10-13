@@ -10,7 +10,7 @@ import collections.abc
 import google.protobuf.empty_pb2
 import grpc
 import grpc.aio # type: ignore
-from p2pfl.communication.protocols.grpc.proto import node_pb2
+from p2pfl.communication.protocols.p2p.grpc.proto import node_pb2
 import typing
 
 _T = typing.TypeVar("_T")

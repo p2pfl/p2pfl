@@ -463,7 +463,7 @@ class Logger:
                     p2pfl_web_services.send_local_metric(exp, round, metric, node, value, step)
         except NodeNotRegistered:
             pass
-            Logger.get_instance().warning("LOGGER", "Remote metric logging not implemented yet. Be patient :)")
+            #Logger.get_instance().warning("LOGGER", "Remote metric logging not implemented yet. Be patient :)")
 
     @staticmethod
     def log_system_metric(node: str, metric: str, value: float, time: datetime.datetime) -> None:

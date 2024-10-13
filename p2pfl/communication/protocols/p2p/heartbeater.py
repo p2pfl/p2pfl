@@ -22,8 +22,8 @@ import threading
 import time
 from typing import Optional
 
-from p2pfl.communication.protocols.client import Client
-from p2pfl.communication.protocols.neighbors import Neighbors
+from p2pfl.communication.protocols.p2p.client import Client
+from p2pfl.communication.protocols.p2p.neighbors import Neighbors
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 

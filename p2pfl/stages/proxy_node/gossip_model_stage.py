@@ -35,7 +35,7 @@ class GossipModelStage(Stage):
     @staticmethod
     def name():
         """Return the name of the stage."""
-        return "GossipModelStage"
+        return "GossipModelStage_proxy"
 
     @staticmethod
     def execute(
@@ -50,7 +50,7 @@ class GossipModelStage(Stage):
             raise Exception("Invalid parameters on GossipModelStage.")
 
         GossipModelStage.__gossip_model_difusion(state, communication_protocol, learner)
-        return StageFactory.get_stage("RoundFinishedStage")
+        return StageFactory.get_stage("RoundFinishedStage_proxy")
 
     @staticmethod
     def __gossip_model_difusion(

@@ -48,7 +48,7 @@ This tutorial demonstrates how to train a **Multilayer Perceptron (MLP)** on the
 - **Node 1 (node1.py):** This node will simply start and wait for connections.
 
 ```python
-from p2pfl.node import Node
+from p2pfl.nodes.node import Node
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 
@@ -69,7 +69,7 @@ node.stop()
 - **Node 2 (node2.py):** This node will start, connect to Node 1, and initiate the federated learning process.
 
 ```python
-from p2pfl.node import Node
+from p2pfl.nodes.node import Node
 from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 import time

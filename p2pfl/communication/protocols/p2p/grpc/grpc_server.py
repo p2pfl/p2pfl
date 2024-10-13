@@ -26,9 +26,9 @@ import google.protobuf.empty_pb2
 
 import grpc
 from p2pfl.communication.commands.command import Command
-from p2pfl.communication.protocols.gossiper import Gossiper
-from p2pfl.communication.protocols.grpc.grpc_neighbors import GrpcNeighbors
-from p2pfl.communication.protocols.grpc.proto import node_pb2, node_pb2_grpc
+from p2pfl.communication.protocols.p2p.gossiper import Gossiper
+from p2pfl.communication.protocols.p2p.grpc.grpc_neighbors import GrpcNeighbors
+from p2pfl.communication.protocols.p2p.grpc.proto import node_pb2, node_pb2_grpc
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 

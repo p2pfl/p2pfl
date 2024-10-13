@@ -17,29 +17,27 @@
 #
 
 """
-Example of a P2PFL MNIST node using a MLP model and a MnistFederatedDM.
+Example of a P2PFL MNIST edge node using a MLP model and a MnistFederatedDM.
 
 This node only starts, create a node2 and connect to it in order to start the federated learning process.
 """
 
 import argparse
+import asyncio
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
+from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
 from p2pfl.learning.pytorch.lightning_learner import LightningLearner
 from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
-from p2pfl.nodes.node import Node
-from p2pfl.utils.utils import set_test_settings
-
-set_test_settings()
+from p2pfl.nodes.edge_node import EdgeNode
 
 
 def __get_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="P2PFL MNIST node using a MLP model and a MnistFederatedDM.")
-    parser.add_argument("--port", type=int, help="The port.", required=True)
+    parser = argparse.ArgumentParser(description="P2PFL MNIST edge node using a MLP model and a MnistFederatedDM.")
+    parser.add_argument("--addr", type=str, help="The addres of the proxy.", required=True)
     return parser.parse_args()
 
-
-def node1(port: int) -> None:
+async def edge_node(addr: str) -> None:
     """
     Start a node1 and waits for a key press to stop it.
 
@@ -47,14 +45,16 @@ def node1(port: int) -> None:
         port: The port where the node will be listening.
 
     """
-    node = Node(LightningModel(MLP()), P2PFLDataset.from_huggingface("p2pfl/MNIST"), address=f"127.0.0.1:{port}", learner=LightningLearner)
-    node.start()
-
-    input("Press any key to stop\n")
-
-    node.stop()
-
+    data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
+    partitions = data.generate_partitions(10, RandomIIDPartitionStrategy)  # type: ignore
+    node = EdgeNode(
+        addr,
+        LightningModel(MLP()),
+        partitions[0],
+        learner=LightningLearner
+    )
+    await node.start()
 
 if __name__ == "__main__":
     args = __get_args()
-    node1(args.port)
+    asyncio.run(edge_node(args.addr))

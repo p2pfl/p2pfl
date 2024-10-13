@@ -36,7 +36,7 @@ class RoundFinishedStage(Stage):
     @staticmethod
     def name():
         """Return the name of the stage."""
-        return "RoundFinishedStage"
+        return "RoundFinishedStage_proxy"
 
     @staticmethod
     def execute(
@@ -44,6 +44,7 @@ class RoundFinishedStage(Stage):
         learner: Optional[NodeLearner] = None,
         communication_protocol: Optional[CommunicationProtocol] = None,
         aggregator: Optional[Aggregator] = None,
+        edge_communication_protocol = None,
         **kwargs,
     ) -> Union[Type["Stage"], None]:
         """Execute the stage."""
@@ -64,20 +65,45 @@ class RoundFinishedStage(Stage):
             raise ValueError("Round or total rounds not set.")
 
         if state.round < state.total_rounds:
-            return StageFactory.get_stage("VoteTrainSetStage")
+            return StageFactory.get_stage("VoteTrainSetStage_proxy")
         else:
             # At end, all nodes compute metrics
-            RoundFinishedStage.__evaluate(state, learner, communication_protocol)
+            RoundFinishedStage.__evaluate(state, learner, communication_protocol, edge_communication_protocol)
             # Finish
             state.clear()
             logger.info(state.addr, "😋 Training finished!!")
             return None
 
     @staticmethod
-    def __evaluate(state: NodeState, learner: NodeLearner, communication_protocol: CommunicationProtocol) -> None:
-        logger.info(state.addr, "🔬 Evaluating...")
-        results = learner.evaluate()
-        logger.info(state.addr, f"📈 Evaluated. Results: {results}")
+    def __evaluate(
+        state: NodeState,
+        learner: NodeLearner,
+        communication_protocol: CommunicationProtocol,
+        edge_communication_protocol
+    ) -> None:
+        # Send
+        logger.info(state.addr, "🔬 Sending eval...")
+        val_results = edge_communication_protocol.broadcast_message(
+            "validate",
+            weights=learner.get_model().encode_parameters(),
+            timeout=120
+        )
+        # Transform
+        val_results = {
+            k: dict(zip(v.message[::2], v.message[1::2]))
+            for k, v in val_results.items() if v is not None
+        }
+        logger.info(state.addr, f"📈 Evaluated. Results: {val_results}")
+        # Promediate
+        results = {}
+        for _, metrics in val_results.items():
+            for metric, value in metrics.items():
+                if metric not in results:
+                    results[metric] = float(value)
+                else:
+                    results[metric] += float(value)
+        results = {k: v / len(val_results) for k, v in results.items()}
+
         # Send metrics
         if len(results) > 0:
             logger.info(state.addr, "📢 Broadcasting metrics.")
@@ -89,3 +115,4 @@ class RoundFinishedStage(Stage):
                     round=state.round,
                 )
             )
+

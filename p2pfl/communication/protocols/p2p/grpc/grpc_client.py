@@ -23,10 +23,10 @@ from os.path import isfile
 from typing import List, Optional
 
 import grpc
-from p2pfl.communication.protocols.client import Client
-from p2pfl.communication.protocols.exceptions import CommunicationError, NeighborNotConnectedError
-from p2pfl.communication.protocols.grpc.grpc_neighbors import GrpcNeighbors
-from p2pfl.communication.protocols.grpc.proto import node_pb2, node_pb2_grpc
+from p2pfl.communication.protocols.p2p.client import Client
+from p2pfl.communication.protocols.p2p.exceptions import CommunicationError, NeighborNotConnectedError
+from p2pfl.communication.protocols.p2p.grpc.grpc_neighbors import GrpcNeighbors
+from p2pfl.communication.protocols.p2p.grpc.proto import node_pb2, node_pb2_grpc
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 

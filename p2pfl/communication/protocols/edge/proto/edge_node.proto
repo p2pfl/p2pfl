@@ -1,0 +1,18 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+package edge_node;
+
+// python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. node.proto
+
+
+message EdgeMessage {
+    int32 id = 1;
+    string cmd = 2;
+    repeated string message = 3;
+    optional bytes weights = 4;
+}
+
+service Node {
+    rpc MainStream (stream EdgeMessage) returns (stream EdgeMessage) {}
+}

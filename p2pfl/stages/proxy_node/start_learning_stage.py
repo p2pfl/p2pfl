@@ -38,7 +38,7 @@ class StartLearningStage(Stage):
     @staticmethod
     def name():
         """Return the name of the stage."""
-        return "StartLearningStage"
+        return "StartLearningStage_proxy"
 
     @staticmethod
     def execute(
@@ -76,7 +76,7 @@ class StartLearningStage(Stage):
             time.sleep(wait_time)
 
         # Vote
-        return StageFactory.get_stage("VoteTrainSetStage")
+        return StageFactory.get_stage("VoteTrainSetStage_proxy")
 
     @staticmethod
     def __gossip_model(

@@ -20,8 +20,8 @@
 import time
 from typing import Optional, Tuple
 
-from p2pfl.communication.protocols.memory.server_singleton import ServerSingleton
-from p2pfl.communication.protocols.neighbors import Neighbors
+from p2pfl.communication.protocols.p2p.memory.server_singleton import ServerSingleton
+from p2pfl.communication.protocols.p2p.neighbors import Neighbors
 from p2pfl.management.logger import logger
 
 

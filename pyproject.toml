@@ -54,7 +54,11 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 line-length = 140
-exclude = ["p2pfl/communication/protocols/grpc/proto", "docs"]
+exclude = [
+    "p2pfl/communication/protocols/p2p/grpc/proto", 
+    "p2pfl/communication/protocols/edge_/grpc/proto", 
+    "docs"
+]
 
 [tool.ruff.lint]
 select = [

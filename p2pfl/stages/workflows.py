@@ -58,3 +58,12 @@ class LearningWorkflow(StageWokflow):
     def __init__(self) -> None:
         """Initialize the federated learning workflow."""
         super().__init__(StageFactory.get_stage("StartLearningStage"))
+
+
+class ProxyWorkflow(StageWokflow):
+    """Class to run a federated learning proxy workflow."""
+
+    def __init__(self) -> None:
+        """Initialize the federated learning proxy workflow."""
+        super().__init__(StageFactory.get_stage("StartLearningStage_proxy"))
+

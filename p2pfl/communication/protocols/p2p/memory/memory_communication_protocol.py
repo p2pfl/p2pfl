@@ -15,23 +15,26 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""GRPC communication protocol."""
+"""In-memory communication protocol."""
 
+import random
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from p2pfl.communication.commands.command import Command
-from p2pfl.communication.commands.message.heartbeat_command import HeartbeatCommand  # Need to decouple this command
-from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
-from p2pfl.communication.protocols.exceptions import ProtocolNotStartedError
-from p2pfl.communication.protocols.gossiper import Gossiper
-from p2pfl.communication.protocols.grpc.address import AddressParser
-from p2pfl.communication.protocols.grpc.grpc_client import GrpcClient
-from p2pfl.communication.protocols.grpc.grpc_neighbors import GrpcNeighbors
-from p2pfl.communication.protocols.grpc.grpc_server import GrpcServer
-from p2pfl.communication.protocols.grpc.proto import node_pb2
-from p2pfl.communication.protocols.heartbeater import Heartbeater
+from p2pfl.communication.commands.message.heartbeat_command import HeartbeatCommand
+from p2pfl.communication.protocols.p2p.communication_protocol import CommunicationProtocol
+from p2pfl.communication.protocols.p2p.exceptions import ProtocolNotStartedError
+from p2pfl.communication.protocols.p2p.gossiper import Gossiper
+from p2pfl.communication.protocols.p2p.heartbeater import Heartbeater
+from p2pfl.communication.protocols.p2p.memory.memory_client import InMemoryClient
+from p2pfl.communication.protocols.p2p.memory.memory_neighbors import InMemoryNeighbors
+from p2pfl.communication.protocols.p2p.memory.memory_server import InMemoryServer
 from p2pfl.settings import Settings
+
+#
+# Need to simplify this protocol, just wrapp the grpc one to avoid modifying InMemoryCommunicationProtocol every time
+#
 
 
 def running(func):
@@ -46,39 +49,40 @@ def running(func):
     return wrapper
 
 
-class GrpcCommunicationProtocol(CommunicationProtocol):
+class InMemoryCommunicationProtocol(CommunicationProtocol):
     """
-    GRPC communication protocol.
+    In-memory communication protocol.
 
     Args:
         addr: Address of the node.
         commands: Commands to add to the communication protocol.
 
-    .. todo:: https://grpc.github.io/grpc/python/grpc_asyncio.html
-    .. todo:: Decouple the heeartbeat command.
+    .. todo:: Remove this copy-paste code and use a in-memory wrapper for the grpc communication protocol.
 
     """
 
-    def __init__(self, addr: str = "127.0.0.1", commands: Optional[List[Command]] = None) -> None:
-        """Initialize the GRPC communication protocol."""
-        # Parse IP address
-        parsed_address = AddressParser(addr)
-        self.addr = parsed_address.get_parsed_address()
+    def __init__(self, addr: Optional[str] = None, commands: Optional[List[Command]] = None) -> None:
+        """Initialize the in-memory communication protocol."""
+        # Address
+        if addr:
+            self.addr = addr
+        else:
+            self.addr = f"node-{random.randint(0,99999999)}"
         # Neighbors
-        self._neighbors = GrpcNeighbors(self.addr)
-        # GRPC Client
-        self._client = GrpcClient(self.addr, self._neighbors)
+        self._neighbors = InMemoryNeighbors(self.addr)
+        # Client
+        self._client = InMemoryClient(self.addr, self._neighbors)
         # Gossip
         self._gossiper = Gossiper(self.addr, self._client)
-        # GRPC
-        self._server = GrpcServer(self.addr, self._gossiper, self._neighbors, commands)
+        # Server
+        self._server = InMemoryServer(self.addr, self._gossiper, self._neighbors, commands)
         # Hearbeat
         self._heartbeater = Heartbeater(self.addr, self._neighbors, self._client)
         # Commands
-        self.add_command(HeartbeatCommand(self._heartbeater))
+        self._server.add_command(HeartbeatCommand(self._heartbeater))
         if commands is None:
             commands = []
-        self.add_command(commands)
+        self._server.add_command(commands)
 
     def get_address(self) -> str:
         """
@@ -91,18 +95,18 @@ class GrpcCommunicationProtocol(CommunicationProtocol):
         return self.addr
 
     def start(self) -> None:
-        """Start the GRPC communication protocol."""
+        """Start the communication protocol."""
         self._server.start()
         self._heartbeater.start()
         self._gossiper.start()
 
     @running
     def stop(self) -> None:
-        """Stop the GRPC communication protocol."""
+        """Stop the communication protocol."""
+        self._server.stop()
         self._heartbeater.stop()
         self._gossiper.stop()
         self._neighbors.clear_neighbors()
-        self._server.stop()
 
     def add_command(self, cmds: Union[Command, List[Command]]) -> None:
         """
@@ -179,7 +183,10 @@ class GrpcCommunicationProtocol(CommunicationProtocol):
     def send(
         self,
         nei: str,
-        msg: Union[node_pb2.RootMessage],
+        msg: Union[
+            Dict[str, Union[str, int, List[str], bytes]],
+            Dict[str, Union[str, int, bytes, List[str]]],
+        ],
         raise_error: bool = False,
         remove_on_error: bool = True,
     ) -> None:
@@ -188,15 +195,19 @@ class GrpcCommunicationProtocol(CommunicationProtocol):
 
         Args:
             nei: The neighbor to send the message.
-            msg: The message to send.
+            msg: The message to sen
             raise_error: If raise error.
-            remove_on_error: If remove on error.
+            remove_on_error: If remove on error.d.
 
         """
         self._client.send(nei, msg, raise_error=raise_error, remove_on_error=remove_on_error)
 
     @running
-    def broadcast(self, msg: node_pb2.RootMessage, node_list: Optional[List[str]] = None) -> None:
+    def broadcast(
+        self,
+        msg: Dict[str, Union[str, int, List[str], bytes]],
+        node_list: Optional[List[str]] = None,
+    ) -> None:
         """
         Broadcast a message to all neighbors.
 
@@ -220,13 +231,7 @@ class GrpcCommunicationProtocol(CommunicationProtocol):
 
     @running
     def wait_for_termination(self) -> None:
-        """
-        Get the neighbors.
-
-        Args:
-            only_direct: The only direct flag.
-
-        """
+        """Wait for termination."""
         self._server.wait_for_termination()
 
     @running

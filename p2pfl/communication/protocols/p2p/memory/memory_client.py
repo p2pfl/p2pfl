@@ -21,10 +21,10 @@ import random
 import time
 from typing import Dict, List, Optional, Union
 
-from p2pfl.communication.protocols.client import Client
-from p2pfl.communication.protocols.exceptions import CommunicationError, NeighborNotConnectedError
-from p2pfl.communication.protocols.memory.memory_neighbors import InMemoryNeighbors
-from p2pfl.communication.protocols.memory.server_singleton import ServerSingleton
+from p2pfl.communication.protocols.p2p.client import Client
+from p2pfl.communication.protocols.p2p.exceptions import CommunicationError, NeighborNotConnectedError
+from p2pfl.communication.protocols.p2p.memory.memory_neighbors import InMemoryNeighbors
+from p2pfl.communication.protocols.p2p.memory.server_singleton import ServerSingleton
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 

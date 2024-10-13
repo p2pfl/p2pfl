@@ -13,6 +13,8 @@
 
 P2PFL is a general-purpose open-source library for the execution (simulated and in real environments) of Decentralized Federated Learning systems, specifically making use of P2P networks and the Gossip protocol.
 
+> **PROXY CONSIDERATIONS**: Just a POC, edge nodes actually act as workers, in a real scenario, they would act as real nodes.
+
 ## ✨ Key Features
 
 P2PFL offers a range of features designed to make decentralized federated learning accessible and efficient. For detailed information, please refer to our [documentation](https://pguijas.github.io/p2pfl/).

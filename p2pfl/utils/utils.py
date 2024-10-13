@@ -22,9 +22,9 @@ from typing import List, Optional, Union
 
 import numpy as np
 
-from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
+from p2pfl.communication.protocols.p2p.communication_protocol import CommunicationProtocol
 from p2pfl.management.logger import logger
-from p2pfl.node import Node
+from p2pfl.nodes.node import Node
 from p2pfl.settings import Settings
 
 """

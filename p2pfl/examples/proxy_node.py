@@ -19,16 +19,15 @@
 """
 Example of a P2PFL MNIST node using a MLP model and a MnistFederatedDM.
 
-This node will be connected to node1 and then, the federated learning process will start.
+This node only starts, create a node2 and connect to it in order to start the federated learning process.
 """
 
 import argparse
-import time
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.pytorch.lightning_learner import LightningLearner
 from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
-from p2pfl.nodes.node import Node
+from p2pfl.nodes.proxy_node import ProxyNode
 from p2pfl.utils.utils import set_test_settings
 
 set_test_settings()
@@ -36,40 +35,23 @@ set_test_settings()
 
 def __get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="P2PFL MNIST node using a MLP model and a MnistFederatedDM.")
-    parser.add_argument("--port", type=int, help="The port to connect.", required=True)
+    parser.add_argument("--addr", type=str, help="The port.", required=True)
     return parser.parse_args()
 
 
-def node2(port: int) -> None:
-    """
-    Start a node2, connects to another node, start and waits the federated learning process to finish.
-
-    Args:
-        port: The port to connect.
-
-    """
-    node = Node(LightningModel(MLP()), P2PFLDataset.from_huggingface("p2pfl/MNIST"), address="127.0.0.1", learner=LightningLearner)
+def proxy_node(addr: str) -> None:
+    node = ProxyNode(LightningModel(MLP()), address=addr, learner=LightningLearner)
     node.start()
-    node.connect(f"127.0.0.1:{port}")
-    time.sleep(4)
 
-    print("Start learning")
+    input("Press any key to start learning\n")
+
     node.set_start_learning(rounds=2, epochs=1)
 
-    # Wait 4 results
-
-    while True:
-        time.sleep(1)
-
-        if node.state.round is None:
-            break
+    input("Press any key to stop\n")
 
     node.stop()
 
 
 if __name__ == "__main__":
-    # Get arguments
     args = __get_args()
-
-    # Run node2
-    node2(args.port)
+    proxy_node(args.addr)

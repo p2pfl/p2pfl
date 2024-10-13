@@ -3,7 +3,7 @@
 import grpc
 
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
-from p2pfl.communication.protocols.grpc.proto import node_pb2 as node__pb2
+from p2pfl.communication.protocols.p2p.grpc.proto import node_pb2 as node__pb2
 
 
 class NodeServicesStub(object):

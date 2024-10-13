@@ -29,8 +29,8 @@ from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
 from p2pfl.learning.tensorflow.keras_learner import KerasLearner
 from p2pfl.learning.tensorflow.keras_model import MLP as MLP_KERAS
 from p2pfl.learning.tensorflow.keras_model import KerasModel
-from p2pfl.node import Node
-from p2pfl.utils import (
+from p2pfl.nodes.node import Node
+from p2pfl.utils.utils import (
     check_equal_models,
     set_test_settings,
     wait_convergence,

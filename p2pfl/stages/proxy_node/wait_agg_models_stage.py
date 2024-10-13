@@ -35,7 +35,7 @@ class WaitAggregatedModelsStage(Stage):
     @staticmethod
     def name():
         """Return the name of the stage."""
-        return "WaitAggregatedModelsStage"
+        return "WaitAggregatedModelsStage_proxy"
 
     @staticmethod
     def execute(
@@ -59,4 +59,4 @@ class WaitAggregatedModelsStage(Stage):
         # Share that aggregation is done
         communication_protocol.broadcast(communication_protocol.build_msg(ModelsReadyCommand.get_name(), [], round=state.round))
 
-        return StageFactory.get_stage("GossipModelStage")
+        return StageFactory.get_stage("GossipModelStage_proxy")

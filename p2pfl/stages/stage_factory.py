@@ -22,6 +22,9 @@ from typing import Type
 
 from p2pfl.stages.stage import Stage
 
+#
+# OJO WORKFLOWS DUPLICADOS, ALGUNOS SON IGUALES PARA EL PROXY Y PARA EL BASE NODE
+#
 
 class StageFactory:
     """Factory class to create stages. Main goal: Avoid cyclic imports."""
@@ -55,5 +58,33 @@ class StageFactory:
             from p2pfl.stages.base_node.vote_train_set_stage import VoteTrainSetStage
 
             return VoteTrainSetStage
+
+        # PROXY
+        
+
+        if stage_name == "StartLearningStage_proxy":
+            from p2pfl.stages.proxy_node.start_learning_stage import StartLearningStage as StartLearningStage_proxy
+
+            return StartLearningStage_proxy
+        elif stage_name == "RoundFinishedStage_proxy":
+            from p2pfl.stages.proxy_node.round_finished_stage import RoundFinishedStage as RoundFinishedStage_proxy
+
+            return RoundFinishedStage_proxy
+        elif stage_name == "WaitAggregatedModelsStage_proxy":
+            from p2pfl.stages.proxy_node.wait_agg_models_stage import WaitAggregatedModelsStage as WaitAggregatedModelsStage_proxy
+
+            return WaitAggregatedModelsStage_proxy
+        elif stage_name == "GossipModelStage_proxy":
+            from p2pfl.stages.proxy_node.gossip_model_stage import GossipModelStage as GossipModelStage_proxy
+
+            return GossipModelStage_proxy
+        elif stage_name == "TrainStage_proxy":
+            from p2pfl.stages.proxy_node.train_stage import TrainStage as TrainStage_proxy
+
+            return TrainStage_proxy
+        elif stage_name == "VoteTrainSetStage_proxy":
+            from p2pfl.stages.proxy_node.vote_train_set_stage import VoteTrainSetStage as VoteTrainSetStage_proxy
+
+            return VoteTrainSetStage_proxy
         else:
             raise Exception("Invalid stage name.")

@@ -28,15 +28,15 @@ import uuid
 import matplotlib.pyplot as plt
 import numpy as np
 
-from p2pfl.communication.protocols.grpc.grpc_communication_protocol import GrpcCommunicationProtocol
-from p2pfl.communication.protocols.memory.memory_communication_protocol import InMemoryCommunicationProtocol
+from p2pfl.communication.protocols.p2p.grpc.grpc_communication_protocol import GrpcCommunicationProtocol
+from p2pfl.communication.protocols.p2p.memory.memory_communication_protocol import InMemoryCommunicationProtocol
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
 from p2pfl.learning.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
-from p2pfl.node import Node
+from p2pfl.nodes.node import Node
 from p2pfl.settings import Settings
-from p2pfl.utils import wait_convergence, wait_to_finish
+from p2pfl.utils.utils import wait_convergence, wait_to_finish
 
 
 def set_standalone_settings() -> None:

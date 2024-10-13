@@ -33,8 +33,8 @@ from p2pfl.communication.commands.message.vote_train_set_command import VoteTrai
 from p2pfl.communication.commands.weights.full_model_command import FullModelCommand
 from p2pfl.communication.commands.weights.init_model_command import InitModelCommand
 from p2pfl.communication.commands.weights.partial_model_command import PartialModelCommand
-from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
-from p2pfl.communication.protocols.grpc.grpc_communication_protocol import (
+from p2pfl.communication.protocols.p2p.communication_protocol import CommunicationProtocol
+from p2pfl.communication.protocols.p2p.grpc.grpc_communication_protocol import (
     GrpcCommunicationProtocol,
 )
 from p2pfl.exceptions import LearnerRunningException, NodeRunningException, ZeroRoundsException

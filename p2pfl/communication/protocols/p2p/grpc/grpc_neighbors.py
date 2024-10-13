@@ -22,8 +22,8 @@ from os.path import isfile
 from typing import Optional, Tuple
 
 import grpc
-from p2pfl.communication.protocols.grpc.proto import node_pb2, node_pb2_grpc
-from p2pfl.communication.protocols.neighbors import Neighbors
+from p2pfl.communication.protocols.p2p.grpc.proto import node_pb2, node_pb2_grpc
+from p2pfl.communication.protocols.p2p.neighbors import Neighbors
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 

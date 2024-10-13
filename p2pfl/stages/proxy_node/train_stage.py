@@ -38,7 +38,7 @@ class TrainStage(Stage):
     @staticmethod
     def name():
         """Return the name of the stage."""
-        return "TrainStage"
+        return "TrainStage_proxy"
 
     @staticmethod
     def execute(
@@ -46,6 +46,7 @@ class TrainStage(Stage):
         communication_protocol: Optional[CommunicationProtocol] = None,
         learner: Optional[NodeLearner] = None,
         aggregator: Optional[Aggregator] = None,
+        edge_communication_protocol = None,
         **kwargs,
     ) -> Union[Type["Stage"], None]:
         """Execute the stage."""
@@ -58,21 +59,30 @@ class TrainStage(Stage):
             # Set Models To Aggregate
             aggregator.set_nodes_to_aggregate(state.train_set)
 
-            check_early_stop(state)
-
             # Evaluate and send metrics
-            TrainStage.__evaluate(state, learner, communication_protocol)
+            TrainStage.__evaluate(state, learner, communication_protocol, edge_communication_protocol)
 
             check_early_stop(state)
 
             # Train
-            logger.info(state.addr, "🏋️‍♀️ Training...")
-            learner.fit()
+            logger.info(state.addr, "🏋️‍♀️ Sending train...")
+            train_results = edge_communication_protocol.broadcast_message(
+                "train",
+                message=[str(learner.epochs)],
+                weights=learner.get_model().encode_parameters(),
+                timeout=240
+            )
+            # =================================== HARD CODED AMOUNT OF SAMPLES!!! ===================================
+            models = [learner.get_model().build_copy(params=v.weights, contributors=[k], num_samples=1) for k, v in train_results.items() if v is not None]
+            agg_models = aggregator.aggregate(models)
+            agg_models.set_contribution([state.addr], 666) 
+
+            print(f"Aggregated model: {agg_models.get_num_samples()} samples")
 
             check_early_stop(state)
 
             # Aggregate Model
-            models_added = aggregator.add_model(learner.get_model())
+            models_added = aggregator.add_model(agg_models)
             # send model added msg ---->> redundant (a node always owns its model)
             # TODO: print("Broadcast redundante")
             communication_protocol.broadcast(
@@ -94,15 +104,40 @@ class TrainStage(Stage):
             communication_protocol.broadcast(communication_protocol.build_msg(ModelsReadyCommand.get_name(), [], round=state.round))
 
             # Next stage
-            return StageFactory.get_stage("GossipModelStage")
+            return StageFactory.get_stage("GossipModelStage_proxy")
         except EarlyStopException:
             return None
 
     @staticmethod
-    def __evaluate(state: NodeState, learner: NodeLearner, communication_protocol: CommunicationProtocol) -> None:
-        logger.info(state.addr, "🔬 Evaluating...")
-        results = learner.evaluate()
-        logger.info(state.addr, f"📈 Evaluated. Results: {results}")
+    def __evaluate(
+        state: NodeState,
+        learner: NodeLearner,
+        communication_protocol: CommunicationProtocol,
+        edge_communication_protocol
+    ) -> None:
+        # Send
+        logger.info(state.addr, "🔬 Sending eval...")
+        val_results = edge_communication_protocol.broadcast_message(
+            "validate",
+            weights=learner.get_model().encode_parameters(),
+            timeout=120
+        )
+        # Transform
+        val_results = {
+            k: dict(zip(v.message[::2], v.message[1::2]))
+            for k, v in val_results.items() if v is not None
+        }
+        logger.info(state.addr, f"📈 Evaluated. Results: {val_results}")
+        # Promediate
+        results = {}
+        for _, metrics in val_results.items():
+            for metric, value in metrics.items():
+                if metric not in results:
+                    results[metric] = float(value)
+                else:
+                    results[metric] += float(value)
+        results = {k: v / len(val_results) for k, v in results.items()}
+
         # Send metrics
         if len(results) > 0:
             logger.info(state.addr, "📢 Broadcasting metrics.")
