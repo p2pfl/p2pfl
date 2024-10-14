@@ -18,7 +18,6 @@
 
 """Abstract aggregator."""
 
-import contextlib
 import threading
 from typing import List
 
@@ -53,7 +52,8 @@ class Aggregator:
 
         # Locks
         self.__agg_lock = threading.Lock()
-        self._finish_aggregation_lock = threading.Lock()
+        self._finish_aggregation_event = threading.Event()
+        self._finish_aggregation_event.set()
 
     def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
         """
@@ -76,20 +76,18 @@ class Aggregator:
             Exception: If the aggregation is running.
 
         """
-        if not self._finish_aggregation_lock.locked():
+        if self._finish_aggregation_event.is_set():
             self.__train_set = nodes_to_aggregate
-            self._finish_aggregation_lock.acquire(timeout=Settings.AGGREGATION_TIMEOUT)
+            self._finish_aggregation_event.clear()
         else:
             raise Exception("It is not possible to set nodes to aggregate when the aggregation is running.")
 
     def clear(self) -> None:
         """Clear the aggregation (remove trainset and release locks)."""
-        self.__agg_lock.acquire()
-        self.__train_set = []
-        self.__models = []
-        with contextlib.suppress(Exception):
-            self._finish_aggregation_lock.release()
-        self.__agg_lock.release()
+        with self.__agg_lock:
+            self.__train_set = []
+            self.__models = []
+            self._finish_aggregation_event.set()
 
     def get_aggregated_models(self) -> List[str]:
         """
@@ -146,9 +144,9 @@ class Aggregator:
 
                     # Check if all models were added
                     if len(self.get_aggregated_models()) >= len(self.__train_set):
-                        self._finish_aggregation_lock.release()
+                        self._finish_aggregation_event.set()
 
-                    # Unloock and Return
+                    # Unlock and Return
                     self.__agg_lock.release()
                     return self.get_aggregated_models()
                 else:
@@ -183,25 +181,37 @@ class Aggregator:
 
         """
         # Wait for aggregation to finish (then release the lock again)
-        self._finish_aggregation_lock.acquire(timeout=timeout)
-        with contextlib.suppress(Exception):
-            self._finish_aggregation_lock.release()
-
+        event_set = self._finish_aggregation_event.wait(timeout=timeout)
         # Check that the aggregation is finished
+        missing_models = self.get_missing_models()
+        # Check if aggregation has timed out or event has been set correctly
+        if not event_set:
+            logger.info(self.node_name, f"⏳ Aggregation wait timed out. Missing models: {missing_models}")
+        else:
+            if len(missing_models) > 0:
+                logger.info(
+                    self.node_name,
+                    f"❌ Aggregation event set, but missing models:  {missing_models}",
+                )
+            else:
+                logger.info(self.node_name, "🧠 Aggregating models.")
+
+        # Notify node
+        return self.aggregate(self.__models)
+
+    def get_missing_models(self) -> set:
+        """
+        Obtain missing models for the aggregation.
+
+        Returns:
+            A set of missing models.
+
+        """
         agg_models = []
         for m in self.__models:
             agg_models += m.get_contributors()
         missing_models = set(self.__train_set) - set(agg_models)
-        if len(missing_models) > 0:
-            logger.info(
-                self.node_name,
-                f"❌ Aggregating models, timeout reached. Missing models: {missing_models}",
-            )
-        else:
-            logger.info(self.node_name, "🧠 Aggregating models.")
-
-        # Notify node
-        return self.aggregate(self.__models)
+        return missing_models
 
     def get_partial_aggregation(self, except_nodes: List[str]) -> P2PFLModel:
         """

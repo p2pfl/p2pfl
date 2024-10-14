@@ -63,18 +63,15 @@ class FullModelCommand(Command):
                     f"Model reception in a late round ({round} != {self.state.round}).",
                 )
                 return
-
-            # Check moment
-            if not self.state.wait_aggregated_model_lock.locked():
+            if self.state.aggregated_model_event.is_set():
                 logger.debug(self.state.addr, "😲 Aggregated model not expected.")
                 return
-
             try:
                 logger.info(self.state.addr, "📦 Aggregated model received.")
                 # Decode and set model
                 self.learner.set_model(weights)
-                # Release lock
-                self.state.wait_aggregated_model_lock.release()
+                # Release here caused the simulation to crash before
+                self.state.aggregated_model_event.set()
 
             # Warning: these stops can cause a denegation of service attack
             except DecodingParamsError:

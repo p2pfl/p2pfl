@@ -68,8 +68,7 @@ class VoteTrainSetStage(Stage):
             if state.addr in state.train_set:
                 return StageFactory.get_stage("TrainStage")
             else:
-                # Set state as waiting for aggregated model
-                state.wait_aggregated_model_lock.acquire(timeout=Settings.AGGREGATION_TIMEOUT)
+                logger.debug(state.addr, "Node not in train set. Proceeding to WaitAggregatedModelsStage.")
                 return StageFactory.get_stage("WaitAggregatedModelsStage")
         except EarlyStopException:
             return None
