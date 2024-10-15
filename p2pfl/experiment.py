@@ -1,19 +1,6 @@
-import ray
 from datetime import datetime
 
 class Experiment:
-    def __init__(self, exp_name: str, total_rounds: int, round: int, timestamp: datetime):
-        self.exp_name = exp_name
-        self.total_rounds = total_rounds
-        self.round = round
-        self.timestamp = timestamp
-
-    def __str__(self):
-        return (f"LocalExperiment(exp_name={self.exp_name}, total_rounds={self.total_rounds}, "
-                f"round={self.round}, timestamp={self.timestamp})")
-
-@ray.remote
-class ExperimentActor:
     def __init__(self, exp_name: str, total_rounds: int):
         self.exp_name = exp_name
         self.total_rounds = total_rounds
@@ -42,21 +29,6 @@ class ExperimentActor:
         else:
             setattr(self, param_name, param_val)
 
-    def get_experiment(self):
-        """Return a Experiment instance with the current state and timestamp."""
-        state = {
-            "exp_name": self.exp_name,
-            "total_rounds": self.total_rounds,
-            "round": self.round
-        }
-        timestamp = datetime.now()
-        return Experiment(
-            exp_name=state["exp_name"],
-            total_rounds=state["total_rounds"],
-            round=state["round"],
-            timestamp=timestamp
-        )
-
-    def __str__(self) -> str:
-        """String representation of the experiment state."""
-        return f"Experiment(exp_name={self.exp_name}, round={self.round}, total_rounds={self.total_rounds})"
+    def __str__(self):
+        return (f"Experiment(exp_name={self.exp_name}, total_rounds={self.total_rounds}, "
+                f"round={self.round})")

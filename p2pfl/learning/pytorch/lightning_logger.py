@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,6 @@
 #
 
 """Lightning Logger for P2PFL."""
-
-import ray
 
 from pytorch_lightning.loggers.logger import Logger
 
@@ -56,8 +54,7 @@ class FederatedLogger(Logger):
     def log_metrics(self, metrics: dict, step: int) -> None:
         """Log metrics (in a pytorch format)."""
         for k, v in metrics.items():
-            experiment_actor = ray.get_actor(self.__addr, namespace="experiments")
-            P2PLogger.log_metric(self.__addr, ray.get(experiment_actor.get_experiment.remote()), k, v, step)
+            P2PLogger.log_metric(self.__addr, k, v, step)
 
     def save(self) -> None:
         """Save the logger."""

@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,14 +20,14 @@
 import time
 from typing import Any, List, Optional, Type, Union
 
-from p2pfl.commands.init_model_command import InitModelCommand
-from p2pfl.communication.communication_protocol import CommunicationProtocol
+from p2pfl.communication.commands.message.model_initialized_command import ModelInitializedCommand
+from p2pfl.communication.commands.weights.init_model_command import InitModelCommand
+from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.settings import Settings
-from p2pfl.simulation.virtual_learner import VirtualNodeLearner
 from p2pfl.stages.stage import Stage
 from p2pfl.stages.stage_factory import StageFactory
 
@@ -44,59 +44,45 @@ class StartLearningStage(Stage):
     def execute(
         rounds: Optional[int] = None,
         epochs: Optional[int] = None,
-        model: Any = None,
-        data: Any = None,
         state: Optional[NodeState] = None,
-        learner_class: Optional[Type[NodeLearner]] = None,
+        learner: Optional[NodeLearner] = None,
         communication_protocol: Optional[CommunicationProtocol] = None,
         aggregator: Optional[Aggregator] = None,
         **kwargs,
     ) -> Union[Type["Stage"], None]:
         """Execute the stage."""
-        if (
-            rounds is None
-            or epochs is None
-            or state is None
-            or learner_class is None
-            or model is None
-            or data is None
-            or communication_protocol is None
-            or aggregator is None
-        ):
+        if rounds is None or epochs is None or state is None or learner is None or communication_protocol is None or aggregator is None:
             raise Exception("Invalid parameters on StartLearningStage.")
 
+        # Init
         state.start_thread_lock.acquire()  # Used to avoid create duplicated training threads
-        if state.round is None:
-            # Init
-            state.start_experiment("experiment", rounds)
-            logger.experiment_started(state.addr)
-            state.learner = learner_class(model, data, state.addr, epochs) if not state.simulation else VirtualNodeLearner(learner_class, model, data, state.addr, epochs) # In simulation use a Virtual Learner
-            state.start_thread_lock.release()
-            begin = time.time()
+        state.set_experiment("experiment", rounds)
+        learner.set_epochs(epochs)
+        logger.experiment_started(state.addr, state.experiment)
+        state.start_thread_lock.release()
+        begin = time.time()
 
-            # Wait and gossip model inicialization
-            logger.info(state.addr, "Waiting initialization.")
-            state.model_initialized_lock.acquire()
-            logger.info(state.addr, "Gossiping model initialization.")
-            StartLearningStage.__gossip_model(state, communication_protocol, aggregator)
+        # Wait and gossip model inicialization
+        logger.info(state.addr, "⏳ Waiting initialization.")
+        state.model_initialized_lock.acquire()
+        # Communicate Initialization
+        communication_protocol.broadcast(communication_protocol.build_msg(ModelInitializedCommand.get_name()))
+        logger.info(state.addr, "🗣️ Gossiping model initialization.")
+        StartLearningStage.__gossip_model(state, communication_protocol, learner)
 
-            # Wait to guarantee new connection heartbeats convergence
-            wait_time = Settings.WAIT_HEARTBEATS_CONVERGENCE - (time.time() - begin)
-            if wait_time > 0:
-                time.sleep(wait_time)
+        # Wait to guarantee new connection heartbeats convergence
+        wait_time = Settings.WAIT_HEARTBEATS_CONVERGENCE - (time.time() - begin)
+        if wait_time > 0:
+            time.sleep(wait_time)
 
-            # Vote
-            return StageFactory.get_stage("VoteTrainSetStage")
-
-        else:
-            state.start_thread_lock.release()
-            return None
+        # Vote
+        return StageFactory.get_stage("VoteTrainSetStage")
 
     @staticmethod
     def __gossip_model(
         state: NodeState,
         communication_protocol: CommunicationProtocol,
-        aggregator: Aggregator,
+        learner: NodeLearner,
     ) -> None:
         def early_stopping_fn():
             return state.round is None
@@ -112,21 +98,10 @@ class StartLearningStage(Stage):
             return get_candidates_fn()
 
         def model_fn(_: str) -> Any:
-            if state.learner is None:
-                raise Exception("Learner not initialized.")
             if state.round is None:
                 raise Exception("Round not initialized.")
-            model = state.learner.get_parameters()
-            contributors = aggregator.get_aggregated_models()  # Poner a NONE
-            weight = 1  # Poner a NONE
-            encoded_model = state.learner.encode_parameters(params=model)
-            return communication_protocol.build_weights(
-                InitModelCommand.get_name(),
-                state.round,
-                encoded_model,
-                contributors,
-                weight,
-            )
+            encoded_model = learner.get_model().encode_parameters()
+            return communication_protocol.build_weights(InitModelCommand.get_name(), state.round, encoded_model)
 
         # Gossip
         communication_protocol.gossip_weights(

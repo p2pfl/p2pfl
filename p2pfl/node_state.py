@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2024 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,13 +17,10 @@
 #
 """Node state."""
 
-import ray
 import threading
 from typing import Dict, List, Optional
 
-from p2pfl.experiment import ExperimentActor
-from p2pfl.learning.learner import NodeLearner
-#from p2pfl.management.signal import SignalActor
+from p2pfl.experiment import Experiment
 
 class TrainingState:
     def __init__(self, addr: Optional[str], round: Optional[int], experiment_name: Optional[str]) -> None:
@@ -66,7 +63,7 @@ class NodeState:
         self.simulation = simulation
 
         # Learning
-        self.learner: Optional[NodeLearner] = None
+        self.experiment_config = None  # NOT IMPLEMENTED YET
 
         # Aggregator (TRATAR DE MOVERLO A LA CLASE AGGREGATOR)
         self.models_aggregated: Dict[str, List[str]] = {}
@@ -79,7 +76,7 @@ class NodeState:
         self.train_set_votes: Dict[str, Dict[str, int]] = {}
 
         # Actual experiment
-        self.experiment: ExperimentActor = None
+        self.experiment: Experiment = None
 
         # Locks
         self.train_set_votes_lock = threading.Lock()
@@ -87,23 +84,26 @@ class NodeState:
         self.wait_votes_ready_lock = threading.Lock()
         self.model_initialized_lock = threading.Lock()
         self.model_initialized_lock.acquire()
+        self.wait_aggregated_model_lock = threading.Lock()
+
+        # puede quedar guay el privatizar todos los locks y meter métodos que al mismo tiempo seteen un estado (string)
 
     @property
     def round(self) -> Optional[int]:
         """Get the round."""
-        return ray.get(self.experiment.self.remote("round")) if self.experiment is not None else None
+        return self.experiment.round if self.experiment is not None else None
     
     @property
     def total_rounds(self) -> Optional[int]:
         """Get the total rounds."""
-        return ray.get(self.experiment.self.remote("total_rounds")) if self.experiment is not None else None
+        return self.experiment.total_rounds if self.experiment is not None else None
 
     @property
-    def actual_exp_name(self) -> Optional[str]:
+    def exp_name(self) -> Optional[str]:
         """Get the actual experiment name."""
-        return ray.get(self.experiment.self.remote("exp_name")) if self.experiment is not None else None
+        return self.experiment.exp_name if self.experiment is not None else None
     
-    def start_experiment(self, exp_name: str, total_rounds: int) -> None:
+    def set_experiment(self, exp_name: str, total_rounds: int) -> None:
         """
         Start a new experiment.
 
@@ -112,7 +112,7 @@ class NodeState:
             total_rounds (int): The total rounds of the experiment.
         """
         self.status = "Learning"
-        self.experiment = ExperimentActor.options(name=self.addr, namespace="experiments").remote(exp_name, total_rounds)
+        self.experiment = Experiment(exp_name, total_rounds)
 
     def increase_round(self) -> None:
         """
@@ -123,15 +123,14 @@ class NodeState:
 
         """
         try:
-            ray.get(self.experiment.increase_round.remote())
+            self.experiment.increase_round()
             self.models_aggregated = {}
         except ValueError:
             raise ValueError("Experiment not initialized")
 
     def clear(self) -> None:
         """Clear the state."""
-        self.status = "Idle"
-        self.experiment = None
+        type(self).__init__(self, self.addr)
     
     def __str__(self) -> str:
         """String representation of the node state."""

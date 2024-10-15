@@ -66,16 +66,3 @@ class VirtualLearnerActor:
             raise ex
         
         return addr, None
-    
-    def get_num_samples(self,
-        learner: NodeLearner,
-        addr: str
-    ) -> Tuple[str, Tuple[int,int]]:
-        """Get the number of samples."""
-        try:
-            results = learner.get_num_samples()
-
-        except Exception as ex:
-            raise ex
-        
-        return addr, results

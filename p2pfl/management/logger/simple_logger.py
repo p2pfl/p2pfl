@@ -16,11 +16,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import atexit
 import logging
 from p2pfl.experiment import Experiment
 from typing import Any, Dict, Optional
 
-from p2pfl.management.logger.logger import P2PFLogger
+from p2pfl.management.logger.logger import NodeNotRegistered, P2PFLogger
 from p2pfl.management.metric_storage import GlobalLogsType, GlobalMetricStorage, LocalLogsType, LocalMetricStorage
 from p2pfl.settings import Settings
 
@@ -98,6 +99,9 @@ class SimpleP2PFLogger(P2PFLogger):
         )
         stream_handler.setFormatter(cmd_formatter)
         self._logger.addHandler(stream_handler)  # not async
+
+        # Register cleanup function to close the queue on exit
+        atexit.register(self.cleanup)
     
     def cleanup(self) -> None:
         """Cleanup the logger."""
@@ -233,7 +237,6 @@ class SimpleP2PFLogger(P2PFLogger):
     def log_metric(
         self,
         addr: str,
-        experiment: Experiment,
         metric: str,
         value: float,
         round: Optional[int] = None,
@@ -250,13 +253,19 @@ class SimpleP2PFLogger(P2PFLogger):
             round: The round.
 
         """
+        # Get Experiment
+        try:
+            experiment = self._nodes[addr]["Experiment"]
+        except KeyError:
+            raise NodeNotRegistered(f"Node {addr} not registered.")
+
         # Get Round
-        round = experiment.round if experiment.round is not None else self._nodes[addr]["Experiment"].round
+        round = experiment.round
         if round is None:
             raise Exception("No round provided. Needed for training metrics.")
         
         # Get Experiment Name
-        exp = experiment.exp_name if experiment.exp_name is not None else self._nodes[addr]["Experiment"].exp_name
+        exp = experiment.exp_name
         if exp is None:
             raise Exception("No experiment name provided. Needed for training metrics.")
 
@@ -337,7 +346,7 @@ class SimpleP2PFLogger(P2PFLogger):
     # Node Status
     ######
 
-    def experiment_started(self, node: str) -> None:
+    def experiment_started(self, node: str, experiment: Experiment) -> None:
         """
         Notify the experiment start.
 
@@ -346,6 +355,7 @@ class SimpleP2PFLogger(P2PFLogger):
 
         """
         self.warning(node, "Uncatched Experiment Started on Logger")
+        self._nodes[node]["Experiment"] = experiment
 
     def experiment_finished(self, node: str) -> None:
         """
@@ -356,6 +366,17 @@ class SimpleP2PFLogger(P2PFLogger):
 
         """
         self.warning(node, "Uncatched Experiment Ended on Logger")
+
+    def round_started(self, node: str, experiment: Experiment) -> None:
+        """
+        Notify the round start.
+
+        Args:
+            node: The node address.
+
+        """
+        self.warning(node, f"Uncatched Round Finished on Logger")
+        self._nodes[node]["Experiment"] = experiment
 
     def round_finished(self, node: str) -> None:
         """

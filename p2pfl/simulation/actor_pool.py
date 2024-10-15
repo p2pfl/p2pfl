@@ -75,13 +75,11 @@ Methods:
 """
 
 import threading
-import time
 from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.simulation.actor import VirtualLearnerActor
 from p2pfl.simulation.utils import pool_size_from_resources, check_client_resources
-from p2pfl.management.logger import logger
 
 import ray
 from ray import ObjectRef

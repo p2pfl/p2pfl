@@ -17,13 +17,13 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.12'
 
       - name: Install dependencies (poetry)
         run: |
           pip install poetry
           python -m poetry lock --no-update
-          python -m poetry install -E torch
+          python -m poetry install --all-extras
 
       - name: Format (ruff)
         run: |
@@ -37,6 +37,11 @@ jobs:
       - name: Type checks (mypy)
         run: |
           poetry run mypy -p p2pfl
+
+      - name: Generate certificates
+        run: |
+          cd p2pfl/certificates
+          bash gen-certs.sh
 
       - name: Test (pytest)
         run: |

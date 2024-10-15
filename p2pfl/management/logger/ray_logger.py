@@ -30,6 +30,7 @@ class RayP2PFLoggerActor(P2PFLogger):
     _p2pflogger: P2PFLogger = None
 
     def __init__(self, p2pflogger: P2PFLogger) -> None:
+        self._logger = p2pflogger._logger
         self._p2pflogger = p2pflogger
 
     # Methods that simply wrap the P2PFLogger's functionality
@@ -48,9 +49,9 @@ class RayP2PFLoggerActor(P2PFLogger):
     def critical(self, node: str, message: str) -> None:
         self._p2pflogger.critical(node, message)
 
-    def log_metric(self, addr: str, experiment: Experiment, metric: str, value: float,
+    def log_metric(self, addr: str, metric: str, value: float,
                    round: Optional[int] = None, step: Optional[int] = None) -> None:
-        self._p2pflogger.log_metric(addr, experiment, metric, value, round, step)
+        self._p2pflogger.log_metric(addr, metric, value, round, step)
 
     def get_local_logs(self) -> LocalLogsType:
         return self._p2pflogger.get_local_logs()
@@ -68,7 +69,7 @@ class RayP2PFLoggerActor(P2PFLogger):
         self._p2pflogger.cleanup()
 
     def get_level_name(self, lvl: int) -> str:
-        raise self._p2pflogger.get_level_name(lvl)
+        return self._p2pflogger.get_level_name(lvl)
     
     def set_level(self, level: int) -> None:
         self._p2pflogger.set_level(level)
@@ -79,13 +80,44 @@ class RayP2PFLoggerActor(P2PFLogger):
     def log(self, level: int, node: str, message: str) -> None:
         self._p2pflogger.log(level, node, message)
 
-    def experiment_started(self, node: str) -> None:
-        self._p2pflogger.experiment_started(node)
+    def experiment_started(self, node: str, experiment: Experiment) -> None:
+        """
+        Notify the experiment start.
+
+        Args:
+            node: The node address.
+
+        """
+        self._p2pflogger.experiment_started(node,experiment)
 
     def experiment_finished(self, node: str) -> None:
+        """
+        Notify the experiment end.
+
+        Args:
+            node: The node address.
+
+        """
         self._p2pflogger.experiment_finished(node)
 
+    def round_started(self, node: str, experiment: Experiment) -> None:
+        """
+        Notify the round start.
+
+        Args:
+            node: The node address.
+
+        """
+        self._p2pflogger.round_started(node,experiment)
+
     def round_finished(self, node: str) -> None:
+        """
+        Notify the round end.
+
+        Args:
+            node: The node address.
+
+        """
         self._p2pflogger.round_finished(node)
 
 

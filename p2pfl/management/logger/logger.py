@@ -89,7 +89,7 @@ class P2PFLogger(ABC):
     ######
 
     @abstractmethod
-    def log_metric(self, addr: str, experiment: Experiment, metric: str,
+    def log_metric(self, addr: str, metric: str,
                    value: float, round: Optional[int] = None,
                    step: Optional[int] = None) -> None:
         pass
@@ -114,16 +114,21 @@ class P2PFLogger(ABC):
     def unregister_node(self, node: str) -> None:
         pass
 
+
     ######
     # Node Status
     ######
 
     @abstractmethod
-    def experiment_started(self, node: str) -> None:
+    def experiment_started(self, node: str, experiment:Experiment) -> None:
         pass
 
     @abstractmethod
     def experiment_finished(self, node: str) -> None:
+        pass
+
+    @abstractmethod
+    def round_started(self, node: str, experiment:Experiment) -> None:
         pass
 
     @abstractmethod
@@ -133,3 +138,13 @@ class P2PFLogger(ABC):
     @abstractmethod
     def cleanup(self) -> None:
         pass
+
+
+###################
+#    Exception    #
+###################
+
+class NodeNotRegistered(Exception):
+    """Exception raised when a node is not registered."""
+
+    pass

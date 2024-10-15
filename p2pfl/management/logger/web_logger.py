@@ -87,8 +87,9 @@ class P2pflWebLogHandler(logging.Handler):
 class WebLocalLogger(P2PFLogger):
     _p2pflogger: P2PFLogger = None
 
-    def __init__(self, logger: P2PFLogger, p2pfl_web_services: P2pflWebServices):
-        self._p2pflogger = logger
+    def __init__(self, p2pflogger: P2PFLogger, p2pfl_web_services: P2pflWebServices):
+        self._logger = p2pflogger._logger
+        self._p2pflogger = p2pflogger
         self.p2pfl_web_services = p2pfl_web_services
 
         # Setup the web handler for the provided logger instance
@@ -128,21 +129,24 @@ class WebLocalLogger(P2PFLogger):
     def critical(self, node: str, message: str) -> None:
         self._p2pflogger.critical(node, message)
 
-    def log_metric(self, addr: str, experiment: Experiment, metric: str,
+    def log_metric(self, addr: str, metric: str,
                    value: float, round: int | None = None,
                    step: int | None = None) -> None:
-        self._p2pflogger.log_metric(addr, experiment, metric, value, round, step)
+        self._p2pflogger.log_metric(addr, metric, value, round, step)
 
-        # Get Experiment Name
-        exp = experiment.exp_name if experiment.exp_name is not None else self._nodes[addr]["Experiment"].exp_name
+        # Get Experiment
+        try:
+            experiment = self._nodes[addr]["Experiment"]
+        except KeyError:
+            raise NodeNotRegistered(f"Node {addr} not registered.")
 
         if self.p2pfl_web_services is not None:
             if step is None:
                 # Global Metrics
-                self.p2pfl_web_services.send_global_metric(exp, experiment.round, metric, addr, value)
+                self.p2pfl_web_services.send_global_metric(experiment.exp_name, experiment.round, metric, addr, value)
             else:
                 # Local Metrics
-                self.p2pfl_web_services.send_local_metric(exp, experiment.round, metric, addr, value, step)
+                self.p2pfl_web_services.send_local_metric(experiment.exp_name, experiment.round, metric, addr, value, step)
 
     def log_system_metric(self, node: str, metric: str, value: float, time: datetime.datetime) -> None:
         """
@@ -209,12 +213,43 @@ class WebLocalLogger(P2PFLogger):
     def log(self, level: int, node: str, message: str) -> None:
         self._p2pflogger.log(level, node, message)
 
-    def experiment_started(self, node: str) -> None:
-        self._p2pflogger.experiment_started(node)
+    def experiment_started(self, node: str, experiment: Experiment) -> None:
+        """
+        Notify the experiment start.
+
+        Args:
+            node: The node address.
+
+        """
+        self._p2pflogger.experiment_started(node,experiment)
 
     def experiment_finished(self, node: str) -> None:
+        """
+        Notify the experiment end.
+
+        Args:
+            node: The node address.
+
+        """
         self._p2pflogger.experiment_finished(node)
 
+    def round_started(self, node: str, experiment: Experiment) -> None:
+        """
+        Notify the round start.
+
+        Args:
+            node: The node address.
+
+        """
+        self._p2pflogger.round_started(node,experiment)
+
     def round_finished(self, node: str) -> None:
+        """
+        Notify the round end.
+
+        Args:
+            node: The node address.
+
+        """
         self._p2pflogger.round_finished(node)
 

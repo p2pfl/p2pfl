@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,10 +18,12 @@
 """Utils."""
 
 import time
-from typing import Any, List
+from typing import List, Optional, Union
 
 import numpy as np
 
+from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
+from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.settings import Settings
 
@@ -51,9 +53,12 @@ def set_test_settings() -> None:
     Settings.AGGREGATION_TIMEOUT = 60
     Settings.WAIT_HEARTBEATS_CONVERGENCE = 0.2 * Settings.HEARTBEAT_TIMEOUT
     Settings.LOG_LEVEL = "DEBUG"
+    logger.set_level(Settings.LOG_LEVEL)  # Refresh (maybe already initialized)
 
 
-def wait_convergence(nodes: List[Node], n_neis: int, wait: int = 5, only_direct: bool = False) -> None:
+def wait_convergence(
+    nodes: List[Union[Node, CommunicationProtocol]], n_neis: int, wait: Union[int, float] = 5, only_direct: bool = False
+) -> None:
     """
     Wait until all nodes have n_neis neighbors.
 
@@ -91,22 +96,23 @@ def full_connection(node: Node, nodes: List[Node]) -> None:
         node.connect(n.addr)
 
 
-def wait_4_results(nodes: List[Node]) -> None:
+def wait_to_finish(nodes: List[Node], timeout=60):
     """
-    Wait until all nodes have finished the rounds.
+    Wait until all nodes have finished the workflow.
 
     Args:
         nodes: List of nodes.
+        timeout: Timeout.
 
     """
+    # Wait untill all nodes finised the workflow
+    start = time.time()
     while True:
-        time.sleep(1)
-        finish = True
-        for f in [node.state.round is None for node in nodes]:
-            finish = finish and f
-
-        if finish:
+        if all(n.learning_workflow.finished for n in nodes):
             break
+        time.sleep(1)
+        if time.time() - start > timeout:
+            raise TimeoutError("Timeout waiting for nodes to finish")
 
 
 def check_equal_models(nodes: List[Node]) -> None:
@@ -120,19 +126,19 @@ def check_equal_models(nodes: List[Node]) -> None:
         AssertionError: If the condition is not met.
 
     """
-    model: Any = None
+    model_params: Optional[List[np.ndarray]] = None
     first = True
     for node in nodes:
-        if node.state.learner is None:
-            raise AssertionError()
         if first:
-            model = node.state.learner.get_parameters()
+            model_params = node.learner.get_model().get_parameters()
             first = False
         else:
             # compare layers with a tolerance
-            for layer in model:
+            if model_params is None:
+                raise ValueError("Model parameters are None")
+            for i, layer in enumerate(model_params):
                 assert np.allclose(
-                    model[layer],
-                    node.state.learner.get_parameters()[layer],
+                    layer,
+                    node.learner.get_model().get_parameters()[i],
                     atol=1e-1,
                 )

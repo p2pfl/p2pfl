@@ -1,0 +1,60 @@
+//
+// This file is part of the federated_learning_p2p (p2pfl) distribution (see https://github.com/pguijas/p2pfl).
+// Copyright (c) 2022 Pedro Guijas Bravo.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, version 3.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+//
+
+// compile command:
+// python -m grpc_tools.protoc -I=p2pfl/proto --python_out=p2pfl/proto --grpc_python_out=p2pfl/proto p2pfl/proto/node.proto --mypy_out=p2pfl/proto
+
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+package node;
+
+message RootMessage {
+    string source = 1;
+    optional int32 round = 2;
+    string cmd = 3;
+    oneof payload_type {
+        Message message = 4;
+        Weights weights = 5;
+    }
+}
+
+message Message {
+    int32 ttl = 1;
+    int64 hash = 2;
+    repeated string args = 3;
+}
+
+message Weights {
+    bytes weights = 1;
+    repeated string contributors = 2;
+    int32 num_samples = 3;
+}
+
+message HandShakeRequest {
+    string addr = 1;
+}
+
+message ResponseMessage {
+    optional string error = 1; 
+}
+
+service NodeServices {
+    rpc handshake(HandShakeRequest) returns (ResponseMessage);
+    rpc disconnect(HandShakeRequest) returns (google.protobuf.Empty);
+    rpc send(RootMessage) returns (ResponseMessage);
+}
