@@ -18,6 +18,7 @@
 
 from typing import Tuple
 from p2pfl.learning.learner import NodeLearner
+from p2pfl.learning.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
 import ray
 
@@ -31,15 +32,15 @@ class VirtualLearnerActor:
     def fit(self,
         learner: NodeLearner,
         addr: str
-    ) -> Tuple[str,None]:
+    ) -> Tuple[str,P2PFLModel]:
         """Fit the model."""
         try:
-            learner.fit()
+            model = learner.fit()
 
         except Exception as ex:
             raise ex
         
-        return addr, None
+        return addr, model
     
     def evaluate(self,
         learner: NodeLearner,

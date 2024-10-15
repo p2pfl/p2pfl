@@ -97,14 +97,16 @@ class VirtualNodeLearner(NodeLearner):
         """
         self.learner.set_epochs(epochs)
 
-    def fit(self) -> None:
+    def fit(self) -> P2PFLModel:
         """Fit the model."""
         try:
             self.actor_pool.submit_learner_job(
                 lambda actor, addr, learner: actor.fit.remote(addr, learner),
                 (str(self.addr),self.learner),
             )
-            self.learner.set_model(self.actor_pool.get_learner_result(str(self.addr), None))
+            model = self.actor_pool.get_learner_result(str(self.addr), None)
+            self.learner.set_model(model)
+            return model
         except Exception as ex:
             print(f"An error occurred during remote fit: {ex}")
             raise ex

@@ -149,6 +149,7 @@ class RayP2PFLogger:
         method = getattr(self.ray_actor, name)
         
         # Return a wrapper that automatically calls .remote() on the method
+        # TODO: Check returns (ray.get())
         def remote_method(*args, **kwargs):
             return method.remote(*args, **kwargs)
 
