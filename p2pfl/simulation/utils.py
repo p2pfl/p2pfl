@@ -19,7 +19,7 @@
 from typing import Dict, Union
 import ray
 
-from p2pfl.management.logger.logger import logger
+from p2pfl.management.logger import logger
 
 def check_client_resources(client_resources: Dict[str, Union[int, float]]) -> Dict[str, Union[int, float]]:
     """Check if client_resources are valid and return them."""

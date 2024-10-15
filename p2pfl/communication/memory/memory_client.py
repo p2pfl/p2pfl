@@ -25,7 +25,7 @@ from p2pfl.communication.client import Client
 from p2pfl.communication.exceptions import NeighborNotConnectedError
 from p2pfl.communication.memory.memory_neighbors import InMemoryNeighbors
 from p2pfl.communication.memory.server_singleton import ServerSingleton
-from p2pfl.management.logger.logger import logger
+from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 
 

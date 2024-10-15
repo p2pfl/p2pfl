@@ -24,7 +24,7 @@ import grpc
 
 from p2pfl.communication.grpc.proto import node_pb2, node_pb2_grpc
 from p2pfl.communication.neighbors import Neighbors
-from p2pfl.management.logger.logger import logger
+from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 
 

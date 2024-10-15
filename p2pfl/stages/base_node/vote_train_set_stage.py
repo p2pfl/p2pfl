@@ -25,7 +25,7 @@ from typing import Dict, List, Optional, Type, Union
 
 from p2pfl.commands.vote_train_set_command import VoteTrainSetCommand
 from p2pfl.communication.communication_protocol import CommunicationProtocol
-from p2pfl.management.logger.logger import logger
+from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.settings import Settings
 from p2pfl.stages.stage import Stage

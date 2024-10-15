@@ -35,7 +35,7 @@ from p2pfl.learning.exceptions import (
 )
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.pytorch.lightning_logger import FederatedLogger
-from p2pfl.management.logger.logger import logger
+from p2pfl.management.logger import logger
 
 torch.set_num_threads(1)
 

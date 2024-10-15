@@ -19,7 +19,7 @@
 
 from typing import Optional, Type
 
-from p2pfl.management.logger.logger import logger
+from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.stage import Stage
 from p2pfl.stages.stage_factory import StageFactory

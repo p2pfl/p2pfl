@@ -18,7 +18,7 @@
 
 from typing import Tuple
 from p2pfl.learning.learner import NodeLearner
-from p2pfl.management.logger.logger import logger
+from p2pfl.management.logger import logger
 import ray
 
 @ray.remote

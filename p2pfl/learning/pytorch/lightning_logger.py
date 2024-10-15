@@ -22,7 +22,7 @@ import ray
 
 from pytorch_lightning.loggers.logger import Logger
 
-from p2pfl.management.logger.logger import logger as P2PLogger
+from p2pfl.management.logger import logger as P2PLogger
 
 
 class FederatedLogger(Logger):

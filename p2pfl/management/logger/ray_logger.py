@@ -109,6 +109,10 @@ class RayP2PFLogger:
         Returns:
             A function that invokes the corresponding remote method.
         """
+        # Check if name is "ray_actor" or any other known attribute before delegating to __getattr__
+        if name == "ray_actor":
+            return object.__getattribute__(self, "ray_actor")
+
         # Get the actual method from the Ray actor
         method = getattr(self.ray_actor, name)
         

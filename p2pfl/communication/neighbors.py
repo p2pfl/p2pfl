@@ -21,7 +21,7 @@
 import threading
 from typing import Any, Dict
 
-from p2pfl.management.logger.logger import logger
+from p2pfl.management.logger import logger
 
 
 class Neighbors:

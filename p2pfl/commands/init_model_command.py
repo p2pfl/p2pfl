@@ -23,7 +23,7 @@ from typing import List, Optional
 from p2pfl.commands.command import Command
 from p2pfl.commands.model_initialized_command import ModelInitializedCommand
 from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
-from p2pfl.management.logger.logger import logger
+from p2pfl.management.logger import logger
 
 
 class InitModelCommand(Command):

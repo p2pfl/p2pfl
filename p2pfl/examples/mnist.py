@@ -33,7 +33,7 @@ from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
     MnistFederatedDM,
 )
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
-from p2pfl.management.logger.logger import logger
+from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.utils import (
     wait_4_results,
@@ -104,7 +104,7 @@ def mnist(
             MnistFederatedDM(sub_id=0, number_sub=20),  # sampling for increase speed
             protocol=(InMemoryCommunicationProtocol if use_local_protocol else GrpcCommunicationProtocol),  # type: ignore
             address=address,
-            simulation=False
+            simulation=True
         )
         node.start()
         nodes.append(node)

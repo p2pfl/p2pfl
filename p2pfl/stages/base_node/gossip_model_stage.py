@@ -23,7 +23,7 @@ from p2pfl.commands.add_model_command import AddModelCommand
 from p2pfl.commands.models_ready_command import ModelsReadyCommand
 from p2pfl.communication.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
-from p2pfl.management.logger.logger import logger
+from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.stage import Stage
 from p2pfl.stages.stage_factory import StageFactory

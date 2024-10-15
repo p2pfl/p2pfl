@@ -10,7 +10,7 @@ from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import (
 )
 from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
 from p2pfl.node import Node
-from p2pfl.management.logger.logger import logger
+from p2pfl.management.logger import logger
 import time
 import matplotlib.pyplot as plt
 

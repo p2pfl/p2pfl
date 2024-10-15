@@ -20,7 +20,7 @@
 
 import ray
 from p2pfl.commands.command import Command
-from p2pfl.management.logger.logger import logger
+from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 
 

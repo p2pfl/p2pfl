@@ -24,7 +24,7 @@ from p2pfl.commands.init_model_command import InitModelCommand
 from p2pfl.communication.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.learner import NodeLearner
-from p2pfl.management.logger.logger import logger
+from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.settings import Settings
 from p2pfl.simulation.virtual_learner import VirtualNodeLearner

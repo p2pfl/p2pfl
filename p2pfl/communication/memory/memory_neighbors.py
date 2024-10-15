@@ -22,7 +22,7 @@ from typing import Optional, Tuple
 
 from p2pfl.communication.memory.server_singleton import ServerSingleton
 from p2pfl.communication.neighbors import Neighbors
-from p2pfl.management.logger.logger import logger
+from p2pfl.management.logger import logger
 
 
 class InMemoryNeighbors(Neighbors):

@@ -40,7 +40,7 @@ from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.pytorch.lightning_learner import LightningLearner
-from p2pfl.management.logger.logger import logger
+from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.workflows import LearningWorkflow
 

@@ -24,7 +24,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import torch
 
-from p2pfl.management.logger.logger import logger
+from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 
 
