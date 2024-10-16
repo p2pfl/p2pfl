@@ -18,7 +18,6 @@
 
 """Metric storage."""
 
-from threading import Lock
 from typing import Dict, List, Tuple, Union
 
 MetricsType = Dict[str, List[Tuple[int, float]]]  # Metric name -> [(step, value)...]

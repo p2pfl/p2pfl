@@ -16,23 +16,29 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""File Logger Decorator."""
+
 import logging
-from logging.handlers import RotatingFileHandler
 import os
+from logging.handlers import RotatingFileHandler
 
 from p2pfl.management.logger.logger import P2PFLogger
 from p2pfl.management.logger.logger_decorator import P2PFLoggerDecorator
 from p2pfl.settings import Settings
 
+
 class FileP2PFLogger(P2PFLoggerDecorator):
+    """File logger decorator."""
+
     _p2pflogger: P2PFLogger
 
     def __init__(self, p2pflogger: P2PFLogger):
+        """Initialize the logger."""
         self._p2pflogger = p2pflogger
 
         # Setup the file handler for logging
         self.setup_file_handler()
-    
+
     def setup_file_handler(self) -> None:
         """Set up the file handler for logging."""
         if not os.path.exists(Settings.LOG_DIR):

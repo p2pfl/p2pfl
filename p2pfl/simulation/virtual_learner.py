@@ -15,22 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Virtual Node Learner."""
+
+from typing import Dict, List, Union
 
 import numpy as np
-from typing import Dict, List, Union
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.p2pfl_model import P2PFLModel
-from p2pfl.simulation.actor_pool import SuperActorPool
 from p2pfl.management.logger import logger
+from p2pfl.simulation.actor_pool import SuperActorPool
 
 
 class VirtualNodeLearner(NodeLearner):
-    """
-    Decorator for the learner to be used in the simulation.
-    """
-    def __init__(self, 
+    """Decorator for the learner to be used in the simulation."""
+
+    def __init__(self,
                  learner: NodeLearner,
                  addr: str) -> None:
         """Initialize the learner."""

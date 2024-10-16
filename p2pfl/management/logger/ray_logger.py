@@ -15,42 +15,48 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-
+"""Ray logger decorator."""
 import ray
 
 from p2pfl.management.logger.logger import P2PFLogger
 from p2pfl.management.logger.logger_decorator import P2PFLoggerDecorator
 
+
 @ray.remote
 class RayP2PFLoggerActor(P2PFLoggerDecorator):
     """Actor to add remote logging capabilities to a logger class."""
-    
+
     _p2pflogger: P2PFLogger
 
     def __init__(self, p2pflogger: P2PFLogger) -> None:
+        """Initialize the logger."""
         self._p2pflogger = p2pflogger
 
 
 
 class RayP2PFLogger:
+    """Wrapper to add remote logging capabilities to a logger class."""
+
     def __init__(self, p2pflogger: P2PFLogger):
         """
         Initialize the wrapper with a Ray actor instance.
 
         Args:
-            logger: The logger to be wrapped.
+            p2pflogger: The logger to be wrapped.
+
         """
         self.ray_actor = RayP2PFLoggerActor.options(name="p2pfl_logger", lifetime="detached", get_if_exists=True).remote(p2pflogger)
 
     def __getattr__(self, name):
         """
         Intercept method calls and automatically convert them to remote calls.
-        
+
         Args:
             name: The name of the method being called.
-        
+
         Returns:
             A function that invokes the corresponding remote method.
+
         """
         # Check if name is "ray_actor" or any other known attribute before delegating to __getattr__
         if name == "ray_actor":
@@ -58,11 +64,12 @@ class RayP2PFLogger:
 
         # Get the actual method from the Ray actor
         method = getattr(self.ray_actor, name)
-        
+
         # Return a wrapper that automatically calls .remote() on the method
         def remote_method(*args, **kwargs):
+            """Call the method remotely."""
             # Try to retrieve the result if it's a getter method
-            if method._method_name.startswith("get_"):
+            if name.startswith("get_"):
                 return ray.get(method.remote(*args, **kwargs))
             return method.remote(*args, **kwargs)
 

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Experiment class."""
 
 class Experiment:
     """
@@ -28,12 +29,11 @@ class Experiment:
     Args:
         exp_name: The name of the experiment.
         total_rounds: The total rounds of the experiment.
-    
+
     """
-    
+
     def __init__(self, exp_name: str, total_rounds: int):
         """Initialize the experiment."""
-
         self.exp_name = exp_name
         self.total_rounds = total_rounds
         self.round = 0
@@ -44,10 +44,11 @@ class Experiment:
 
         Raises:
             ValueError: If the round is not initialized.
+
         """
         if self.round is None:
             raise ValueError("Round not initialized")
-        
+
         self.round += 1
 
     def self(self, param_name, param_val=None):

@@ -22,11 +22,6 @@ from typing import Dict, List, Optional
 
 from p2pfl.experiment import Experiment
 
-class TrainingState:
-    def __init__(self, addr: Optional[str], round: Optional[int], experiment_name: Optional[str]) -> None:
-        self.addr = addr
-        self.round = round
-        self.experiment_name = experiment_name
 
 class NodeState:
     """
@@ -92,7 +87,7 @@ class NodeState:
     def round(self) -> Optional[int]:
         """Get the round."""
         return self.experiment.round if self.experiment is not None else None
-    
+
     @property
     def total_rounds(self) -> Optional[int]:
         """Get the total rounds."""
@@ -102,14 +97,15 @@ class NodeState:
     def exp_name(self) -> Optional[str]:
         """Get the actual experiment name."""
         return self.experiment.exp_name if self.experiment is not None else None
-    
+
     def set_experiment(self, exp_name: str, total_rounds: int) -> None:
         """
         Start a new experiment.
 
-        Args:
+        Attributes:
             exp_name (str): The name of the experiment.
             total_rounds (int): The total rounds of the experiment.
+
         """
         self.status = "Learning"
         self.experiment = Experiment(exp_name, total_rounds)
@@ -124,14 +120,19 @@ class NodeState:
         """
         if self.experiment is None:
             raise ValueError("Experiment not initialized")
-        
+
         self.experiment.increase_round()
         self.models_aggregated = {}
 
     def clear(self) -> None:
         """Clear the state."""
         type(self).__init__(self, self.addr)
-    
+
     def __str__(self) -> str:
-        """String representation of the node state."""
-        return f"NodeState(addr={self.addr}, status={self.status}, exp_name={self.exp_name}, round={self.round}, total_rounds={self.total_rounds}, simulation={self.simulation}, models_aggregated={self.models_aggregated}, nei_status={self.nei_status}, train_set={self.train_set}, train_set_votes={self.train_set_votes})"
+        """Return a String representation of the node state."""
+        return (
+            f"NodeState(addr={self.addr}, status={self.status}, exp_name={self.exp_name}, "
+            f"round={self.round}, total_rounds={self.total_rounds}, simulation={self.simulation}, "
+            f"models_aggregated={self.models_aggregated}, nei_status={self.nei_status}, "
+            f"train_set={self.train_set}, train_set_votes={self.train_set_votes})"
+        )

@@ -15,11 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Utility functions for the simulation."""
 
 from typing import Dict, Union
+
 import ray
 
 from p2pfl.management.logger import logger
+
 
 def check_client_resources(client_resources: Dict[str, Union[int, float]]) -> Dict[str, Union[int, float]]:
     """Check if client_resources are valid and return them."""
@@ -32,7 +35,7 @@ def check_client_resources(client_resources: Dict[str, Union[int, float]]) -> Di
     # Each client needs at the very least one CPU
     if "num_cpus" not in client_resources:
         logger.debug("ActorPool",
-            f"No `num_cpus` specified in `client_resources`. "+
+            "No `num_cpus` specified in `client_resources`. "+
             "Using `num_cpus=1` for each client."
         )
         client_resources["num_cpus"] = 1
@@ -44,10 +47,12 @@ def check_client_resources(client_resources: Dict[str, Union[int, float]]) -> Di
     return client_resources
 
 def pool_size_from_resources(client_resources: Dict[str, Union[int, float]]) -> int:
-    """Calculate number of Actors that fit in the cluster.
+    """
+    Calculate number of Actors that fit in the cluster.
 
     For this we consider the resources available on each node and those required per
     client.
+
     """
     total_num_actors = 0
 
@@ -72,14 +77,8 @@ def pool_size_from_resources(client_resources: Dict[str, Union[int, float]]) -> 
         num_actors = int(num_cpus / client_resources["num_cpus"])
 
         # If a GPU is present and client resources do require one
-        if "num_gpus" in client_resources.keys() and client_resources["num_gpus"] > 0.0:
-            if num_gpus:
-                # If there are gpus in the cluster
-                num_actors = min(
-                    num_actors, int(num_gpus / client_resources["num_gpus"])
-                )
-            else:
-                num_actors = 0
+        if "num_gpus" in client_resources and client_resources["num_gpus"] > 0.0:
+            num_actors = min(num_actors, int(num_gpus / client_resources["num_gpus"])) if num_gpus else 0
         total_num_actors += num_actors
 
     if total_num_actors == 0:

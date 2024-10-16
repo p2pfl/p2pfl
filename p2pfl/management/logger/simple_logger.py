@@ -15,15 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-
+"""Simple logger."""
 import logging
-from p2pfl.experiment import Experiment
 from typing import Any, Dict, List, Optional
 
+from p2pfl.experiment import Experiment
 from p2pfl.management.logger.logger import NodeNotRegistered, P2PFLogger
 from p2pfl.management.metric_storage import GlobalLogsType, GlobalMetricStorage, LocalLogsType, LocalMetricStorage
 from p2pfl.settings import Settings
-
 
 #########################
 #    Colored logging    #
@@ -99,7 +98,7 @@ class SimpleP2PFLogger(P2PFLogger):
         )
         stream_handler.setFormatter(cmd_formatter)
         self._logger.addHandler(stream_handler)  # not async
-    
+
     def cleanup(self) -> None:
         """Cleanup the logger."""
         # Unregister nodes
@@ -243,7 +242,7 @@ class SimpleP2PFLogger(P2PFLogger):
         Log a metric.
 
         Args:
-            node: The node name.
+            addr: The node name.
             metric: The metric to log.
             value: The value.
             step: The step.
@@ -254,13 +253,13 @@ class SimpleP2PFLogger(P2PFLogger):
         try:
             experiment = self._nodes[addr]["Experiment"]
         except KeyError:
-            raise NodeNotRegistered(f"Node {addr} not registered.")
+            raise NodeNotRegistered(f"Node {addr} not registered.") from None
 
         # Get Round
         round = experiment.round
         if round is None:
             raise Exception("No round provided. Needed for training metrics.")
-        
+
         # Get Experiment Name
         exp = experiment.exp_name
         if exp is None:
@@ -337,18 +336,19 @@ class SimpleP2PFLogger(P2PFLogger):
             self._nodes.pop(node)
         else:
             raise Exception(f"Node {node} not registered.")
-        
+
 
     ######
     # Node Status
     ######
 
-    def experiment_started(self, node: str, experiment: Experiment) -> None:
+    def experiment_started(self, node: str, experiment: Experiment|None) -> None:
         """
         Notify the experiment start.
 
         Args:
             node: The node address.
+            experiment: The experiment.
 
         """
         self.warning(node, "Uncatched Experiment Started on Logger")
@@ -364,15 +364,16 @@ class SimpleP2PFLogger(P2PFLogger):
         """
         self.warning(node, "Uncatched Experiment Ended on Logger")
 
-    def round_started(self, node: str, experiment: Experiment) -> None:
+    def round_started(self, node: str, experiment: Experiment|None) -> None:
         """
         Notify the round start.
 
         Args:
             node: The node address.
+            experiment: The experiment.
 
         """
-        self.warning(node, f"Uncatched Round Finished on Logger")
+        self.warning(node, "Uncatched Round Finished on Logger")
         self._nodes[node]["Experiment"] = experiment
 
     def round_finished(self, node: str) -> None:
@@ -384,7 +385,7 @@ class SimpleP2PFLogger(P2PFLogger):
 
         """
         #r = self.nodes[node][1].round
-        self.warning(node, f"Uncatched Round Finished on Logger")
+        self.warning(node, "Uncatched Round Finished on Logger")
 
     def get_logger(self) -> logging.Logger:
         """
@@ -392,6 +393,7 @@ class SimpleP2PFLogger(P2PFLogger):
 
         Returns:
             The logger instance.
+
         """
         return self._logger
 
@@ -401,6 +403,7 @@ class SimpleP2PFLogger(P2PFLogger):
 
         Returns:
             The registered nodes.
+
         """
         return self._nodes
 
@@ -410,6 +413,7 @@ class SimpleP2PFLogger(P2PFLogger):
 
         Args:
             logger: The logger instance.
+
         """
         self._logger = logger
 
@@ -419,6 +423,7 @@ class SimpleP2PFLogger(P2PFLogger):
 
         Args:
             nodes: The registered nodes.
+
         """
         self._nodes = nodes
 
@@ -428,15 +433,17 @@ class SimpleP2PFLogger(P2PFLogger):
 
         Returns:
             The logger handlers.
+
         """
         return self._handlers
-    
+
     def set_handlers(self, handlers: List[logging.Handler]) -> None:
         """
         Set the logger handlers.
 
         Args:
             handlers: The logger handlers.
+
         """
         self._handlers = handlers
         for handler in handlers:
@@ -448,6 +455,7 @@ class SimpleP2PFLogger(P2PFLogger):
 
         Args:
             handler: The handler to add.
+
         """
         self._handlers.append(handler)
         self._logger.addHandler(handler)

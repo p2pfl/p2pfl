@@ -1,12 +1,34 @@
+#
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/federated_learning_p2p).
+# Copyright (c) 2022 Pedro Guijas Bravo.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+"""Decorator for the logger to be used in the simulation."""
+
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
 from p2pfl.experiment import Experiment
 from p2pfl.management.logger.logger import P2PFLogger
-
 from p2pfl.management.metric_storage import GlobalLogsType, LocalLogsType
 
+
 class P2PFLoggerDecorator(P2PFLogger):
+    """Decorator class for P2PFLogger to be used in the simulation."""
+
     _p2pflogger: P2PFLogger
 
     def info(self, node: str, message: str) -> None:
@@ -71,7 +93,7 @@ class P2PFLoggerDecorator(P2PFLogger):
         Log a metric.
 
         Args:
-            node: The node name.
+            addr: The node name.
             metric: The metric to log.
             value: The value.
             step: The step.
@@ -128,7 +150,7 @@ class P2PFLoggerDecorator(P2PFLogger):
 
         """
         self._p2pflogger.unregister_node(node)
-    
+
     def cleanup(self) -> None:
         """Cleanup the logger."""
         self._p2pflogger.cleanup()
@@ -145,7 +167,7 @@ class P2PFLoggerDecorator(P2PFLogger):
 
         """
         return self._p2pflogger.get_level_name(lvl)
-    
+
     def set_level(self, level: int) -> None:
         """
         Set the logger level.
@@ -178,12 +200,13 @@ class P2PFLoggerDecorator(P2PFLogger):
         """
         self._p2pflogger.log(level, node, message)
 
-    def experiment_started(self, node: str, experiment: Experiment) -> None:
+    def experiment_started(self, node: str, experiment: Experiment|None) -> None:
         """
         Notify the experiment start.
 
         Args:
             node: The node address.
+            experiment: The experiment.
 
         """
         self._p2pflogger.experiment_started(node,experiment)
@@ -198,12 +221,13 @@ class P2PFLoggerDecorator(P2PFLogger):
         """
         self._p2pflogger.experiment_finished(node)
 
-    def round_started(self, node: str, experiment: Experiment) -> None:
+    def round_started(self, node: str, experiment: Experiment|None) -> None:
         """
         Notify the round start.
 
         Args:
             node: The node address.
+            experiment: The experiment.
 
         """
         self._p2pflogger.round_started(node,experiment)
@@ -224,6 +248,7 @@ class P2PFLoggerDecorator(P2PFLogger):
 
         Returns:
             The logger instance.
+
         """
         return self._p2pflogger.get_logger()
 
@@ -233,6 +258,7 @@ class P2PFLoggerDecorator(P2PFLogger):
 
         Returns:
             The registered nodes.
+
         """
         return self._p2pflogger.get_nodes()
 
@@ -242,6 +268,7 @@ class P2PFLoggerDecorator(P2PFLogger):
 
         Args:
             logger: The logger instance.
+
         """
         self._p2pflogger.set_logger(logger)
 
@@ -251,6 +278,7 @@ class P2PFLoggerDecorator(P2PFLogger):
 
         Args:
             nodes: The registered nodes.
+
         """
         self._p2pflogger.set_nodes(nodes)
 
@@ -260,15 +288,17 @@ class P2PFLoggerDecorator(P2PFLogger):
 
         Returns:
             The logger handlers.
+
         """
         return self._p2pflogger.get_handlers()
-    
+
     def set_handlers(self, handler: List[logging.Handler]) -> None:
         """
         Set the logger handlers.
 
         Args:
             handler: The logger handlers.
+
         """
         self._p2pflogger.set_handlers(handler)
 
@@ -278,5 +308,6 @@ class P2PFLoggerDecorator(P2PFLogger):
 
         Args:
             handler: The handler to add.
+
         """
         self._p2pflogger.add_handler(handler)

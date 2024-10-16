@@ -15,18 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Async logger."""
 
 import atexit
 import logging
-from logging.handlers import QueueHandler, QueueListener
 import multiprocessing
+from logging.handlers import QueueHandler, QueueListener
+
 from p2pfl.management.logger.logger import P2PFLogger
 from p2pfl.management.logger.logger_decorator import P2PFLoggerDecorator
 
+
 class AsyncLocalLogger(P2PFLoggerDecorator):
+    """Async logger decorator."""
+
     _p2pflogger: P2PFLogger
 
     def __init__(self, p2pflogger: P2PFLogger) -> None:
+        """Initialize the logger."""
         self._p2pflogger = p2pflogger
 
         # Set up asynchronous logging
@@ -41,7 +47,7 @@ class AsyncLocalLogger(P2PFLoggerDecorator):
 
         # Register cleanup function to close the queue on exit
         atexit.register(self.cleanup)
-    
+
     def cleanup(self) -> None:
         """Cleanup the logger."""
         if self.queue_listener:

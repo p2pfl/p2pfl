@@ -17,7 +17,6 @@
 #
 """Vote Train Set Stage."""
 
-import asyncio
 import math
 import random
 import time

@@ -15,15 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Virtual Learner Actor."""
+from typing import Dict, Tuple
 
-from typing import Tuple
+import ray
+
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
-import ray
+
 
 @ray.remote
 class VirtualLearnerActor:
+    """Decorator for the learner to be used in the simulation."""
+
     def terminate(self) -> None:
         """Manually terminate Actor object."""
         logger.debug(self.__class__.__name__, f"Manually terminating {self.__class__.__name__}")
@@ -39,22 +44,22 @@ class VirtualLearnerActor:
 
         except Exception as ex:
             raise ex
-        
+
         return addr, model
-    
+
     def evaluate(self,
         learner: NodeLearner,
         addr: str
-    ) -> Tuple[str, Tuple[float,float]]:
+    ) -> Tuple[str, Dict[str,float]]:
         """Evaluate the model."""
         try:
             results = learner.evaluate()
 
         except Exception as ex:
             raise ex
-        
+
         return addr, results
-    
+
     def interrupt_fit(self,
         learner: NodeLearner,
         addr: str
@@ -65,5 +70,5 @@ class VirtualLearnerActor:
 
         except Exception as ex:
             raise ex
-        
+
         return addr, None

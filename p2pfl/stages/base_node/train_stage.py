@@ -51,7 +51,7 @@ class TrainStage(Stage):
         """Execute the stage."""
         if state is None or communication_protocol is None or aggregator is None or learner is None:
             raise Exception("Invalid parameters on TrainStage.")
-        
+
         # Set start of the Round
         logger.round_started(state.addr, state.experiment)
 

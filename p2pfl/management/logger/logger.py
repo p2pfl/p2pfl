@@ -24,18 +24,20 @@ P2PFL Logger.
 """
 
 import logging
-from p2pfl.experiment import Experiment
-from typing import Any, Dict, List, Optional
-
-from p2pfl.management.metric_storage import GlobalLogsType, LocalLogsType
 
 ###################
 #    Interface    #
 ###################
-
 from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Optional
+
+from p2pfl.experiment import Experiment
+from p2pfl.management.metric_storage import GlobalLogsType, LocalLogsType
+
 
 class P2PFLogger(ABC):
+    """Interface for the P2PFL Logger."""
+
     ######
     # Singleton and instance management
     ######
@@ -50,26 +52,68 @@ class P2PFLogger(ABC):
 
     @abstractmethod
     def get_logger(self) -> logging.Logger:
+        """
+        Get the logger instance.
+
+        Returns:
+            The logger instance.
+
+        """
         pass
 
     @abstractmethod
     def get_nodes(self) -> Dict[str, Dict[Any,Any]]:
+        """
+        Get the registered nodes.
+
+        Returns:
+            The registered nodes.
+
+        """
         pass
 
     @abstractmethod
     def get_handlers(self) -> List[logging.Handler]:
+        """
+        Get the logger handlers.
+
+        Returns:
+            The logger handlers.
+
+        """
         pass
 
     @abstractmethod
     def set_logger(self, logger: logging.Logger) -> None:
+        """
+        Set the logger instance.
+
+        Args:
+            logger: The logger instance.
+
+        """
         pass
 
     @abstractmethod
     def set_nodes(self, nodes: Dict[str, Dict[Any,Any]]) -> None:
+        """
+        Set the registered nodes.
+
+        Args:
+            nodes: The registered nodes.
+
+        """
         pass
 
     @abstractmethod
     def set_handlers(self, handler: List[logging.Handler]) -> None:
+        """
+        Set the logger handlers.
+
+        Args:
+            handler: The logger handlers.
+
+        """
         pass
 
 
@@ -79,38 +123,111 @@ class P2PFLogger(ABC):
 
     @abstractmethod
     def set_level(self, level: int) -> None:
+        """
+        Set the logger level.
+
+        Args:
+            level: The logger level.
+
+        """
         pass
 
     @abstractmethod
     def get_level(self) -> int:
+        """
+        Get the logger level.
+
+        Returns
+            The logger level.
+
+        """
         pass
 
     @abstractmethod
     def get_level_name(self, lvl: int) -> str:
+        """
+        Get the logger level name.
+
+        Args:
+            lvl: The logger level.
+
+        Returns:
+            The logger level name.
+
+        """
         pass
 
     @abstractmethod
     def info(self, node: str, message: str) -> None:
+        """
+        Log an info message.
+
+        Args:
+            node: The node name.
+            message: The message to log.
+
+        """
         pass
 
     @abstractmethod
     def debug(self, node: str, message: str) -> None:
+        """
+        Log a debug message.
+
+        Args:
+            node: The node name.
+            message: The message to log.
+
+        """
         pass
 
     @abstractmethod
     def warning(self, node: str, message: str) -> None:
+        """
+        Log a warning message.
+
+        Args:
+            node: The node name.
+            message: The message to log.
+
+        """
         pass
 
     @abstractmethod
     def error(self, node: str, message: str) -> None:
+        """
+        Log an error message.
+
+        Args:
+            node: The node name.
+            message: The message to log.
+
+        """
         pass
 
     @abstractmethod
     def critical(self, node: str, message: str) -> None:
+        """
+        Log a critical message.
+
+        Args:
+            node: The node name.
+            message: The message to log.
+
+        """
         pass
 
     @abstractmethod
     def log(self, level: int, node: str, message: str) -> None:
+        """
+        Log a message.
+
+        Args:
+            level: The log level.
+            node: The node name.
+            message: The message to log.
+
+        """
         pass
 
     ######
@@ -121,14 +238,47 @@ class P2PFLogger(ABC):
     def log_metric(self, addr: str, metric: str,
                    value: float, round: Optional[int] = None,
                    step: Optional[int] = None) -> None:
+        """
+        Log a metric.
+
+        Args:
+            addr: The node name.
+            metric: The metric to log.
+            value: The value.
+            step: The step.
+            round: The round.
+
+        """
         pass
 
     @abstractmethod
     def get_local_logs(self) -> LocalLogsType:
+        """
+        Get the logs.
+
+        Args:
+            node: The node name.
+            exp: The experiment name.
+
+        Returns:
+            The logs.
+
+        """
         pass
 
     @abstractmethod
     def get_global_logs(self) -> GlobalLogsType:
+        """
+        Get the logs.
+
+        Args:
+            node: The node name.
+            exp: The experiment name.
+
+        Returns:
+            The logs.
+
+        """
         pass
 
     ######
@@ -137,10 +287,25 @@ class P2PFLogger(ABC):
 
     @abstractmethod
     def register_node(self, node: str, simulation: bool) -> None:
+        """
+        Register a node.
+
+        Args:
+            node: The node address.
+            simulation: If the node is a simulation.
+
+        """
         pass
 
     @abstractmethod
     def unregister_node(self, node: str) -> None:
+        """
+        Unregister a node.
+
+        Args:
+            node: The node address.
+
+        """
         pass
 
 
@@ -149,23 +314,54 @@ class P2PFLogger(ABC):
     ######
 
     @abstractmethod
-    def experiment_started(self, node: str, experiment:Experiment) -> None:
+    def experiment_started(self, node: str, experiment:Experiment|None) -> None:
+        """
+        Notify the experiment start.
+
+        Args:
+            node: The node address.
+            experiment: The experiment.
+
+        """
         pass
 
     @abstractmethod
     def experiment_finished(self, node: str) -> None:
+        """
+        Notify the experiment end.
+
+        Args:
+            node: The node address.
+
+        """
         pass
 
     @abstractmethod
-    def round_started(self, node: str, experiment:Experiment) -> None:
+    def round_started(self, node: str, experiment:Experiment|None) -> None:
+        """
+        Notify the round start.
+
+        Args:
+            node: The node address.
+            experiment: The experiment.
+
+        """
         pass
 
     @abstractmethod
     def round_finished(self, node: str) -> None:
+        """
+        Notify the round end.
+
+        Args:
+            node: The node address.
+
+        """
         pass
 
     @abstractmethod
     def cleanup(self) -> None:
+        """Cleanup the logger."""
         pass
 
     ######
@@ -173,6 +369,13 @@ class P2PFLogger(ABC):
     ######
     @abstractmethod
     def add_handler(self, handler: logging.Handler) -> None:
+        """
+        Add a handler to the logger.
+
+        Args:
+            handler: The handler to add.
+
+        """
         pass
 
 

@@ -16,10 +16,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""Web Logger."""
+
 import datetime
 import logging
 
-from p2pfl.management.logger.logger import *
+from p2pfl.experiment import Experiment
+from p2pfl.management.logger.logger import NodeNotRegistered, P2PFLogger
 from p2pfl.management.logger.logger_decorator import P2PFLoggerDecorator
 from p2pfl.management.node_monitor import NodeMonitor
 from p2pfl.management.p2pfl_web_services import P2pflWebServices
@@ -49,7 +52,7 @@ class DictFormatter(logging.Formatter):
             "message": record.getMessage(),
         }
         return log_dict
-    
+
 class P2pflWebLogHandler(logging.Handler):
     """
     Custom logging handler that sends log entries to the API.
@@ -84,10 +87,13 @@ class P2pflWebLogHandler(logging.Handler):
         )
 
 
-class WebLocalLogger(P2PFLoggerDecorator):
-    _p2pflogger: P2PFLogger = None
+class WebP2PFLogger(P2PFLoggerDecorator):
+    """Web logger decorator."""
+
+    _p2pflogger: P2PFLogger
 
     def __init__(self, p2pflogger: P2PFLogger, p2pfl_web_services: P2pflWebServices):
+        """Initialize the logger."""
         self._p2pflogger = p2pflogger
         self.p2pfl_web_services = p2pfl_web_services
 
@@ -116,13 +122,24 @@ class WebLocalLogger(P2PFLoggerDecorator):
     def log_metric(self, addr: str, metric: str,
                    value: float, round: int | None = None,
                    step: int | None = None) -> None:
+        """
+        Log a metric.
+
+        Args:
+            addr: The node name.
+            metric: The metric to log.
+            value: The value.
+            step: The step.
+            round: The round.
+
+        """
         self._p2pflogger.log_metric(addr, metric, value, round, step)
 
         # Get Experiment
         try:
             experiment: Experiment = self._nodes[addr]["Experiment"]
         except KeyError:
-            raise NodeNotRegistered(f"Node {addr} not registered.")
+            raise NodeNotRegistered(f"Node {addr} not registered.") from None
 
         if self.p2pfl_web_services is not None:
             if step is None:
@@ -148,6 +165,14 @@ class WebLocalLogger(P2PFLoggerDecorator):
             self.p2pfl_web_services.send_system_metric(node, metric, value, time)
 
     def register_node(self, node: str, simulation: bool) -> None:
+        """
+        Register a node.
+
+        Args:
+            node: The node address.
+            simulation: If the node is a simulation.
+
+        """
         self._p2pflogger.register_node(node, simulation)
 
         # Register the node
@@ -161,6 +186,13 @@ class WebLocalLogger(P2PFLoggerDecorator):
         self._p2pflogger._nodes[node]["NodeMonitor"] = node_monitor
 
     def unregister_node(self, node: str) -> None:
+        """
+        Unregister a node.
+
+        Args:
+            node: The node address.
+
+        """
         # Web
         if self.p2pfl_web_services is not None:
             self.p2pfl_web_services.unregister_node(node)
