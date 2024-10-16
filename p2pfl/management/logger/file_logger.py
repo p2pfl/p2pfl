@@ -19,17 +19,15 @@
 import logging
 from logging.handlers import RotatingFileHandler
 import os
-from typing import Dict, List, Tuple
 
-from p2pfl.experiment import Experiment
 from p2pfl.management.logger.logger import P2PFLogger
+from p2pfl.management.logger.logger_decorator import P2PFLoggerDecorator
 from p2pfl.settings import Settings
 
-class FileP2PFLogger(P2PFLogger):
+class FileP2PFLogger(P2PFLoggerDecorator):
     _p2pflogger: P2PFLogger = None
 
     def __init__(self, p2pflogger: P2PFLogger, log_dir: str):
-        self._logger = p2pflogger._logger
         self._p2pflogger = p2pflogger
         self.log_dir = log_dir
 
@@ -49,92 +47,4 @@ class FileP2PFLogger(P2PFLogger):
             datefmt="%Y-%m-%d %H:%M:%S",
         )
         file_handler.setFormatter(file_formatter)
-        self._logger.addHandler(file_handler)
-
-    def info(self, node: str, message: str) -> None:
-        self._p2pflogger.info(node, message)
-
-    def debug(self, node: str, message: str) -> None:
-        self._p2pflogger.debug(node, message)
-
-    def warning(self, node: str, message: str) -> None:
-        self._p2pflogger.warning(node, message)
-
-    def error(self, node: str, message: str) -> None:
-        self._p2pflogger.error(node, message)
-
-    def critical(self, node: str, message: str) -> None:
-        self._p2pflogger.critical(node, message)
-
-    def log_metric(self, addr: str, metric: str,
-                   value: float, round: int | None = None,
-                   step: int | None = None) -> None:
-        self._p2pflogger.log_metric(addr, metric, value, round, step)
-
-    def get_local_logs(self) -> Dict[str, Dict[int, Dict[str, Dict[str, List[Tuple[int | float]]]]]]:
-        return self._p2pflogger.get_local_logs()
-
-    def get_global_logs(self) -> Dict[str, Dict[str, Dict[str, List[Tuple[int | float]]]]]:
-        return self._p2pflogger.get_global_logs()
-
-    def register_node(self, node: str, simulation: bool) -> None:
-        self._p2pflogger.register_node(node, simulation)
-
-    def unregister_node(self, node: str) -> None:
-        self._p2pflogger.unregister_node(node)
-    
-    def cleanup(self) -> None:
-        """Cleanup the logger."""
-        self._p2pflogger.cleanup()
-
-    def get_level_name(self, lvl: int) -> str:
-        return self._p2pflogger.get_level_name(lvl)
-    
-    def set_level(self, level: int) -> None:
-        self._p2pflogger.set_level(level)
-
-    def get_level(self) -> int:
-        return self._p2pflogger.get_level()
-
-    def log(self, level: int, node: str, message: str) -> None:
-        self._p2pflogger.log(level, node, message)
-
-    def experiment_started(self, node: str, experiment: Experiment) -> None:
-        """
-        Notify the experiment start.
-
-        Args:
-            node: The node address.
-
-        """
-        self._p2pflogger.experiment_started(node,experiment)
-
-    def experiment_finished(self, node: str) -> None:
-        """
-        Notify the experiment end.
-
-        Args:
-            node: The node address.
-
-        """
-        self._p2pflogger.experiment_finished(node)
-
-    def round_started(self, node: str, experiment: Experiment) -> None:
-        """
-        Notify the round start.
-
-        Args:
-            node: The node address.
-
-        """
-        self._p2pflogger.round_started(node,experiment)
-
-    def round_finished(self, node: str) -> None:
-        """
-        Notify the round end.
-
-        Args:
-            node: The node address.
-
-        """
-        self._p2pflogger.round_finished(node)
+        self.add_handler(file_handler)

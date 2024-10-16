@@ -16,109 +16,20 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from typing import Optional
 import ray
 
-from p2pfl.experiment import Experiment
 from p2pfl.management.logger.logger import P2PFLogger
-from p2pfl.management.metric_storage import GlobalLogsType, LocalLogsType
+from p2pfl.management.logger.logger_decorator import P2PFLoggerDecorator
 
 @ray.remote
-class RayP2PFLoggerActor(P2PFLogger):
+class RayP2PFLoggerActor(P2PFLoggerDecorator):
     """Actor to add remote logging capabilities to a logger class."""
     
     _p2pflogger: P2PFLogger = None
 
     def __init__(self, p2pflogger: P2PFLogger) -> None:
-        self._logger = p2pflogger._logger
         self._p2pflogger = p2pflogger
 
-    # Methods that simply wrap the P2PFLogger's functionality
-    def info(self, node: str, message: str) -> None:
-        self._p2pflogger.info(node, message)
-
-    def debug(self, node: str, message: str) -> None:
-        self._p2pflogger.debug(node, message)
-
-    def warning(self, node: str, message: str) -> None:
-        self._p2pflogger.warning(node, message)
-
-    def error(self, node: str, message: str) -> None:
-        self._p2pflogger.error(node, message)
-
-    def critical(self, node: str, message: str) -> None:
-        self._p2pflogger.critical(node, message)
-
-    def log_metric(self, addr: str, metric: str, value: float,
-                   round: Optional[int] = None, step: Optional[int] = None) -> None:
-        self._p2pflogger.log_metric(addr, metric, value, round, step)
-
-    def get_local_logs(self) -> LocalLogsType:
-        return self._p2pflogger.get_local_logs()
-
-    def get_global_logs(self) -> GlobalLogsType:
-        return self._p2pflogger.get_global_logs()
-
-    def register_node(self, node: str, simulation: bool) -> None:
-        self._p2pflogger.register_node(node, simulation)
-
-    def unregister_node(self, node: str) -> None:
-        self._p2pflogger.unregister_node(node)
-    
-    def cleanup(self) -> None:
-        self._p2pflogger.cleanup()
-
-    def get_level_name(self, lvl: int) -> str:
-        return self._p2pflogger.get_level_name(lvl)
-    
-    def set_level(self, level: int) -> None:
-        self._p2pflogger.set_level(level)
-
-    def get_level(self) -> int:
-        return self._p2pflogger.get_level()
-
-    def log(self, level: int, node: str, message: str) -> None:
-        self._p2pflogger.log(level, node, message)
-
-    def experiment_started(self, node: str, experiment: Experiment) -> None:
-        """
-        Notify the experiment start.
-
-        Args:
-            node: The node address.
-
-        """
-        self._p2pflogger.experiment_started(node,experiment)
-
-    def experiment_finished(self, node: str) -> None:
-        """
-        Notify the experiment end.
-
-        Args:
-            node: The node address.
-
-        """
-        self._p2pflogger.experiment_finished(node)
-
-    def round_started(self, node: str, experiment: Experiment) -> None:
-        """
-        Notify the round start.
-
-        Args:
-            node: The node address.
-
-        """
-        self._p2pflogger.round_started(node,experiment)
-
-    def round_finished(self, node: str) -> None:
-        """
-        Notify the round end.
-
-        Args:
-            node: The node address.
-
-        """
-        self._p2pflogger.round_finished(node)
 
 
 class RayP2PFLogger:
@@ -149,8 +60,10 @@ class RayP2PFLogger:
         method = getattr(self.ray_actor, name)
         
         # Return a wrapper that automatically calls .remote() on the method
-        # TODO: Check returns (ray.get())
         def remote_method(*args, **kwargs):
+            # Try to retrieve the result if it's a getter method
+            if method._method_name.startswith("get_"):
+                return ray.get(method.remote(*args, **kwargs))
             return method.remote(*args, **kwargs)
 
         return remote_method

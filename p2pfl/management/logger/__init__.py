@@ -13,4 +13,4 @@ if ray_installed:
 else:
     from p2pfl.management.logger.async_logger import AsyncLocalLogger
     # Logger actor singleton
-    logger = SimpleP2PFLogger()
+    logger = AsyncLocalLogger(SimpleP2PFLogger())

@@ -25,7 +25,7 @@ P2PFL Logger.
 
 import logging
 from p2pfl.experiment import Experiment
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from p2pfl.management.metric_storage import GlobalLogsType, LocalLogsType
 
@@ -40,9 +40,38 @@ class P2PFLogger(ABC):
     # Singleton and instance management
     ######
 
-    #__instance = None
     _logger: logging.Logger = None
     _nodes: Dict[str, Dict[Any,Any]]
+    _handlers: List[logging.Handler] = []
+
+    ######
+    # Getters and setters
+    ######
+
+    @abstractmethod
+    def get_logger(self) -> None:
+        pass
+
+    @abstractmethod
+    def get_nodes(self) -> Dict[str, Dict[Any,Any]]:
+        pass
+
+    @abstractmethod
+    def get_handlers(self) -> List[logging.Handler]:
+        pass
+
+    @abstractmethod
+    def set_logger(self, logger: logging.Logger) -> None:
+        pass
+
+    @abstractmethod
+    def set_nodes(self, nodes: Dict[str, Dict[Any,Any]]) -> None:
+        pass
+
+    @abstractmethod
+    def set_handlers(self, handler: List[logging.Handler]) -> None:
+        pass
+
 
     ######
     # Application logging
@@ -137,6 +166,13 @@ class P2PFLogger(ABC):
 
     @abstractmethod
     def cleanup(self) -> None:
+        pass
+
+    ######
+    # Handlers
+    ######
+    @abstractmethod
+    def add_handler(self, handler: logging.Handler) -> None:
         pass
 
 

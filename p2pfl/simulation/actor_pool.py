@@ -137,7 +137,7 @@ class SuperActorPool(ActorPool):
         Creates a new VirtualLearnerActor instance using provided resources.
 
         Returns:
-            VirtualLearnerActor: New actor instance.
+            VirtualLearnerActor ray handler: New actor instance.
         """
         return VirtualLearnerActor.options(**self.resources).remote()
 

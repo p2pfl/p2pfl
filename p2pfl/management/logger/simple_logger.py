@@ -16,10 +16,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import atexit
 import logging
 from p2pfl.experiment import Experiment
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from p2pfl.management.logger.logger import NodeNotRegistered, P2PFLogger
 from p2pfl.management.metric_storage import GlobalLogsType, GlobalMetricStorage, LocalLogsType, LocalMetricStorage
@@ -90,6 +89,7 @@ class SimpleP2PFLogger(P2PFLogger):
         self._logger = logging.getLogger("p2pfl")
         self._logger.propagate = False
         self._logger.setLevel(logging.getLevelName(Settings.LOG_LEVEL))
+        self._handlers: List[logging.Handler] = []
 
         # STDOUT - Handler
         stream_handler = logging.StreamHandler()
@@ -99,9 +99,6 @@ class SimpleP2PFLogger(P2PFLogger):
         )
         stream_handler.setFormatter(cmd_formatter)
         self._logger.addHandler(stream_handler)  # not async
-
-        # Register cleanup function to close the queue on exit
-        atexit.register(self.cleanup)
     
     def cleanup(self) -> None:
         """Cleanup the logger."""
@@ -388,3 +385,69 @@ class SimpleP2PFLogger(P2PFLogger):
         """
         #r = self.nodes[node][1].round
         self.warning(node, f"Uncatched Round Finished on Logger")
+
+    def get_logger(self) -> logging.Logger:
+        """
+        Get the logger instance.
+
+        Returns:
+            The logger instance.
+        """
+        return self._logger
+
+    def get_nodes(self) -> Dict[str, Dict[Any, Any]]:
+        """
+        Get the registered nodes.
+
+        Returns:
+            The registered nodes.
+        """
+        return self._nodes
+
+    def set_logger(self, logger: logging.Logger) -> None:
+        """
+        Set the logger instance.
+
+        Args:
+            logger: The logger instance.
+        """
+        self._logger = logger
+
+    def set_nodes(self, nodes: Dict[str, Dict[Any, Any]]) -> None:
+        """
+        Set the registered nodes.
+
+        Args:
+            nodes: The registered nodes.
+        """
+        self._nodes = nodes
+
+    def get_handlers(self) -> List[logging.Handler]:
+        """
+        Get the logger handlers.
+
+        Returns:
+            The logger handlers.
+        """
+        return self._handlers
+    
+    def set_handlers(self, handlers: List[logging.Handler]) -> None:
+        """
+        Set the logger handlers.
+
+        Args:
+            handlers: The logger handlers.
+        """
+        self._handlers = handlers
+        for handler in handlers:
+            self._logger.addHandler(handler)
+
+    def add_handler(self, handler: logging.Handler) -> None:
+        """
+        Add a handler to the logger.
+
+        Args:
+            handler: The handler to add.
+        """
+        self._handlers.append(handler)
+        self._logger.addHandler(handler)

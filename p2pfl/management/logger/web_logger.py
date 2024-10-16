@@ -18,9 +18,9 @@
 
 import datetime
 import logging
-from typing import List, Tuple
 
 from p2pfl.management.logger.logger import *
+from p2pfl.management.logger.logger_decorator import P2PFLoggerDecorator
 from p2pfl.management.node_monitor import NodeMonitor
 from p2pfl.management.p2pfl_web_services import P2pflWebServices
 
@@ -84,17 +84,16 @@ class P2pflWebLogHandler(logging.Handler):
         )
 
 
-class WebLocalLogger(P2PFLogger):
+class WebLocalLogger(P2PFLoggerDecorator):
     _p2pflogger: P2PFLogger = None
 
     def __init__(self, p2pflogger: P2PFLogger, p2pfl_web_services: P2pflWebServices):
-        self._logger = p2pflogger._logger
         self._p2pflogger = p2pflogger
         self.p2pfl_web_services = p2pfl_web_services
 
         # Setup the web handler for the provided logger instance
         web_handler = P2pflWebLogHandler(self.p2pfl_web_services)
-        self._logger.addHandler(web_handler)
+        self.add_handler(web_handler)
 
     def connect_web(self, url: str, key: str) -> None:
         """
@@ -112,22 +111,7 @@ class WebLocalLogger(P2PFLogger):
         self.p2pfl_web_services = p2pfl_web
         if p2pfl_web is not None:
             web_handler = P2pflWebLogHandler(p2pfl_web)
-            self._logger.addHandler(web_handler)
-
-    def info(self, node: str, message: str) -> None:
-        self._p2pflogger.info(node, message)
-
-    def debug(self, node: str, message: str) -> None:
-        self._p2pflogger.debug(node, message)
-
-    def warning(self, node: str, message: str) -> None:
-        self._p2pflogger.warning(node, message)
-
-    def error(self, node: str, message: str) -> None:
-        self._p2pflogger.error(node, message)
-
-    def critical(self, node: str, message: str) -> None:
-        self._p2pflogger.critical(node, message)
+            self.add_handler(web_handler)
 
     def log_metric(self, addr: str, metric: str,
                    value: float, round: int | None = None,
@@ -136,7 +120,7 @@ class WebLocalLogger(P2PFLogger):
 
         # Get Experiment
         try:
-            experiment = self._nodes[addr]["Experiment"]
+            experiment: Experiment = self._nodes[addr]["Experiment"]
         except KeyError:
             raise NodeNotRegistered(f"Node {addr} not registered.")
 
@@ -162,12 +146,6 @@ class WebLocalLogger(P2PFLogger):
         # Web
         if self.p2pfl_web_services is not None:
             self.p2pfl_web_services.send_system_metric(node, metric, value, time)
-
-    def get_local_logs(self) -> Dict[str, Dict[int, Dict[str, Dict[str, List[Tuple[int | float]]]]]]:
-        return self._p2pflogger.get_local_logs()
-
-    def get_global_logs(self) -> Dict[str, Dict[str, Dict[str, List[Tuple[int | float]]]]]:
-        return self._p2pflogger.get_global_logs()
 
     def register_node(self, node: str, simulation: bool) -> None:
         self._p2pflogger.register_node(node, simulation)
@@ -197,59 +175,3 @@ class WebLocalLogger(P2PFLogger):
             raise Exception(f"Node {node} not registered.")
 
         self._p2pflogger.unregister_node(node)
-
-    def cleanup(self) -> None:
-        self._p2pflogger.cleanup()
-
-    def get_level_name(self, lvl: int) -> str:
-        return self._p2pflogger.get_level_name(lvl)
-
-    def set_level(self, level: int) -> None:
-        self._p2pflogger.set_level(level)
-
-    def get_level(self) -> int:
-        return self._p2pflogger.get_level()
-
-    def log(self, level: int, node: str, message: str) -> None:
-        self._p2pflogger.log(level, node, message)
-
-    def experiment_started(self, node: str, experiment: Experiment) -> None:
-        """
-        Notify the experiment start.
-
-        Args:
-            node: The node address.
-
-        """
-        self._p2pflogger.experiment_started(node,experiment)
-
-    def experiment_finished(self, node: str) -> None:
-        """
-        Notify the experiment end.
-
-        Args:
-            node: The node address.
-
-        """
-        self._p2pflogger.experiment_finished(node)
-
-    def round_started(self, node: str, experiment: Experiment) -> None:
-        """
-        Notify the round start.
-
-        Args:
-            node: The node address.
-
-        """
-        self._p2pflogger.round_started(node,experiment)
-
-    def round_finished(self, node: str) -> None:
-        """
-        Notify the round end.
-
-        Args:
-            node: The node address.
-
-        """
-        self._p2pflogger.round_finished(node)
-
