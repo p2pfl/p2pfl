@@ -17,11 +17,13 @@
 #
 
 import numpy as np
+from typing import Dict, List, Union
+
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.p2pfl_model import P2PFLModel
 from p2pfl.simulation.actor_pool import SuperActorPool
-from typing import Any, List, Optional, Tuple, Union
+from p2pfl.management.logger import logger
 
 
 class VirtualNodeLearner(NodeLearner):
@@ -85,7 +87,7 @@ class VirtualNodeLearner(NodeLearner):
             The data of the learner.
 
         """
-        self.learner.get_data()
+        return self.learner.get_data()
 
     def set_epochs(self, epochs: int) -> None:
         """
@@ -104,21 +106,21 @@ class VirtualNodeLearner(NodeLearner):
                 lambda actor, addr, learner: actor.fit.remote(addr, learner),
                 (str(self.addr),self.learner),
             )
-            model = self.actor_pool.get_learner_result(str(self.addr), None)
+            model: P2PFLModel = self.actor_pool.get_learner_result(str(self.addr), None)[1]
             self.learner.set_model(model)
             return model
         except Exception as ex:
-            print(f"An error occurred during remote fit: {ex}")
+            logger.error(self.addr,f"An error occurred during remote fit: {ex}")
             raise ex
 
     def interrupt_fit(self) -> None:
         """Interrupt the fit process."""
         self.actor_pool.submit(
             lambda actor: actor.interrupt_fit.remote(),
-            (),
+            (str(self.addr),self.learner),
         )
 
-    def evaluate(self) -> Tuple[float, float]:
+    def evaluate(self) -> Dict[str, float]:
         """
         Evaluate the model with actual parameters.
 
@@ -133,8 +135,8 @@ class VirtualNodeLearner(NodeLearner):
                 ),
                 (str(self.addr), self.learner),
             )
-            result = self.actor_pool.get_learner_result(str(self.addr), None)
+            result: Dict[str, float] = self.actor_pool.get_learner_result(str(self.addr), None)[1]
             return result
         except Exception as ex:
-            print(f"An error occurred during remote evaluation: {ex}")
+            logger.error(self.addr,f"An error occurred during remote evaluation: {ex}")
             raise ex

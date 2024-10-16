@@ -76,7 +76,7 @@ class NodeState:
         self.train_set_votes: Dict[str, Dict[str, int]] = {}
 
         # Actual experiment
-        self.experiment: Experiment = None
+        self.experiment: Optional[Experiment] = None
 
         # Locks
         self.train_set_votes_lock = threading.Lock()

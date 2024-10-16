@@ -62,7 +62,7 @@ class LightningLearner(NodeLearner):
         self.__trainer: Optional[Trainer] = None
         self.epochs = 1
         self.__self_addr = self_addr
-        self.experiment: Experiment = None
+        self.experiment: Optional[Experiment] = None
 
         # Start logging
         self.logger = FederatedLogger(self_addr)

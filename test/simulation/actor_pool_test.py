@@ -27,6 +27,7 @@ def test_super_actor_pool_initialization():
 def test_super_actor_pool_singleton():
     pool1 = SuperActorPool(resources={"num_cpus": 2})
     pool2 = SuperActorPool(resources={"num_cpus": 2})
+    print(type(pool1))
     assert pool1 is pool2
 
 def test_add_actor():

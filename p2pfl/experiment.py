@@ -17,12 +17,6 @@ class Experiment:
             raise ValueError("Round not initialized")
         self.round += 1
 
-    def clear(self) -> None:
-        """Clear the experiment state."""
-        self.exp_name = None
-        self.round = None
-        self.total_rounds = None
-
     def self(self, param_name, param_val=None):
         if param_val is None:
             return getattr(self, param_name)

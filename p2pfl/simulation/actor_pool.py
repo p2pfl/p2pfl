@@ -79,6 +79,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.simulation.actor import VirtualLearnerActor
+from p2pfl.management.logger import logger
 from p2pfl.simulation.utils import pool_size_from_resources, check_client_resources
 
 import ray
@@ -152,7 +153,7 @@ class SuperActorPool(ActorPool):
             new_actors = [self.create_actor() for _ in range(num_actors)]
             self._idle_actors.extend(new_actors)
             self.num_actors += num_actors
-            print(f"Created {num_actors} actors")
+            logger.debug("ActorPool",f"Created {num_actors} actors")
 
     def submit(self, fn: Any, value: Tuple[str,NodeLearner]) -> None:
         """
@@ -220,7 +221,7 @@ class SuperActorPool(ActorPool):
             bool: True if future is ready, False otherwise.
         """
         if addr not in self._addr_to_future:
-            print("This shouldn't be happening")
+            logger.error("ActorPool","Future associated with the given address not found. This shouldn't be happening")
             return False
         return self._addr_to_future[addr]["ready"]
 
@@ -238,13 +239,13 @@ class SuperActorPool(ActorPool):
             future = self._addr_to_future[addr]["future"]
             res_addr, result = ray.get(future)
         except ray.exceptions.RayActorError as ex:
-            print(ex)
+            #print(ex)
             if hasattr(ex, "actor_id"):
                 self._flag_actor_for_removal(ex.actor_id)
             raise ex
         assert res_addr == addr
         self._reset_addr_to_future_dict(addr)
-        return result
+        return res_addr, result
 
     def _flag_actor_for_removal(self, actor_id_hex: str) -> None:
         """
@@ -255,7 +256,7 @@ class SuperActorPool(ActorPool):
         """
         with self.lock:
             self.actor_to_remove.add(actor_id_hex)
-            print(f"Actor({actor_id_hex}) will be removed from pool.")
+            logger.debug("ActorPool",f"Actor({actor_id_hex}) will be removed from pool.")
 
     def _check_and_remove_actor_from_pool(self, actor: VirtualLearnerActor) -> bool:
         """
@@ -272,7 +273,7 @@ class SuperActorPool(ActorPool):
             if actor_id in self.actor_to_remove:
                 self.actor_to_remove.remove(actor_id)
                 self.num_actors -= 1
-                print(f"REMOVED actor {actor_id} from pool")
+                logger.debug("ActorPool",f"REMOVED actor {actor_id} from pool")
                 return False
             return True
 
