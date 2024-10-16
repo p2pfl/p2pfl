@@ -1,0 +1,22 @@
+"""Provides a logger singleton that can be used to log messages from different parts of the codebase."""
+
+import importlib.util
+
+from p2pfl.management.logger.logger import P2PFLogger
+from p2pfl.management.logger.simple_logger import SimpleP2PFLogger
+
+# Check if 'ray' is installed in the Python environment
+ray_installed = importlib.util.find_spec("ray") is not None
+
+logger: P2PFLogger
+
+# Create the logger depending on the availability of 'ray'
+if ray_installed:
+    from p2pfl.management.logger.ray_logger import RayP2PFLogger
+
+    # Logger actor singleton
+    logger = RayP2PFLogger(SimpleP2PFLogger())
+else:
+    from p2pfl.management.logger.async_logger import AsyncLocalLogger
+    # Logger actor singleton
+    logger = AsyncLocalLogger(SimpleP2PFLogger())

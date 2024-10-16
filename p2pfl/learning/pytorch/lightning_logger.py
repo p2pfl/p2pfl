@@ -20,7 +20,7 @@
 
 from pytorch_lightning.loggers.logger import Logger
 
-from p2pfl.management.logger import Logger as P2PLogger
+from p2pfl.management.logger import logger as P2PLogger
 
 
 class FederatedLogger(Logger):
@@ -32,10 +32,10 @@ class FederatedLogger(Logger):
 
     """
 
-    def __init__(self, node_name: str) -> None:
+    def __init__(self, addr: str) -> None:
         """Initialize the logger."""
         super().__init__()
-        self.self_name = node_name
+        self.__addr = addr
 
     @property
     def name(self) -> None:
@@ -54,7 +54,7 @@ class FederatedLogger(Logger):
     def log_metrics(self, metrics: dict, step: int) -> None:
         """Log metrics (in a pytorch format)."""
         for k, v in metrics.items():
-            P2PLogger.log_metric(self.self_name, k, v, step)
+            P2PLogger.log_metric(self.__addr, k, v, step)
 
     def save(self) -> None:
         """Save the logger."""

@@ -58,7 +58,7 @@ class StartLearningStage(Stage):
         state.start_thread_lock.acquire()  # Used to avoid create duplicated training threads
         state.set_experiment("experiment", rounds)
         learner.set_epochs(epochs)
-        logger.experiment_started(state.addr)
+        logger.experiment_started(state.addr, state.experiment)
         state.start_thread_lock.release()
         begin = time.time()
 
