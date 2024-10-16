@@ -1,11 +1,13 @@
 import logging
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from p2pfl.experiment import Experiment
 from p2pfl.management.logger.logger import P2PFLogger
 
+from p2pfl.management.metric_storage import GlobalLogsType, LocalLogsType
+
 class P2PFLoggerDecorator(P2PFLogger):
-    _p2pflogger: P2PFLogger = None
+    _p2pflogger: P2PFLogger
 
     def info(self, node: str, message: str) -> None:
         """
@@ -78,7 +80,7 @@ class P2PFLoggerDecorator(P2PFLogger):
         """
         self._p2pflogger.log_metric(addr, metric, value, round, step)
 
-    def get_local_logs(self) -> Dict[str, Dict[int, Dict[str, Dict[str, List[Tuple[int | float]]]]]]:
+    def get_local_logs(self) -> LocalLogsType:
         """
         Get the logs.
 
@@ -92,7 +94,7 @@ class P2PFLoggerDecorator(P2PFLogger):
         """
         return self._p2pflogger.get_local_logs()
 
-    def get_global_logs(self) -> Dict[str, Dict[str, Dict[str, List[Tuple[int | float]]]]]:
+    def get_global_logs(self) -> GlobalLogsType:
         """
         Get the logs.
 

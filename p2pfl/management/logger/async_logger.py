@@ -24,7 +24,7 @@ from p2pfl.management.logger.logger import P2PFLogger
 from p2pfl.management.logger.logger_decorator import P2PFLoggerDecorator
 
 class AsyncLocalLogger(P2PFLoggerDecorator):
-    _p2pflogger: P2PFLogger = None
+    _p2pflogger: P2PFLogger
 
     def __init__(self, p2pflogger: P2PFLogger) -> None:
         self._p2pflogger = p2pflogger

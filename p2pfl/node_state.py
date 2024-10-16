@@ -122,11 +122,11 @@ class NodeState:
             ValueError: If the experiment is not initialized.
 
         """
-        try:
-            self.experiment.increase_round()
-            self.models_aggregated = {}
-        except ValueError:
+        if self.experiment is None:
             raise ValueError("Experiment not initialized")
+        
+        self.experiment.increase_round()
+        self.models_aggregated = {}
 
     def clear(self) -> None:
         """Clear the state."""
@@ -134,4 +134,4 @@ class NodeState:
     
     def __str__(self) -> str:
         """String representation of the node state."""
-        return f"NodeState(addr={self.addr}, status={self.status}, actual_exp_name={self.actual_exp_name}, round={self.round}, total_rounds={self.total_rounds}, simulation={self.simulation}, learner={self.learner}, models_aggregated={self.models_aggregated}, nei_status={self.nei_status}, train_set={self.train_set}, train_set_votes={self.train_set_votes})"
+        return f"NodeState(addr={self.addr}, status={self.status}, exp_name={self.exp_name}, round={self.round}, total_rounds={self.total_rounds}, simulation={self.simulation}, models_aggregated={self.models_aggregated}, nei_status={self.nei_status}, train_set={self.train_set}, train_set_votes={self.train_set_votes})"

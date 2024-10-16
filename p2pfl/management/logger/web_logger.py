@@ -155,7 +155,7 @@ class WebLocalLogger(P2PFLoggerDecorator):
 
         # Start the node status reporter
         node_monitor = NodeMonitor(node, self.log_system_metric)
-        node_monitor.start()
+        node_monitor.run()
 
         # Dict[str, Dict[str, Any]]
         self._p2pflogger._nodes[node]["NodeMonitor"] = node_monitor

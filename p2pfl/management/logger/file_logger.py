@@ -25,14 +25,13 @@ from p2pfl.management.logger.logger_decorator import P2PFLoggerDecorator
 from p2pfl.settings import Settings
 
 class FileP2PFLogger(P2PFLoggerDecorator):
-    _p2pflogger: P2PFLogger = None
+    _p2pflogger: P2PFLogger
 
-    def __init__(self, p2pflogger: P2PFLogger, log_dir: str):
+    def __init__(self, p2pflogger: P2PFLogger):
         self._p2pflogger = p2pflogger
-        self.log_dir = log_dir
 
         # Setup the file handler for logging
-        self.setup_file_handler(self.log_dir)
+        self.setup_file_handler()
     
     def setup_file_handler(self) -> None:
         """Set up the file handler for logging."""

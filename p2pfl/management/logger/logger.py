@@ -40,7 +40,7 @@ class P2PFLogger(ABC):
     # Singleton and instance management
     ######
 
-    _logger: logging.Logger = None
+    _logger: logging.Logger
     _nodes: Dict[str, Dict[Any,Any]]
     _handlers: List[logging.Handler] = []
 
@@ -49,7 +49,7 @@ class P2PFLogger(ABC):
     ######
 
     @abstractmethod
-    def get_logger(self) -> None:
+    def get_logger(self) -> logging.Logger:
         pass
 
     @abstractmethod
