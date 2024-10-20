@@ -49,6 +49,8 @@ pip install "p2pfl[torch]"
 
 ### 👨🏼‍🔧 For Developers
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/p2pfl/p2pfl/tree/develop?quickstart=1)
+
 #### 🐍 Python (using Poetry)
 
 ```bash
