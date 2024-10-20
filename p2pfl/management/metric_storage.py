@@ -18,7 +18,6 @@
 
 """Metric storage."""
 
-from threading import Lock
 from typing import Dict, List, Tuple, Union
 
 MetricsType = Dict[str, List[Tuple[int, float]]]  # Metric name -> [(step, value)...]
@@ -50,7 +49,7 @@ class LocalMetricStorage:
     def __init__(self) -> None:
         """Initialize the local metric storage."""
         self.exp_dicts: LocalLogsType = {}
-        self.lock = Lock()
+        #self.lock = Lock()
 
     def add_log(
         self,
@@ -74,7 +73,7 @@ class LocalMetricStorage:
 
         """
         # Lock
-        self.lock.acquire()
+        #self.lock.acquire()
 
         # Create Experiment if needed
         if exp_name not in self.exp_dicts:
@@ -95,7 +94,7 @@ class LocalMetricStorage:
             self.exp_dicts[exp_name][round][node][metric].append((step, val))
 
         # Release Lock
-        self.lock.release()
+        #self.lock.release()
 
     def get_all_logs(self) -> LocalLogsType:
         """
@@ -173,7 +172,7 @@ class GlobalMetricStorage:
     def __init__(self) -> None:
         """Initialize the global metric storage."""
         self.exp_dicts: GlobalLogsType = {}
-        self.lock = Lock()
+        #self.lock = Lock()
 
     def add_log(self, exp_name: str, round: int, metric: str, node: str, val: Union[int, float]) -> None:
         """
@@ -188,7 +187,7 @@ class GlobalMetricStorage:
 
         """
         # Lock
-        self.lock.acquire()
+        #self.lock.acquire()
 
         # Create Experiment if needed
         if exp_name not in self.exp_dicts:
@@ -207,7 +206,7 @@ class GlobalMetricStorage:
                 self.exp_dicts[exp_name][node][metric].append((round, val))
 
         # Release Lock
-        self.lock.release()
+        #self.lock.release()
 
     def get_all_logs(self) -> GlobalLogsType:
         """

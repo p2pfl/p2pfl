@@ -52,6 +52,9 @@ class TrainStage(Stage):
         if state is None or communication_protocol is None or aggregator is None or learner is None:
             raise Exception("Invalid parameters on TrainStage.")
 
+        # Set start of the Round
+        logger.round_started(state.addr, state.experiment)
+
         try:
             check_early_stop(state)
 
@@ -101,6 +104,7 @@ class TrainStage(Stage):
     @staticmethod
     def __evaluate(state: NodeState, learner: NodeLearner, communication_protocol: CommunicationProtocol) -> None:
         logger.info(state.addr, "🔬 Evaluating...")
+        # TODO: learner.set_round() # Avoid Actor experiment # Tanto en fit como en evaluate
         results = learner.evaluate()
         logger.info(state.addr, f"📈 Evaluated. Results: {results}")
         # Send metrics

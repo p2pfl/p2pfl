@@ -117,7 +117,7 @@ class KerasLearner(NodeLearner):
             raise ValueError("The data must be a TensorFlow Dataset")
         return tf_model, data
 
-    def fit(self) -> None:
+    def fit(self) -> P2PFLModel:
         """Fit the model."""
         try:
             if self.epochs > 0:
@@ -129,8 +129,11 @@ class KerasLearner(NodeLearner):
                 )
             # Set model contribution
             self.model.set_contribution([self.__self_addr], self.data.get_num_samples(train=True))
+
+            return self.model
         except Exception as e:
             logger.error(self.__self_addr, f"Error in training with Keras: {e}")
+            raise e
 
     def interrupt_fit(self) -> None:
         """Interrupt the training process."""

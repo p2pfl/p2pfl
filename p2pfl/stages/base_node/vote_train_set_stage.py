@@ -49,6 +49,9 @@ class VoteTrainSetStage(Stage):
         if state is None or communication_protocol is None:
             raise Exception("Invalid parameters on VoteTrainSetStage.")
 
+        # Update experiment
+        logger.round_started(state.addr, state.experiment)
+
         try:
             # Vote
             VoteTrainSetStage.__vote(state, communication_protocol)
@@ -166,6 +169,7 @@ class VoteTrainSetStage(Stage):
 
             # Wait for votes or refresh every 2 seconds
             state.wait_votes_ready_lock.acquire(timeout=2)
+            time.sleep(2)
 
     @staticmethod
     def __validate_train_set(

@@ -20,7 +20,7 @@
 
 import tensorflow as tf
 
-from p2pfl.management.logger import Logger as P2PLogger
+from p2pfl.management.logger import logger as P2PLogger
 
 
 class FederatedLogger(tf.keras.callbacks.Callback):
