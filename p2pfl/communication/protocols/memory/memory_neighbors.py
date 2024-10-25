@@ -39,13 +39,13 @@ class InMemoryNeighbors(Neighbors):
         """
         # Update if exists
         if addr in self.neis:
-            #with self.neis_lock:
-            # Update time
-            self.neis[addr] = (
-                self.neis[addr][0],
-                self.neis[addr][1],
-                time,
-            )
+            with self.neis_lock:
+                # Update time
+                self.neis[addr] = (
+                    self.neis[addr][0],
+                    self.neis[addr][1],
+                    time,
+                )
         else:
             # Add
             self.add(addr, non_direct=True)

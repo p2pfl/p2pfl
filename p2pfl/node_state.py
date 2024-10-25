@@ -49,7 +49,7 @@ class NodeState:
 
     """
 
-    def __init__(self, addr: str, simulation: bool=False) -> None:
+    def __init__(self, addr: str, simulation: bool = False) -> None:
         """Initialize the node state."""
         self.addr = addr
         self.status = "Idle"

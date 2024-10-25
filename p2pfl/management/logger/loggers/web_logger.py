@@ -23,13 +23,14 @@ import logging
 
 from p2pfl.experiment import Experiment
 from p2pfl.management.logger.logger import NodeNotRegistered, P2PFLogger
-from p2pfl.management.logger.logger_decorator import P2PFLoggerDecorator
+from p2pfl.management.logger.loggers.logger_decorator import P2PFLoggerDecorator
 from p2pfl.management.node_monitor import NodeMonitor
 from p2pfl.management.p2pfl_web_services import P2pflWebServices
 
 #########################################
 #    Logging handler (transmit logs)    #
 #########################################
+
 
 class DictFormatter(logging.Formatter):
     """Formatter (logging) that returns a dictionary with the log record attributes."""
@@ -52,6 +53,7 @@ class DictFormatter(logging.Formatter):
             "message": record.getMessage(),
         }
         return log_dict
+
 
 class P2pflWebLogHandler(logging.Handler):
     """
@@ -119,9 +121,7 @@ class WebP2PFLogger(P2PFLoggerDecorator):
             web_handler = P2pflWebLogHandler(p2pfl_web)
             self.add_handler(web_handler)
 
-    def log_metric(self, addr: str, metric: str,
-                   value: float, round: int | None = None,
-                   step: int | None = None) -> None:
+    def log_metric(self, addr: str, metric: str, value: float, round: int | None = None, step: int | None = None) -> None:
         """
         Log a metric.
 

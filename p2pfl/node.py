@@ -108,11 +108,8 @@ class Node:
 
         # State
         self.__running = False
-        self.state = NodeState(
-            self.addr,
-            simulation=simulation
-        )
-        self.simulation = simulation
+        self.state = NodeState(self.addr, simulation=simulation)
+        self.simulation = simulation  # so far it does not contribute much
 
         # Workflow
         self.learning_workflow = LearningWorkflow()

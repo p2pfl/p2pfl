@@ -16,8 +16,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Simple logger."""
+
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from p2pfl.experiment import Experiment
 from p2pfl.management.logger.logger import NodeNotRegistered, P2PFLogger
@@ -64,7 +65,7 @@ class ColoredFormatter(logging.Formatter):
 ################
 #    Logger    #
 ################
-class SimpleP2PFLogger(P2PFLogger):
+class MainP2PFLogger(P2PFLogger):
     """
     Class that manages the node logging.
 
@@ -73,16 +74,18 @@ class SimpleP2PFLogger(P2PFLogger):
 
     """
 
-    def __init__(self, nodes: Optional[Dict[str, Dict[str,Any]]] = None,
-                 local_metrics: Optional[LocalMetricStorage] = None,
-                 global_metrics: Optional[GlobalMetricStorage] = None) -> None:
+    def __init__(
+        self,
+        nodes: Optional[Dict[str, Dict[str, Any]]] = None,
+        disable_locks: bool = False
+    ) -> None:
         """Initialize the logger."""
         # Node Information
-        self._nodes: Dict[str, Dict[Any,Any]] = nodes if nodes else {}
+        self._nodes: Dict[str, Dict[Any, Any]] = nodes if nodes else {}
 
         # Experiment Metrics
-        self.local_metrics = local_metrics if local_metrics else LocalMetricStorage()
-        self.global_metrics = global_metrics if global_metrics else GlobalMetricStorage()
+        self.local_metrics = LocalMetricStorage(disable_locks = disable_locks)
+        self.global_metrics = GlobalMetricStorage(disable_locks = disable_locks)
 
         # Python logging
         self._logger = logging.getLogger("p2pfl")
@@ -113,7 +116,7 @@ class SimpleP2PFLogger(P2PFLogger):
     # Application logging
     ######
 
-    def set_level(self, level: int) -> None:
+    def set_level(self, level: Union[int, str]) -> None:
         """
         Set the logger level.
 
@@ -121,8 +124,10 @@ class SimpleP2PFLogger(P2PFLogger):
             level: The logger level.
 
         """
-        self._logger.setLevel(level)
-
+        if isinstance(level, str):
+            self._logger.setLevel(logging.getLevelName(level))
+        else:
+            self._logger.setLevel(level)
 
     def get_level(self) -> int:
         """
@@ -337,12 +342,11 @@ class SimpleP2PFLogger(P2PFLogger):
         else:
             raise Exception(f"Node {node} not registered.")
 
-
     ######
     # Node Status
     ######
 
-    def experiment_started(self, node: str, experiment: Experiment|None) -> None:
+    def experiment_started(self, node: str, experiment: Experiment | None) -> None:
         """
         Notify the experiment start.
 
@@ -364,7 +368,7 @@ class SimpleP2PFLogger(P2PFLogger):
         """
         self.warning(node, "Uncatched Experiment Ended on Logger")
 
-    def round_started(self, node: str, experiment: Experiment|None) -> None:
+    def round_started(self, node: str, experiment: Experiment | None) -> None:
         """
         Notify the round start.
 
@@ -384,7 +388,7 @@ class SimpleP2PFLogger(P2PFLogger):
             node: The node address.
 
         """
-        #r = self.nodes[node][1].round
+        # r = self.nodes[node][1].round
         self.warning(node, "Uncatched Round Finished on Logger")
 
     def get_logger(self) -> logging.Logger:

@@ -23,7 +23,7 @@ import multiprocessing
 from logging.handlers import QueueHandler, QueueListener
 
 from p2pfl.management.logger.logger import P2PFLogger
-from p2pfl.management.logger.logger_decorator import P2PFLoggerDecorator
+from p2pfl.management.logger.loggers.logger_decorator import P2PFLoggerDecorator
 
 
 class AsyncLocalLogger(P2PFLoggerDecorator):
@@ -41,8 +41,7 @@ class AsyncLocalLogger(P2PFLoggerDecorator):
         self.get_logger().addHandler(queue_handler)
 
         # Set up a listener for the queue
-        self.queue_listener = QueueListener(self.log_queue,
-                                            *self.get_handlers())
+        self.queue_listener = QueueListener(self.log_queue, *self.get_handlers())
         self.queue_listener.start()
 
         # Register cleanup function to close the queue on exit

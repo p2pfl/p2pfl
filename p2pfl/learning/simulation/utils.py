@@ -23,28 +23,31 @@ import ray
 
 from p2pfl.management.logger import logger
 
+###
+# Inspired by the implementation of flower. Thank you so much for taking FL to another level :)
+#
+# Original implementation: https://github.com/adap/flower/blob/main/src/py/flwr/simulation/ray_transport/ray_actor.py
+###
+
 
 def check_client_resources(client_resources: Dict[str, Union[int, float]]) -> Dict[str, Union[int, float]]:
     """Check if client_resources are valid and return them."""
     if client_resources is None:
-        logger.info("ActorPool",
+        logger.info(
+            "ActorPool",
             "No `client_resources` specified. Using minimal resources for clients.",
         )
         client_resources = {"num_cpus": 1, "num_gpus": 0.0}
 
     # Each client needs at the very least one CPU
     if "num_cpus" not in client_resources:
-        logger.debug("ActorPool",
-            "No `num_cpus` specified in `client_resources`. "+
-            "Using `num_cpus=1` for each client."
-        )
+        logger.debug("ActorPool", "No `num_cpus` specified in `client_resources`. " + "Using `num_cpus=1` for each client.")
         client_resources["num_cpus"] = 1
 
-    logger.info("ActorPool",
-        f"Resources for each Virtual Client: {client_resources}"
-    )
+    logger.info("ActorPool", f"Resources for each Virtual Client: {client_resources}")
 
     return client_resources
+
 
 def pool_size_from_resources(client_resources: Dict[str, Union[int, float]]) -> int:
     """
@@ -84,13 +87,10 @@ def pool_size_from_resources(client_resources: Dict[str, Union[int, float]]) -> 
     if total_num_actors == 0:
         logger.debug(
             "ActorPool",
-            f"The ActorPool is empty. The system (CPUs={num_cpus}, GPUs={num_gpus})"+
-            "does not meet the criteria to host at least one client with resources:"+
-            "{client_resources}. Lowering the `client_resources` could help."
+            f"The ActorPool is empty. The system (CPUs={num_cpus}, GPUs={num_gpus})"
+            + "does not meet the criteria to host at least one client with resources:"
+            + "{client_resources}. Lowering the `client_resources` could help.",
         )
-        raise ValueError(
-            "ActorPool is empty. Stopping Simulation. "
-            "Check 'client_resources'"
-        )
+        raise ValueError("ActorPool is empty. Stopping Simulation. " "Check 'client_resources'")
 
     return total_num_actors

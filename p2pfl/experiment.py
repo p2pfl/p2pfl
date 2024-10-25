@@ -17,6 +17,7 @@
 #
 """Experiment class."""
 
+
 class Experiment:
     """
     Class to represent an experiment.
@@ -70,5 +71,4 @@ class Experiment:
 
     def __str__(self):
         """Return the string representation of the experiment."""
-        return (f"Experiment(exp_name={self.exp_name}, total_rounds={self.total_rounds}, "
-                f"round={self.round})")
+        return f"Experiment(exp_name={self.exp_name}, total_rounds={self.total_rounds}, " f"round={self.round})"

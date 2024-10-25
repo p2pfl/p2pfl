@@ -24,12 +24,8 @@ P2PFL Logger.
 """
 
 import logging
-
-###################
-#    Interface    #
-###################
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from p2pfl.experiment import Experiment
 from p2pfl.management.metric_storage import GlobalLogsType, LocalLogsType
@@ -43,7 +39,7 @@ class P2PFLogger(ABC):
     ######
 
     _logger: logging.Logger
-    _nodes: Dict[str, Dict[Any,Any]]
+    _nodes: Dict[str, Dict[Any, Any]]
     _handlers: List[logging.Handler] = []
 
     ######
@@ -62,7 +58,7 @@ class P2PFLogger(ABC):
         pass
 
     @abstractmethod
-    def get_nodes(self) -> Dict[str, Dict[Any,Any]]:
+    def get_nodes(self) -> Dict[str, Dict[Any, Any]]:
         """
         Get the registered nodes.
 
@@ -95,7 +91,7 @@ class P2PFLogger(ABC):
         pass
 
     @abstractmethod
-    def set_nodes(self, nodes: Dict[str, Dict[Any,Any]]) -> None:
+    def set_nodes(self, nodes: Dict[str, Dict[Any, Any]]) -> None:
         """
         Set the registered nodes.
 
@@ -116,13 +112,12 @@ class P2PFLogger(ABC):
         """
         pass
 
-
     ######
     # Application logging
     ######
 
     @abstractmethod
-    def set_level(self, level: int) -> None:
+    def set_level(self, level: Union[int, str]) -> None:
         """
         Set the logger level.
 
@@ -235,9 +230,7 @@ class P2PFLogger(ABC):
     ######
 
     @abstractmethod
-    def log_metric(self, addr: str, metric: str,
-                   value: float, round: Optional[int] = None,
-                   step: Optional[int] = None) -> None:
+    def log_metric(self, addr: str, metric: str, value: float, round: Optional[int] = None, step: Optional[int] = None) -> None:
         """
         Log a metric.
 
@@ -308,13 +301,12 @@ class P2PFLogger(ABC):
         """
         pass
 
-
     ######
     # Node Status
     ######
 
     @abstractmethod
-    def experiment_started(self, node: str, experiment:Experiment|None) -> None:
+    def experiment_started(self, node: str, experiment: Experiment | None) -> None:
         """
         Notify the experiment start.
 
@@ -337,7 +329,7 @@ class P2PFLogger(ABC):
         pass
 
     @abstractmethod
-    def round_started(self, node: str, experiment:Experiment|None) -> None:
+    def round_started(self, node: str, experiment: Experiment | None) -> None:
         """
         Notify the round start.
 
@@ -382,6 +374,7 @@ class P2PFLogger(ABC):
 ###################
 #    Exception    #
 ###################
+
 
 class NodeNotRegistered(Exception):
     """Exception raised when a node is not registered."""

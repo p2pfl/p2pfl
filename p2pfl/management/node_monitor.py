@@ -19,6 +19,7 @@
 """Node monitor."""
 
 import datetime
+import threading
 import time
 from typing import Dict
 
@@ -27,7 +28,7 @@ import psutil  # type: ignore
 from p2pfl.settings import Settings
 
 
-class NodeMonitor:
+class NodeMonitor(threading.Thread):
     """
     Node monitor thread.
 

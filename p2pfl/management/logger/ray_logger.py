@@ -16,13 +16,14 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """Ray logger decorator."""
+
 import ray
 
 from p2pfl.management.logger.logger import P2PFLogger
-from p2pfl.management.logger.logger_decorator import P2PFLoggerDecorator
+from p2pfl.management.logger.loggers.logger_decorator import P2PFLoggerDecorator
 
 
-@ray.remote
+@ray.remote # LA UNICA DIFERENCIA ES QUE ES UN ACTOR? PARA ESO QUE NI REDFEFINA EL INIT ????------------------------------------------------
 class RayP2PFLoggerActor(P2PFLoggerDecorator):
     """Actor to add remote logging capabilities to a logger class."""
 
@@ -31,7 +32,6 @@ class RayP2PFLoggerActor(P2PFLoggerDecorator):
     def __init__(self, p2pflogger: P2PFLogger) -> None:
         """Initialize the logger."""
         self._p2pflogger = p2pflogger
-
 
 
 class RayP2PFLogger:
@@ -45,7 +45,7 @@ class RayP2PFLogger:
             p2pflogger: The logger to be wrapped.
 
         """
-        self.ray_actor = RayP2PFLoggerActor.options(name="p2pfl_logger", lifetime="detached", get_if_exists=True).remote(p2pflogger)
+        self.ray_actor = RayP2PFLoggerActor.options(name="p2pfl_logger", lifetime="detached", get_if_exists=True).remote(p2pflogger)  # type: ignore
 
     def __getattr__(self, name):
         """

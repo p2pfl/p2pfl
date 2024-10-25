@@ -29,7 +29,7 @@ from p2pfl.settings import Settings
 
 heartbeater_cmd_name = "beat"
 
-#@ray.remote
+
 class Heartbeater(threading.Thread):
     """
     Heartbeater for agnostic communication protocol. Send and update fresh heartbeats.

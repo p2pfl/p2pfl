@@ -24,16 +24,14 @@ import numpy as np
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.p2pfl_model import P2PFLModel
+from p2pfl.learning.simulation.actor_pool import SuperActorPool
 from p2pfl.management.logger import logger
-from p2pfl.simulation.actor_pool import SuperActorPool
 
 
 class VirtualNodeLearner(NodeLearner):
     """Decorator for the learner to be used in the simulation."""
 
-    def __init__(self,
-                 learner: NodeLearner,
-                 addr: str) -> None:
+    def __init__(self, learner: NodeLearner, addr: str) -> None:
         """Initialize the learner."""
         self.learner = learner
         self.actor_pool = SuperActorPool()
@@ -105,20 +103,20 @@ class VirtualNodeLearner(NodeLearner):
         try:
             self.actor_pool.submit_learner_job(
                 lambda actor, addr, learner: actor.fit.remote(addr, learner),
-                (str(self.addr),self.learner),
+                (str(self.addr), self.learner),
             )
             model: P2PFLModel = self.actor_pool.get_learner_result(str(self.addr), None)[1]
             self.learner.set_model(model)
             return model
         except Exception as ex:
-            logger.error(self.addr,f"An error occurred during remote fit: {ex}")
+            logger.error(self.addr, f"An error occurred during remote fit: {ex}")
             raise ex
 
     def interrupt_fit(self) -> None:
         """Interrupt the fit process."""
         self.actor_pool.submit(
             lambda actor: actor.interrupt_fit.remote(),
-            (str(self.addr),self.learner),
+            (str(self.addr), self.learner),
         )
 
     def evaluate(self) -> Dict[str, float]:
@@ -131,13 +129,11 @@ class VirtualNodeLearner(NodeLearner):
         """
         try:
             self.actor_pool.submit_learner_job(
-                lambda actor, addr, learner: actor.evaluate.remote(
-                    addr, learner
-                ),
+                lambda actor, addr, learner: actor.evaluate.remote(addr, learner),
                 (str(self.addr), self.learner),
             )
             result: Dict[str, float] = self.actor_pool.get_learner_result(str(self.addr), None)[1]
             return result
         except Exception as ex:
-            logger.error(self.addr,f"An error occurred during remote evaluation: {ex}")
+            logger.error(self.addr, f"An error occurred during remote evaluation: {ex}")
             raise ex

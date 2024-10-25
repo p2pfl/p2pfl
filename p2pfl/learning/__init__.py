@@ -12,10 +12,7 @@ from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.p2pfl_model import P2PFLModel
 
 
-def create_learner(learner: type[NodeLearner],
-                   model: P2PFLModel,
-                   data: P2PFLDataset,
-                   addr: str):
+def create_learner(learner: type[NodeLearner], model: P2PFLModel, data: P2PFLDataset, addr: str):
     """
     Create a learner instance.
 
@@ -31,6 +28,7 @@ def create_learner(learner: type[NodeLearner],
     """
     learner_instance = learner(model, data, addr)
     if importlib.util.find_spec("ray") is not None:
-        from p2pfl.simulation.virtual_learner import VirtualNodeLearner
+        from p2pfl.learning.simulation.virtual_learner import VirtualNodeLearner
+
         learner_instance = VirtualNodeLearner(learner_instance, addr)
     return learner_instance

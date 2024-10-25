@@ -23,7 +23,7 @@ import os
 from logging.handlers import RotatingFileHandler
 
 from p2pfl.management.logger.logger import P2PFLogger
-from p2pfl.management.logger.logger_decorator import P2PFLoggerDecorator
+from p2pfl.management.logger.loggers.logger_decorator import P2PFLoggerDecorator
 from p2pfl.settings import Settings
 
 
@@ -46,7 +46,7 @@ class FileP2PFLogger(P2PFLoggerDecorator):
 
         file_handler = RotatingFileHandler(
             f"{Settings.LOG_DIR}/p2pfl.log", maxBytes=1000000, backupCount=3
-        ) # TODO: ADD DIFFERENT LOG FILES FOR DIFFERENT NODES / EXPERIMENTS
+        )  # TODO: ADD DIFFERENT LOG FILES FOR DIFFERENT NODES / EXPERIMENTS
         file_formatter = logging.Formatter(
             "[ %(asctime)s | %(node)s | %(levelname)s ]: %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",

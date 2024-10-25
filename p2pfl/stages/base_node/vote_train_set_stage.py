@@ -170,7 +170,6 @@ class VoteTrainSetStage(Stage):
 
             # Wait for votes or refresh every 2 seconds
             state.wait_votes_ready_lock.acquire(timeout=2)
-            time.sleep(2)
 
     @staticmethod
     def __validate_train_set(

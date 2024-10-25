@@ -34,7 +34,7 @@ from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
 from p2pfl.learning.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
-from p2pfl.management.logger.web_logger import WebP2PFLogger
+from p2pfl.management.logger.loggers.web_logger import WebP2PFLogger
 from p2pfl.management.p2pfl_web_services import P2pflWebServices
 from p2pfl.node import Node
 from p2pfl.settings import Settings
@@ -164,7 +164,7 @@ def mnist(
             learner=KerasLearner if use_tensorflow else LightningLearner,  # type: ignore
             protocol=InMemoryCommunicationProtocol if use_local_protocol else GrpcCommunicationProtocol,  # type: ignore
             address=address,
-            simulation=True
+            simulation=True,
         )
         node.start()
         nodes.append(node)
@@ -256,7 +256,7 @@ if __name__ == "__main__":
 
     # Set logger
     if args.token != "":
-        logger = WebP2PFLogger(logger,P2pflWebServices("http://localhost:3000/api/v1", args.token))
+        logger = WebP2PFLogger(logger, P2pflWebServices("http://localhost:3000/api/v1", args.token))
 
     # Launch experiment
     try:

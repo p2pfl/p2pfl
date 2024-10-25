@@ -19,7 +19,7 @@
 
 from unittest.mock import MagicMock, patch
 
-from p2pfl.simulation.actor_pool import SuperActorPool
+from p2pfl.learning.simulation.actor_pool import SuperActorPool
 
 
 def test_super_actor_pool_initialization():
@@ -27,21 +27,24 @@ def test_super_actor_pool_initialization():
     pool = SuperActorPool(resources={"num_cpus": 2})
     assert pool.num_actors > 0
 
+
 def test_super_actor_pool_singleton():
     """Test the singleton behavior of the SuperActorPool class."""
     pool1 = SuperActorPool(resources={"num_cpus": 2})
     pool2 = SuperActorPool(resources={"num_cpus": 2})
     assert pool1 is pool2
 
+
 def test_create_actor_with_correct_resources():
     """Test the create_actor method of the SuperActorPool class with the correct."""
     pool = SuperActorPool(resources={"num_cpus": 2})
-    with patch('p2pfl.simulation.actor.VirtualLearnerActor.options') as mock_options:
+    with patch("p2pfl.learning.simulation.actor.VirtualLearnerActor.options") as mock_options:
         mock_options.return_value.remote.return_value = MagicMock()
         actor = pool.create_actor()
         mock_options.assert_called_once_with(num_cpus=2)
         mock_options.return_value.remote.assert_called_once()
         assert isinstance(actor, MagicMock)
+
 
 def test_add_actor():
     """Test the add_actor method of the SuperActorPool class."""
@@ -49,6 +52,7 @@ def test_add_actor():
     initial_num_actors = pool.num_actors
     pool.add_actor(2)
     assert pool.num_actors == initial_num_actors + 2
+
 
 def test_flag_future_as_ready():
     """
@@ -64,6 +68,7 @@ def test_flag_future_as_ready():
     pool._reset_addr_to_future_dict("addr1")
     pool._flag_future_as_ready("addr1")
     assert pool._addr_to_future["addr1"]["ready"] is True
+
 
 def test_fetch_future_result():
     """
@@ -81,10 +86,11 @@ def test_fetch_future_result():
     pool._reset_addr_to_future_dict("addr1")
     mock_future = MagicMock()
     pool._addr_to_future["addr1"]["future"] = mock_future
-    with patch('ray.get', return_value=("addr1", "result")):
+    with patch("ray.get", return_value=("addr1", "result")):
         result = pool._fetch_future_result("addr1")
 
-    assert result == ('addr1', 'result')
+    assert result == ("addr1", "result")
+
 
 def test_flag_actor_for_removal():
     """
@@ -100,6 +106,7 @@ def test_flag_actor_for_removal():
     mock_actor_id = "actor_id_hex"
     pool._flag_actor_for_removal(mock_actor_id)
     assert mock_actor_id in pool.actor_to_remove
+
 
 def test_check_and_remove_actor_from_pool():
     """
@@ -119,6 +126,7 @@ def test_check_and_remove_actor_from_pool():
     result = pool._check_and_remove_actor_from_pool(mock_actor)
     assert result is False
 
+
 def test_check_actor_fits_in_pool():
     """
     Test the _check_actor_fits_in_pool method of the SuperActorPool class.
@@ -132,9 +140,10 @@ def test_check_actor_fits_in_pool():
     """
     pool = SuperActorPool(resources={"num_cpus": 2})
     pool.num_actors = 10
-    with patch('p2pfl.simulation.utils.pool_size_from_resources', return_value=5):
+    with patch("p2pfl.learning.simulation.utils.pool_size_from_resources", return_value=5):
         result = pool._check_actor_fits_in_pool()
     assert result is False
+
 
 def test_submit_learner_job_with_idle_actor():
     """
@@ -153,10 +162,11 @@ def test_submit_learner_job_with_idle_actor():
     mock_learner = MagicMock()
     mock_addr = "addr1"
 
-    with patch.object(pool, 'submit') as mock_submit:
+    with patch.object(pool, "submit") as mock_submit:
         pool.submit_learner_job(mock_fn, (mock_addr, mock_learner))
 
     mock_submit.assert_called_once_with(mock_fn, (mock_addr, mock_learner))
+
 
 def test_submit_learner_job_with_no_idle_actor():
     """
@@ -179,6 +189,7 @@ def test_submit_learner_job_with_no_idle_actor():
 
     assert pool._pending_submits == [(mock_fn, (mock_addr, mock_learner))]
 
+
 def test_process_unordered_future():
     """
     Test the process_unordered_future method of the SuperActorPool class.
@@ -196,14 +207,14 @@ def test_process_unordered_future():
     mock_addr = "addr1"
     pool._future_to_actor[mock_future] = (0, mock_actor, mock_addr)
 
-    with patch('ray.wait', return_value=([mock_future], [])), \
-         patch.object(pool, '_check_actor_fits_in_pool', return_value=True), \
-         patch.object(pool, '_check_and_remove_actor_from_pool', return_value=True), \
-         patch.object(pool, '_return_actor') as mock_return_actor:
-                pool.process_unordered_future()
+    with patch("ray.wait", return_value=([mock_future], [])), patch.object(
+        pool, "_check_actor_fits_in_pool", return_value=True
+    ), patch.object(pool, "_check_and_remove_actor_from_pool", return_value=True), patch.object(pool, "_return_actor") as mock_return_actor:
+        pool.process_unordered_future()
 
     mock_return_actor.assert_called_once_with(mock_actor)
     assert pool._addr_to_future[mock_addr]["ready"] is True
+
 
 def test_get_learner_result():
     """
@@ -221,7 +232,7 @@ def test_get_learner_result():
     pool._reset_addr_to_future_dict("addr1")
     mock_future = MagicMock()
     pool._addr_to_future["addr1"]["future"] = mock_future
-    with patch('ray.get', return_value=("addr1", "result")):
+    with patch("ray.get", return_value=("addr1", "result")):
         result = pool.get_learner_result("addr1", timeout=None)
 
-    assert result == ('addr1', 'result')
+    assert result == ("addr1", "result")

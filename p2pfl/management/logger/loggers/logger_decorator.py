@@ -19,7 +19,7 @@
 """Decorator for the logger to be used in the simulation."""
 
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from p2pfl.experiment import Experiment
 from p2pfl.management.logger.logger import P2PFLogger
@@ -86,9 +86,7 @@ class P2PFLoggerDecorator(P2PFLogger):
         """
         self._p2pflogger.critical(node, message)
 
-    def log_metric(self, addr: str, metric: str,
-                   value: float, round: int | None = None,
-                   step: int | None = None) -> None:
+    def log_metric(self, addr: str, metric: str, value: float, round: int | None = None, step: int | None = None) -> None:
         """
         Log a metric.
 
@@ -168,7 +166,7 @@ class P2PFLoggerDecorator(P2PFLogger):
         """
         return self._p2pflogger.get_level_name(lvl)
 
-    def set_level(self, level: int) -> None:
+    def set_level(self, level: Union[int, str]) -> None:
         """
         Set the logger level.
 
@@ -200,7 +198,7 @@ class P2PFLoggerDecorator(P2PFLogger):
         """
         self._p2pflogger.log(level, node, message)
 
-    def experiment_started(self, node: str, experiment: Experiment|None) -> None:
+    def experiment_started(self, node: str, experiment: Experiment | None) -> None:
         """
         Notify the experiment start.
 
@@ -209,7 +207,7 @@ class P2PFLoggerDecorator(P2PFLogger):
             experiment: The experiment.
 
         """
-        self._p2pflogger.experiment_started(node,experiment)
+        self._p2pflogger.experiment_started(node, experiment)
 
     def experiment_finished(self, node: str) -> None:
         """
@@ -221,7 +219,7 @@ class P2PFLoggerDecorator(P2PFLogger):
         """
         self._p2pflogger.experiment_finished(node)
 
-    def round_started(self, node: str, experiment: Experiment|None) -> None:
+    def round_started(self, node: str, experiment: Experiment | None) -> None:
         """
         Notify the round start.
 
@@ -230,7 +228,7 @@ class P2PFLoggerDecorator(P2PFLogger):
             experiment: The experiment.
 
         """
-        self._p2pflogger.round_started(node,experiment)
+        self._p2pflogger.round_started(node, experiment)
 
     def round_finished(self, node: str) -> None:
         """
