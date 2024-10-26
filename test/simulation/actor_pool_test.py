@@ -38,7 +38,7 @@ def test_super_actor_pool_singleton():
 def test_create_actor_with_correct_resources():
     """Test the create_actor method of the SuperActorPool class with the correct."""
     pool = SuperActorPool(resources={"num_cpus": 2})
-    with patch("p2pfl.learning.simulation.actor.VirtualLearnerActor.options") as mock_options:
+    with patch("p2pfl.learning.simulation.actor_pool.VirtualLearnerActor.options") as mock_options:
         mock_options.return_value.remote.return_value = MagicMock()
         actor = pool.create_actor()
         mock_options.assert_called_once_with(num_cpus=2)

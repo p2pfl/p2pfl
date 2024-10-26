@@ -252,3 +252,7 @@ def test_torch_node():
     # Stop
     n1.stop()
     n2.stop()
+
+def __test_model_is_learning():
+    pass
+

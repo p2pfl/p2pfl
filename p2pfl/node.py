@@ -38,7 +38,7 @@ from p2pfl.communication.protocols.grpc.grpc_communication_protocol import (
     GrpcCommunicationProtocol,
 )
 from p2pfl.exceptions import LearnerRunningException, NodeRunningException, ZeroRoundsException
-from p2pfl.learning import create_learner
+from p2pfl.learning import try_init_learner_with_ray
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
@@ -103,7 +103,7 @@ class Node:
         self.addr = self._communication_protocol.get_address()
 
         # Learning
-        self.learner = create_learner(learner, model, data, self.addr)
+        self.learner = try_init_learner_with_ray(learner, model, data, self.addr)
         self.aggregator = aggregator(node_name=self.addr)
 
         # State

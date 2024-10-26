@@ -17,6 +17,7 @@
 #
 """Virtual Node Learner."""
 
+import contextlib
 from typing import Dict, List, Union
 
 import numpy as np
@@ -114,10 +115,14 @@ class VirtualNodeLearner(NodeLearner):
 
     def interrupt_fit(self) -> None:
         """Interrupt the fit process."""
-        self.actor_pool.submit(
-            lambda actor: actor.interrupt_fit.remote(),
-            (str(self.addr), self.learner),
-        )
+        self.actor_pool.interrupt_submit(str(self.addr))
+        """
+        with contextlib.suppress(KeyError): # If training is not running
+            .submit(
+                lambda actor, addr, learner: actor.interrupt_fit.remote(addr, learner),
+                (str(self.addr), self.learner),
+            )
+        """
 
     def evaluate(self) -> Dict[str, float]:
         """

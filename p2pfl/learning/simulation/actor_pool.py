@@ -18,6 +18,7 @@
 
 """Actor pool for distributed computing using Ray."""
 
+import contextlib
 import threading
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -35,17 +36,19 @@ from p2pfl.management.logger import logger
 # Original implementation: https://github.com/adap/flower/blob/main/src/py/flwr/simulation/ray_transport/ray_actor.py
 ###
 
-
 @ray.remote
 class VirtualLearnerActor:
     """Decorator for the learner to be used in the simulation."""
+
+    def __init__(self):
+        print("ME INICIALIZO!!!!")
 
     def terminate(self) -> None:
         """Manually terminate Actor object."""
         logger.debug(self.__class__.__name__, f"Manually terminating {self.__class__.__name__}")
         ray.actor.exit_actor()
 
-    def fit(self, learner: NodeLearner, addr: str) -> Tuple[str, P2PFLModel]:
+    def fit(self, addr: str, learner: NodeLearner) -> Tuple[str, P2PFLModel]:
         """Fit the model."""
         try:
             model = learner.fit()
@@ -55,7 +58,7 @@ class VirtualLearnerActor:
 
         return addr, model
 
-    def evaluate(self, learner: NodeLearner, addr: str) -> Tuple[str, Dict[str, float]]:
+    def evaluate(self, addr: str, learner: NodeLearner) -> Tuple[str, Dict[str, float]]:
         """Evaluate the model."""
         try:
             results = learner.evaluate()
@@ -65,7 +68,7 @@ class VirtualLearnerActor:
 
         return addr, results
 
-    def interrupt_fit(self, learner: NodeLearner, addr: str) -> Tuple[str, None]:
+    def interrupt_fit(self, addr: str, learner: NodeLearner) -> Tuple[str, None]:
         """Interrupt the fit."""
         try:
             learner.interrupt_fit()
@@ -100,7 +103,7 @@ class SuperActorPool(ActorPool):
         Singleton instance creation for SuperActorPool.
 
         Returns:
-            SuperActorPool: Singleton instance of SuperActorPool.
+            Singleton instance of SuperActorPool.
 
         """
         with cls._lock:
@@ -113,8 +116,8 @@ class SuperActorPool(ActorPool):
         Initialize SuperActorPool.
 
         Args:
-            resources (dict, optional): Resources for actor creation. Defaults to None.
-            actor_list (List[Type[VirtualLearnerActor]], optional): List of pre-created actor instances. Defaults to None.
+            resources: Resources for actor creation. Defaults to None.
+            actor_list: List of pre-created actor instances. Defaults to None.
 
         """
         if not hasattr(self, "initialized"):  # To avoid reinitialization
@@ -133,6 +136,7 @@ class SuperActorPool(ActorPool):
             self._addr_to_future: dict[str, dict[str, Any]] = {}
             self.actor_to_remove: Set[str] = set()  # a set of actor ids to be removed
             self.num_actors = len(actors)
+            logger.info("ActorPool", f"Initialized with {self.num_actors} actors")
 
             self.lock = threading.RLock()
 
@@ -143,7 +147,7 @@ class SuperActorPool(ActorPool):
         Reduces the SuperActorPool instance to its constructor arguments.
 
         Returns:
-            Tuple[Type[SuperActorPool], Tuple]: Constructor arguments for SuperActorPool.
+            Constructor arguments for SuperActorPool.
 
         """
         return SuperActorPool, (
@@ -156,7 +160,7 @@ class SuperActorPool(ActorPool):
         Create a new VirtualLearnerActor instance using provided resources.
 
         Returns:
-            VirtualLearnerActor ray handler: New actor instance.
+            New actor instance.
 
         """
         return VirtualLearnerActor.options(**self.resources).remote()  # type: ignore
@@ -166,29 +170,29 @@ class SuperActorPool(ActorPool):
         Add a specified number of actors to the pool.
 
         Args:
-            num_actors (int): Number of actors to add.
+            num_actors: Number of actors to add.
 
         """
         with self.lock:
             new_actors = [self.create_actor() for _ in range(num_actors)]
             self._idle_actors.extend(new_actors)
             self.num_actors += num_actors
-            logger.debug("ActorPool", f"Created {num_actors} actors")
+            logger.info("ActorPool", f"Created {num_actors} actors")
 
     def submit(self, fn: Any, value: Tuple[str, NodeLearner]) -> None:
         """
         Submit a task to an idle actor in the pool.
 
         Args:
-            fn (Any): Function to be executed by the actor.
-            value (Tuple[str, NodeLearner]): Tuple containing address and learner information.
+            fn: Function to be executed by the actor.
+            value: Tuple containing address and learner information.
 
         """
         addr, learner = value
         actor = self._idle_actors.pop()
 
         if self._check_and_remove_actor_from_pool(actor):
-            future = fn(actor, learner, addr)
+            future = fn(actor, addr, learner)
             future_key = tuple(future) if isinstance(future, list) else future
             self._future_to_actor[future_key] = (self._next_task_index, actor, addr)
             self._next_task_index += 1
@@ -199,8 +203,8 @@ class SuperActorPool(ActorPool):
         Submit a learner job to the pool, handling pending submits if no idle actors are available.
 
         Args:
-            actor_fn (Any): Function to be executed by the actor.
-            job (Tuple[str, NodeLearner]): Tuple containing address and learner information.
+            actor_fn: Function to be executed by the actor.
+            job: Tuple containing address and learner information.
 
         """
         addr, _ = job
@@ -211,12 +215,31 @@ class SuperActorPool(ActorPool):
             else:
                 self._pending_submits.append((actor_fn, job))
 
+    def interrupt_submit(self, addr: str) -> None:
+        """Interrupts a submitted task."""
+        with self.lock:
+            if addr in self._addr_to_future and self._addr_to_future[addr]["future"] is not None:
+                ###
+                # If being executed, interrupt the train
+                ###
+                future_key = self._addr_to_future[addr]["future"]
+                _, actor, _ = self._future_to_actor[future_key]
+                actor.interrupt_fit.remote(addr)  # Call interrupt_fit on the actor
+            else:
+                ###
+                # If its on the queue
+                ###
+                for i, (_, (pending_addr, _)) in enumerate(self._pending_submits):
+                    if pending_addr == addr:
+                        self._pending_submits.pop(i)
+                        break
+
     def _flag_future_as_ready(self, addr: str) -> None:
         """
         Flag the future associated with the given address as ready.
 
         Args:
-            addr (str): Address of the future to flag.
+            addr: Address of the future to flag.
 
         """
         self._addr_to_future[addr]["ready"] = True
@@ -226,7 +249,7 @@ class SuperActorPool(ActorPool):
         Reset the future dictionary for a given address.
 
         Args:
-            addr (str): Address to reset in the future dictionary.
+            addr: Address to reset in the future dictionary.
 
         """
         if addr not in self._addr_to_future:
@@ -239,10 +262,10 @@ class SuperActorPool(ActorPool):
         Check if the future associated with the given address is ready.
 
         Args:
-            addr (str): Address of the future to check.
+            addr: Address of the future to check.
 
         Returns:
-            bool: True if future is ready, False otherwise.
+            True if future is ready, False otherwise.
 
         """
         if addr not in self._addr_to_future:
@@ -255,10 +278,10 @@ class SuperActorPool(ActorPool):
         Fetch the result of a future associated with the given address.
 
         Args:
-            addr (str): Address of the future to fetch.
+            addr: Address of the future to fetch.
 
         Returns:
-            Tuple[Any, Any]: Address and result fetched from the future.
+            Address and result fetched from the future.
 
         """
         try:
@@ -278,7 +301,7 @@ class SuperActorPool(ActorPool):
         Flag a specified actor for removal from the pool.
 
         Args:
-            actor_id_hex (str): ID of the actor to be removed.
+            actor_id_hex: ID of the actor to be removed.
 
         """
         with self.lock:
@@ -290,10 +313,10 @@ class SuperActorPool(ActorPool):
         Check if an actor should be removed from the pool based on flagged removals.
 
         Args:
-            actor (VirtualLearnerActor): Actor instance to check.
+            actor: Actor instance to check.
 
         Returns:
-            bool: True if the actor should not be removed, False otherwise.
+            True if the actor should not be removed, False otherwise.
 
         """
         with self.lock:
@@ -310,7 +333,7 @@ class SuperActorPool(ActorPool):
         Check if the current number of actors in the pool is within resource limits.
 
         Returns:
-            bool: True if the number of actors is within limits, False otherwise.
+            True if the number of actors is within limits, False otherwise.
 
         """
         num_actors_updated = pool_size_from_resources(self.resources)
@@ -324,7 +347,7 @@ class SuperActorPool(ActorPool):
         Process the next unordered future result from the pool.
 
         Args:
-            timeout (float, optional): Timeout for processing the future. Defaults to None.
+            timeout: Timeout for processing the future. Defaults to None.
 
         Raises:
             StopIteration: If no more results are available.
@@ -353,11 +376,11 @@ class SuperActorPool(ActorPool):
         Retrieve the learner result associated with the given address.
 
         Args:
-            addr (str): Address of the learner result to retrieve.
-            timeout (float, optional): Timeout for retrieving the result. Defaults to None.
+            addr: Address of the learner result to retrieve.
+            timeout: Timeout for retrieving the result. Defaults to None.
 
         Returns:
-            Tuple[Any, Any]: Address and result of the learner job.
+            Address and result of the learner job.
 
         """
         while self.has_next() and not self._is_future_ready(addr):  # type: ignore

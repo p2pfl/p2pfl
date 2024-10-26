@@ -12,7 +12,7 @@ from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.p2pfl_model import P2PFLModel
 
 
-def create_learner(learner: type[NodeLearner], model: P2PFLModel, data: P2PFLDataset, addr: str):
+def try_init_learner_with_ray(learner: type[NodeLearner], model: P2PFLModel, data: P2PFLDataset, addr: str):
     """
     Create a learner instance.
 
