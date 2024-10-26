@@ -17,6 +17,10 @@
 #
 """ML Framework tests."""
 
+from typing import Generator
+
+import jax
+import jax.numpy as jnp
 import numpy as np
 import pytest
 import tensorflow as tf
@@ -26,6 +30,10 @@ from torch.utils.data import DataLoader
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.exceptions import ModelNotMatchingError
+from p2pfl.learning.flax.flax_dataset import FlaxExportStrategy
+from p2pfl.learning.flax.flax_learner import FlaxLearner
+from p2pfl.learning.flax.flax_model import MLP as MLP_FLASK
+from p2pfl.learning.flax.flax_model import FlaxModel
 from p2pfl.learning.pytorch.lightning_dataset import PyTorchExportStrategy, TorchvisionDatasetFactory
 from p2pfl.learning.pytorch.lightning_learner import LightningLearner
 from p2pfl.learning.pytorch.lightning_model import MLP as MLP_PT
@@ -74,6 +82,39 @@ def test_get_set_params_tensorflow():
         assert np.all(layer_og + 1 == layer_new)
 
 
+def test_get_set_params_flax():
+    """Test setting and getting parameters."""
+    # Create the model
+    model = MLP_FLASK()
+    seed = jax.random.PRNGKey(0)
+    model_params = model.init(seed, jnp.ones((1, 28, 28)))["params"]
+    p2pfl_model = FlaxModel(model)
+    p2pfl_model.set_parameters(model_params)
+
+    # Save internal flax-model repr
+    _flax_params = p2pfl_model.model_params.copy()
+    params = p2pfl_model.get_parameters()
+    p2pfl_model.set_parameters(params)
+
+    # Check that flax to numpy arrays transformation works
+    for layer in _flax_params:
+        for param in _flax_params[layer]:
+            assert np.array_equal(
+                _flax_params[layer][param], p2pfl_model.model_params[layer][param]
+            ), f"Mismatch found in {layer} - {param}"
+
+    # Modify parameters
+    params = p2pfl_model.get_parameters()
+    params_og = [layer.copy() for layer in p2pfl_model.get_parameters()]
+    for i, layer in enumerate(params):
+        params[i] = layer + 1
+    # Set parameters
+    p2pfl_model.set_parameters(params)
+    # Check if the parameters are different (+1)
+    for layer_og, layer_new in zip(params_og, p2pfl_model.get_parameters()):
+        assert np.all(layer_og + 1 == layer_new)
+
+
 def test_encoding_torch():
     """Test encoding and decoding of parameters."""
     p2pfl_model1 = LightningModel(MLP_PT())
@@ -102,6 +143,27 @@ def test_encoding_tensorflow():
     assert encoded_params == p2pfl_model1.encode_parameters()
 
 
+def test_encoding_flax():
+    """Test encoding and decoding of parameters."""
+    model1 = MLP_FLASK()
+    seed = jax.random.PRNGKey(0)
+    model_params = model1.init(seed, jnp.ones((1, 28, 28)))["params"]
+    p2pfl_model1 = FlaxModel(model1)
+    p2pfl_model1.set_parameters(model_params)
+    encoded_params = p2pfl_model1.encode_parameters()
+
+    model2 = MLP_FLASK()
+    seed = jax.random.PRNGKey(1)
+    model_params = model2.init(seed, jnp.ones((1, 28, 28)))["params"]
+    p2pfl_model2 = FlaxModel(model2)
+    p2pfl_model2.set_parameters(model_params)
+    decoded_params = p2pfl_model2.decode_parameters(encoded_params)
+    p2pfl_model2.set_parameters(decoded_params)
+
+    for arr1, arr2 in zip(p2pfl_model1.get_parameters(), p2pfl_model2.get_parameters()):
+        assert np.array_equal(arr1, arr2)
+
+
 def test_wrong_encoding_torch():
     """Test wrong encoding of parameters."""
     p2pfl_model1 = LightningModel(MLP_PT())
@@ -123,6 +185,25 @@ def test_wrong_encoding_tensorflow():
     mobile_net = model = tf.keras.applications.MobileNetV2((32, 32, 3), classes=10, weights=None)
     p2pfl_model2 = KerasModel(mobile_net)
     decoded_params = p2pfl_model2.decode_parameters(encoded_params)
+    # Check that raises
+    with pytest.raises(ModelNotMatchingError):
+        p2pfl_model2.set_parameters(decoded_params)
+
+
+def test_wrong_encoding_flax():
+    """Test wrong encoding of parameters."""
+    model1 = MLP_FLASK()
+    seed = jax.random.PRNGKey(0)
+    model_params1 = model1.init(seed, jnp.ones((1, 28, 28)))["params"]
+    p2pfl_model1 = FlaxModel(model1)
+    p2pfl_model1.set_parameters(model_params1)
+    encoded_params = p2pfl_model1.encode_parameters()
+    model2 = MLP_FLASK()
+    model2.hidden_sizes = (256, 128, 256, 128)
+    model_params2 = model2.init(seed, jnp.ones((1, 28, 28)))["params"]
+    p2pfl_model2 = FlaxModel(model2)
+    p2pfl_model2.set_parameters(model_params2)
+    decoded_params = p2pfl_model1.decode_parameters(encoded_params)
     # Check that raises
     with pytest.raises(ModelNotMatchingError):
         p2pfl_model2.set_parameters(decoded_params)
@@ -202,6 +283,31 @@ def test_tensorflow_export_strategy():
     assert sample[0].shape == (1, 28, 28)
 
 
+def test_flax_export_strategy():
+    """Test the FlaxExportStrategy."""
+    dataset = TorchvisionDatasetFactory.get_mnist(cache_dir=".", train=True, download=True)
+
+    export_strategy = FlaxExportStrategy()
+    train_data = dataset.export(export_strategy, train_loader=True, batch_size=1)
+    test_data = dataset.export(export_strategy, train_loader=False, batch_size=1)
+
+    assert isinstance(train_data, Generator)
+    assert isinstance(test_data, Generator)
+
+    # Check if data
+    assert train_data is not None
+    assert test_data is not None
+
+    # Check if the data is loaded correctly
+    x, y = next(iter(train_data))
+
+    assert isinstance(x, jnp.ndarray)
+    assert x.shape == (1, 28, 28)
+
+    assert isinstance(y, jnp.ndarray)
+    assert y.shape == (1,)
+
+
 def test_learner_train_torch():
     """Test the training and testing of the learner."""
     # Dataset
@@ -247,6 +353,35 @@ def test_learner_train_tensorflow():
 
     # Learner
     learner = KerasLearner(p2pfl_model, dataset)
+
+    # Train
+    learner.set_epochs(1)
+    learner.fit()
+
+    # Test
+    learner.evaluate()
+
+
+def test_learner_train_flax():
+    """Test the training and testing of the learner."""
+    # Dataset
+    dataset = P2PFLDataset(
+        DatasetDict(
+            {
+                "train": load_dataset("p2pfl/MNIST", split="train[:100]"),
+                "test": load_dataset("p2pfl/MNIST", split="test[:10]"),
+            }
+        )
+    )
+
+    # Create the model
+    model = MLP_FLASK()
+    seed = jax.random.PRNGKey(0)
+    model_params = model.init(seed, jnp.ones((1, 28, 28)))["params"]
+    p2pfl_model = FlaxModel(model)
+    p2pfl_model.set_parameters(model_params)
+    # Learner
+    learner = FlaxLearner(p2pfl_model, dataset)
 
     # Train
     learner.set_epochs(1)
