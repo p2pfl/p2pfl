@@ -36,7 +36,7 @@ from p2pfl.learning.p2pfl_model import P2PFLModel
 class FlaxModel(P2PFLModel):
     """P2PFL model abstraction for Flax."""
 
-    model: nn.Module = None
+    model: nn.Module
     model_params: Optional[Dict[str, Any]] = None
 
     @staticmethod
@@ -58,7 +58,7 @@ class FlaxModel(P2PFLModel):
             The parameters of the model as a list of NumPy arrays.
 
         """
-        return self.__dict_to_np(self.model_params)
+        return self.__dict_to_np(self.model_params) if self.model_params else []
 
     def set_parameters(self, params: Union[List[np.ndarray], bytes]) -> None:
         """
@@ -75,10 +75,13 @@ class FlaxModel(P2PFLModel):
             params = self.decode_parameters(params)
 
         try:
-            if self.model_params is None:
-                self.model_params = params
-            else:
+            if not self.model_params:
+                # TODO: fix this typing issue
+                self.model_params = params  # type: ignore
+            elif isinstance(params, List):
                 self.__np_to_dict(self.model_params, params)
+            else:
+                raise ValueError("Unvalid parameters.")
         except Exception as e:
             raise ModelNotMatchingError("Not matching models") from e
 
@@ -90,8 +93,15 @@ class FlaxModel(P2PFLModel):
             params: The parameters of the model.
 
         """
-        params = self.model_params if params is None else self.__np_to_dict(copy.deepcopy(self.model_params), params)
-        return pickle.dumps(params)
+        model_params = (
+            self.model_params
+            if not (params and self.model_params)
+            else self.__np_to_dict(
+                copy.deepcopy(self.model_params),
+                params,
+            )
+        )
+        return pickle.dumps(model_params)
 
     def decode_parameters(self, data: bytes) -> List[np.ndarray]:
         """
@@ -115,7 +125,7 @@ class FlaxModel(P2PFLModel):
             A copy of the model.
 
         """
-        flax_model = super().build_copy(**kwargs)
+        flax_model = self.__class__(copy.deepcopy(self.model), **kwargs)
         flax_model.model_params = copy.deepcopy(self.model_params)
         return flax_model
 

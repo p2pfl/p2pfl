@@ -23,7 +23,7 @@ from typing import Dict, List, Tuple, Union
 import jax
 import jax.numpy as jnp
 import numpy as np
-import optax
+import optax  # type: ignore
 from flax.training import train_state
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
@@ -54,7 +54,7 @@ class FlaxLearner(NodeLearner):
 
         # Initialize optimizer
         self.optimizer = optax.adam(learning_rate=1e-3)
-        self.state = train_state.TrainState.create(apply_fn=self.model.model.apply, params=self.model.model_params, tx=self.optimizer)
+        self.state = train_state.TrainState.create(apply_fn=self.model.model.apply, params=self.model.model_params, tx=self.optimizer)  # type: ignore
 
     def set_model(self, model: Union[P2PFLModel, List[np.ndarray], bytes]) -> None:
         """Set the model of the learner."""
@@ -101,11 +101,11 @@ class FlaxLearner(NodeLearner):
             return loss
 
         grads = jax.grad(loss_fn)(state.params)  # Compute gradients
-        new_state = state.apply_gradients(grads=grads)  # Update state with new gradients
+        new_state = state.apply_gradients(grads=grads)  # type: ignore
         return new_state
 
     def fit(self) -> None:
-        """Fit the model with validation."""
+        """Fit the model."""
         try:
             if self.epochs > 0:
                 # Get training and validation data

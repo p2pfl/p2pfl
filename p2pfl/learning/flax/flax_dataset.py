@@ -21,7 +21,7 @@
 from typing import Any, Callable, Generator, Optional, Tuple
 
 import jax.numpy as jnp
-from datasets import Dataset
+from datasets import Dataset  # type: ignore
 from torch.utils.data import DataLoader
 
 from p2pfl.learning.dataset.p2pfl_dataset import DataExportStrategy
