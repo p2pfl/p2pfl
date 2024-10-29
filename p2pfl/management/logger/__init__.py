@@ -18,8 +18,6 @@
 
 """Provides a logger singleton that can be used to log messages from different parts of the codebase."""
 
-import importlib.util
-
 from p2pfl.management.logger.decorators.async_logger import AsyncLogger
 from p2pfl.management.logger.decorators.file_logger import FileLogger
 from p2pfl.management.logger.decorators.singleton_logger import SingletonLogger

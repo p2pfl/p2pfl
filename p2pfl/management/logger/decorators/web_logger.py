@@ -109,7 +109,7 @@ class WebP2PFLogger(LoggerDecorator):
         """
         if self._p2pfl_web_services is not None:
             raise Exception("Web services already connected.")
-        self.p2pfl_web_services = P2pflWebServices(url, key)
+        self._p2pfl_web_services = P2pflWebServices(url, key)
         self.add_handler(P2pflWebLogHandler(self._p2pfl_web_services))
 
     def log_metric(self, addr: str, metric: str, value: float, round: int | None = None, step: int | None = None) -> None:
@@ -165,7 +165,7 @@ class WebP2PFLogger(LoggerDecorator):
         """
         super().register_node(node, simulation)
         if self._p2pfl_web_services is not None:
-            self.p2pfl_web_services.register_node(node, simulation)
+            self._p2pfl_web_services.register_node(node, simulation)
 
             # Start the node status reporter
             node_monitor = NodeMonitor(node, self.log_system_metric)
@@ -184,7 +184,7 @@ class WebP2PFLogger(LoggerDecorator):
         """
         super().unregister_node(node)
         if self._p2pfl_web_services is not None:
-            self.p2pfl_web_services.unregister_node(node)
+            self._p2pfl_web_services.unregister_node(node)
 
             # Node state
             n = self._p2pfl_logger._nodes[node]

@@ -5,8 +5,6 @@ Here basically you can find the different aggregation algorithms and the learner
 different machine learning libraries.
 """
 
-import importlib
-
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.p2pfl_model import P2PFLModel

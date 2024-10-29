@@ -16,14 +16,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import datetime
-import logging
-from typing import Any, Dict, Optional, Union
-
-from p2pfl.experiment import Experiment
-from p2pfl.management.metric_storage import GlobalLogsType, GlobalMetricStorage, LocalLogsType, LocalMetricStorage
-from p2pfl.settings import Settings
-
 """
 P2PFL Logger.
 
@@ -31,13 +23,13 @@ P2PFL Logger.
 
 """
 
-"""
-P2PFL Logger
-    - get_instance (para poder wrappear y que sea efectivo)
-    - P2PFLogger
-        - P2PFLoggerDecorator
-            - DEJA TODO COMO ESTÁ SALVO PARA X METODOS (HACE LÓGICA Y LUEGO DELEGA)
-"""
+import datetime
+import logging
+from typing import Any, Dict, Optional, Union
+
+from p2pfl.experiment import Experiment
+from p2pfl.management.metric_storage import GlobalLogsType, GlobalMetricStorage, LocalLogsType, LocalMetricStorage
+from p2pfl.settings import Settings
 
 ###################
 #    Exception    #
