@@ -32,7 +32,7 @@ from p2pfl.communication.protocols.exceptions import (
 from p2pfl.communication.protocols.grpc.grpc_communication_protocol import GrpcCommunicationProtocol
 from p2pfl.communication.protocols.memory.memory_communication_protocol import InMemoryCommunicationProtocol
 from p2pfl.settings import Settings
-from p2pfl.utils import set_test_settings, wait_convergence
+from p2pfl.utils.utils import set_test_settings, wait_convergence
 
 set_test_settings()
 

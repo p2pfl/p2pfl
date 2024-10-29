@@ -34,11 +34,9 @@ from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
 from p2pfl.learning.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
-from p2pfl.management.logger.loggers.web_logger import WebP2PFLogger
-from p2pfl.management.p2pfl_web_services import P2pflWebServices
 from p2pfl.node import Node
 from p2pfl.settings import Settings
-from p2pfl.utils import wait_convergence, wait_to_finish
+from p2pfl.utils.utils import wait_convergence, wait_to_finish
 
 
 def set_standalone_settings() -> None:
@@ -98,6 +96,7 @@ def __parse_args() -> argparse.Namespace:
     parser.add_argument("--token", type=str, help="The API token for the Web Logger.", default="")
     parser.add_argument("--tensorflow", action="store_true", help="Use TensorFlow.", default=False)
     parser.add_argument("--profiling", action="store_true", help="Enable profiling.", default=False)
+    parser.add_argument("--reduced_dataset", action="store_true", help="Use a reduced dataset just for testing.", default=False)
 
     # check (cannot use the unix socket and the local protocol at the same time)
     args = parser.parse_args()
@@ -117,6 +116,7 @@ def mnist(
     use_unix_socket: bool = False,
     use_local_protocol: bool = False,
     use_tensorflow: bool = False,
+    reduced_dataset: bool = False,
 ) -> None:
     """
     P2PFL MNIST experiment.
@@ -130,6 +130,7 @@ def mnist(
         use_unix_socket: Use Unix socket.
         use_local_protocol: Use local protocol
         use_tensorflow: Use TensorFlow.
+        reduced_dataset: Use a reduced dataset just for testing.
 
     """
     if measure_time:
@@ -143,7 +144,10 @@ def mnist(
 
     # Data
     data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
-    partitions = data.generate_partitions(n, RandomIIDPartitionStrategy)  # type: ignore
+    partitions = data.generate_partitions(
+        n * 100 if reduced_dataset else n,
+        RandomIIDPartitionStrategy,  # type: ignore
+    )
 
     # Node Creation
     nodes = []
@@ -256,7 +260,7 @@ if __name__ == "__main__":
 
     # Set logger
     if args.token != "":
-        logger = WebP2PFLogger(logger, P2pflWebServices("http://localhost:3000/api/v1", args.token))
+        logger.connect_web("http://localhost:3000/api/v1", args.token)
 
     # Launch experiment
     try:
@@ -268,6 +272,7 @@ if __name__ == "__main__":
             measure_time=args.measure_time,
             use_unix_socket=args.use_unix_socket,
             use_local_protocol=args.use_local_protocol,
+            reduced_dataset=args.reduced_dataset,
         )
     finally:
         if args.profiling:

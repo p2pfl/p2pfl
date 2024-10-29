@@ -18,7 +18,6 @@
 
 """Actor pool for distributed computing using Ray."""
 
-import contextlib
 import threading
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -36,12 +35,10 @@ from p2pfl.management.logger import logger
 # Original implementation: https://github.com/adap/flower/blob/main/src/py/flwr/simulation/ray_transport/ray_actor.py
 ###
 
+
 @ray.remote
 class VirtualLearnerActor:
     """Decorator for the learner to be used in the simulation."""
-
-    def __init__(self):
-        print("ME INICIALIZO!!!!")
 
     def terminate(self) -> None:
         """Manually terminate Actor object."""
@@ -67,16 +64,6 @@ class VirtualLearnerActor:
             raise ex
 
         return addr, results
-
-    def interrupt_fit(self, addr: str, learner: NodeLearner) -> Tuple[str, None]:
-        """Interrupt the fit."""
-        try:
-            learner.interrupt_fit()
-
-        except Exception as ex:
-            raise ex
-
-        return addr, None
 
 
 class SuperActorPool(ActorPool):
@@ -137,9 +124,7 @@ class SuperActorPool(ActorPool):
             self.actor_to_remove: Set[str] = set()  # a set of actor ids to be removed
             self.num_actors = len(actors)
             logger.info("ActorPool", f"Initialized with {self.num_actors} actors")
-
             self.lock = threading.RLock()
-
             self.initialized = True  # Mark as initialized
 
     def __reduce__(self):
@@ -214,25 +199,6 @@ class SuperActorPool(ActorPool):
                 self.submit(actor_fn, job)
             else:
                 self._pending_submits.append((actor_fn, job))
-
-    def interrupt_submit(self, addr: str) -> None:
-        """Interrupts a submitted task."""
-        with self.lock:
-            if addr in self._addr_to_future and self._addr_to_future[addr]["future"] is not None:
-                ###
-                # If being executed, interrupt the train
-                ###
-                future_key = self._addr_to_future[addr]["future"]
-                _, actor, _ = self._future_to_actor[future_key]
-                actor.interrupt_fit.remote(addr)  # Call interrupt_fit on the actor
-            else:
-                ###
-                # If its on the queue
-                ###
-                for i, (_, (pending_addr, _)) in enumerate(self._pending_submits):
-                    if pending_addr == addr:
-                        self._pending_submits.pop(i)
-                        break
 
     def _flag_future_as_ready(self, addr: str) -> None:
         """

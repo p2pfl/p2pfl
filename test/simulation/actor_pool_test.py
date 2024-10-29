@@ -17,6 +17,7 @@
 #
 """Test the Ray Actor pool."""
 
+import time
 from unittest.mock import MagicMock, patch
 
 from p2pfl.learning.simulation.actor_pool import SuperActorPool
@@ -41,6 +42,7 @@ def test_create_actor_with_correct_resources():
     with patch("p2pfl.learning.simulation.actor_pool.VirtualLearnerActor.options") as mock_options:
         mock_options.return_value.remote.return_value = MagicMock()
         actor = pool.create_actor()
+        time.sleep(1)  # due to remotes
         mock_options.assert_called_once_with(num_cpus=2)
         mock_options.return_value.remote.assert_called_once()
         assert isinstance(actor, MagicMock)

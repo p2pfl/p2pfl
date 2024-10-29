@@ -22,19 +22,17 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 
+from p2pfl.management.logger.decorators.logger_decorator import LoggerDecorator
 from p2pfl.management.logger.logger import P2PFLogger
-from p2pfl.management.logger.loggers.logger_decorator import P2PFLoggerDecorator
 from p2pfl.settings import Settings
 
 
-class FileP2PFLogger(P2PFLoggerDecorator):
+class FileLogger(LoggerDecorator):
     """File logger decorator."""
-
-    _p2pflogger: P2PFLogger
 
     def __init__(self, p2pflogger: P2PFLogger):
         """Initialize the logger."""
-        self._p2pflogger = p2pflogger
+        super().__init__(p2pflogger)
 
         # Setup the file handler for logging
         self.setup_file_handler()

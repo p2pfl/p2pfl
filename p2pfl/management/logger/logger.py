@@ -16,6 +16,14 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+import datetime
+import logging
+from typing import Any, Dict, Optional, Union
+
+from p2pfl.experiment import Experiment
+from p2pfl.management.metric_storage import GlobalLogsType, GlobalMetricStorage, LocalLogsType, LocalMetricStorage
+from p2pfl.settings import Settings
+
 """
 P2PFL Logger.
 
@@ -23,100 +31,127 @@ P2PFL Logger.
 
 """
 
-import logging
-from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Union
+"""
+P2PFL Logger
+    - get_instance (para poder wrappear y que sea efectivo)
+    - P2PFLogger
+        - P2PFLoggerDecorator
+            - DEJA TODO COMO ESTÁ SALVO PARA X METODOS (HACE LÓGICA Y LUEGO DELEGA)
+"""
 
-from p2pfl.experiment import Experiment
-from p2pfl.management.metric_storage import GlobalLogsType, LocalLogsType
+###################
+#    Exception    #
+###################
 
 
-class P2PFLogger(ABC):
-    """Interface for the P2PFL Logger."""
+class NodeNotRegistered(Exception):
+    """Exception raised when a node is not registered."""
 
-    ######
-    # Singleton and instance management
-    ######
+    pass
 
-    _logger: logging.Logger
-    _nodes: Dict[str, Dict[Any, Any]]
-    _handlers: List[logging.Handler] = []
 
-    ######
-    # Getters and setters
-    ######
+#########################
+#    Colored logging    #
+#########################
 
-    @abstractmethod
-    def get_logger(self) -> logging.Logger:
+# COLORS
+GRAY = "\033[90m"
+RED = "\033[91m"
+YELLOW = "\033[93m"
+GREEN = "\033[92m"
+BLUE = "\033[94m"
+CYAN = "\033[96m"
+RESET = "\033[0m"
+
+
+class ColoredFormatter(logging.Formatter):
+    """Formatter that adds color to the log messages."""
+
+    def format(self, record):
         """
-        Get the logger instance.
-
-        Returns:
-            The logger instance.
-
-        """
-        pass
-
-    @abstractmethod
-    def get_nodes(self) -> Dict[str, Dict[Any, Any]]:
-        """
-        Get the registered nodes.
-
-        Returns:
-            The registered nodes.
-
-        """
-        pass
-
-    @abstractmethod
-    def get_handlers(self) -> List[logging.Handler]:
-        """
-        Get the logger handlers.
-
-        Returns:
-            The logger handlers.
-
-        """
-        pass
-
-    @abstractmethod
-    def set_logger(self, logger: logging.Logger) -> None:
-        """
-        Set the logger instance.
+        Format the log record with color.
 
         Args:
-            logger: The logger instance.
+            record: The log record.
 
         """
-        pass
+        # Warn level color
+        if record.levelname == "DEBUG":
+            record.levelname = BLUE + record.levelname + RESET
+        elif record.levelname == "INFO":
+            record.levelname = GREEN + record.levelname + RESET
+        elif record.levelname == "WARNING":
+            record.levelname = YELLOW + record.levelname + RESET
+        elif record.levelname == "ERROR" or record.levelname == "CRITICAL":
+            record.levelname = RED + record.levelname + RESET
+        return super().format(record)
 
-    @abstractmethod
-    def set_nodes(self, nodes: Dict[str, Dict[Any, Any]]) -> None:
+
+################
+#    Logger    #
+################
+
+
+class P2PFLogger:
+    """
+    Class that manages the node logging (not a singleton).
+
+    Args:
+        p2pfl_web_services: The P2PFL Web Services to log and monitor the nodes remotely.
+
+    """
+
+    def __init__(self, nodes: Optional[Dict[str, Dict[str, Any]]] = None, disable_locks: bool = False) -> None:
+        """Initialize the logger."""
+        # Node Information
+        self._nodes: Dict[str, Dict[Any, Any]] = nodes if nodes else {}
+
+        # Experiment Metrics
+        self.local_metrics = LocalMetricStorage(disable_locks=disable_locks)
+        self.global_metrics = GlobalMetricStorage(disable_locks=disable_locks)
+
+        # Python logging
+        self._logger = logging.getLogger("p2pfl")
+        if self._logger.handlers != []:
+            print(self._logger.handlers)
+            raise Exception("Logger already initialized.")
+        self._logger.propagate = False
+        self._logger.setLevel(logging.getLevelName(Settings.LOG_LEVEL))
+
+        # STDOUT - Handler
+        stream_handler = logging.StreamHandler()
+        cmd_formatter = ColoredFormatter(
+            f"{GRAY}[ {YELLOW}%(asctime)s {GRAY}| {CYAN}%(node)s {GRAY}| %(levelname)s{GRAY} ]:{RESET} %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+        stream_handler.setFormatter(cmd_formatter)
+        self._logger.addHandler(stream_handler)  # not async
+
+    def connect_web(self, url: str, key: str) -> None:
         """
-        Set the registered nodes.
+        Connect to the web services.
 
         Args:
-            nodes: The registered nodes.
+            url: The URL of the web services.
+            key: The API key.
 
         """
         pass
 
-    @abstractmethod
-    def set_handlers(self, handler: List[logging.Handler]) -> None:
-        """
-        Set the logger handlers.
+    def cleanup(self) -> None:
+        """Cleanup the logger."""
+        # Unregister nodes
+        for node in self._nodes:
+            self.unregister_node(node)
 
-        Args:
-            handler: The logger handlers.
-
-        """
-        pass
+        # Remove handlers from the logger
+        for handler in self._logger.handlers:
+            self._logger.removeHandler(handler)
 
     ######
     # Application logging
     ######
 
-    @abstractmethod
     def set_level(self, level: Union[int, str]) -> None:
         """
         Set the logger level.
@@ -125,9 +160,11 @@ class P2PFLogger(ABC):
             level: The logger level.
 
         """
-        pass
+        if isinstance(level, str):
+            self._logger.setLevel(logging.getLevelName(level))
+        else:
+            self._logger.setLevel(level)
 
-    @abstractmethod
     def get_level(self) -> int:
         """
         Get the logger level.
@@ -136,9 +173,8 @@ class P2PFLogger(ABC):
             The logger level.
 
         """
-        pass
+        return self._logger.getEffectiveLevel()
 
-    @abstractmethod
     def get_level_name(self, lvl: int) -> str:
         """
         Get the logger level name.
@@ -150,9 +186,8 @@ class P2PFLogger(ABC):
             The logger level name.
 
         """
-        pass
+        return logging.getLevelName(lvl)
 
-    @abstractmethod
     def info(self, node: str, message: str) -> None:
         """
         Log an info message.
@@ -162,9 +197,8 @@ class P2PFLogger(ABC):
             message: The message to log.
 
         """
-        pass
+        self.log(logging.INFO, node, message)
 
-    @abstractmethod
     def debug(self, node: str, message: str) -> None:
         """
         Log a debug message.
@@ -174,9 +208,8 @@ class P2PFLogger(ABC):
             message: The message to log.
 
         """
-        pass
+        self.log(logging.DEBUG, node, message)
 
-    @abstractmethod
     def warning(self, node: str, message: str) -> None:
         """
         Log a warning message.
@@ -186,9 +219,8 @@ class P2PFLogger(ABC):
             message: The message to log.
 
         """
-        pass
+        self.log(logging.WARNING, node, message)
 
-    @abstractmethod
     def error(self, node: str, message: str) -> None:
         """
         Log an error message.
@@ -198,9 +230,8 @@ class P2PFLogger(ABC):
             message: The message to log.
 
         """
-        pass
+        self.log(logging.ERROR, node, message)
 
-    @abstractmethod
     def critical(self, node: str, message: str) -> None:
         """
         Log a critical message.
@@ -210,9 +241,8 @@ class P2PFLogger(ABC):
             message: The message to log.
 
         """
-        pass
+        self.log(logging.CRITICAL, node, message)
 
-    @abstractmethod
     def log(self, level: int, node: str, message: str) -> None:
         """
         Log a message.
@@ -223,14 +253,32 @@ class P2PFLogger(ABC):
             message: The message to log.
 
         """
-        pass
+        # Traditional logging
+        if level == logging.DEBUG:
+            self._logger.debug(message, extra={"node": node})
+        elif level == logging.INFO:
+            self._logger.info(message, extra={"node": node})
+        elif level == logging.WARNING:
+            self._logger.warning(message, extra={"node": node})
+        elif level == logging.ERROR:
+            self._logger.error(message, extra={"node": node})
+        elif level == logging.CRITICAL:
+            self._logger.critical(message, extra={"node": node})
+        else:
+            raise ValueError(f"Invalid level: {level}")
 
     ######
     # Metrics
     ######
 
-    @abstractmethod
-    def log_metric(self, addr: str, metric: str, value: float, round: Optional[int] = None, step: Optional[int] = None) -> None:
+    def log_metric(
+        self,
+        addr: str,
+        metric: str,
+        value: float,
+        round: Optional[int] = None,
+        step: Optional[int] = None,
+    ) -> None:
         """
         Log a metric.
 
@@ -242,9 +290,30 @@ class P2PFLogger(ABC):
             round: The round.
 
         """
-        pass
+        # Get Experiment
+        try:
+            experiment = self._nodes[addr]["Experiment"]
+        except KeyError:
+            raise NodeNotRegistered(f"Node {addr} not registered.") from None
 
-    @abstractmethod
+        # Get Round
+        round = experiment.round
+        if round is None:
+            raise Exception("No round provided. Needed for training metrics.")
+
+        # Get Experiment Name
+        exp = experiment.exp_name
+        if exp is None:
+            raise Exception("No experiment name provided. Needed for training metrics.")
+
+        # Local storage
+        if step is None:
+            # Global Metrics
+            self.global_metrics.add_log(exp, experiment.round, metric, addr, value)
+        else:
+            # Local Metrics
+            self.local_metrics.add_log(exp, experiment.round, metric, addr, value, step)
+
     def get_local_logs(self) -> LocalLogsType:
         """
         Get the logs.
@@ -257,9 +326,8 @@ class P2PFLogger(ABC):
             The logs.
 
         """
-        pass
+        return self.local_metrics.get_all_logs()
 
-    @abstractmethod
     def get_global_logs(self) -> GlobalLogsType:
         """
         Get the logs.
@@ -272,13 +340,12 @@ class P2PFLogger(ABC):
             The logs.
 
         """
-        pass
+        return self.global_metrics.get_all_logs()
 
     ######
     # Node registration
     ######
 
-    @abstractmethod
     def register_node(self, node: str, simulation: bool) -> None:
         """
         Register a node.
@@ -288,9 +355,13 @@ class P2PFLogger(ABC):
             simulation: If the node is a simulation.
 
         """
-        pass
+        # Node State
+        if self._nodes.get(node) is None:
+            # Dict[str, Dict[str,Any]]
+            self._nodes[node] = {}
+        else:
+            raise Exception(f"Node {node} already registered.")
 
-    @abstractmethod
     def unregister_node(self, node: str) -> None:
         """
         Unregister a node.
@@ -299,13 +370,18 @@ class P2PFLogger(ABC):
             node: The node address.
 
         """
-        pass
+        # Node state
+        n = self._nodes[node]
+        if n is not None:
+            # Unregister the node
+            self._nodes.pop(node)
+        else:
+            raise Exception(f"Node {node} not registered.")
 
     ######
     # Node Status
     ######
 
-    @abstractmethod
     def experiment_started(self, node: str, experiment: Experiment | None) -> None:
         """
         Notify the experiment start.
@@ -315,9 +391,9 @@ class P2PFLogger(ABC):
             experiment: The experiment.
 
         """
-        pass
+        self.warning(node, "Uncatched Experiment Started on Logger")
+        self._nodes[node]["Experiment"] = experiment
 
-    @abstractmethod
     def experiment_finished(self, node: str) -> None:
         """
         Notify the experiment end.
@@ -326,9 +402,8 @@ class P2PFLogger(ABC):
             node: The node address.
 
         """
-        pass
+        self.warning(node, "Uncatched Experiment Ended on Logger")
 
-    @abstractmethod
     def round_started(self, node: str, experiment: Experiment | None) -> None:
         """
         Notify the round start.
@@ -338,9 +413,9 @@ class P2PFLogger(ABC):
             experiment: The experiment.
 
         """
-        pass
+        self.warning(node, "Uncatched Round Finished on Logger")
+        self._nodes[node]["Experiment"] = experiment
 
-    @abstractmethod
     def round_finished(self, node: str) -> None:
         """
         Notify the round end.
@@ -349,34 +424,38 @@ class P2PFLogger(ABC):
             node: The node address.
 
         """
-        pass
+        # r = self.nodes[node][1].round
+        self.warning(node, "Uncatched Round Finished on Logger")
 
-    @abstractmethod
-    def cleanup(self) -> None:
-        """Cleanup the logger."""
-        pass
+    def get_nodes(self) -> Dict[str, Dict[Any, Any]]:
+        """
+        Get the registered nodes.
 
-    ######
-    # Handlers
-    ######
-    @abstractmethod
+        Returns:
+            The registered nodes.
+
+        """
+        return self._nodes
+
     def add_handler(self, handler: logging.Handler) -> None:
         """
         Add a handler to the logger.
 
         Args:
-            handler: The handler to add.
+            handler: The logger handler.
+
+        """
+        self._logger.addHandler(handler)
+
+    def log_system_metric(self, node: str, metric: str, value: float, time: datetime.datetime) -> None:
+        """
+        Log a system metric.
+
+        Args:
+            node: The node name.
+            metric: The metric to log.
+            value: The value.
+            time: The time.
 
         """
         pass
-
-
-###################
-#    Exception    #
-###################
-
-
-class NodeNotRegistered(Exception):
-    """Exception raised when a node is not registered."""
-
-    pass

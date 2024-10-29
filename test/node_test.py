@@ -30,7 +30,7 @@ from p2pfl.learning.tensorflow.keras_learner import KerasLearner
 from p2pfl.learning.tensorflow.keras_model import MLP as MLP_KERAS
 from p2pfl.learning.tensorflow.keras_model import KerasModel
 from p2pfl.node import Node
-from p2pfl.utils import (
+from p2pfl.utils.utils import (
     check_equal_models,
     set_test_settings,
     wait_convergence,
@@ -108,7 +108,8 @@ def test_convergence(x):
     [n.stop() for n in nodes]
 
 
-def test_interrupt_train(two_nodes):
+# DISABLED! NOT IMPLEMENTED BY RAY/TF
+def _test_interrupt_train(two_nodes):
     """Test interrupting training of a node."""
     n1, n2 = two_nodes
     n1.connect(n2.addr)
@@ -253,6 +254,6 @@ def test_torch_node():
     n1.stop()
     n2.stop()
 
+
 def __test_model_is_learning():
     pass
-

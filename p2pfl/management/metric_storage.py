@@ -26,6 +26,7 @@ NodeLogsType = Dict[str, MetricsType]  # Node name -> MetricsType
 RoundLogsType = Dict[int, NodeLogsType]  # Round -> NodeLogsType
 LocalLogsType = Dict[str, RoundLogsType]  # Experiment -> RoundLogsType
 
+
 class LocalMetricStorage:
     """
     Local metric storage. It stores the metrics for each node in each round of each experiment.

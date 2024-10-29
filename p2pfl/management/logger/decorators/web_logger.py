@@ -20,10 +20,11 @@
 
 import datetime
 import logging
+from typing import Optional
 
 from p2pfl.experiment import Experiment
+from p2pfl.management.logger.decorators.logger_decorator import LoggerDecorator
 from p2pfl.management.logger.logger import NodeNotRegistered, P2PFLogger
-from p2pfl.management.logger.loggers.logger_decorator import P2PFLoggerDecorator
 from p2pfl.management.node_monitor import NodeMonitor
 from p2pfl.management.p2pfl_web_services import P2pflWebServices
 
@@ -89,19 +90,13 @@ class P2pflWebLogHandler(logging.Handler):
         )
 
 
-class WebP2PFLogger(P2PFLoggerDecorator):
+class WebP2PFLogger(LoggerDecorator):
     """Web logger decorator."""
 
-    _p2pflogger: P2PFLogger
-
-    def __init__(self, p2pflogger: P2PFLogger, p2pfl_web_services: P2pflWebServices):
+    def __init__(self, p2pflogger: P2PFLogger):
         """Initialize the logger."""
-        self._p2pflogger = p2pflogger
-        self.p2pfl_web_services = p2pfl_web_services
-
-        # Setup the web handler for the provided logger instance
-        web_handler = P2pflWebLogHandler(self.p2pfl_web_services)
-        self.add_handler(web_handler)
+        super().__init__(p2pflogger)
+        self._p2pfl_web_services: Optional[P2pflWebServices] = None
 
     def connect_web(self, url: str, key: str) -> None:
         """
@@ -112,14 +107,10 @@ class WebP2PFLogger(P2PFLoggerDecorator):
             key: The API key.
 
         """
-        # Create the instance
-        p2pfl_web = P2pflWebServices(url, key)
-
-        # P2PFL Web Services
-        self.p2pfl_web_services = p2pfl_web
-        if p2pfl_web is not None:
-            web_handler = P2pflWebLogHandler(p2pfl_web)
-            self.add_handler(web_handler)
+        if self._p2pfl_web_services is not None:
+            raise Exception("Web services already connected.")
+        self.p2pfl_web_services = P2pflWebServices(url, key)
+        self.add_handler(P2pflWebLogHandler(self._p2pfl_web_services))
 
     def log_metric(self, addr: str, metric: str, value: float, round: int | None = None, step: int | None = None) -> None:
         """
@@ -133,21 +124,20 @@ class WebP2PFLogger(P2PFLoggerDecorator):
             round: The round.
 
         """
-        self._p2pflogger.log_metric(addr, metric, value, round, step)
+        super().log_metric(addr, metric, value, round, step)
+        if self._p2pfl_web_services is not None:
+            # Get Experiment
+            try:
+                experiment: Experiment = self._nodes[addr]["Experiment"]
+            except KeyError:
+                raise NodeNotRegistered(f"Node {addr} not registered.") from None
 
-        # Get Experiment
-        try:
-            experiment: Experiment = self._nodes[addr]["Experiment"]
-        except KeyError:
-            raise NodeNotRegistered(f"Node {addr} not registered.") from None
-
-        if self.p2pfl_web_services is not None:
             if step is None:
                 # Global Metrics
-                self.p2pfl_web_services.send_global_metric(experiment.exp_name, experiment.round, metric, addr, value)
+                self._p2pfl_web_services.send_global_metric(experiment.exp_name, experiment.round, metric, addr, value)
             else:
                 # Local Metrics
-                self.p2pfl_web_services.send_local_metric(experiment.exp_name, experiment.round, metric, addr, value, step)
+                self._p2pfl_web_services.send_local_metric(experiment.exp_name, experiment.round, metric, addr, value, step)
 
     def log_system_metric(self, node: str, metric: str, value: float, time: datetime.datetime) -> None:
         """
@@ -160,9 +150,9 @@ class WebP2PFLogger(P2PFLoggerDecorator):
             time: The time.
 
         """
-        # Web
-        if self.p2pfl_web_services is not None:
-            self.p2pfl_web_services.send_system_metric(node, metric, value, time)
+        LoggerDecorator.log_system_metric(self, node, metric, value, time)
+        if self._p2pfl_web_services is not None:
+            self._p2pfl_web_services.send_system_metric(node, metric, value, time)
 
     def register_node(self, node: str, simulation: bool) -> None:
         """
@@ -173,17 +163,16 @@ class WebP2PFLogger(P2PFLoggerDecorator):
             simulation: If the node is a simulation.
 
         """
-        self._p2pflogger.register_node(node, simulation)
+        super().register_node(node, simulation)
+        if self._p2pfl_web_services is not None:
+            self.p2pfl_web_services.register_node(node, simulation)
 
-        # Register the node
-        self.p2pfl_web_services.register_node(node, simulation)
+            # Start the node status reporter
+            node_monitor = NodeMonitor(node, self.log_system_metric)
+            node_monitor.run()
 
-        # Start the node status reporter
-        node_monitor = NodeMonitor(node, self.log_system_metric)
-        node_monitor.run()
-
-        # Dict[str, Dict[str, Any]]
-        self._p2pflogger._nodes[node]["NodeMonitor"] = node_monitor
+            # Dict[str, Dict[str, Any]]
+            self._p2pfl_logger._nodes[node]["NodeMonitor"] = node_monitor
 
     def unregister_node(self, node: str) -> None:
         """
@@ -193,17 +182,15 @@ class WebP2PFLogger(P2PFLoggerDecorator):
             node: The node address.
 
         """
-        # Web
-        if self.p2pfl_web_services is not None:
+        super().unregister_node(node)
+        if self._p2pfl_web_services is not None:
             self.p2pfl_web_services.unregister_node(node)
 
-        # Node state
-        n = self._p2pflogger._nodes[node]
-        if n is not None:
-            # Stop the node status reporter
-            if "NodeMonitor" in n:
-                n["NodeMonitor"].stop()
-        else:
-            raise Exception(f"Node {node} not registered.")
-
-        self._p2pflogger.unregister_node(node)
+            # Node state
+            n = self._p2pfl_logger._nodes[node]
+            if n is not None:
+                # Stop the node status reporter
+                if "NodeMonitor" in n:
+                    n["NodeMonitor"].stop()
+            else:
+                raise Exception(f"Node {node} not registered.")

@@ -19,23 +19,19 @@
 """Provides a logger singleton that can be used to log messages from different parts of the codebase."""
 
 import importlib.util
-from typing import Any
 
-from p2pfl.management.logger.main_logger import MainP2PFLogger
+from p2pfl.management.logger.decorators.async_logger import AsyncLogger
+from p2pfl.management.logger.decorators.file_logger import FileLogger
+from p2pfl.management.logger.decorators.singleton_logger import SingletonLogger
+from p2pfl.management.logger.decorators.web_logger import WebP2PFLogger
+from p2pfl.management.logger.logger import P2PFLogger
+from p2pfl.utils.check_ray import ray_installed
 
 # Check if 'ray' is installed in the Python environment
-ray_installed = importlib.util.find_spec("ray") is not None
-
-logger: Any
-
-# Create the logger depending on the availability of 'ray'
-if ray_installed:
-    from p2pfl.management.logger.ray_logger import RayP2PFLogger
+if ray_installed():
+    from p2pfl.management.logger.decorators.ray_logger import RayP2PFLogger
 
     # Logger actor singleton
-    logger = RayP2PFLogger(MainP2PFLogger(disable_locks = True))
+    logger = SingletonLogger(RayP2PFLogger(WebP2PFLogger(FileLogger(P2PFLogger(disable_locks=True)))))
 else:
-    from p2pfl.management.logger.loggers.async_logger import AsyncLocalLogger
-
-    # Logger actor singleton
-    logger = AsyncLocalLogger(MainP2PFLogger(disable_locks = False))
+    logger = SingletonLogger(WebP2PFLogger(FileLogger(AsyncLogger(P2PFLogger(disable_locks=False)))))
