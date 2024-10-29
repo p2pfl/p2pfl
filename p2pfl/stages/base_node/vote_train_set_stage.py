@@ -49,6 +49,9 @@ class VoteTrainSetStage(Stage):
         if state is None or communication_protocol is None:
             raise Exception("Invalid parameters on VoteTrainSetStage.")
 
+        # Update experiment
+        logger.round_started(state.addr, state.experiment)
+
         try:
             # Vote
             VoteTrainSetStage.__vote(state, communication_protocol)

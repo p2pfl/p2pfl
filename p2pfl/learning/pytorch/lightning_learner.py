@@ -19,6 +19,7 @@
 """Lightning Learner for P2PFL."""
 
 import logging
+import traceback
 from typing import Dict, List, Optional, Tuple, Union
 
 import lightning as L
@@ -27,6 +28,7 @@ import torch
 from lightning import Trainer
 from torch.utils.data import DataLoader
 
+from p2pfl.experiment import Experiment
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.p2pfl_model import P2PFLModel
@@ -60,6 +62,7 @@ class LightningLearner(NodeLearner):
         self.__trainer: Optional[Trainer] = None
         self.epochs = 1
         self.__self_addr = self_addr
+        self.experiment: Optional[Experiment] = None
 
         # Start logging
         self.logger = FederatedLogger(self_addr)
@@ -130,7 +133,7 @@ class LightningLearner(NodeLearner):
             raise ValueError("The data must be a PyTorch DataLoader")
         return pt_model, pt_data
 
-    def fit(self) -> None:
+    def fit(self) -> P2PFLModel:
         """Fit the model."""
         try:
             if self.epochs > 0:
@@ -147,7 +150,10 @@ class LightningLearner(NodeLearner):
             # Set model contribution
             self.model.set_contribution([self.__self_addr], self.data.get_num_samples())
 
+            return self.model
+
         except Exception as e:
+            print(traceback.format_exc())
             logger.error(
                 self.__self_addr,
                 f"Fit error. Something went wrong with pytorch lightning. {e}",

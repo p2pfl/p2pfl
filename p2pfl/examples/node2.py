@@ -29,7 +29,7 @@ from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.pytorch.lightning_learner import LightningLearner
 from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
 from p2pfl.node import Node
-from p2pfl.utils import set_test_settings
+from p2pfl.utils.utils import set_test_settings
 
 set_test_settings()
 

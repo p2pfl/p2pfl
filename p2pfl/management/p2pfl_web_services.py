@@ -73,6 +73,7 @@ class P2pflWebServices:
             print("P2pflWebServices Warning: Connection must be over https, traffic will not be encrypted")
         self.__key = key
         self.node_id: Dict[str, int] = {}
+        # TODO: Check connection
 
     def __build_headers(self) -> Dict[str, str]:
         headers = {"Content-Type": "application/json"}

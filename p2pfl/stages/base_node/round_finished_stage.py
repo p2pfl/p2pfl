@@ -76,7 +76,7 @@ class RoundFinishedStage(Stage):
     @staticmethod
     def __evaluate(state: NodeState, learner: NodeLearner, communication_protocol: CommunicationProtocol) -> None:
         logger.info(state.addr, "🔬 Evaluating...")
-        results = learner.evaluate()
+        results = learner.evaluate()  # TODO: Implement Experiment stuff
         logger.info(state.addr, f"📈 Evaluated. Results: {results}")
         # Send metrics
         if len(results) > 0:

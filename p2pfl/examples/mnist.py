@@ -36,7 +36,7 @@ from p2pfl.learning.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.settings import Settings
-from p2pfl.utils import wait_convergence, wait_to_finish
+from p2pfl.utils.utils import wait_convergence, wait_to_finish
 
 
 def set_standalone_settings() -> None:
@@ -96,6 +96,7 @@ def __parse_args() -> argparse.Namespace:
     parser.add_argument("--token", type=str, help="The API token for the Web Logger.", default="")
     parser.add_argument("--tensorflow", action="store_true", help="Use TensorFlow.", default=False)
     parser.add_argument("--profiling", action="store_true", help="Enable profiling.", default=False)
+    parser.add_argument("--reduced_dataset", action="store_true", help="Use a reduced dataset just for testing.", default=False)
 
     # check (cannot use the unix socket and the local protocol at the same time)
     args = parser.parse_args()
@@ -115,6 +116,7 @@ def mnist(
     use_unix_socket: bool = False,
     use_local_protocol: bool = False,
     use_tensorflow: bool = False,
+    reduced_dataset: bool = False,
 ) -> None:
     """
     P2PFL MNIST experiment.
@@ -128,6 +130,7 @@ def mnist(
         use_unix_socket: Use Unix socket.
         use_local_protocol: Use local protocol
         use_tensorflow: Use TensorFlow.
+        reduced_dataset: Use a reduced dataset just for testing.
 
     """
     if measure_time:
@@ -141,7 +144,10 @@ def mnist(
 
     # Data
     data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
-    partitions = data.generate_partitions(n, RandomIIDPartitionStrategy)  # type: ignore
+    partitions = data.generate_partitions(
+        n * 100 if reduced_dataset else n,
+        RandomIIDPartitionStrategy,  # type: ignore
+    )
 
     # Node Creation
     nodes = []
@@ -162,6 +168,7 @@ def mnist(
             learner=KerasLearner if use_tensorflow else LightningLearner,  # type: ignore
             protocol=InMemoryCommunicationProtocol if use_local_protocol else GrpcCommunicationProtocol,  # type: ignore
             address=address,
+            simulation=True,
         )
         node.start()
         nodes.append(node)
@@ -173,7 +180,7 @@ def mnist(
             time.sleep(0.1)
         wait_convergence(nodes, n - 1, only_direct=False, wait=60)  # type: ignore
 
-        if r > 1:
+        if r < 1:
             raise ValueError("Skipping training, amount of round is less than 1")
 
         # Start Learning
@@ -265,6 +272,7 @@ if __name__ == "__main__":
             measure_time=args.measure_time,
             use_unix_socket=args.use_unix_socket,
             use_local_protocol=args.use_local_protocol,
+            reduced_dataset=args.reduced_dataset,
         )
     finally:
         if args.profiling:
