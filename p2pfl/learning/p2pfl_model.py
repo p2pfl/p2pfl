@@ -20,7 +20,7 @@
 
 import copy
 import pickle
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -78,9 +78,13 @@ class P2PFLModel:
         """
         if params is None:
             params = self.get_parameters()
-        return pickle.dumps(params)  # serializing the entire NumPy array
+        data_to_serialize = {
+            "params": params,
+            "additional_info": self.additional_info,
+        }
+        return pickle.dumps(data_to_serialize)
 
-    def decode_parameters(self, data: bytes) -> List[np.ndarray]:
+    def decode_parameters(self, data: bytes) -> Tuple[List[np.ndarray], Dict[str, str]]:
         """
         Decode the parameters of the model.
 
@@ -89,10 +93,10 @@ class P2PFLModel:
 
         """
         try:
-            # params_dict = zip(self.get_parameters().keys(), pickle.loads(data))
-            # return OrderedDict({k: torch.tensor(v) for k, v in params_dict})
-            params_dict = pickle.loads(data)
-            return params_dict
+            loaded_data = pickle.loads(data)
+            params = loaded_data["params"]
+            additional_info = loaded_data["additional_info"]
+            return params, additional_info
         except Exception as e:
             raise DecodingParamsError("Error decoding parameters") from e
 

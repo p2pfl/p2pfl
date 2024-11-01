@@ -80,7 +80,8 @@ class LightningModel(P2PFLModel):
         """
         # Decode parameters
         if isinstance(params, bytes):
-            params = self.decode_parameters(params)
+            params, additional_info = self.decode_parameters(params)
+            self.additional_info.update(additional_info)
 
         # Build state_dict
         state_dict = self.model.state_dict()

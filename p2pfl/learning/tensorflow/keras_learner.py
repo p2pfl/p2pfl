@@ -22,12 +22,12 @@ from typing import Dict, List, Tuple, Union
 
 import numpy as np
 import tensorflow as tf
+from keras import callbacks
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.p2pfl_model import P2PFLModel
 from p2pfl.learning.tensorflow.keras_dataset import KerasExportStrategy
-from p2pfl.learning.tensorflow.keras_logger import FederatedLogger
 from p2pfl.learning.tensorflow.keras_model import KerasModel
 from p2pfl.management.logger import logger
 
@@ -43,12 +43,15 @@ class KerasLearner(NodeLearner):
 
     """
 
-    def __init__(self, model: KerasModel, data: P2PFLDataset, self_addr: str = "unknown-node") -> None:
+    def __init__(
+        self, model: KerasModel, data: P2PFLDataset, self_addr: str = "unknown-node", callbacks: List[callbacks.Callback] = None
+    ) -> None:
         """Initialize the KerasLearner."""
         self.model = model
         self.data = data
         self.__self_addr = self_addr
         self.epochs = 1  # Default epochs
+        self.callbacks = callbacks if callbacks is not None else []
 
         # Compile the model (you might need to customize this)
         self.model.model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
@@ -125,7 +128,8 @@ class KerasLearner(NodeLearner):
                 model.fit(
                     data,
                     epochs=self.epochs,
-                    callbacks=[FederatedLogger(self.__self_addr)],
+                    # callbacks=[FederatedLogger(self.__self_addr)],
+                    callbacks=self.callbacks,
                 )
             # Set model contribution
             self.model.set_contribution([self.__self_addr], self.data.get_num_samples(train=True))
