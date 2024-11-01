@@ -18,12 +18,13 @@
 
 """Flax Learner for P2PFL."""
 
-from typing import Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 import optax  # type: ignore
+from flax.core import FrozenDict
 from flax.training import train_state
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
@@ -54,7 +55,9 @@ class FlaxLearner(NodeLearner):
 
         # Initialize optimizer
         self.optimizer = optax.adam(learning_rate=1e-3)
-        self.state = train_state.TrainState.create(apply_fn=self.model.model.apply, params=self.model.model_params, tx=self.optimizer)  # type: ignore
+        self.state = train_state.TrainState.create(
+            apply_fn=self.model.model.apply, params={"params": self.model.model_params}, tx=self.optimizer
+        )  # type: ignore
 
     def set_model(self, model: Union[P2PFLModel, List[np.ndarray], bytes]) -> None:
         """Set the model of the learner."""
@@ -79,78 +82,92 @@ class FlaxLearner(NodeLearner):
         """Set the number of epochs."""
         self.epochs = epochs
 
-    def __get_flax_model_data(self, train: bool = True) -> Tuple:
-        # Get model
-        flax_model = self.model.get_model()
-        # Get data
-        jnp_dataloader = self.data.export(FlaxExportStrategy, train=train)
+    def __get_flax_data(self, train: bool = True) -> Tuple:
+        return self.data.export(FlaxExportStrategy, train=train)
 
-        return flax_model, jnp_dataloader
-
-    def train_step(self, state: train_state.TrainState, x: jnp.ndarray, y: jnp.ndarray):
-        """Perform a single training step."""
-
-        def loss_fn(params):
-            logits = state.apply_fn({"params": params}, x)
-            loss = optax.softmax_cross_entropy_with_integer_labels(
-                logits=logits,
-                labels=y.reshape(
-                    1,
-                ),
-            ).mean()
-            return loss
-
-        grads = jax.grad(loss_fn)(state.params)  # Compute gradients
-        new_state = state.apply_gradients(grads=grads)  # type: ignore
-        return new_state
-
-    def fit(self) -> None:
-        """Fit the model."""
-        try:
-            if self.epochs > 0:
-                # Get training and validation data
-                model, dataloader = self.__get_flax_model_data(train=True)
-
-                # Training loop
-                for epoch in range(self.epochs):
-                    # Training phase
-                    for x, y in dataloader:
-                        x = x.reshape(1, *x.shape)
-                        y = jnp.array([y])
-                        self.state = self.train_step(self.state, x, y)
-
-                    # End of epoch: Log training progress
-                    logger.log_metric(self.__self_addr, "epoch", epoch)
-                    print(f"Epoch {epoch + 1}/{self.epochs} completed.")
-
-                # Set model contribution
-                self.model.set_contribution([self.__self_addr], self.data.get_num_samples(train=True))
-        except Exception as e:
-            logger.error(self.__self_addr, f"Error in training with Flax: {e}")
-            raise e
-
-    def evaluate_step(self, state: train_state.TrainState, x: jnp.ndarray, y: jnp.ndarray):
-        """Evaluate the model on a batch of data."""
-        logits = state.apply_fn({"params": state.params}, x)
+    @staticmethod
+    def __calculate_loss_acc(state: train_state.TrainState, params: Dict, x: jnp.ndarray, y: jnp.ndarray):
+        logits = state.apply_fn(params, x)
         predictions = jnp.argmax(logits, axis=-1)
-        print(f"predictions: {predictions}, true: {y}")
-        accuracy = jnp.mean(
+        # Calculate the loss and accuracy
+        loss = optax.softmax_cross_entropy_with_integer_labels(
+            logits=logits,
+            labels=y.reshape(
+                1,
+            ),
+        ).mean()
+        acc = jnp.mean(
             predictions
             == y.reshape(
                 1,
             )
         )
-        return accuracy
+        return loss, acc
+
+    def train_step(self, state: train_state.TrainState, x: jnp.ndarray, y: jnp.ndarray) -> Tuple[train_state.TrainState, float, float]:
+        """Perform a single training step."""
+
+        # TODO: test jit
+        def compute_grads(params: FrozenDict[str, Any]) -> Tuple[train_state.TrainState, float, float]:
+            grad_fn = jax.value_and_grad(self.__calculate_loss_acc, argnums=1, has_aux=True)
+            (loss, acc), grads = grad_fn(state, params, x, y)
+            new_state = state.apply_gradients(grads=grads)  # type: ignore
+            return new_state, loss, acc
+
+        nwe_state, loss, acc = compute_grads(state.params)
+        return nwe_state, loss, acc
+
+    def fit(self) -> P2PFLModel:
+        """Fit the model."""
+        try:
+            if self.epochs > 0:
+                # Get training data
+                dataloader = self.__get_flax_data(train=True)
+                total_loss = 0.0
+                total_acc = 0.0
+                num_batches = 0
+
+                # Training loop
+                for epoch in range(self.epochs):
+                    # Training phase
+                    for x, y in dataloader:
+                        self.state, loss, acc = self.train_step(self.state, x, y)
+                        total_loss += loss
+                        total_acc += acc
+                        num_batches += 1
+
+                    avg_loss = total_loss / num_batches
+                    avg_acc = total_acc / num_batches
+                    # End of epoch: Log training progress
+                    logger.log_metric(self.__self_addr, "epoch", epoch)
+                    logger.log_metric(self.__self_addr, "loss", avg_loss)
+                    logger.log_metric(self.__self_addr, "accuracy", avg_acc)
+                    print(f"Epoch {epoch + 1}/{self.epochs} completed.")
+
+            # Set model contribution
+            self.model.set_contribution([self.__self_addr], self.data.get_num_samples(train=True))
+
+            return self.model
+
+        except Exception as e:
+            logger.error(self.__self_addr, f"Error in training with Flax: {e}")
+            raise e
 
     def evaluate(self) -> Dict[str, float]:
         """Evaluate the Flax model."""
+
+        # TODO: test jit
+        def eval_step(state, x, y) -> float:
+            _, acc = self.__calculate_loss_acc(state, state.params, x, y)
+            return acc
+
         try:
             if self.epochs > 0:
-                model, dataloader = self.__get_flax_model_data(train=False)
+                dataloader = self.__get_flax_data(train=False)
 
                 accuracies = []
                 for x, y in dataloader:
-                    accuracy = self.evaluate_step(self.state, x, y)  # Perform evaluation step
+                    accuracy = eval_step(self.state, x, y)  # Perform evaluation step
                     accuracies.append(accuracy)
 
                 avg_accuracy = float(jnp.mean(jnp.array(accuracies)))

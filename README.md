@@ -36,6 +36,7 @@ P2PFL offers a range of features designed to make decentralized federated learni
 - Hugging Face Datasets
 - PyTorch
 - Tensorflow
+- Ray
 
 ## 📥 Installation
 

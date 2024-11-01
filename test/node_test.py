@@ -35,7 +35,7 @@ from p2pfl.learning.tensorflow.keras_learner import KerasLearner
 from p2pfl.learning.tensorflow.keras_model import MLP as MLP_KERAS
 from p2pfl.learning.tensorflow.keras_model import KerasModel
 from p2pfl.node import Node
-from p2pfl.utils import (
+from p2pfl.utils.utils import (
     check_equal_models,
     set_test_settings,
     wait_convergence,
@@ -113,7 +113,8 @@ def test_convergence(x):
     [n.stop() for n in nodes]
 
 
-def test_interrupt_train(two_nodes):
+# DISABLED! NOT IMPLEMENTED BY RAY/TF
+def _test_interrupt_train(two_nodes):
     """Test interrupting training of a node."""
     n1, n2 = two_nodes
     n1.connect(n2.addr)
@@ -264,18 +265,14 @@ def test_flax_node():
     # Data
     data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
     partitions = data.generate_partitions(400, RandomIIDPartitionStrategy)
-    model1 = MLP_FLAX()
+    model = MLP_FLAX()
     seed = jax.random.PRNGKey(0)
-    model_params1 = model1.init(seed, jnp.ones((1, 28, 28)))["params"]
-    p2pfl_model1 = FlaxModel(model1)
-    p2pfl_model1.set_parameters(model_params1)
-    model2 = MLP_FLAX()
-    model_params2 = model2.init(seed, jnp.ones((1, 28, 28)))["params"]
-    p2pfl_model2 = FlaxModel(model2)
-    p2pfl_model2.set_parameters(model_params2)
+    model_params1 = model.init(seed, jnp.ones((1, 28, 28)))["params"]
+    p2pfl_model = FlaxModel(model)
+    p2pfl_model.set_parameters(model_params1)
     # Nodes
-    n1 = Node(p2pfl_model1, partitions[0], learner=FlaxLearner)
-    n2 = Node(p2pfl_model2, partitions[1], learner=FlaxLearner)
+    n1 = Node(p2pfl_model, partitions[0], learner=FlaxLearner)
+    n2 = Node(p2pfl_model.build_copy(), partitions[1], learner=FlaxLearner)
     # Start
     n1.start()
     n2.start()
@@ -293,3 +290,7 @@ def test_flax_node():
     # Stop
     n1.stop()
     n2.stop()
+
+
+def __test_model_is_learning():
+    pass

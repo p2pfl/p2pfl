@@ -38,6 +38,7 @@ from p2pfl.communication.protocols.grpc.grpc_communication_protocol import (
     GrpcCommunicationProtocol,
 )
 from p2pfl.exceptions import LearnerRunningException, NodeRunningException, ZeroRoundsException
+from p2pfl.learning import try_init_learner_with_ray
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
@@ -93,6 +94,7 @@ class Node:
         learner: Type[NodeLearner] = LightningLearner,
         aggregator: Type[Aggregator] = FedAvg,
         protocol: Type[CommunicationProtocol] = GrpcCommunicationProtocol,
+        simulation: bool = False,
         **kwargs,
     ) -> None:
         """Initialize a node."""
@@ -101,12 +103,13 @@ class Node:
         self.addr = self._communication_protocol.get_address()
 
         # Learning
-        self.learner = learner(model, data, self.addr)
+        self.learner = try_init_learner_with_ray(learner, model, data, self.addr)
         self.aggregator = aggregator(node_name=self.addr)
 
         # State
         self.__running = False
-        self.state = NodeState(self.addr)
+        self.state = NodeState(self.addr, simulation=simulation)
+        self.simulation = simulation  # so far it does not contribute much
 
         # Workflow
         self.learning_workflow = LearningWorkflow()
@@ -215,8 +218,9 @@ class Node:
         self.assert_running(False)
         # Set running
         self.__running = True
+
         # P2PFL Web Services
-        logger.register_node(self.addr, self.state, self.state.simulation)
+        logger.register_node(self.addr, self.simulation)
         # Communication Protocol
         self._communication_protocol.start()
         if wait:
