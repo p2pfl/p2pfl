@@ -65,6 +65,16 @@ class Aggregator:
         """
         raise NotImplementedError
 
+    def get_required_callbacks(self) -> List[str]:
+        """
+        Get the required callbacks for the aggregation.
+
+        Returns:
+            List of required callbacks.
+
+        """
+        return []
+
     def set_nodes_to_aggregate(self, nodes_to_aggregate: List[str]) -> None:
         """
         List with the name of nodes to aggregate. Be careful, by setting new nodes, the actual aggregation will be lost.
