@@ -162,3 +162,13 @@ class KerasLearner(NodeLearner):
         except Exception as e:
             logger.error(self.__self_addr, f"Evaluation error with Keras: {e}")
             raise e
+
+    def get_framework(self) -> str:
+        """
+        Retrieve the framework name used by the learner.
+
+        Returns:
+            str: The framework name ('tensorflow').
+
+        """
+        return "tensorflow"

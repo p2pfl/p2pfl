@@ -197,3 +197,13 @@ class LightningLearner(NodeLearner):
                 f"Evaluation error. Something went wrong with pytorch lightning. {e}",
             )
             raise e
+
+    def get_framework(self) -> str:
+        """
+        Retrieve the framework name used by the learner.
+
+        Returns:
+            str: The framework name ('pytorch').
+
+        """
+        return "pytorch"

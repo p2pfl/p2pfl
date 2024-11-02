@@ -52,7 +52,7 @@ class P2PFLModel:
     ) -> None:
         """Initialize the model."""
         self.model = model
-        self.additional_info: Dict[str, str] = {}
+        self.additional_info: Dict[str, Any] = {}
         self.contributors: List[str] = []
         if contributors is not None:
             self.contributors = contributors
@@ -123,7 +123,7 @@ class P2PFLModel:
         """
         raise NotImplementedError
 
-    def add_info(self, key: str, value: str) -> None:
+    def add_info(self, key: str, value: Any) -> None:
         """
         Add additional information to the learner state.
 
@@ -134,7 +134,7 @@ class P2PFLModel:
         """
         self.additional_info[key] = value
 
-    def get_info(self, key: str) -> str:
+    def get_info(self, key: str) -> Any:
         """
         Get additional information from the learner state.
 

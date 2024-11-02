@@ -121,3 +121,13 @@ class NodeLearner:
 
         """
         raise NotImplementedError
+
+    def get_framework(self) -> str:
+        """
+        Get the framework of the learner.
+
+        Returns:
+            The framework of the learner.
+
+        """
+        raise NotImplementedError
