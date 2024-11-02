@@ -36,8 +36,24 @@ from p2pfl.learning.p2pfl_model import P2PFLModel
 class FlaxModel(P2PFLModel):
     """P2PFL model abstraction for Flax."""
 
-    model: nn.Module
-    model_params: Optional[Dict[str, Any]] = None
+    def __init__(
+        self,
+        model: nn.Module,
+        init_params: Dict[str, Any],
+        params: Optional[Union[List[np.ndarray], bytes]] = None,
+        num_samples: Optional[int] = None,
+        contributors: Optional[List[str]] = None,
+        aditional_info: Optional[Dict[str, str]] = None,
+    ) -> None:
+        """Initialize Flax model."""
+        # TODO: fix: when using arg params for jax params, fedavg.aggregate fails in models[0].build_copy(params=accum, ...)
+        # FlaxModel.__init__() got multiple values for argument 'params'. Fix in __init__ or build_copy.
+        super().__init__(model, None, num_samples, contributors, aditional_info)
+        self.model_params = init_params
+        if params:
+            if isinstance(params, bytes):
+                params = self.decode_parameters(params)
+            self.model_params = self.__np_to_dict(self.model_params, params)
 
     @staticmethod
     def __dict_to_np(params: Dict[str, Any]) -> List[np.ndarray]:
@@ -75,10 +91,7 @@ class FlaxModel(P2PFLModel):
             params = self.decode_parameters(params)
 
         try:
-            if not self.model_params:
-                # TODO: fix this typing issue
-                self.model_params = params  # type: ignore
-            elif isinstance(params, List):
+            if isinstance(params, List):
                 self.__np_to_dict(self.model_params, params)
             else:
                 raise ValueError("Unvalid parameters.")
@@ -125,8 +138,7 @@ class FlaxModel(P2PFLModel):
             A copy of the model.
 
         """
-        flax_model = self.__class__(copy.deepcopy(self.model), **kwargs)
-        flax_model.model_params = copy.deepcopy(self.model_params)
+        flax_model = self.__class__(copy.deepcopy(self.model), copy.deepcopy(self.model_params), **kwargs)
         return flax_model
 
 

@@ -267,9 +267,8 @@ def test_flax_node():
     partitions = data.generate_partitions(400, RandomIIDPartitionStrategy)
     model = MLP_FLAX()
     seed = jax.random.PRNGKey(0)
-    model_params1 = model.init(seed, jnp.ones((1, 28, 28)))["params"]
-    p2pfl_model = FlaxModel(model)
-    p2pfl_model.set_parameters(model_params1)
+    model_params = model.init(seed, jnp.ones((1, 28, 28)))["params"]
+    p2pfl_model = FlaxModel(model, model_params)
     # Nodes
     n1 = Node(p2pfl_model, partitions[0], learner=FlaxLearner)
     n2 = Node(p2pfl_model.build_copy(), partitions[1], learner=FlaxLearner)

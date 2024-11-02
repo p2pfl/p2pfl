@@ -88,8 +88,7 @@ def test_get_set_params_flax():
     model = MLP_FLASK()
     seed = jax.random.PRNGKey(0)
     model_params = model.init(seed, jnp.ones((1, 28, 28)))["params"]
-    p2pfl_model = FlaxModel(model)
-    p2pfl_model.set_parameters(model_params)
+    p2pfl_model = FlaxModel(model, model_params)
 
     # Save internal flax-model repr
     _flax_params = p2pfl_model.model_params.copy()
@@ -148,15 +147,13 @@ def test_encoding_flax():
     model1 = MLP_FLASK()
     seed = jax.random.PRNGKey(0)
     model_params = model1.init(seed, jnp.ones((1, 28, 28)))["params"]
-    p2pfl_model1 = FlaxModel(model1)
-    p2pfl_model1.set_parameters(model_params)
+    p2pfl_model1 = FlaxModel(model=model1, init_params=model_params)
     encoded_params = p2pfl_model1.encode_parameters()
 
     model2 = MLP_FLASK()
     seed = jax.random.PRNGKey(1)
     model_params = model2.init(seed, jnp.ones((1, 28, 28)))["params"]
-    p2pfl_model2 = FlaxModel(model2)
-    p2pfl_model2.set_parameters(model_params)
+    p2pfl_model2 = FlaxModel(model2, init_params=model_params)
     decoded_params = p2pfl_model2.decode_parameters(encoded_params)
     p2pfl_model2.set_parameters(decoded_params)
 
@@ -195,14 +192,12 @@ def test_wrong_encoding_flax():
     model1 = MLP_FLASK()
     seed = jax.random.PRNGKey(0)
     model_params1 = model1.init(seed, jnp.ones((1, 28, 28)))["params"]
-    p2pfl_model1 = FlaxModel(model1)
-    p2pfl_model1.set_parameters(model_params1)
+    p2pfl_model1 = FlaxModel(model=model1, init_params=model_params1)
     encoded_params = p2pfl_model1.encode_parameters()
     model2 = MLP_FLASK()
     model2.hidden_sizes = (256, 128, 256, 128)
     model_params2 = model2.init(seed, jnp.ones((1, 28, 28)))["params"]
-    p2pfl_model2 = FlaxModel(model2)
-    p2pfl_model2.set_parameters(model_params2)
+    p2pfl_model2 = FlaxModel(model=model2, init_params=model_params2)
     decoded_params = p2pfl_model1.decode_parameters(encoded_params)
     # Check that raises
     with pytest.raises(ModelNotMatchingError):
@@ -378,8 +373,7 @@ def test_learner_train_flax():
     model = MLP_FLASK()
     seed = jax.random.PRNGKey(0)
     model_params = model.init(seed, jnp.ones((1, 28, 28)))["params"]
-    p2pfl_model = FlaxModel(model)
-    p2pfl_model.set_parameters(model_params)
+    p2pfl_model = FlaxModel(model=model, init_params=model_params)
     # Learner
     learner = FlaxLearner(p2pfl_model, dataset)
 

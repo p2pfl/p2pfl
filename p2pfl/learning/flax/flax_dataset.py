@@ -55,6 +55,7 @@ class FlaxExportStrategy(DataExportStrategy):
         if transforms is not None:
             raise NotImplementedError("Transforms are not supported in this export strategy.")
 
+        # TODO: fix dataloader .with_format(type="jax", ...) with custom collate_fn
         torch_loader = DataLoader(data.with_format(type="torch", output_all_columns=True), batch_size=batch_size, num_workers=num_workers)
 
         def jax_batch_generator() -> Generator[Tuple[jnp.ndarray, jnp.ndarray], Any, None]:
