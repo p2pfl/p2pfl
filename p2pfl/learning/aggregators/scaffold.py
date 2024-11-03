@@ -40,6 +40,7 @@ class ScaffoldAggregator(Aggregator):
 
         Args:
             node_name: The name of the node.
+            kwargs: Additional arguments.
 
         """
         super().__init__(node_name)
