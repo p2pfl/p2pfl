@@ -16,7 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""Callback for SCAFFOLD operations."""
+"""Callback for SCAFFOLD operations (PyTorch Lighting)."""
 
 import copy
 from typing import Any, Dict, List, Optional
@@ -34,11 +34,6 @@ class SCAFFOLDCallback(Callback):
     Callback for scaffold operations to use with PyTorch Lightning.
 
     At the beginning of the training, the callback needs to store the global model and the initial learning rate. Then, after optimization,
-
-
-    Args:
-        ...
-
     """
 
     def __init__(self):

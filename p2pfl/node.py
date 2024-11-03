@@ -41,7 +41,6 @@ from p2pfl.exceptions import LearnerRunningException, NodeRunningException, Zero
 from p2pfl.learning import try_init_learner_with_ray
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.aggregators.fedavg import FedAvg
-from p2pfl.learning.aggregators.scaffold import ScaffoldAggregator
 from p2pfl.learning.callbacks.callback_factory import CallbackFactory
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.learner import NodeLearner
@@ -94,7 +93,7 @@ class Node:
         data: P2PFLDataset,
         address: str = "127.0.0.1",
         learner: Type[NodeLearner] = LightningLearner,
-        aggregator: Type[Aggregator] = ScaffoldAggregator,
+        aggregator: Type[Aggregator] = FedAvg,
         protocol: Type[CommunicationProtocol] = GrpcCommunicationProtocol,
         simulation: bool = False,
         **kwargs,
@@ -109,8 +108,8 @@ class Node:
         callbacks = CallbackFactory.create_callbacks(learner=learner, aggregator=self.aggregator)
 
         # Learning
-        # self.learner = try_init_learner_with_ray(learner, model, data, self.addr, callbacks)
-        self.learner = learner(model, data, self.addr, callbacks=callbacks)
+        self.learner = try_init_learner_with_ray(learner, model, data, self.addr, callbacks)
+        # self.learner = learner(model, data, self.addr, callbacks=callbacks)
 
         # State
         self.__running = False

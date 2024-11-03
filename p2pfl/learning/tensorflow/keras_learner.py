@@ -172,4 +172,4 @@ class KerasLearner(NodeLearner):
             str: The framework name ('tensorflow').
 
         """
-        return "tensorflow"
+        return "keras"

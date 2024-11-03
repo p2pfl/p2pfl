@@ -79,7 +79,7 @@ class ScaffoldAggregator(Aggregator):
         for m in models:
             delta_c_i = m.get_info('delta_c_i')
             if delta_c_i is None:
-                raise ValueError(f"Model from node is missing 'delta_c_i'.")
+                raise ValueError("Node is missing 'delta_c_i'.")
             if accum_c is None:
                 accum_c = [layer.copy() for layer in delta_c_i]
             else:
