@@ -156,12 +156,14 @@ def mnist(
         address = f"node-{i}" if use_local_protocol else f"unix:///tmp/p2pfl-{i}.sock" if use_unix_socket else "127.0.0.1"
 
         # Create the model
-        p2pfl_model: P2PFLModel = LightningModel(MLP())
         if use_tensorflow:
             model = MLP_KERAS()  # type: ignore
             model(tf.zeros((1, 28, 28, 1)))  # type: ignore
-            p2pfl_model = KerasModel(model)
-
+            p2pfl_model: P2PFLModel = KerasModel(model)
+        else:
+            p2pfl_model: P2PFLModel = LightningModel(MLP())
+        print(p2pfl_model)
+        print(type(p2pfl_model))
         # Nodes
         node = Node(
             p2pfl_model,
@@ -275,6 +277,7 @@ if __name__ == "__main__":
             use_unix_socket=args.use_unix_socket,
             use_local_protocol=args.use_local_protocol,
             reduced_dataset=args.reduced_dataset,
+            use_tensorflow=args.tensorflow,
         )
     finally:
         if args.profiling:
