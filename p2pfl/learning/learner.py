@@ -122,7 +122,8 @@ class NodeLearner:
         """
         raise NotImplementedError
 
-    def get_framework(self) -> str:
+    @staticmethod
+    def get_framework() -> str:
         """
         Get the framework of the learner.
 

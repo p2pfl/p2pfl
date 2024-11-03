@@ -20,7 +20,7 @@
 
 import logging
 import traceback
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import lightning as L
 import numpy as np
@@ -125,6 +125,29 @@ class LightningLearner(NodeLearner):
         """
         self.epochs = epochs
 
+    def set_callbacks_additional_info(self, callbacks: List[Callback]) -> None: # TODO: Move to node learner
+        """
+        Update the callbacks.
+
+        Args:
+            callbacks: The callbacks.
+
+        """
+        for callback in callbacks:
+            callback.additional_info = self.model.additional_info
+
+    def get_callbacks_additional_info(self, callbacks: List[Callback]) -> Dict[str, Any]: # TODO: Move to node learner
+        """
+        Get the additional information from the callbacks.
+
+        Args:
+            callbacks: The callbacks.
+
+        """
+        for callback in callbacks:
+            if hasattr(callback, "additional_info"):
+                self.model.additional_info.update(callback.additional_info)
+
     def __get_pt_model_data(self, train: bool = True) -> Tuple[L.LightningModule, DataLoader]:
         # Get Model
         pt_model = self.model.get_model()
@@ -135,6 +158,7 @@ class LightningLearner(NodeLearner):
         if not isinstance(pt_data, DataLoader):
             raise ValueError("The data must be a PyTorch DataLoader")
         return pt_model, pt_data
+
 
     def fit(self) -> P2PFLModel:
         """Fit the model."""
@@ -149,7 +173,11 @@ class LightningLearner(NodeLearner):
                     callbacks=self.callbacks,
                 )
                 pt_model, pt_data = self.__get_pt_model_data()
+
+                self.set_callbacks_additional_info(self.callbacks)
                 self.__trainer.fit(pt_model, pt_data)
+                self.get_callbacks_additional_info(self.callbacks)
+
                 self.__trainer = None
             # Set model contribution
             self.model.set_contribution([self.__self_addr], self.data.get_num_samples())
@@ -198,7 +226,8 @@ class LightningLearner(NodeLearner):
             )
             raise e
 
-    def get_framework(self) -> str:
+    @staticmethod
+    def get_framework() -> str:
         """
         Retrieve the framework name used by the learner.
 

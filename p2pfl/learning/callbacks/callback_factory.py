@@ -70,7 +70,7 @@ class CallbackFactory:
                 if not constructors:
                     continue
                 for constructor in constructors:
-                    callback_instance = constructor(aggregator)
+                    callback_instance = constructor()
                     callbacks.append(callback_instance)
             return callbacks
         except Exception as e:

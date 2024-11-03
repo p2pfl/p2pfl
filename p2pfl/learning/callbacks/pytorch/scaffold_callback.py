@@ -19,13 +19,13 @@
 """Callback for SCAFFOLD operations."""
 
 import copy
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
+import lightning as pl
 import torch
 from lightning.pytorch.callbacks import Callback
 
 from p2pfl.learning.callbacks.decorators import register
-from p2pfl.learning.p2pfl_model import P2PFLModel
 
 
 @register(callback_key='scaffold', framework='pytorch')
@@ -49,35 +49,53 @@ class SCAFFOLDCallback(Callback):
         self.initial_model_params: Optional[List[torch.Tensor]] = None
         self.saved_lr: Optional[float] = None
         self.K: int = 0
+        self.additional_info: Dict[str, Any] = {}
 
-    def on_train_start(self, pl_module: P2PFLModel):
+
+    def on_train_start(self, trainer: pl.Trainer , pl_module: pl.LightningModule):
         """
         Store the global model and the initial learning rate.
 
         Args:
+            trainer: The trainer
             pl_module: The model.
 
         """
         if self.c_i is None:
-            self.c_i = [torch.zeros_like(param) for param in pl_module.parameters()]
+            self.c_i = [torch.zeros_like(param) for param in self._get_parameters(pl_module)]
 
         if self.K == 0:
-            self._get_global_c(pl_module)
+            if 'global_c' not in self.additional_info:
+                self.additional_info['global_c'] = None
 
-        self.initial_model_params = copy.deepcopy(pl_module.get_parameters())
+            c = self.additional_info['global_c']
+            if c is None:
+                self.c = [torch.zeros_like(param) for param in self._get_parameters(pl_module)]
+            else:
+                self.c = [
+                    torch.from_numpy(c_np).to(pl_module.device)
+                    for c_np in c
+                ]
+
+        self.initial_model_params = copy.deepcopy(self._get_parameters(pl_module))
         self.K = 0
 
-    def on_before_optimizer_step(self, pl_module: P2PFLModel):
+    def on_train_batch_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule, batch: Any, batch_idx: int):
         """
         Store the learning rate.
 
         Args:
+            trainer: The trainer
             pl_module: The model.
+            batch: The batch.
+            batch_idx: The batch index.
 
         """
-        self.saved_lr = pl_module.optimizer.param_groups[0]["lr"]
+        optimizer = trainer.optimizers[0]  # Access the first optimizer
+        self.saved_lr = optimizer.param_groups[0]['lr']
 
-    def on_after_optimizer_step(self, pl_module: P2PFLModel):
+
+    def on_before_zero_grad(self, trainer: pl.Trainer, pl_module: pl.LightningModule, optimizer: torch.optim.Optimizer):
         """
         Modify model by applying control variate adjustment.
 
@@ -85,24 +103,27 @@ class SCAFFOLDCallback(Callback):
         y_i ← y_i + eta_l * c_i - eta_l * c
 
         Args:
+            trainer: The trainer
             pl_module: The model.
+            optimizer: The optimizer.
 
         """
         eta_l = self.saved_lr
-        for param, c_i_param, c_param in zip(pl_module.parameters(), self.c_i, self.c):
-            param.data.add_(eta_l, c_i_param)
-            param.data.sub_(eta_l, c_param)
+        for param, c_i_param, c_param in zip(self._get_parameters(pl_module), self.c_i, self.c):
+            if param.grad is not None:
+                param.grad += eta_l * c_i_param - eta_l * c_param
         self.K += 1
 
-    def on_train_end(self, pl_module: P2PFLModel):
+    def on_train_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule):
         """
         Restore the global model.
 
         Args:
+            trainer: The trainer
             pl_module: The model.
 
         """
-        y_i = [param.clone().detach() for param in pl_module.parameters()]
+        y_i = [param.clone().detach() for param in self._get_parameters(pl_module)]
         x_g = self.initial_model_params
         previous_c_i = [c.clone() for c in self.c_i]
 
@@ -117,21 +138,18 @@ class SCAFFOLDCallback(Callback):
         delta_y_i_np = [dyi.detach().cpu().numpy() for dyi in delta_y_i] # to numpy for transmission
         delta_c_i_np = [dci.detach().cpu().numpy() for dci in delta_c_i]
 
-        pl_module.model.add_info('delta_y_i', delta_y_i_np)
-        pl_module.model.add_info('delta_c_i', delta_c_i_np)
+        self.additional_info['delta_y_i'] = delta_y_i_np
+        self.additional_info['delta_c_i'] = delta_c_i_np
 
-    def _get_global_c(self, pl_module: P2PFLModel):
+    def set_global_c(self, global_c_np: Optional[List[torch.Tensor]]):
         """
         Get the global control variate from the aggregator.
 
         Args:
-            pl_module: The model.
+            global_c_np : The global control variate.
 
         """
-        global_c_np = pl_module.model.get_info('global_c')
-        if global_c_np is None:
-            self.c = [torch.zeros_like(param) for param in pl_module.parameters()]
-        self.c = [
-                torch.from_numpy(c_np).to(pl_module.device)
-                for c_np in global_c_np
-            ]
+        self.additional_info['global_c'] = global_c_np
+
+    def _get_parameters(self, pl_module: pl.LightningModule) -> List[torch.Tensor]:
+        return [param.cpu() for _, param in pl_module.state_dict().items()]

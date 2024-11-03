@@ -63,8 +63,10 @@ class ScaffoldAggregator(Aggregator):
         # Accumulate weighted model updates
         for m in models:
             delta_y_i = m.get_info('delta_y_i')
+
+
             if delta_y_i is None:
-                raise ValueError(f"Model from node '{m.node_name}' is missing 'delta_y_i'.")
+                raise ValueError(f"Model from node '{self.node_name}' is missing 'delta_y_i'.")
             num_samples = m.get_num_samples()
             for i, layer in enumerate(delta_y_i):
                 accum_y[i] += layer * num_samples
@@ -77,7 +79,7 @@ class ScaffoldAggregator(Aggregator):
         for m in models:
             delta_c_i = m.get_info('delta_c_i')
             if delta_c_i is None:
-                raise ValueError(f"Model from node '{m.node_name}' is missing 'delta_c_i'.")
+                raise ValueError(f"Model from node is missing 'delta_c_i'.")
             if accum_c is None:
                 accum_c = [layer.copy() for layer in delta_c_i]
             else:

@@ -52,10 +52,10 @@ class LightningModel(P2PFLModel):
         params: Optional[Union[List[np.ndarray], bytes]] = None,
         num_samples: Optional[int] = None,
         contributors: Optional[List[str]] = None,
-        aditional_info: Optional[Dict[str, Any]] = None,
+        additional_info: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Initialize the model."""
-        super().__init__(model, params, num_samples, contributors, aditional_info)
+        super().__init__(model, params, num_samples, contributors, additional_info)
 
     def get_parameters(self) -> List[np.ndarray]:
         """
@@ -95,6 +95,7 @@ class LightningModel(P2PFLModel):
             self.model.load_state_dict(state_dict)
         except Exception as e:
             raise ModelNotMatchingError("Not matching models") from e
+
 
 
 ####

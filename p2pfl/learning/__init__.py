@@ -11,7 +11,7 @@ from p2pfl.learning.p2pfl_model import P2PFLModel
 from p2pfl.utils.check_ray import ray_installed
 
 
-def try_init_learner_with_ray(learner: type[NodeLearner], model: P2PFLModel, data: P2PFLDataset, addr: str):
+def try_init_learner_with_ray(learner: type[NodeLearner], model: P2PFLModel, data: P2PFLDataset, addr: str, callbacks: list) -> NodeLearner:
     """
     Create a learner instance.
 
@@ -20,12 +20,10 @@ def try_init_learner_with_ray(learner: type[NodeLearner], model: P2PFLModel, dat
         model: The model of the learner.
         data: The data of the learner.
         addr: The address of the learner.
-
-    Returns:
-        The learner instance.
+        callbacks: The callbacks of the learner.
 
     """
-    learner_instance = learner(model, data, addr)
+    learner_instance = learner(model, data, addr, callbacks=callbacks)
     if ray_installed():
         from p2pfl.learning.simulation.virtual_learner import VirtualNodeLearner
 

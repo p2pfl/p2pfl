@@ -40,7 +40,7 @@ def register(callback_key: str, framework: str):
             CallbackFactory.register_callback(
                 framework=framework.lower(),
                 callback_key=callback_key.lower(),
-                callback_constructor=lambda aggregator: cls(aggregator)
+                callback_constructor=cls
             )
         except Exception as e:
             raise e

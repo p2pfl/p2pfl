@@ -48,19 +48,19 @@ class P2PFLModel:
         params: Optional[Union[List[np.ndarray], bytes]] = None,
         num_samples: Optional[int] = None,
         contributors: Optional[List[str]] = None,
-        aditional_info: Optional[Dict[str, str]] = None,
+        additional_info: Optional[Dict[str, str]] = None,
     ) -> None:
         """Initialize the model."""
         self.model = model
-        self.additional_info: Dict[str, Any] = {}
+        self.additional_info: Dict[str, str] = {}
         self.contributors: List[str] = []
         if contributors is not None:
             self.contributors = contributors
         self.num_samples = 0
         if num_samples is not None:
             self.num_samples = num_samples
-        if aditional_info is not None:
-            self.additional_info = aditional_info
+        if additional_info is not None:
+            self.additional_info = additional_info
         if params is not None:
             self.set_parameters(params)
 
@@ -96,6 +96,7 @@ class P2PFLModel:
             loaded_data = pickle.loads(data)
             params = loaded_data["params"]
             additional_info = loaded_data["additional_info"]
+            self.additional_info.update(additional_info)
             return params, additional_info
         except Exception as e:
             raise DecodingParamsError("Error decoding parameters") from e
@@ -123,7 +124,7 @@ class P2PFLModel:
         """
         raise NotImplementedError
 
-    def add_info(self, key: str, value: Any) -> None:
+    def add_info(self, key: str, value: str) -> None:
         """
         Add additional information to the learner state.
 
@@ -134,7 +135,7 @@ class P2PFLModel:
         """
         self.additional_info[key] = value
 
-    def get_info(self, key: str) -> Any:
+    def get_info(self, key: str) -> str:
         """
         Get additional information from the learner state.
 

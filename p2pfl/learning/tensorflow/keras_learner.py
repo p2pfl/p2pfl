@@ -163,7 +163,8 @@ class KerasLearner(NodeLearner):
             logger.error(self.__self_addr, f"Evaluation error with Keras: {e}")
             raise e
 
-    def get_framework(self) -> str:
+    @staticmethod
+    def get_framework() -> str:
         """
         Retrieve the framework name used by the learner.
 

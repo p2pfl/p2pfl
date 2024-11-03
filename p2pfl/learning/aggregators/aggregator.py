@@ -167,7 +167,7 @@ class Aggregator:
             else:
                 logger.debug(
                     self.node_name,
-                    f"Can't add a model from a node ({model.get_contributors()}) that is not in the training test.",
+                    f"Can't add a model from a node ({model.get_contributors()}) that is not in the training set.",
                 )
         else:
             logger.debug(self.node_name, "🚫 Received a model when is not needed (already aggregated).")
