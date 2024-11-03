@@ -104,6 +104,7 @@ class SCAFFOLDCallback(Callback):
 
         """
         eta_l = self.saved_lr
+        # modify the gradients by applying the control variate adjustment
         for param, c_i_param, c_param in zip(self._get_parameters(pl_module), self.c_i, self.c):
             if param.grad is not None:
                 param.grad += eta_l * c_i_param - eta_l * c_param

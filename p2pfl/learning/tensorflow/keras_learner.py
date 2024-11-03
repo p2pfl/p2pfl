@@ -125,12 +125,14 @@ class KerasLearner(NodeLearner):
         try:
             if self.epochs > 0:
                 model, data = self.__get_tf_model_data(train=True)
+                self.set_callbacks_additional_info(self.callbacks)
                 model.fit(
                     data,
                     epochs=self.epochs,
                     # callbacks=[FederatedLogger(self.__self_addr)],
                     callbacks=self.callbacks,
                 )
+                self.get_callbacks_additional_info(self.callbacks)
             # Set model contribution
             self.model.set_contribution([self.__self_addr], self.data.get_num_samples(train=True))
 

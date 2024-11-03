@@ -42,7 +42,7 @@ class LightningModel(P2PFLModel):
         params: The parameters of the model.
         num_samples: The number of samples.
         contributors: The contributors of the model.
-        aditional_info: Additional information.
+        additional_info: Additional information.
 
     """
 

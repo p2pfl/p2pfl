@@ -18,7 +18,7 @@
 
 """NodeLearning Interface - Template Pattern."""
 
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
 
 import numpy as np
 
@@ -121,6 +121,29 @@ class NodeLearner:
 
         """
         raise NotImplementedError
+
+    def set_callbacks_additional_info(self, callbacks: List[Any]) -> None:
+        """
+        Update the callbacks with the model additional information.
+
+        Args:
+            callbacks: The callbacks.
+
+        """
+        for callback in callbacks:
+            callback.additional_info = self.model.additional_info
+
+    def get_callbacks_additional_info(self, callbacks: List[Any]) -> Dict[str, Any]:
+        """
+        Get the additional information from the callbacks to update the learner's model.
+
+        Args:
+            callbacks: The callbacks.
+
+        """
+        for callback in callbacks:
+            if hasattr(callback, "additional_info"):
+                self.model.additional_info.update(callback.additional_info)
 
     @staticmethod
     def get_framework() -> str:

@@ -93,7 +93,8 @@ class KerasModel(P2PFLModel):
 
         """
         if isinstance(params, bytes):
-            params = self.decode_parameters(params)
+            params, additional_info = self.decode_parameters(params)
+            self.additional_info.update(additional_info)
 
         # Set weights layer by layer
         try:

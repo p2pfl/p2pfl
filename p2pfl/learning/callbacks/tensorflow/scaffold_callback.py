@@ -79,12 +79,19 @@ class SCAFFOLDCallback(callbacks.Callback):
 
         """
         optimizer = self.model.optimizer
-        self.saved_lr = tf.keras.backend.get_value(optimizer.lr)
+        if hasattr(optimizer, 'learning_rate'):
+            lr = optimizer.learning_rate
+            if isinstance(lr, tf.keras.optimizers.schedules.LearningRateSchedule):
+                self.saved_lr = tf.keras.backend.get_value(lr(self.model.optimizer.iterations))
+            else:
+                self.saved_lr = tf.keras.backend.get_value(lr)
+        else:
+            raise AttributeError("The optimizer does not have a learning rate attribute.")
 
 
     def on_train_batch_end(self, batch, logs=None):
         """
-        Modify model gradients by applying control variate adjustments before the optimizer step.
+        Modify model by applying control variate adjustments after the optimizer step.
 
         Args:
             batch: The batch.
@@ -92,9 +99,10 @@ class SCAFFOLDCallback(callbacks.Callback):
 
         """
         eta_l = self.saved_lr
-        for param, c_i_param, c_param in zip(self.model.trainable_variables, self.c_i, self.c):
-            if param.gradient is not None:
-                param.gradient += eta_l * c_i_param - eta_l * c_param
+        # y_i ← y_i + eta_l * c_i - eta_l * c
+        for param, c_i, c in zip(self.model.trainable_variables, self.c_i, self.c):
+            adjustment = eta_l * c_i - eta_l * c
+            param.assign_add(adjustment)
         self.K += 1
 
     def on_train_end(self, logs=None):

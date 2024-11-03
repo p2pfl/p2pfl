@@ -125,28 +125,6 @@ class LightningLearner(NodeLearner):
         """
         self.epochs = epochs
 
-    def set_callbacks_additional_info(self, callbacks: List[Callback]) -> None: # TODO: Move to node learner
-        """
-        Update the callbacks.
-
-        Args:
-            callbacks: The callbacks.
-
-        """
-        for callback in callbacks:
-            callback.additional_info = self.model.additional_info
-
-    def get_callbacks_additional_info(self, callbacks: List[Callback]) -> Dict[str, Any]: # TODO: Move to node learner
-        """
-        Get the additional information from the callbacks.
-
-        Args:
-            callbacks: The callbacks.
-
-        """
-        for callback in callbacks:
-            if hasattr(callback, "additional_info"):
-                self.model.additional_info.update(callback.additional_info)
 
     def __get_pt_model_data(self, train: bool = True) -> Tuple[L.LightningModule, DataLoader]:
         # Get Model
