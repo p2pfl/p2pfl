@@ -34,7 +34,7 @@ class ScaffoldAggregator(Aggregator):
     The aggregator acts like the server in centralized learning, handling both model and control variate updates.
     """
 
-    def __init__(self, node_name:str):
+    def __init__(self, node_name:str, **kwargs):
         """
         Initialize the aggregator.
 
@@ -44,6 +44,7 @@ class ScaffoldAggregator(Aggregator):
         """
         super().__init__(node_name)
         self.c = [] # global control variates
+        self.global_lr = kwargs.get('global_lr', 0.1)
 
     def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
         """
@@ -73,6 +74,7 @@ class ScaffoldAggregator(Aggregator):
 
         # Normalize the accumulated model updates
         accum_y = [layer / total_samples for layer in accum_y]
+        accum_y = [layer * self.global_lr for layer in accum_y] # apply global learning rate
 
         # Accumulate control variates
         accum_c = None
