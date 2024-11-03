@@ -24,6 +24,7 @@ import numpy as np
 import tensorflow as tf
 from keras import callbacks
 
+from p2pfl.learning.callbacks.tensorflow.keras_logger import FederatedLogger
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.p2pfl_model import P2PFLModel
@@ -51,7 +52,7 @@ class KerasLearner(NodeLearner):
         self.data = data
         self.__self_addr = self_addr
         self.epochs = 1  # Default epochs
-        self.callbacks = callbacks if callbacks is not None else []
+        self.callbacks = callbacks.append(FederatedLogger) if callbacks is not None else [FederatedLogger]
 
         # Compile the model (you might need to customize this)
         self.model.model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])

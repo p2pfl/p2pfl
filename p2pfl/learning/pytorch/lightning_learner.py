@@ -20,7 +20,7 @@
 
 import logging
 import traceback
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import lightning as L
 import numpy as np
@@ -30,11 +30,11 @@ from lightning.pytorch.callbacks import Callback
 from torch.utils.data import DataLoader
 
 from p2pfl.experiment import Experiment
+from p2pfl.learning.callbacks.pytorch.lightning_logger import FederatedLogger
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.p2pfl_model import P2PFLModel
 from p2pfl.learning.pytorch.lightning_dataset import PyTorchExportStrategy
-from p2pfl.learning.pytorch.lightning_logger import FederatedLogger
 from p2pfl.management.logger import logger
 
 torch.set_num_threads(1)
@@ -64,7 +64,7 @@ class LightningLearner(NodeLearner):
         self.__trainer: Optional[Trainer] = None
         self.epochs = 1
         self.__self_addr = self_addr
-        self.callbacks = callbacks if callbacks is not None else []
+        self.callbacks = callbacks.append(FederatedLogger) if callbacks is not None else [FederatedLogger]
         self.experiment: Optional[Experiment] = None
 
         # Start logging
