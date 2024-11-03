@@ -52,8 +52,9 @@ class KerasLearner(NodeLearner):
         self.data = data
         self.__self_addr = self_addr
         self.epochs = 1  # Default epochs
-        self.callbacks = callbacks.append(FederatedLogger) if callbacks is not None else [FederatedLogger]
+        self.callbacks = callbacks if callbacks is not None else []
 
+        self.callbacks.append(FederatedLogger(self_addr)) if callbacks is not None else [FederatedLogger(self_addr)]
         # Compile the model (you might need to customize this)
         self.model.model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
 
