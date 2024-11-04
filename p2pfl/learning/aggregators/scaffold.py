@@ -34,6 +34,8 @@ class ScaffoldAggregator(Aggregator):
     The aggregator acts like the server in centralized learning, handling both model and control variate updates.
     """
 
+    REQUIRED_INFO_KEYS = ['delta_y_i', 'delta_c_i']
+
     def __init__(self, node_name:str, **kwargs):
         """
         Initialize the aggregator.
@@ -64,11 +66,8 @@ class ScaffoldAggregator(Aggregator):
 
         # Accumulate weighted model updates
         for m in models:
+            self._validate_model_info(m)
             delta_y_i = m.get_info('delta_y_i')
-
-
-            if delta_y_i is None:
-                raise ValueError(f"Model from node '{self.node_name}' is missing 'delta_y_i'.")
             num_samples = m.get_num_samples()
             for i, layer in enumerate(delta_y_i):
                 accum_y[i] += layer * num_samples
@@ -81,8 +80,6 @@ class ScaffoldAggregator(Aggregator):
         accum_c = None
         for m in models:
             delta_c_i = m.get_info('delta_c_i')
-            if delta_c_i is None:
-                raise ValueError("Node is missing 'delta_c_i'.")
             if accum_c is None:
                 accum_c = [layer.copy() for layer in delta_c_i]
             else:
@@ -117,4 +114,13 @@ class ScaffoldAggregator(Aggregator):
         """Retrieve the list of required callback keys for this aggregator."""
         return ["scaffold"]
 
+    def _validate_model_info(self, model: P2PFLModel) -> None:
+        """
+        Validate the model.
 
+        Args:
+            model: The model to validate.
+
+        """
+        if not all(key in model.additional_info for key in self.REQUIRED_INFO_KEYS):
+            raise ValueError(f"Model is missing required info keys: {self.REQUIRED_INFO_KEYS}")
