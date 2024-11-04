@@ -26,6 +26,7 @@ from keras import callbacks
 
 from p2pfl.learning.callbacks.tensorflow.keras_logger import FederatedLogger
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
+from p2pfl.learning.framework_identifier import FrameworkIdentifier
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.p2pfl_model import P2PFLModel
 from p2pfl.learning.tensorflow.keras_dataset import KerasExportStrategy
@@ -176,4 +177,4 @@ class KerasLearner(NodeLearner):
             str: The framework name ('tensorflow').
 
         """
-        return "keras"
+        return FrameworkIdentifier.KERAS

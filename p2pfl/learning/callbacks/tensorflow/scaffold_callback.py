@@ -24,9 +24,10 @@ import tensorflow as tf
 from keras import callbacks
 
 from p2pfl.learning.callbacks.decorators import register
+from p2pfl.learning.framework_identifier import FrameworkIdentifier
 
 
-@register(callback_key='scaffold', framework='keras')
+@register(callback_key='scaffold', framework=FrameworkIdentifier.KERAS)
 class SCAFFOLDCallback(callbacks.Callback):
     """
     Callback for SCAFFOLD operations to use with TensorFlow Keras.

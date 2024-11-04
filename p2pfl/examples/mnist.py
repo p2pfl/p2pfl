@@ -162,8 +162,7 @@ def mnist(
             p2pfl_model: P2PFLModel = KerasModel(model)
         else:
             p2pfl_model: P2PFLModel = LightningModel(MLP())
-        print(p2pfl_model)
-        print(type(p2pfl_model))
+
         # Nodes
         node = Node(
             p2pfl_model,

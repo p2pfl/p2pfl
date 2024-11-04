@@ -26,9 +26,10 @@ import torch
 from lightning.pytorch.callbacks import Callback
 
 from p2pfl.learning.callbacks.decorators import register
+from p2pfl.learning.framework_identifier import FrameworkIdentifier
 
 
-@register(callback_key='scaffold', framework='pytorch')
+@register(callback_key='scaffold', framework=FrameworkIdentifier.PYTORCH)
 class SCAFFOLDCallback(Callback):
     """
     Callback for scaffold operations to use with PyTorch Lightning.

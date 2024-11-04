@@ -32,6 +32,7 @@ from torch.utils.data import DataLoader
 from p2pfl.experiment import Experiment
 from p2pfl.learning.callbacks.pytorch.lightning_logger import FederatedLogger
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
+from p2pfl.learning.framework_identifier import FrameworkIdentifier
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.p2pfl_model import P2PFLModel
 from p2pfl.learning.pytorch.lightning_dataset import PyTorchExportStrategy
@@ -216,4 +217,4 @@ class LightningLearner(NodeLearner):
             str: The framework name ('pytorch').
 
         """
-        return "pytorch"
+        return FrameworkIdentifier.PYTORCH
