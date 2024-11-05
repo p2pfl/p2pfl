@@ -38,7 +38,7 @@ def register(callback_key: str, framework: str):
     def decorator(cls):
         try:
             CallbackFactory.register_callback(
-                framework=framework.lower(),
+                framework=framework,
                 callback_key=callback_key.lower(),
                 callback_constructor=cls
             )

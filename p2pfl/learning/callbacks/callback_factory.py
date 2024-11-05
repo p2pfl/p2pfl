@@ -39,7 +39,7 @@ class CallbackFactory:
             callback_constructor (Callable[[Any], Callback]): A callable that returns an instance of a Callback.
 
         """
-        key = (framework.lower(), callback_key.lower())
+        key = (framework, callback_key.lower())
         if key not in cls._callback_registry:
             cls._callback_registry[key] = []
         cls._callback_registry[key].append(callback_constructor)
@@ -65,7 +65,7 @@ class CallbackFactory:
 
             callbacks = []
             for callback_key in required_callback_keys:
-                key = (framework.lower(), callback_key.lower())
+                key = (framework, callback_key.lower())
                 constructors = cls._callback_registry.get(key, [])
                 if not constructors:
                     continue
