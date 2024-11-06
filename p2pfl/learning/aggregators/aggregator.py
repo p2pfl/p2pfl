@@ -223,7 +223,11 @@ class Aggregator:
         missing_models = set(self.__train_set) - set(agg_models)
         return missing_models
 
-    def get_partial_aggregation(self, except_nodes: List[str]) -> P2PFLModel:
+    def supports_partial_aggr(self) -> bool:
+        """Check if the aggregator supports partial aggregations."""
+        return False
+
+    def __get_partial_aggregation(self, except_nodes: List[str]) -> P2PFLModel:
         """
         Obtain a partial aggregation.
 
@@ -240,3 +244,33 @@ class Aggregator:
                 models_to_aggregate.append(m)
 
         return self.aggregate(models_to_aggregate)
+
+    def __get_remaining_model(self, except_nodes):
+        """
+        Obtain a random model from the remaining nodes.
+
+        Args:
+            except_nodes: List of nodes to exclude from the aggregation.
+
+        Return:
+            Aggregated model, nodes aggregated and aggregation weight.
+
+        """
+        for m in self.__models.copy():
+            contributors = m.get_contributors()
+            if all(n not in except_nodes for n in contributors):
+                return m
+        raise NoModelsToAggregateError("No remaining models available for aggregation.")
+
+    def get_model(self, except_nodes):
+        """
+        Get corresponding aggregation depending if aggregator supports partial aggregations.
+
+        Args:
+            except_nodes: List of nodes to exclude from the aggregation.
+
+        """
+        if self.supports_partial_aggr():
+            return self.__get_partial_aggregation(except_nodes)
+        else:
+            return self.__get_remaining_model(except_nodes)

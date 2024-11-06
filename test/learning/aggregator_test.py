@@ -133,7 +133,7 @@ def test_aggregator_lifecycle():
     aggregator.add_model(model23)
 
     # Get partial aggregation
-    partial_model = aggregator.get_partial_aggregation(["node2", "node3"])
+    partial_model = aggregator.__get_partial_aggregation(["node2", "node3"])
     assert all((partial_model.get_parameters()[i] == model1.get_parameters()[i]).all() for i in range(len(partial_model.get_parameters())))
 
     # Check if the model was added

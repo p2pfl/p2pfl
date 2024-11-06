@@ -151,12 +151,15 @@ class TrainStage(Stage):
 
         def model_fn(node: str) -> Any:
             try:
-                model = aggregator.get_partial_aggregation(TrainStage.__get_aggregated_models(node, state))
+                # if aggr.supports():
+                #     model = aggregator.get_partial_aggregation(TrainStage.__get_aggregated_models(node, state))
+                # else: 
+                model = aggregator.get_model(TrainStage.__get_aggregated_models(node, state))
             except NoModelsToAggregateError:
+                logger.info(state.addr, f"❔ No models to aggregate from {node}.")
                 return None
             if state.round is None:
                 raise Exception("Round not initialized.")
-
             return communication_protocol.build_weights(
                 PartialModelCommand.get_name(),
                 state.round,

@@ -59,14 +59,18 @@ class ScaffoldAggregator(Aggregator):
         """
         if not models:
             raise NoModelsToAggregateError(f"({self.node_name}) Trying to aggregate models when there is no models")
+
         total_samples = sum([m.get_num_samples() for m in models])
         # initialize the accumulators for the model and the control variates
         first_model_weights = models[0].get_parameters()
         accum_y = [np.zeros_like(layer) for layer in first_model_weights]
-
+   
         # Accumulate weighted model updates
         for m in models:
-            self._validate_model_info(m)
+            # self._validate_model_info(m)
+            if not m.get_info('delta_y_i'):
+                raise ValueError(f"Model is missing required info keys: {self.REQUIRED_INFO_KEYS}"
+                                 f"Model info keys: {m.additional_info.keys()}")
             delta_y_i = m.get_info('delta_y_i')
             num_samples = m.get_num_samples()
             for i, layer in enumerate(delta_y_i):
@@ -114,6 +118,10 @@ class ScaffoldAggregator(Aggregator):
         """Retrieve the list of required callback keys for this aggregator."""
         return ["scaffold"]
 
+    def supports_partial_aggr(self) -> bool:
+        """Check if the aggregator supports partial aggregations."""
+        return False
+
     def _validate_model_info(self, model: P2PFLModel) -> None:
         """
         Validate the model.
@@ -123,4 +131,5 @@ class ScaffoldAggregator(Aggregator):
 
         """
         if not all(key in model.additional_info for key in self.REQUIRED_INFO_KEYS):
-            raise ValueError(f"Model is missing required info keys: {self.REQUIRED_INFO_KEYS}")
+            raise ValueError(f"Model is missing required info keys: {self.REQUIRED_INFO_KEYS}"
+                             f"Model info keys: {model.additional_info.keys()}")

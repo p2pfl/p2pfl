@@ -96,7 +96,7 @@ class P2PFLModel:
             loaded_data = pickle.loads(data)
             params = loaded_data["params"]
             additional_info = loaded_data["additional_info"]
-            self.additional_info.update(additional_info)
+            # self.additional_info.update(additional_info)
             return params, additional_info
         except Exception as e:
             raise DecodingParamsError("Error decoding parameters") from e

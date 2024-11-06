@@ -70,3 +70,8 @@ class FedAvg(Aggregator):
 
         # Return an aggregated p2pfl model
         return models[0].build_copy(params=accum, num_samples=total_samples, contributors=contributors)
+
+    def supports_partial_aggr(self) -> bool:
+        """Check if the aggregator supports partial aggregations."""
+        return False
+
