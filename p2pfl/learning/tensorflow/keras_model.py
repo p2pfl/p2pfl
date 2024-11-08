@@ -18,7 +18,7 @@
 
 """Keras model abstraction for P2PFL."""
 
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import tensorflow as tf
@@ -60,7 +60,7 @@ class KerasModel(P2PFLModel):
         params: Optional[Union[List[np.ndarray], bytes]] = None,
         num_samples: Optional[int] = None,
         contributors: Optional[List[str]] = None,
-        additional_info: Optional[Dict[str, str]] = None,
+        additional_info: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Initialize the KerasModel."""
         super().__init__(model, params, num_samples, contributors, additional_info)

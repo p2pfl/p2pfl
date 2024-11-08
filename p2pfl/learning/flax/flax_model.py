@@ -43,7 +43,7 @@ class FlaxModel(P2PFLModel):
         params: Optional[Union[List[np.ndarray], bytes]] = None,
         num_samples: Optional[int] = None,
         contributors: Optional[List[str]] = None,
-        aditional_info: Optional[Dict[str, str]] = None,
+        aditional_info: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Initialize Flax model."""
         # TODO: fix: when using arg params for jax params, fedavg.aggregate fails in models[0].build_copy(params=accum, ...)

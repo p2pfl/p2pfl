@@ -48,11 +48,11 @@ class P2PFLModel:
         params: Optional[Union[List[np.ndarray], bytes]] = None,
         num_samples: Optional[int] = None,
         contributors: Optional[List[str]] = None,
-        additional_info: Optional[Dict[str, str]] = None,
+        additional_info: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Initialize the model."""
         self.model = model
-        self.additional_info: Dict[str, str] = {}
+        self.additional_info: Dict[str, Any] = {}
         self.contributors: List[str] = []
         if contributors is not None:
             self.contributors = contributors
@@ -84,7 +84,7 @@ class P2PFLModel:
         }
         return pickle.dumps(data_to_serialize)
 
-    def decode_parameters(self, data: bytes) -> Tuple[List[np.ndarray], Dict[str, str]]:
+    def decode_parameters(self, data: bytes) -> Tuple[List[np.ndarray], Dict[str, Any]]:
         """
         Decode the parameters of the model.
 
