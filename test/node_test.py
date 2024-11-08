@@ -19,11 +19,16 @@
 
 import time
 
+import jax
+import jax.numpy as jnp
 import pytest
 import tensorflow as tf
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
+from p2pfl.learning.flax.flax_learner import FlaxLearner
+from p2pfl.learning.flax.flax_model import MLP as MLP_FLAX
+from p2pfl.learning.flax.flax_model import FlaxModel
 from p2pfl.learning.pytorch.lightning_learner import LightningLearner
 from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
 from p2pfl.learning.tensorflow.keras_learner import KerasLearner
@@ -250,6 +255,37 @@ def test_torch_node():
 
     check_equal_models([n1, n2])
 
+    # Stop
+    n1.stop()
+    n2.stop()
+
+
+def test_flax_node():
+    """Test a Flax node."""
+    # Data
+    data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
+    partitions = data.generate_partitions(400, RandomIIDPartitionStrategy)
+    model = MLP_FLAX()
+    seed = jax.random.PRNGKey(0)
+    model_params = model.init(seed, jnp.ones((1, 28, 28)))["params"]
+    p2pfl_model = FlaxModel(model, model_params)
+    # Nodes
+    n1 = Node(p2pfl_model, partitions[0], learner=FlaxLearner)
+    n2 = Node(p2pfl_model.build_copy(), partitions[1], learner=FlaxLearner)
+    # Start
+    n1.start()
+    n2.start()
+    # Connect
+    n2.connect(n1.addr)
+    wait_convergence([n1, n2], 1, only_direct=True)
+    # Start Learning
+    n1.set_start_learning(rounds=1, epochs=1)
+    # Wait
+    wait_to_finish([n1, n2], timeout=120)
+    # Check if execution is correct
+    for node in [n1, n2]:
+        assert "RoundFinishedStage" in node.learning_workflow.history
+    check_equal_models([n1, n2])
     # Stop
     n1.stop()
     n2.stop()
