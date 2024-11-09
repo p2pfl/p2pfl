@@ -28,6 +28,7 @@ import torch
 from datasets import DatasetDict, load_dataset  # type: ignore
 from torch.utils.data import DataLoader
 
+from p2pfl.experiment import Experiment
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.exceptions import ModelNotMatchingError
 from p2pfl.learning.flax.flax_dataset import FlaxExportStrategy
@@ -42,6 +43,7 @@ from p2pfl.learning.tensorflow.keras_dataset import KerasExportStrategy
 from p2pfl.learning.tensorflow.keras_learner import KerasLearner
 from p2pfl.learning.tensorflow.keras_model import MLP as MLP_KERAS
 from p2pfl.learning.tensorflow.keras_model import KerasModel
+from p2pfl.management.logger import logger
 
 ####
 # Params & Model
@@ -120,10 +122,12 @@ def test_encoding_torch():
     encoded_params = p2pfl_model1.encode_parameters()
 
     p2pfl_model2 = LightningModel(MLP_PT())
-    decoded_params = p2pfl_model2.decode_parameters(encoded_params)
+    decoded_params, additional_info = p2pfl_model2.decode_parameters(encoded_params)
     p2pfl_model2.set_parameters(decoded_params)
+    p2pfl_model2.additional_info = additional_info
 
     assert encoded_params == p2pfl_model1.encode_parameters()
+    assert additional_info == p2pfl_model1.additional_info
 
 
 def test_encoding_tensorflow():
@@ -136,10 +140,11 @@ def test_encoding_tensorflow():
     model = MLP_KERAS()
     model(tf.zeros((1, 28, 28, 1)))
     p2pfl_model2 = KerasModel(model)
-    decoded_params = p2pfl_model2.decode_parameters(encoded_params)
+    decoded_params, additional_info = p2pfl_model2.decode_parameters(encoded_params)
     p2pfl_model2.set_parameters(decoded_params)
 
     assert encoded_params == p2pfl_model1.encode_parameters()
+    assert additional_info == p2pfl_model1.additional_info
 
 
 def test_encoding_flax():
@@ -154,11 +159,12 @@ def test_encoding_flax():
     seed = jax.random.PRNGKey(1)
     model_params = model2.init(seed, jnp.ones((1, 28, 28)))["params"]
     p2pfl_model2 = FlaxModel(model2, init_params=model_params)
-    decoded_params = p2pfl_model2.decode_parameters(encoded_params)
+    decoded_params, additional_info = p2pfl_model2.decode_parameters(encoded_params)
     p2pfl_model2.set_parameters(decoded_params)
 
     for arr1, arr2 in zip(p2pfl_model1.get_parameters(), p2pfl_model2.get_parameters()):
         assert np.array_equal(arr1, arr2)
+        assert p2pfl_model1.additional_info == p2pfl_model2.additional_info
 
 
 def test_wrong_encoding_torch():
@@ -167,7 +173,7 @@ def test_wrong_encoding_torch():
     encoded_params = p2pfl_model1.encode_parameters()
     mobile_net = torch.hub.load("pytorch/vision:v0.10.0", "mobilenet_v2", pretrained=False)
     p2pfl_model2 = LightningModel(mobile_net)
-    decoded_params = p2pfl_model2.decode_parameters(encoded_params)
+    decoded_params, _ = p2pfl_model2.decode_parameters(encoded_params)
     # Check that raises
     with pytest.raises(ModelNotMatchingError):
         p2pfl_model2.set_parameters(decoded_params)
@@ -318,6 +324,10 @@ def test_learner_train_torch():
     # Create the model
     p2pfl_model = LightningModel(MLP_PT())
 
+    node_name = "unknown-node"
+    logger.register_node(node_name, simulation=True)
+    experiment = Experiment(exp_name="test_experiment-torch", total_rounds=1)
+    logger.experiment_started(node_name, experiment)
     # Learner
     learner = LightningLearner(p2pfl_model, dataset)
 
@@ -331,6 +341,11 @@ def test_learner_train_torch():
 
 def test_learner_train_tensorflow():
     """Test the training and testing of the learner."""
+    node_name = "unknown-node"
+    logger.register_node(node_name, simulation=True)
+    experiment = Experiment(exp_name="test_experiment-tf", total_rounds=1)
+    logger.experiment_started(node_name, experiment)
+
     # Dataset
     dataset = P2PFLDataset(
         DatasetDict(
@@ -359,6 +374,11 @@ def test_learner_train_tensorflow():
 
 def test_learner_train_flax():
     """Test the training and testing of the learner."""
+    node_name = "unknown-node"
+    logger.register_node(node_name, simulation=True)
+    experiment = Experiment(exp_name="test_experiment_flax", total_rounds=1)
+    logger.experiment_started(node_name, experiment)
+
     # Dataset
     dataset = P2PFLDataset(
         DatasetDict(
@@ -371,6 +391,7 @@ def test_learner_train_flax():
 
     # Create the model
     model = MLP_FLASK()
+
     seed = jax.random.PRNGKey(0)
     model_params = model.init(seed, jnp.ones((1, 28, 28)))["params"]
     p2pfl_model = FlaxModel(model=model, init_params=model_params)
