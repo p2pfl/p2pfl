@@ -26,7 +26,7 @@ from p2pfl.learning.learner import NodeLearner
 class CallbackFactory:
     """Factory for creating callbacks based on learner framework and aggregator requirements."""
 
-    _callback_registry: Dict[tuple, List[Callable[[Any], Any]]] = {}
+    _callback_registry: Dict[tuple, List[Callable[[], Any]]] = {}
 
     @classmethod
     def register_callback(cls, framework: str, callback_key: str, callback_constructor: Callable[[Any], Any]):

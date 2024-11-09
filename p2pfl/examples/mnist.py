@@ -159,13 +159,13 @@ def mnist(
         if use_tensorflow:
             model = MLP_KERAS()  # type: ignore
             model(tf.zeros((1, 28, 28, 1)))  # type: ignore
-            p2pfl_model: P2PFLModel = KerasModel(model)
+            p2pfl_model_i: P2PFLModel = KerasModel(model)
         else:
-            p2pfl_model: P2PFLModel = LightningModel(MLP())
+            p2pfl_model_i: P2PFLModel = LightningModel(MLP())
 
         # Nodes
         node = Node(
-            p2pfl_model,
+            p2pfl_model_i,
             partitions[i],
             learner=KerasLearner if use_tensorflow else LightningLearner,  # type: ignore
             protocol=InMemoryCommunicationProtocol if use_local_protocol else GrpcCommunicationProtocol,  # type: ignore

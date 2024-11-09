@@ -245,7 +245,7 @@ class Aggregator:
 
         return self.aggregate(models_to_aggregate)
 
-    def __get_remaining_model(self, except_nodes):
+    def __get_remaining_model(self, except_nodes) -> P2PFLModel:
         """
         Obtain a random model from the remaining nodes.
 
@@ -262,7 +262,7 @@ class Aggregator:
                 return m
         raise NoModelsToAggregateError("No remaining models available for aggregation.")
 
-    def get_model(self, except_nodes):
+    def get_model(self, except_nodes) -> P2PFLModel:
         """
         Get corresponding aggregation depending if aggregator supports partial aggregations.
 

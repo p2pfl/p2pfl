@@ -157,4 +157,4 @@ class LightningLearner(NodeLearner):
             str: The framework name ('pytorch').
 
         """
-        return FrameworkIdentifier.PYTORCH
+        return FrameworkIdentifier.PYTORCH.value

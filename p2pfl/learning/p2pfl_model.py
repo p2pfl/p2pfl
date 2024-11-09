@@ -135,7 +135,7 @@ class P2PFLModel:
         """
         self.additional_info[key] = value
 
-    def get_info(self, key: str) -> str:
+    def get_info(self, key: str) -> Optional[List[Any]]:
         """
         Get additional information from the learner state.
 

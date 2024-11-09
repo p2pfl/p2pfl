@@ -21,13 +21,13 @@
 from typing import Any, Dict, List, Optional
 
 import tensorflow as tf
-from keras import callbacks
+from keras import callbacks  # type: ignore
 
 from p2pfl.learning.callbacks.decorators import register
 from p2pfl.learning.framework_identifier import FrameworkIdentifier
 
 
-@register(callback_key='scaffold', framework=FrameworkIdentifier.KERAS)
+@register(callback_key='scaffold', framework=FrameworkIdentifier.KERAS.value)
 class SCAFFOLDCallback(callbacks.Callback):
     """
     Callback for SCAFFOLD operations to use with TensorFlow Keras.
@@ -37,7 +37,7 @@ class SCAFFOLDCallback(callbacks.Callback):
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the callback."""
         super().__init__()
         self.c_i: Optional[List[tf.Variable]] = None
@@ -47,7 +47,7 @@ class SCAFFOLDCallback(callbacks.Callback):
         self.K: int = 0
         self.additional_info: Dict[str, Any] = {}
 
-    def on_train_begin(self, logs=None):
+    def on_train_begin(self, logs: Optional[Dict[str, Any]] = None) -> None:
         """Store the global model and the initial learning rate."""
         if self.c_i is None:
             self.c_i = [tf.Variable(tf.zeros_like(param), trainable=False)
@@ -70,7 +70,7 @@ class SCAFFOLDCallback(callbacks.Callback):
         self.initial_model_params = [tf.Variable(param.numpy()) for param in self.model.trainable_variables]
         self.K = 0
 
-    def on_train_batch_begin(self, batch, logs=None):
+    def on_train_batch_begin(self, batch: Any, logs: Optional[Dict[str, Any]] = None) -> None:
         """
         Store the learning rate.
 
@@ -90,7 +90,7 @@ class SCAFFOLDCallback(callbacks.Callback):
             raise AttributeError("The optimizer does not have a learning rate attribute.")
 
 
-    def on_train_batch_end(self, batch, logs=None):
+    def on_train_batch_end(self, batch: Any, logs: Optional[Dict[str, Any]] = None) -> None:
         """
         Modify model by applying control variate adjustments after the optimizer step.
 
@@ -106,7 +106,7 @@ class SCAFFOLDCallback(callbacks.Callback):
             param.assign_add(adjustment)
         self.K += 1
 
-    def on_train_end(self, logs=None):
+    def on_train_end(self, logs: Optional[Dict[str, Any]] = None) -> None:
         """
         Restore the global model.
 
@@ -129,7 +129,7 @@ class SCAFFOLDCallback(callbacks.Callback):
         self.additional_info['delta_y_i'] = delta_y_i
         self.additional_info['delta_c_i'] = delta_c_i
 
-    def set_global_c(self, global_c_np: Optional[List[tf.Tensor]]):
+    def set_global_c(self, global_c_np: Optional[List[tf.Tensor]]) -> None:
         """
         Set the global control variate from an aggregator.
 

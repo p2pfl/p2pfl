@@ -29,7 +29,7 @@ from p2pfl.learning.callbacks.decorators import register
 from p2pfl.learning.framework_identifier import FrameworkIdentifier
 
 
-@register(callback_key='scaffold', framework=FrameworkIdentifier.PYTORCH)
+@register(callback_key='scaffold', framework=FrameworkIdentifier.PYTORCH.value)
 class SCAFFOLDCallback(Callback):
     """
     Callback for scaffold operations to use with PyTorch Lightning.
@@ -37,7 +37,7 @@ class SCAFFOLDCallback(Callback):
     At the beginning of the training, the callback needs to store the global model and the initial learning rate. Then, after optimization,
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the callback."""
         super().__init__()
         self.c_i: Optional[List[torch.Tensor]] = None
@@ -48,7 +48,7 @@ class SCAFFOLDCallback(Callback):
         self.additional_info: Dict[str, Any] = {}
 
 
-    def on_train_start(self, trainer: pl.Trainer , pl_module: pl.LightningModule):
+    def on_train_start(self, trainer: pl.Trainer , pl_module: pl.LightningModule) -> None:
         """
         Store the global model and the initial learning rate.
 
@@ -76,7 +76,7 @@ class SCAFFOLDCallback(Callback):
         self.initial_model_params = copy.deepcopy(self._get_parameters(pl_module))
         self.K = 0
 
-    def on_train_batch_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule, batch: Any, batch_idx: int):
+    def on_train_batch_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule, batch: Any, batch_idx: int) -> None:
         """
         Store the learning rate.
 
@@ -91,7 +91,7 @@ class SCAFFOLDCallback(Callback):
         self.saved_lr = optimizer.param_groups[0]['lr']
 
 
-    def on_before_zero_grad(self, trainer: pl.Trainer, pl_module: pl.LightningModule, optimizer: torch.optim.Optimizer):
+    def on_before_zero_grad(self, trainer: pl.Trainer, pl_module: pl.LightningModule, optimizer: torch.optim.Optimizer) -> None:
         """
         Modify model by applying control variate adjustment.
 
@@ -104,14 +104,17 @@ class SCAFFOLDCallback(Callback):
             optimizer: The optimizer.
 
         """
-        eta_l = self.saved_lr
-        # modify the gradients by applying the control variate adjustment
-        for param, c_i_param, c_param in zip(self._get_parameters(pl_module), self.c_i, self.c):
-            if param.grad is not None:
-                param.grad += eta_l * c_i_param - eta_l * c_param
-        self.K += 1
+        if self.c_i is not None and self.c is not None and self.saved_lr is not None: # mypi check
+            eta_l = self.saved_lr
+            # modify the gradients by applying the control variate adjustment
+            for param, c_i_param, c_param in zip(self._get_parameters(pl_module), self.c_i, self.c):
+                if param.grad is not None:
+                    param.grad += eta_l * c_i_param - eta_l * c_param
+            self.K += 1
+        else:
+            raise AttributeError("The callback has not been initialized properly or the learning rate is not available.")
 
-    def on_train_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule):
+    def on_train_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
         """
         Restore the global model.
 
@@ -120,6 +123,9 @@ class SCAFFOLDCallback(Callback):
             pl_module: The model.
 
         """
+        if self.c_i is None or self.initial_model_params is None or self.saved_lr is None:
+            raise AttributeError("Necessary attributes are not initialized.")
+
         y_i = [param.clone().detach() for param in self._get_parameters(pl_module)]
         x_g = self.initial_model_params
         previous_c_i = [c.clone() for c in self.c_i]
@@ -138,7 +144,7 @@ class SCAFFOLDCallback(Callback):
         self.additional_info['delta_y_i'] = delta_y_i_np
         self.additional_info['delta_c_i'] = delta_c_i_np
 
-    def set_global_c(self, global_c_np: Optional[List[torch.Tensor]]):
+    def set_global_c(self, global_c_np: Optional[List[torch.Tensor]]) -> None:
         """
         Get the global control variate from the aggregator.
 

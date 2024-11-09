@@ -168,4 +168,4 @@ class FlaxLearner(NodeLearner):
             str: The framework name ('flax').
 
         """
-        return FrameworkIdentifier.FLAX
+        return FrameworkIdentifier.FLAX.value

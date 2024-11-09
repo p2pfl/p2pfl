@@ -18,7 +18,7 @@
 
 """Callback for SCAFFOLD operations."""
 
-from typing import List
+from typing import Any, List, Optional
 
 import numpy as np
 
@@ -46,7 +46,7 @@ class ScaffoldAggregator(Aggregator):
 
         """
         super().__init__(node_name)
-        self.c = [] # global control variates
+        self.c: List[np.ndarray] = [] # global control variates
         self.global_lr = kwargs.get('global_lr', 0.1)
 
     def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
@@ -64,14 +64,13 @@ class ScaffoldAggregator(Aggregator):
         # initialize the accumulators for the model and the control variates
         first_model_weights = models[0].get_parameters()
         accum_y = [np.zeros_like(layer) for layer in first_model_weights]
-   
+
         # Accumulate weighted model updates
         for m in models:
-            # self._validate_model_info(m)
-            if not m.get_info('delta_y_i'):
-                raise ValueError(f"Model is missing required info keys: {self.REQUIRED_INFO_KEYS}"
-                                 f"Model info keys: {m.additional_info.keys()}")
+            self._validate_model_info(m)
             delta_y_i = m.get_info('delta_y_i')
+            if delta_y_i is None:
+                raise ValueError(f"Model is missing required info keys: {self.REQUIRED_INFO_KEYS}") # mypi check
             num_samples = m.get_num_samples()
             for i, layer in enumerate(delta_y_i):
                 accum_y[i] += layer * num_samples
@@ -81,7 +80,7 @@ class ScaffoldAggregator(Aggregator):
         accum_y = [layer * self.global_lr for layer in accum_y] # apply global learning rate
 
         # Accumulate control variates
-        accum_c = None
+        accum_c: Optional[List[Any]] = None
         for m in models:
             delta_c_i = m.get_info('delta_c_i')
             if accum_c is None:
@@ -133,3 +132,4 @@ class ScaffoldAggregator(Aggregator):
         if not all(key in model.additional_info for key in self.REQUIRED_INFO_KEYS):
             raise ValueError(f"Model is missing required info keys: {self.REQUIRED_INFO_KEYS}"
                              f"Model info keys: {model.additional_info.keys()}")
+
