@@ -18,6 +18,7 @@
 
 """NodeLearning Interface - Template Pattern."""
 
+from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Union
 
 import numpy as np
@@ -26,7 +27,7 @@ from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.p2pfl_model import P2PFLModel
 
 
-class NodeLearner:
+class NodeLearner(ABC):
     """
     Template to implement learning processes, including metric monitoring during training.
 
@@ -37,9 +38,13 @@ class NodeLearner:
 
     """
 
-    def __init__(self, model: P2PFLModel, data: P2PFLDataset, self_addr: str, callbacks: List) -> None:
+    def __init__(self, model: P2PFLModel, data: P2PFLDataset, self_addr: str, callbacks: List[Any]) -> None:
         """Initialize the learner."""
-        raise NotImplementedError
+        self.model: P2PFLModel = model
+        self.data: P2PFLDataset = data
+        self._self_addr = self_addr
+        self.callbacks: List[Any] = callbacks if callbacks is not None else []
+        self.epochs: int = 1  # Default epochs
 
     def set_addr(self, addr: str) -> None:
         """
@@ -49,20 +54,20 @@ class NodeLearner:
             addr: The address of the learner.
 
         """
-        raise NotImplementedError
+        self._self_addr = addr
 
     def set_model(self, model: Union[P2PFLModel, List[np.ndarray], bytes]) -> None:
         """
-        Set the model of the learner (not weights).
+        Set the model of the learner.
 
         Args:
             model: The model of the learner.
 
-        Raises:
-            ModelNotMatchingError: If the model is not matching the learner.
-
         """
-        raise NotImplementedError
+        if isinstance(model, P2PFLModel):
+            self.model = model
+        elif isinstance(model, (list, bytes)):
+            self.model.set_parameters(model)
 
     def get_model(self) -> P2PFLModel:
         """
@@ -72,7 +77,7 @@ class NodeLearner:
             The model of the learner.
 
         """
-        raise NotImplementedError
+        return self.model
 
     def set_data(self, data: P2PFLDataset) -> None:
         """
@@ -82,7 +87,7 @@ class NodeLearner:
             data: The data of the learner.
 
         """
-        raise NotImplementedError
+        self.data = data
 
     def get_data(self) -> P2PFLDataset:
         """
@@ -92,7 +97,7 @@ class NodeLearner:
             The data of the learner.
 
         """
-        raise NotImplementedError
+        return self.data
 
     def set_epochs(self, epochs: int) -> None:
         """
@@ -102,25 +107,7 @@ class NodeLearner:
             epochs: The number of epochs of the model.
 
         """
-        raise NotImplementedError
-
-    def fit(self) -> P2PFLModel:
-        """Fit the model."""
-        raise NotImplementedError
-
-    def interrupt_fit(self) -> None:
-        """Interrupt the fit process."""
-        raise NotImplementedError
-
-    def evaluate(self) -> Dict[str, float]:
-        """
-        Evaluate the model with actual parameters.
-
-        Returns:
-            The evaluation results.
-
-        """
-        raise NotImplementedError
+        self.epochs = epochs
 
     def set_callbacks_additional_info(self, callbacks: List[Any]) -> None:
         """
@@ -145,7 +132,29 @@ class NodeLearner:
             if hasattr(callback, "additional_info"):
                 self.model.additional_info.update(callback.additional_info)
 
+    @abstractmethod
+    def fit(self) -> P2PFLModel:
+        """Fit the model."""
+        pass
+
+    @abstractmethod
+    def interrupt_fit(self) -> None:
+        """Interrupt the fit process."""
+        pass
+
+    @abstractmethod
+    def evaluate(self) -> Dict[str, float]:
+        """
+        Evaluate the model with actual parameters.
+
+        Returns:
+            The evaluation results.
+
+        """
+        pass
+
     @staticmethod
+    @abstractmethod
     def get_framework() -> str:
         """
         Get the framework of the learner.
@@ -154,4 +163,4 @@ class NodeLearner:
             The framework of the learner.
 
         """
-        raise NotImplementedError
+        pass

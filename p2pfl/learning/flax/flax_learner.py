@@ -18,11 +18,10 @@
 
 """Flax Learner for P2PFL."""
 
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple
 
 import jax
 import jax.numpy as jnp
-import numpy as np
 import optax  # type: ignore
 from flax.core import FrozenDict
 from flax.training import train_state
@@ -30,6 +29,7 @@ from flax.training import train_state
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.flax.flax_dataset import FlaxExportStrategy
 from p2pfl.learning.flax.flax_model import FlaxModel
+from p2pfl.learning.framework_identifier import FrameworkIdentifier
 from p2pfl.learning.learner import NodeLearner
 from p2pfl.learning.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
@@ -46,41 +46,15 @@ class FlaxLearner(NodeLearner):
 
     """
 
-    def __init__(self, model: FlaxModel, data: P2PFLDataset, self_addr: str = "unknown-node") -> None:
+    def __init__(self, model: FlaxModel, data: P2PFLDataset, self_addr: str = "unknown-node", callbacks: List[Any] = None) -> None:
         """Initialize the FlaxLearner."""
-        self.model = model
-        self.data = data
-        self.__self_addr = self_addr
-        self.epochs = 1  # Default epochs
+        super().__init__(model, data, self_addr, callbacks)
 
         # Initialize optimizer
         self.optimizer = optax.adam(learning_rate=1e-3)
         self.state = train_state.TrainState.create(
             apply_fn=self.model.model.apply, params={"params": self.model.model_params}, tx=self.optimizer
         )  # type: ignore
-
-    def set_model(self, model: Union[P2PFLModel, List[np.ndarray], bytes]) -> None:
-        """Set the model of the learner."""
-        if isinstance(model, FlaxModel):
-            self.model = model
-        elif isinstance(model, (list, bytes)):
-            self.model.set_parameters(model)
-
-    def get_model(self) -> P2PFLModel:
-        """Get the model of the learner."""
-        return self.model
-
-    def set_data(self, data: P2PFLDataset) -> None:
-        """Set the data of the learner."""
-        self.data = data
-
-    def get_data(self) -> P2PFLDataset:
-        """Get the data of the learner."""
-        return self.data
-
-    def set_epochs(self, epochs: int) -> None:
-        """Set the number of epochs."""
-        self.epochs = epochs
 
     def __get_flax_data(self, train: bool = True) -> Tuple:
         return self.data.export(FlaxExportStrategy, train=train)
@@ -139,18 +113,18 @@ class FlaxLearner(NodeLearner):
                     avg_loss = total_loss / num_batches
                     avg_acc = total_acc / num_batches
                     # End of epoch: Log training progress
-                    logger.log_metric(self.__self_addr, "epoch", epoch)
-                    logger.log_metric(self.__self_addr, "loss", avg_loss)
-                    logger.log_metric(self.__self_addr, "accuracy", avg_acc)
+                    logger.log_metric(self._self_addr, "epoch", epoch)
+                    logger.log_metric(self._self_addr, "loss", avg_loss)
+                    logger.log_metric(self._self_addr, "accuracy", avg_acc)
                     print(f"Epoch {epoch + 1}/{self.epochs} completed.")
 
             # Set model contribution
-            self.model.set_contribution([self.__self_addr], self.data.get_num_samples(train=True))
+            self.model.set_contribution([self._self_addr], self.data.get_num_samples(train=True))
 
             return self.model
 
         except Exception as e:
-            logger.error(self.__self_addr, f"Error in training with Flax: {e}")
+            logger.error(self._self_addr, f"Error in training with Flax: {e}")
             raise e
 
     def evaluate(self) -> Dict[str, float]:
@@ -171,10 +145,27 @@ class FlaxLearner(NodeLearner):
                     accuracies.append(accuracy)
 
                 avg_accuracy = float(jnp.mean(jnp.array(accuracies)))
-                logger.log_metric(self.__self_addr, "accuracy", avg_accuracy)
+                logger.log_metric(self._self_addr, "accuracy", avg_accuracy)
                 return {"accuracy": avg_accuracy}
             else:
                 return {}
         except Exception as e:
-            logger.error(self.__self_addr, f"Evaluation error with Flax: {e}")
+            logger.error(self._self_addr, f"Evaluation error with Flax: {e}")
             raise e
+
+    def interrupt_fit(self) -> None:
+        """Interrupt the fit process."""
+        # Flax doesn't have a direct way to interrupt fit.
+        # Need to implement a custom callback or use a flag to stop training.
+        logger.error(self._self_addr, "Interrupting training (not fully implemented for Flax).")
+
+    @staticmethod
+    def get_framework() -> str:
+        """
+        Retrieve the framework name used by the learner.
+
+        Returns:
+            str: The framework name ('flax').
+
+        """
+        return FrameworkIdentifier.FLAX

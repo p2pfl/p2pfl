@@ -20,10 +20,9 @@
 
 import logging
 import traceback
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 import lightning as L
-import numpy as np
 import torch
 from lightning import Trainer
 from lightning.pytorch.callbacks import Callback
@@ -60,12 +59,8 @@ class LightningLearner(NodeLearner):
         callbacks: List[Callback] = None,
     ) -> None:
         """Initialize the learner."""
-        self.model = model
-        self.data = data
+        super().__init__(model, data, self_addr, callbacks)
         self.__trainer: Optional[Trainer] = None
-        self.epochs = 1
-        self.__self_addr = self_addr
-        self.callbacks = callbacks if callbacks is not None else []
         self.experiment: Optional[Experiment] = None
 
         # append federated logger
@@ -75,60 +70,6 @@ class LightningLearner(NodeLearner):
         self.logger = FederatedLogger(self_addr)
         # To avoid GPU/TPU printings
         logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
-
-    def set_model(self, model: Union[P2PFLModel, List[np.ndarray], bytes]) -> None:
-        """
-        Set the model of the learner.
-
-        Args:
-            model: The model of the learner.
-
-        """
-        if isinstance(model, P2PFLModel):
-            self.model = model
-        elif isinstance(model, (list, bytes)):
-            self.model.set_parameters(model)
-
-    def get_model(self) -> P2PFLModel:
-        """
-        Get the model of the learner.
-
-        Returns:
-            The model of the learner.
-
-        """
-        return self.model
-
-    def set_data(self, data: P2PFLDataset) -> None:
-        """
-        Set the data of the learner.
-
-        Args:
-            data: The data of the learner.
-
-        """
-        self.data = data
-
-    def get_data(self) -> P2PFLDataset:
-        """
-        Get the data of the learner.
-
-        Returns:
-            The data of the learner.
-
-        """
-        return self.data
-
-    def set_epochs(self, epochs: int) -> None:
-        """
-        Set the number of epochs.
-
-        Args:
-            epochs: The number of epochs.
-
-        """
-        self.epochs = epochs
-
 
     def __get_pt_model_data(self, train: bool = True) -> Tuple[L.LightningModule, DataLoader]:
         # Get Model
@@ -140,7 +81,6 @@ class LightningLearner(NodeLearner):
         if not isinstance(pt_data, DataLoader):
             raise ValueError("The data must be a PyTorch DataLoader")
         return pt_model, pt_data
-
 
     def fit(self) -> P2PFLModel:
         """Fit the model."""
@@ -162,14 +102,14 @@ class LightningLearner(NodeLearner):
 
                 self.__trainer = None
             # Set model contribution
-            self.model.set_contribution([self.__self_addr], self.data.get_num_samples())
+            self.model.set_contribution([self._self_addr], self.data.get_num_samples())
 
             return self.model
 
         except Exception as e:
             print(traceback.format_exc())
             logger.error(
-                self.__self_addr,
+                self._self_addr,
                 f"Fit error. Something went wrong with pytorch lightning. {e}",
             )
             raise e
@@ -196,14 +136,14 @@ class LightningLearner(NodeLearner):
                 self.__trainer = None
                 # Log metrics
                 for k, v in results.items():
-                    logger.log_metric(self.__self_addr, k, v)
+                    logger.log_metric(self._self_addr, k, v)
                 return dict(results)
 
             else:
                 return {}
         except Exception as e:
             logger.error(
-                self.__self_addr,
+                self._self_addr,
                 f"Evaluation error. Something went wrong with pytorch lightning. {e}",
             )
             raise e

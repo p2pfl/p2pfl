@@ -18,9 +18,8 @@
 
 """Keras learner for P2PFL."""
 
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple
 
-import numpy as np
 import tensorflow as tf
 from keras import callbacks
 
@@ -49,68 +48,10 @@ class KerasLearner(NodeLearner):
         self, model: KerasModel, data: P2PFLDataset, self_addr: str = "unknown-node", callbacks: List[callbacks.Callback] = None
     ) -> None:
         """Initialize the KerasLearner."""
-        self.model = model
-        self.data = data
-        self.__self_addr = self_addr
-        self.epochs = 1  # Default epochs
-        self.callbacks = callbacks if callbacks is not None else []
-
-        self.callbacks.append(FederatedLogger(self_addr)) if callbacks is not None else [FederatedLogger(self_addr)]
+        super().__init__(model, data, self_addr, callbacks)
+        self.callbacks.append(FederatedLogger(self_addr))
         # Compile the model (you might need to customize this)
         self.model.model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
-
-    def set_model(self, model: Union[P2PFLModel, List[np.ndarray], bytes]) -> None:
-        """
-        Set the model of the learner.
-
-        Args:
-            model: The model of the learner.
-
-        """
-        if isinstance(model, KerasModel):
-            self.model = model
-        elif isinstance(model, (list, bytes)):
-            self.model.set_parameters(model)
-
-    def get_model(self) -> KerasModel:
-        """
-        Get the model of the learner.
-
-        Returns:
-            The model of the learner.
-
-        """
-        return self.model
-
-    def set_data(self, data: P2PFLDataset) -> None:
-        """
-        Set the data of the learner.
-
-        Args:
-            data: The data of the learner.
-
-        """
-        self.data = data
-
-    def get_data(self) -> P2PFLDataset:
-        """
-        Get the data of the learner.
-
-        Returns:
-            The data of the learner.
-
-        """
-        return self.data
-
-    def set_epochs(self, epochs: int) -> None:
-        """
-        Set the number of epochs.
-
-        Args:
-            epochs: The number of epochs.
-
-        """
-        self.epochs = epochs
 
     def __get_tf_model_data(self, train: bool = True) -> Tuple[tf.keras.Model, tf.data.Dataset]:
         # Get Model
@@ -137,18 +78,18 @@ class KerasLearner(NodeLearner):
                 )
                 self.get_callbacks_additional_info(self.callbacks)
             # Set model contribution
-            self.model.set_contribution([self.__self_addr], self.data.get_num_samples(train=True))
+            self.model.set_contribution([self._self_addr], self.data.get_num_samples(train=True))
 
             return self.model
         except Exception as e:
-            logger.error(self.__self_addr, f"Error in training with Keras: {e}")
+            logger.error(self._self_addr, f"Error in training with Keras: {e}")
             raise e
 
     def interrupt_fit(self) -> None:
         """Interrupt the training process."""
         # Keras doesn't have a direct way to interrupt fit.
         # Need to implement a custom callback or use a flag to stop training.
-        logger.error(self.__self_addr, "Interrupting training (not fully implemented for Keras).")
+        logger.error(self._self_addr, "Interrupting training (not fully implemented for Keras).")
 
     def evaluate(self) -> Dict[str, float]:
         """Evaluate the Keras model."""
@@ -160,12 +101,12 @@ class KerasLearner(NodeLearner):
                     results = [results]
                 results_dict = dict(zip(model.metrics_names, results))
                 for k, v in results_dict.items():
-                    logger.log_metric(self.__self_addr, k, v)
+                    logger.log_metric(self._self_addr, k, v)
                 return results_dict
             else:
                 return {}
         except Exception as e:
-            logger.error(self.__self_addr, f"Evaluation error with Keras: {e}")
+            logger.error(self._self_addr, f"Evaluation error with Keras: {e}")
             raise e
 
     @staticmethod

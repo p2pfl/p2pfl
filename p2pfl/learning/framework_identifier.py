@@ -26,3 +26,4 @@ class FrameworkIdentifier(Enum):
 
     KERAS = "keras"
     PYTORCH = "pytorch"
+    FLAX = "flax"
