@@ -107,6 +107,20 @@ def __parse_args() -> argparse.Namespace:
 
     return args
 
+def create_tensorflow_model() -> P2PFLModel:
+    """Create a TensorFlow model."""
+    import tensorflow as tf  # type: ignore
+
+    from p2pfl.learning.tensorflow.keras_model import MLP as MLP_KERAS
+    from p2pfl.learning.tensorflow.keras_model import KerasModel
+    model = MLP_KERAS() # type: ignore[no-untyped-call]
+    model(tf.zeros((1, 28, 28, 1)))
+    return KerasModel(model)
+
+def create_pytorch_model() -> P2PFLModel:
+    """Create a PyTorch model."""
+    from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
+    return LightningModel(MLP()) # type: ignore[no-untyped-call]
 
 def mnist(
     n: int,
@@ -155,17 +169,10 @@ def mnist(
     for i in range(n):
         address = f"node-{i}" if use_local_protocol else f"unix:///tmp/p2pfl-{i}.sock" if use_unix_socket else "127.0.0.1"
 
-        # Create the model
-        if use_tensorflow:
-            model = MLP_KERAS()  # type: ignore
-            model(tf.zeros((1, 28, 28, 1)))  # type: ignore
-            p2pfl_model_i: P2PFLModel = KerasModel(model)
-        else:
-            p2pfl_model_i: P2PFLModel = LightningModel(MLP())
-
+        model = create_tensorflow_model() if use_tensorflow else create_pytorch_model()
         # Nodes
         node = Node(
-            p2pfl_model_i,
+            model,
             partitions[i],
             learner=KerasLearner if use_tensorflow else LightningLearner,  # type: ignore
             protocol=InMemoryCommunicationProtocol if use_local_protocol else GrpcCommunicationProtocol,  # type: ignore
@@ -247,13 +254,9 @@ if __name__ == "__main__":
 
     # Imports
     if args.tensorflow:
-        import tensorflow as tf  # noqa: I001
         from p2pfl.learning.tensorflow.keras_learner import KerasLearner
-        from p2pfl.learning.tensorflow.keras_model import MLP as MLP_KERAS
-        from p2pfl.learning.tensorflow.keras_model import KerasModel
     else:
         from p2pfl.learning.pytorch.lightning_learner import LightningLearner
-        from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
 
     if args.profiling:
         import os  # noqa: I001

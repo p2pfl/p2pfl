@@ -43,16 +43,16 @@ class FlaxModel(P2PFLModel):
         params: Optional[Union[List[np.ndarray], bytes]] = None,
         num_samples: Optional[int] = None,
         contributors: Optional[List[str]] = None,
-        aditional_info: Optional[Dict[str, Any]] = None,
+        additional_info: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Initialize Flax model."""
         # TODO: fix: when using arg params for jax params, fedavg.aggregate fails in models[0].build_copy(params=accum, ...)
         # FlaxModel.__init__() got multiple values for argument 'params'. Fix in __init__ or build_copy.
-        super().__init__(model, None, num_samples, contributors, aditional_info)
+        super().__init__(model, None, num_samples, contributors, additional_info)
         self.model_params = init_params
         if params:
             if isinstance(params, bytes):
-                params = self.decode_parameters(params)
+                params, _ = self.decode_parameters(params)
             self.model_params = self.__np_to_dict(self.model_params, params)
 
     @staticmethod
@@ -88,7 +88,7 @@ class FlaxModel(P2PFLModel):
 
         """
         if isinstance(params, bytes):
-            params = self.decode_parameters(params)
+            params, _ = self.decode_parameters(params)
 
         try:
             if isinstance(params, List):
@@ -114,9 +114,13 @@ class FlaxModel(P2PFLModel):
                 params,
             )
         )
-        return pickle.dumps(model_params)
+        data_to_serialize = {
+            "params": model_params,
+            "additional_info": self.additional_info,
+        }
+        return pickle.dumps(data_to_serialize)
 
-    def decode_parameters(self, data: bytes) -> List[np.ndarray]:
+    def decode_parameters(self, data: bytes) -> Tuple[List[np.ndarray], Dict[str, Any]]:
         """
         Decode the parameters of the model.
 
@@ -124,8 +128,14 @@ class FlaxModel(P2PFLModel):
             data: The parameters of the model.
 
         """
-        params_dict = pickle.loads(data)
-        return self.__dict_to_np(params_dict)
+        try:
+            loaded_data = pickle.loads(data)
+            params_dict = loaded_data["params"]
+            additional_info = loaded_data.get("additional_info", {})
+            params = self.__dict_to_np(params_dict)
+            return params, additional_info
+        except Exception as e:
+            raise ModelNotMatchingError("Error decoding parameters") from e
 
     def build_copy(self, **kwargs) -> "P2PFLModel":
         """

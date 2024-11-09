@@ -20,7 +20,7 @@
 
 from typing import Any, Dict, List, Optional
 
-import tensorflow as tf
+import tensorflow as tf  # type: ignore
 from keras import callbacks  # type: ignore
 
 from p2pfl.learning.callbacks.decorators import register
@@ -40,16 +40,16 @@ class SCAFFOLDCallback(callbacks.Callback):
     def __init__(self) -> None:
         """Initialize the callback."""
         super().__init__()
-        self.c_i: Optional[List[tf.Variable]] = None
-        self.c: Optional[List[tf.Variable]] = None
-        self.initial_model_params: Optional[List[tf.Variable]] = None
+        self.c_i: List[tf.Variable] = []
+        self.c: List[tf.Variable] = []
+        self.initial_model_params: List[tf.Variable] = []
         self.saved_lr: Optional[float] = None
         self.K: int = 0
         self.additional_info: Dict[str, Any] = {}
 
     def on_train_begin(self, logs: Optional[Dict[str, Any]] = None) -> None:
         """Store the global model and the initial learning rate."""
-        if self.c_i is None:
+        if not self.c_i:
             self.c_i = [tf.Variable(tf.zeros_like(param), trainable=False)
                        for param in self.model.trainable_variables]
 
@@ -99,12 +99,15 @@ class SCAFFOLDCallback(callbacks.Callback):
             logs: The logs.
 
         """
+        if self.saved_lr is None:
+            raise AttributeError("Learning rate has not been set.")
+
         eta_l = self.saved_lr
-        # y_i ← y_i + eta_l * c_i - eta_l * c
-        for param, c_i, c in zip(self.model.trainable_variables, self.c_i, self.c):
-            adjustment = eta_l * c_i - eta_l * c
+        for param, c_i_var, c_var in zip(self.model.trainable_variables, self.c_i, self.c):
+            adjustment = eta_l * c_i_var - eta_l * c_var
             param.assign_add(adjustment)
         self.K += 1
+
 
     def on_train_end(self, logs: Optional[Dict[str, Any]] = None) -> None:
         """
@@ -116,7 +119,12 @@ class SCAFFOLDCallback(callbacks.Callback):
         """
         y_i = [param.numpy() for param in self.model.trainable_variables]
         x_g = self.initial_model_params
-        previous_c_i = [c_i.numpy() for c_i in self.c_i]
+
+        if not x_g or self.saved_lr is None:
+            raise AttributeError("Necessary attributes are not initialized.")
+
+
+        previous_c_i = [c_i_var.numpy() for c_i_var in self.c_i]
 
         for idx, (_, x, y) in enumerate(zip(self.c_i, x_g, y_i)):
             adjustment = (x - y) / (self.K * self.saved_lr)

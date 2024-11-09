@@ -18,7 +18,7 @@
 
 """Flax Learner for P2PFL."""
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 import jax
 import jax.numpy as jnp
@@ -46,15 +46,29 @@ class FlaxLearner(NodeLearner):
 
     """
 
-    def __init__(self, model: FlaxModel, data: P2PFLDataset, self_addr: str = "unknown-node", callbacks: List[Any] = None) -> None:
+    def __init__(
+        self,
+        model: FlaxModel,
+        data: P2PFLDataset,
+        self_addr: str = "unknown-node",
+        callbacks: Optional[List[Any]] = None
+    ) -> None:
         """Initialize the FlaxLearner."""
+        if callbacks is None:
+            callbacks = []
         super().__init__(model, data, self_addr, callbacks)
-
         # Initialize optimizer
         self.optimizer = optax.adam(learning_rate=1e-3)
         self.state = train_state.TrainState.create(
-            apply_fn=self.model.model.apply, params={"params": self.model.model_params}, tx=self.optimizer
-        )  # type: ignore
+            apply_fn=self.flax_model.model.apply,
+            params={"params": self.flax_model.model_params},
+            tx=self.optimizer
+        ) # type: ignore
+
+    @property
+    def flax_model(self) -> FlaxModel:
+        """Retrieve the Flax model."""
+        return cast(FlaxModel, self.model)
 
     def __get_flax_data(self, train: bool = True) -> Tuple:
         return self.data.export(FlaxExportStrategy, train=train)
@@ -119,9 +133,9 @@ class FlaxLearner(NodeLearner):
                     print(f"Epoch {epoch + 1}/{self.epochs} completed.")
 
             # Set model contribution
-            self.model.set_contribution([self._self_addr], self.data.get_num_samples(train=True))
+            self.flax_model.set_contribution([self._self_addr], self.data.get_num_samples(train=True))
 
-            return self.model
+            return self.flax_model
 
         except Exception as e:
             logger.error(self._self_addr, f"Error in training with Flax: {e}")

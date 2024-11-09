@@ -135,3 +135,8 @@ class VirtualNodeLearner(NodeLearner):
         except Exception as ex:
             logger.error(self.addr, f"An error occurred during remote evaluation: {ex}")
             raise ex
+
+    @staticmethod
+    def get_framework() -> str:
+        """Return the framework of the wrapped learner."""
+        return NodeLearner.get_framework()

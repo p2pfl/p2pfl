@@ -18,10 +18,10 @@
 
 """Keras learner for P2PFL."""
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
-import tensorflow as tf
-from keras import callbacks
+import tensorflow as tf  # type: ignore
+from keras import callbacks  # type: ignore
 
 from p2pfl.learning.callbacks.tensorflow.keras_logger import FederatedLogger
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
@@ -45,9 +45,11 @@ class KerasLearner(NodeLearner):
     """
 
     def __init__(
-        self, model: KerasModel, data: P2PFLDataset, self_addr: str = "unknown-node", callbacks: List[callbacks.Callback] = None
+        self, model: KerasModel, data: P2PFLDataset, self_addr: str = "unknown-node", callbacks: Optional[List[callbacks.Callback]] = None
     ) -> None:
         """Initialize the KerasLearner."""
+        if callbacks is None:
+            callbacks = []
         super().__init__(model, data, self_addr, callbacks)
         self.callbacks.append(FederatedLogger(self_addr))
         # Compile the model (you might need to customize this)

@@ -18,7 +18,7 @@
 
 """Callback for SCAFFOLD operations."""
 
-from typing import Any, List, Optional
+from typing import List
 
 import numpy as np
 
@@ -80,14 +80,16 @@ class ScaffoldAggregator(Aggregator):
         accum_y = [layer * self.global_lr for layer in accum_y] # apply global learning rate
 
         # Accumulate control variates
-        accum_c: Optional[List[Any]] = None
+        delta_c_i_first = models[0].get_info('delta_c_i')
+        if delta_c_i_first is None:
+            raise ValueError("delta_c_i cannot be None after validation")
+        accum_c = [np.zeros_like(layer) for layer in delta_c_i_first]
         for m in models:
             delta_c_i = m.get_info('delta_c_i')
-            if accum_c is None:
-                accum_c = [layer.copy() for layer in delta_c_i]
-            else:
-                for i in range(len(accum_c)):
-                    accum_c[i] += delta_c_i[i]
+            if delta_c_i is None:
+                raise ValueError("delta_c_i cannot be None after validation")
+            for i in range(len(accum_c)):
+                accum_c[i] += delta_c_i[i]
 
         # Normalize the accumulated control variates
         num_models = len(models)

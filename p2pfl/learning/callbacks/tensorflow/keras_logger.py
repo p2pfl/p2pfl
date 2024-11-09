@@ -18,7 +18,7 @@
 
 """Keras Logger for P2PFL."""
 
-import tensorflow as tf
+import tensorflow as tf  # type: ignore
 
 from p2pfl.management.logger import logger as P2PLogger
 

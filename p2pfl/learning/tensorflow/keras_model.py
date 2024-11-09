@@ -21,11 +21,11 @@
 from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
-import tensorflow as tf
-from tensorflow.keras.layers import Dense, Flatten
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
-from tensorflow.keras.metrics import SparseCategoricalAccuracy
-from tensorflow.keras.optimizers import Adam
+import tensorflow as tf  # type: ignore
+from tensorflow.keras.layers import Dense, Flatten  # type: ignore
+from tensorflow.keras.losses import SparseCategoricalCrossentropy  # type: ignore
+from tensorflow.keras.metrics import SparseCategoricalAccuracy  # type: ignore
+from tensorflow.keras.optimizers import Adam  # type: ignore
 
 from p2pfl.learning.exceptions import ModelNotMatchingError
 from p2pfl.learning.p2pfl_model import P2PFLModel

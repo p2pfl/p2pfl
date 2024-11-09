@@ -40,9 +40,9 @@ class SCAFFOLDCallback(Callback):
     def __init__(self) -> None:
         """Initialize the callback."""
         super().__init__()
-        self.c_i: Optional[List[torch.Tensor]] = None
-        self.c: Optional[List[torch.Tensor]] = None
-        self.initial_model_params: Optional[List[torch.Tensor]] = None
+        self.c_i: List[torch.Tensor] = []
+        self.c: List[torch.Tensor] = []
+        self.initial_model_params: List[torch.Tensor] = []
         self.saved_lr: Optional[float] = None
         self.K: int = 0
         self.additional_info: Dict[str, Any] = {}
@@ -57,7 +57,7 @@ class SCAFFOLDCallback(Callback):
             pl_module: The model.
 
         """
-        if self.c_i is None:
+        if not self.c_i:
             self.c_i = [torch.zeros_like(param) for param in self._get_parameters(pl_module)]
 
         if self.K == 0:
@@ -104,15 +104,14 @@ class SCAFFOLDCallback(Callback):
             optimizer: The optimizer.
 
         """
-        if self.c_i is not None and self.c is not None and self.saved_lr is not None: # mypi check
-            eta_l = self.saved_lr
-            # modify the gradients by applying the control variate adjustment
-            for param, c_i_param, c_param in zip(self._get_parameters(pl_module), self.c_i, self.c):
-                if param.grad is not None:
-                    param.grad += eta_l * c_i_param - eta_l * c_param
-            self.K += 1
-        else:
-            raise AttributeError("The callback has not been initialized properly or the learning rate is not available.")
+        if self.saved_lr is None:
+            raise AttributeError("Learning rate has not been set.")
+
+        eta_l = self.saved_lr
+        for param, c_i_param, c_param in zip(self._get_parameters(pl_module), self.c_i, self.c):
+            if param.grad is not None:
+                param.grad += eta_l * c_i_param - eta_l * c_param
+        self.K += 1
 
     def on_train_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
         """
@@ -123,7 +122,7 @@ class SCAFFOLDCallback(Callback):
             pl_module: The model.
 
         """
-        if self.c_i is None or self.initial_model_params is None or self.saved_lr is None:
+        if not self.initial_model_params or self.saved_lr is None:
             raise AttributeError("Necessary attributes are not initialized.")
 
         y_i = [param.clone().detach() for param in self._get_parameters(pl_module)]
@@ -135,10 +134,10 @@ class SCAFFOLDCallback(Callback):
             self.c_i[idx] = c_i + adjustment
 
         # Compute delta y_i and delta c_i
-        delta_y_i = [y - x for y,x in zip(y_i, x_g)]
+        delta_y_i = [y - x for y, x in zip(y_i, x_g)]
         delta_c_i = [c_new - c_old for c_new, c_old in zip(self.c_i, previous_c_i)]
 
-        delta_y_i_np = [dyi.detach().cpu().numpy() for dyi in delta_y_i] # to numpy for transmission
+        delta_y_i_np = [dyi.detach().cpu().numpy() for dyi in delta_y_i]  # to numpy for transmission
         delta_c_i_np = [dci.detach().cpu().numpy() for dci in delta_c_i]
 
         self.additional_info['delta_y_i'] = delta_y_i_np

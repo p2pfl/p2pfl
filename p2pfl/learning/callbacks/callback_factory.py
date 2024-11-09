@@ -17,7 +17,7 @@
 
 """A factory for returning the correct callback for the given aggregator."""
 
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Type
 
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.learner import NodeLearner
@@ -29,7 +29,7 @@ class CallbackFactory:
     _callback_registry: Dict[tuple, List[Callable[[], Any]]] = {}
 
     @classmethod
-    def register_callback(cls, framework: str, callback_key: str, callback_constructor: Callable[[Any], Any]):
+    def register_callback(cls, framework: str, callback_key: str, callback_constructor: Callable[[], Any]):
         """
         Register a callback constructor for a given learner framework and callback key.
 
@@ -45,7 +45,7 @@ class CallbackFactory:
         cls._callback_registry[key].append(callback_constructor)
 
     @classmethod
-    def create_callbacks(cls, learner: NodeLearner, aggregator: Aggregator) -> List[Any]:
+    def create_callbacks(cls, learner: Type[NodeLearner], aggregator: Aggregator) -> List[Any]:
         """
         Create the callbacks required by the aggregator for the given learner.
 

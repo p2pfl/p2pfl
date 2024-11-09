@@ -120,7 +120,7 @@ class NodeLearner(ABC):
         for callback in callbacks:
             callback.additional_info = self.model.additional_info
 
-    def get_callbacks_additional_info(self, callbacks: List[Any]) -> Dict[str, Any]:
+    def get_callbacks_additional_info(self, callbacks: List[Any]):
         """
         Get the additional information from the callbacks to update the learner's model.
 

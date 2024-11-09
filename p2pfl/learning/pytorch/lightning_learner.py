@@ -56,9 +56,11 @@ class LightningLearner(NodeLearner):
         model: P2PFLModel,
         data: P2PFLDataset,
         self_addr: str = "unknown-node",
-        callbacks: List[Callback] = None,
+        callbacks: Optional[List[Callback]] = None,
     ) -> None:
         """Initialize the learner."""
+        if callbacks is None:
+            callbacks = []
         super().__init__(model, data, self_addr, callbacks)
         self.__trainer: Optional[Trainer] = None
         self.experiment: Optional[Experiment] = None
