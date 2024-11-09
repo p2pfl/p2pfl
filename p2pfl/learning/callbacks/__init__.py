@@ -15,6 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-
+"""Registry for associating callbacks required by each aggregator with corresponding learners."""
 from .pytorch import scaffold_callback as pytorch_scaffold_callback  # noqa: F401
 from .tensorflow import scaffold_callback as tensorflow_scaffold_callback  # noqa: F401
