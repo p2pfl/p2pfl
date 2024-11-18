@@ -178,8 +178,10 @@ def mnist(
             protocol=InMemoryCommunicationProtocol if use_local_protocol else GrpcCommunicationProtocol,  # type: ignore
             address=address,
             simulation=True,
-            aggregator=ScaffoldAggregator,
-            global_lr = 0.001,
+            aggregator=ScaffoldAggregator(
+                node_name=None,
+                global_lr=0.001
+            ),
         )
         node.start()
         nodes.append(node)

@@ -36,18 +36,18 @@ class ScaffoldAggregator(Aggregator):
 
     REQUIRED_INFO_KEYS = ['delta_y_i', 'delta_c_i']
 
-    def __init__(self, node_name:str, **kwargs):
+    def __init__(self, node_name:str, global_lr = 0.1):
         """
         Initialize the aggregator.
 
         Args:
             node_name: The name of the node.
-            kwargs: Additional arguments.
+            global_lr: The global learning rate.
 
         """
         super().__init__(node_name)
         self.c: List[np.ndarray] = [] # global control variates
-        self.global_lr = kwargs.get('global_lr', 0.1)
+        self.global_lr = global_lr
 
     def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
         """
