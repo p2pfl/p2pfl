@@ -179,7 +179,7 @@ def mnist(
             address=address,
             simulation=True,
             aggregator=ScaffoldAggregator(
-                node_name=None,
+                node_name="default",
                 global_lr=0.001
             ),
         )
