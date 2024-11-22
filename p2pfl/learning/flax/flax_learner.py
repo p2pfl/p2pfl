@@ -23,6 +23,7 @@ from typing import Any, Dict, List, Optional, Tuple, cast
 import jax
 import jax.numpy as jnp
 import optax  # type: ignore
+import tqdm
 from flax.core import FrozenDict
 from flax.training import train_state
 
@@ -116,7 +117,7 @@ class FlaxLearner(NodeLearner):
                 num_batches = 0
 
                 # Training loop
-                for epoch in range(self.epochs):
+                for epoch in tqdm.tqdm(range(self.epochs), total=self.epochs, desc="Training"):
                     # Training phase
                     for x, y in dataloader:
                         self.state, loss, acc = self.train_step(self.state, x, y)
@@ -130,7 +131,6 @@ class FlaxLearner(NodeLearner):
                     logger.log_metric(self._self_addr, "epoch", epoch)
                     logger.log_metric(self._self_addr, "loss", avg_loss)
                     logger.log_metric(self._self_addr, "accuracy", avg_acc)
-                    print(f"Epoch {epoch + 1}/{self.epochs} completed.")
 
             # Set model contribution
             self.flax_model.set_contribution([self._self_addr], self.data.get_num_samples(train=True))

@@ -96,14 +96,17 @@ def __parse_args() -> argparse.Namespace:
     parser.add_argument("--use_local_protocol", action="store_true", help="Use local protocol.", default=False)
     parser.add_argument("--token", type=str, help="The API token for the Web Logger.", default="")
     parser.add_argument("--tensorflow", action="store_true", help="Use TensorFlow.", default=False)
+    parser.add_argument("--flax", action="store_true", help="Use Flax.", default=False)
     parser.add_argument("--profiling", action="store_true", help="Enable profiling.", default=False)
     parser.add_argument("--reduced_dataset", action="store_true", help="Use a reduced dataset just for testing.", default=False)
-
-    # check (cannot use the unix socket and the local protocol at the same time)
     args = parser.parse_args()
 
+    # check (cannot use the unix socket and the local protocol at the same time)
     if args.use_unix_socket and args.use_local_protocol:
         parser.error("Cannot use the unix socket and the local protocol at the same time.")
+    # check (cannot use TensorFlow and Flax at the same time)
+    if args.tensorflow and args.flax:
+        parser.error("Cannot use TensorFlow and Flax at the same time.")
 
     return args
 
