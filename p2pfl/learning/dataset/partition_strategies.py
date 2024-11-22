@@ -157,8 +157,8 @@ class LabelSkewedPartitionStrategy(DataPartitionStrategy):
 
 
 class DirichletPartitionStrategy(DataPartitionStrategy):
-    """Not implemented yet."""
-
+    """Starting implementation"""
+    
     pass
 
 
