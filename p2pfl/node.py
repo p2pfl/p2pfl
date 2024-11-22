@@ -21,7 +21,7 @@ import contextlib
 import os
 import threading
 import traceback
-from typing import Any, Dict, Type
+from typing import Any, Dict, Optional, Type
 
 from p2pfl.communication.commands.message.metrics_command import MetricsCommand
 from p2pfl.communication.commands.message.model_initialized_command import ModelInitializedCommand
@@ -93,7 +93,7 @@ class Node:
         data: P2PFLDataset,
         address: str = "127.0.0.1",
         learner: Type[NodeLearner] = LightningLearner,
-        aggregator: Type[Aggregator] = FedAvg,
+        aggregator: Optional[Aggregator] = None,
         protocol: Type[CommunicationProtocol] = GrpcCommunicationProtocol,
         simulation: bool = False,
         **kwargs,
@@ -104,7 +104,7 @@ class Node:
         self.addr = self._communication_protocol.get_address()
 
         # Callbacks
-        self.aggregator = aggregator(node_name=self.addr, **kwargs)
+        self.aggregator = FedAvg() if aggregator is None else aggregator
         callbacks = CallbackFactory.create_callbacks(learner=learner, aggregator=self.aggregator)
 
         # Learning
