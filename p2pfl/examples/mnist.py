@@ -33,7 +33,7 @@ from p2pfl.communication.protocols.memory.memory_communication_protocol import I
 from p2pfl.learning.aggregators.scaffold import ScaffoldAggregator
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
-from p2pfl.learning.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.settings import Settings
@@ -99,6 +99,7 @@ def __parse_args() -> argparse.Namespace:
     parser.add_argument("--flax", action="store_true", help="Use Flax.", default=False)
     parser.add_argument("--profiling", action="store_true", help="Enable profiling.", default=False)
     parser.add_argument("--reduced_dataset", action="store_true", help="Use a reduced dataset just for testing.", default=False)
+    parser.add_argument("--use_scaffold", action="store_true", help="Use the Scaffold aggregator.", default=False)
     args = parser.parse_args()
 
     # check (cannot use the unix socket and the local protocol at the same time)
@@ -110,20 +111,25 @@ def __parse_args() -> argparse.Namespace:
 
     return args
 
+
 def create_tensorflow_model() -> P2PFLModel:
     """Create a TensorFlow model."""
     import tensorflow as tf  # type: ignore
 
-    from p2pfl.learning.tensorflow.keras_model import MLP as MLP_KERAS
-    from p2pfl.learning.tensorflow.keras_model import KerasModel
-    model = MLP_KERAS() # type: ignore[no-untyped-call]
+    from p2pfl.learning.frameworks.tensorflow.keras_model import MLP as MLP_KERAS
+    from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel
+
+    model = MLP_KERAS()  # type: ignore[no-untyped-call]
     model(tf.zeros((1, 28, 28, 1)))
     return KerasModel(model)
 
+
 def create_pytorch_model() -> P2PFLModel:
     """Create a PyTorch model."""
-    from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
-    return LightningModel(MLP()) # type: ignore[no-untyped-call]
+    from p2pfl.learning.frameworks.pytorch.lightning_model import MLP, LightningModel
+
+    return LightningModel(MLP())  # type: ignore[no-untyped-call]
+
 
 def mnist(
     n: int,
@@ -135,6 +141,7 @@ def mnist(
     use_local_protocol: bool = False,
     use_tensorflow: bool = False,
     reduced_dataset: bool = False,
+    use_scalffold: bool = False,
 ) -> None:
     """
     P2PFL MNIST experiment.
@@ -149,6 +156,7 @@ def mnist(
         use_local_protocol: Use local protocol
         use_tensorflow: Use TensorFlow.
         reduced_dataset: Use a reduced dataset just for testing.
+        use_scalffold: Use the Scaffold aggregator.
 
     """
     if measure_time:
@@ -163,7 +171,7 @@ def mnist(
     # Data
     data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
     partitions = data.generate_partitions(
-        n * 100 if reduced_dataset else n,
+        n * 50 if reduced_dataset else n,
         RandomIIDPartitionStrategy,  # type: ignore
     )
 
@@ -173,6 +181,8 @@ def mnist(
         address = f"node-{i}" if use_local_protocol else f"unix:///tmp/p2pfl-{i}.sock" if use_unix_socket else "127.0.0.1"
 
         model = create_tensorflow_model() if use_tensorflow else create_pytorch_model()
+        aggregator = ScaffoldAggregator() if use_scalffold else None
+
         # Nodes
         node = Node(
             model,
@@ -181,10 +191,7 @@ def mnist(
             protocol=InMemoryCommunicationProtocol if use_local_protocol else GrpcCommunicationProtocol,  # type: ignore
             address=address,
             simulation=True,
-            aggregator=ScaffoldAggregator(
-                node_name="default",
-                global_lr=0.001
-            ),
+            aggregator=aggregator,
         )
         node.start()
         nodes.append(node)
@@ -259,9 +266,9 @@ if __name__ == "__main__":
 
     # Imports
     if args.tensorflow:
-        from p2pfl.learning.tensorflow.keras_learner import KerasLearner
+        from p2pfl.learning.frameworks.tensorflow.keras_learner import KerasLearner
     else:
-        from p2pfl.learning.pytorch.lightning_learner import LightningLearner
+        from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
 
     if args.profiling:
         import os  # noqa: I001
@@ -273,6 +280,10 @@ if __name__ == "__main__":
     # Set logger
     if args.token != "":
         logger.connect_web("http://localhost:3000/api/v1", args.token)
+
+    if args.flax:
+        # todo
+        raise NotImplementedError("Flax is not implemented in this example yet!")
 
     # Launch experiment
     try:
@@ -286,6 +297,7 @@ if __name__ == "__main__":
             use_local_protocol=args.use_local_protocol,
             reduced_dataset=args.reduced_dataset,
             use_tensorflow=args.tensorflow,
+            use_scalffold=args.use_scaffold,
         )
     finally:
         if args.profiling:

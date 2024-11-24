@@ -19,15 +19,18 @@
 """NodeLearning Interface - Template Pattern."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 
+from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-from p2pfl.learning.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.callback import P2PFLCallback
+from p2pfl.learning.frameworks.callback_factory import CallbackFactory
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 
 
-class NodeLearner(ABC):
+class Learner(ABC):
     """
     Template to implement learning processes, including metric monitoring during training.
 
@@ -38,12 +41,16 @@ class NodeLearner(ABC):
 
     """
 
-    def __init__(self, model: P2PFLModel, data: P2PFLDataset, self_addr: str, callbacks: List[Any]) -> None:
+    def __init__(
+        self, model: P2PFLModel, data: P2PFLDataset, self_addr: str = "unknown-node", aggregator: Optional[Aggregator] = None
+    ) -> None:
         """Initialize the learner."""
         self.model: P2PFLModel = model
         self.data: P2PFLDataset = data
         self._self_addr = self_addr
-        self.callbacks: List[Any] = callbacks if callbacks is not None else []
+        self.callbacks: List[P2PFLCallback] = []
+        if aggregator:
+            self.callbacks = CallbackFactory.create_callbacks(framework=self.get_framework(), aggregator=aggregator)
         self.epochs: int = 1  # Default epochs
 
     def set_addr(self, addr: str) -> None:
@@ -68,6 +75,9 @@ class NodeLearner(ABC):
             self.model = model
         elif isinstance(model, (list, bytes)):
             self.model.set_parameters(model)
+
+        # Update callbacks with model info
+        self.update_callbacks_with_model_info()
 
     def get_model(self) -> P2PFLModel:
         """
@@ -109,28 +119,20 @@ class NodeLearner(ABC):
         """
         self.epochs = epochs
 
-    def set_callbacks_additional_info(self, callbacks: List[Any]) -> None:
-        """
-        Update the callbacks with the model additional information.
+    def update_callbacks_with_model_info(self) -> None:
+        """Update the callbacks with the model additional information."""
+        new_info = self.model.get_info()
+        for callback in self.callbacks:
+            try:
+                callback_name = callback.get_name()
+                callback.set_info(new_info[callback_name])
+            except KeyError:
+                pass
 
-        Args:
-            callbacks: The callbacks.
-
-        """
-        for callback in callbacks:
-            callback.additional_info = self.model.additional_info
-
-    def get_callbacks_additional_info(self, callbacks: List[Any]):
-        """
-        Get the additional information from the callbacks to update the learner's model.
-
-        Args:
-            callbacks: The callbacks.
-
-        """
-        for callback in callbacks:
-            if hasattr(callback, "additional_info"):
-                self.model.additional_info.update(callback.additional_info)
+    def add_callback_info_to_model(self) -> None:
+        """Add the additional information from the callbacks to the model."""
+        for c in self.callbacks:
+            self.model.add_info(c.get_name(), c.get_info())
 
     @abstractmethod
     def fit(self) -> P2PFLModel:
@@ -153,14 +155,13 @@ class NodeLearner(ABC):
         """
         pass
 
-    @staticmethod
     @abstractmethod
-    def get_framework() -> str:
+    def get_framework(self) -> str:
         """
-        Get the framework of the learner.
+        Retrieve the learner name.
 
         Returns:
-            The framework of the learner.
+            The name of the learner class.
 
         """
         pass

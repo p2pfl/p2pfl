@@ -22,16 +22,16 @@ from typing import Dict, List, Union
 import numpy as np
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-from p2pfl.learning.learner import NodeLearner
-from p2pfl.learning.p2pfl_model import P2PFLModel
-from p2pfl.learning.simulation.actor_pool import SuperActorPool
+from p2pfl.learning.frameworks.learner import Learner
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.simulation.actor_pool import SuperActorPool
 from p2pfl.management.logger import logger
 
 
-class VirtualNodeLearner(NodeLearner):
+class VirtualNodeLearner(Learner):
     """Decorator for the learner to be used in the simulation."""
 
-    def __init__(self, learner: NodeLearner, addr: str) -> None:
+    def __init__(self, learner: Learner, addr: str) -> None:
         """Initialize the learner."""
         self.learner = learner
         self.actor_pool = SuperActorPool()
@@ -136,7 +136,6 @@ class VirtualNodeLearner(NodeLearner):
             logger.error(self.addr, f"An error occurred during remote evaluation: {ex}")
             raise ex
 
-    @staticmethod
-    def get_framework() -> str:
+    def get_framework(self) -> str:
         """Return the framework of the wrapped learner."""
-        return NodeLearner.get_framework()
+        return self.learner.get_framework()

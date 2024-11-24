@@ -15,4 +15,4 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Registry for associating callbacks required by each aggregator with corresponding learners."""
+"""Tensorflow callbacks for federated learning."""

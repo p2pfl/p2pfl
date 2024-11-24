@@ -21,7 +21,7 @@
 import threading
 from typing import List
 
-from p2pfl.learning.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 
@@ -49,6 +49,7 @@ class Aggregator:
         self.node_name = node_name
         self.__train_set: List[str] = []
         self.__models: List[P2PFLModel] = []
+        self.partial_aggregation = False
 
         # Locks
         self.__agg_lock = threading.Lock()
@@ -223,10 +224,6 @@ class Aggregator:
         missing_models = set(self.__train_set) - set(agg_models)
         return missing_models
 
-    def supports_partial_aggr(self) -> bool:
-        """Check if the aggregator supports partial aggregations."""
-        return False
-
     def __get_partial_aggregation(self, except_nodes: List[str]) -> P2PFLModel:
         """
         Obtain a partial aggregation.
@@ -270,7 +267,7 @@ class Aggregator:
             except_nodes: List of nodes to exclude from the aggregation.
 
         """
-        if self.supports_partial_aggr():
+        if self.partial_aggregation:
             return self.__get_partial_aggregation(except_nodes)
         else:
             return self.__get_remaining_model(except_nodes)

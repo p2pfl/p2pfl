@@ -25,12 +25,10 @@ import lightning as pl
 import torch
 from lightning.pytorch.callbacks import Callback
 
-from p2pfl.learning.callbacks.decorators import register
-from p2pfl.learning.framework_identifier import FrameworkIdentifier
+from p2pfl.learning.frameworks.callback import P2PFLCallback
 
 
-@register(callback_key='scaffold', framework=FrameworkIdentifier.PYTORCH.value)
-class SCAFFOLDCallback(Callback):
+class SCAFFOLDCallback(Callback, P2PFLCallback):
     """
     Callback for scaffold operations to use with PyTorch Lightning.
 
@@ -47,8 +45,12 @@ class SCAFFOLDCallback(Callback):
         self.K: int = 0
         self.additional_info: Dict[str, Any] = {}
 
+    @staticmethod
+    def get_name() -> str:
+        """Return the name of the callback."""
+        return "scaffold"
 
-    def on_train_start(self, trainer: pl.Trainer , pl_module: pl.LightningModule) -> None:
+    def on_train_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
         """
         Store the global model and the initial learning rate.
 
@@ -61,17 +63,14 @@ class SCAFFOLDCallback(Callback):
             self.c_i = [torch.zeros_like(param) for param in self._get_parameters(pl_module)]
 
         if self.K == 0:
-            if 'global_c' not in self.additional_info:
-                self.additional_info['global_c'] = None
+            if "global_c" not in self.additional_info:
+                self.additional_info["global_c"] = None
 
-            c = self.additional_info['global_c']
+            c = self.additional_info["global_c"]
             if c is None:
                 self.c = [torch.zeros_like(param) for param in self._get_parameters(pl_module)]
             else:
-                self.c = [
-                    torch.from_numpy(c_np).to(pl_module.device)
-                    for c_np in c
-                ]
+                self.c = [torch.from_numpy(c_np).to(pl_module.device) for c_np in c]
 
         self.initial_model_params = copy.deepcopy(self._get_parameters(pl_module))
         self.K = 0
@@ -88,8 +87,7 @@ class SCAFFOLDCallback(Callback):
 
         """
         optimizer = trainer.optimizers[0]  # Access the first optimizer
-        self.saved_lr = optimizer.param_groups[0]['lr']
-
+        self.saved_lr = optimizer.param_groups[0]["lr"]
 
     def on_before_zero_grad(self, trainer: pl.Trainer, pl_module: pl.LightningModule, optimizer: torch.optim.Optimizer) -> None:
         """
@@ -140,18 +138,8 @@ class SCAFFOLDCallback(Callback):
         delta_y_i_np = [dyi.detach().cpu().numpy() for dyi in delta_y_i]  # to numpy for transmission
         delta_c_i_np = [dci.detach().cpu().numpy() for dci in delta_c_i]
 
-        self.additional_info['delta_y_i'] = delta_y_i_np
-        self.additional_info['delta_c_i'] = delta_c_i_np
-
-    def set_global_c(self, global_c_np: Optional[List[torch.Tensor]]) -> None:
-        """
-        Get the global control variate from the aggregator.
-
-        Args:
-            global_c_np : The global control variate.
-
-        """
-        self.additional_info['global_c'] = global_c_np
+        self.additional_info["delta_y_i"] = delta_y_i_np
+        self.additional_info["delta_c_i"] = delta_c_i_np
 
     def _get_parameters(self, pl_module: pl.LightningModule) -> List[torch.Tensor]:
         return [param.cpu() for _, param in pl_module.state_dict().items()]

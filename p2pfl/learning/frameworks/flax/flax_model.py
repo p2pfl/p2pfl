@@ -25,8 +25,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 from flax import linen as nn
 
-from p2pfl.learning.exceptions import ModelNotMatchingError
-from p2pfl.learning.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 
 #####################
 #    FlaxModel      #

@@ -18,12 +18,12 @@
 
 """Callback for SCAFFOLD operations."""
 
-from typing import List
+from typing import Any, Dict, List
 
 import numpy as np
 
 from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
-from p2pfl.learning.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 
 
 class ScaffoldAggregator(Aggregator):
@@ -34,9 +34,9 @@ class ScaffoldAggregator(Aggregator):
     The aggregator acts like the server in centralized learning, handling both model and control variate updates.
     """
 
-    REQUIRED_INFO_KEYS = ['delta_y_i', 'delta_c_i']
+    REQUIRED_INFO_KEYS = ["delta_y_i", "delta_c_i"]
 
-    def __init__(self, node_name:str, global_lr = 0.1):
+    def __init__(self, node_name: str = "unknown", global_lr: float = 1):
         """
         Initialize the aggregator.
 
@@ -46,7 +46,7 @@ class ScaffoldAggregator(Aggregator):
 
         """
         super().__init__(node_name)
-        self.c: List[np.ndarray] = [] # global control variates
+        self.c: List[np.ndarray] = []  # global control variates
         self.global_lr = global_lr
 
     def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
@@ -67,25 +67,22 @@ class ScaffoldAggregator(Aggregator):
 
         # Accumulate weighted model updates
         for m in models:
-            self._validate_model_info(m)
-            delta_y_i = m.get_info('delta_y_i')
-            if delta_y_i is None:
-                raise ValueError(f"Model is missing required info keys: {self.REQUIRED_INFO_KEYS}") # mypi check
+            delta_y_i = self._get_and_validate_model_info(m)["delta_y_i"]
             num_samples = m.get_num_samples()
             for i, layer in enumerate(delta_y_i):
                 accum_y[i] += layer * num_samples
 
         # Normalize the accumulated model updates
         accum_y = [layer / total_samples for layer in accum_y]
-        accum_y = [layer * self.global_lr for layer in accum_y] # apply global learning rate
+        accum_y = [layer * self.global_lr for layer in accum_y]  # apply global learning rate
 
         # Accumulate control variates
-        delta_c_i_first = models[0].get_info('delta_c_i')
+        delta_c_i_first = self._get_and_validate_model_info(models[0])["delta_c_i"]
         if delta_c_i_first is None:
             raise ValueError("delta_c_i cannot be None after validation")
         accum_c = [np.zeros_like(layer) for layer in delta_c_i_first]
         for m in models:
-            delta_c_i = m.get_info('delta_c_i')
+            delta_c_i = self._get_and_validate_model_info(m)["delta_c_i"]
             if delta_c_i is None:
                 raise ValueError("delta_c_i cannot be None after validation")
             for i in range(len(accum_c)):
@@ -107,23 +104,16 @@ class ScaffoldAggregator(Aggregator):
         for m in models:
             contributors.extend(m.get_contributors())
 
-        aggregated_model = models[0].build_copy(
-            params=accum_y,
-            num_samples=total_samples,
-            contributors=contributors
-        )
-        aggregated_model.add_info('global_c', self.c)
+        # Return the aggregated model with only the global control variates
+        aggregated_model = models[0].build_copy(params=accum_y, num_samples=total_samples, contributors=contributors)
+        aggregated_model.add_info("scaffold", {"global_c": self.c})
         return aggregated_model
 
     def get_required_callbacks(self) -> List[str]:
         """Retrieve the list of required callback keys for this aggregator."""
         return ["scaffold"]
 
-    def supports_partial_aggr(self) -> bool:
-        """Check if the aggregator supports partial aggregations."""
-        return False
-
-    def _validate_model_info(self, model: P2PFLModel) -> None:
+    def _get_and_validate_model_info(self, model: P2PFLModel) -> Dict[str, Any]:
         """
         Validate the model.
 
@@ -131,7 +121,7 @@ class ScaffoldAggregator(Aggregator):
             model: The model to validate.
 
         """
-        if not all(key in model.additional_info for key in self.REQUIRED_INFO_KEYS):
-            raise ValueError(f"Model is missing required info keys: {self.REQUIRED_INFO_KEYS}"
-                             f"Model info keys: {model.additional_info.keys()}")
-
+        info = model.get_info("scaffold")
+        if not all(key in info for key in self.REQUIRED_INFO_KEYS):
+            raise ValueError(f"Model is missing required info keys: {self.REQUIRED_INFO_KEYS}" f"Model info keys: {info.keys()}")
+        return info

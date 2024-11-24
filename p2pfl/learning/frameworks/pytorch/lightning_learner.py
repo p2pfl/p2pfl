@@ -20,27 +20,27 @@
 
 import logging
 import traceback
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import lightning as L
 import torch
 from lightning import Trainer
-from lightning.pytorch.callbacks import Callback
 from torch.utils.data import DataLoader
 
 from p2pfl.experiment import Experiment
-from p2pfl.learning.callbacks.pytorch.lightning_logger import FederatedLogger
+from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-from p2pfl.learning.framework_identifier import FrameworkIdentifier
-from p2pfl.learning.learner import NodeLearner
-from p2pfl.learning.p2pfl_model import P2PFLModel
-from p2pfl.learning.pytorch.lightning_dataset import PyTorchExportStrategy
+from p2pfl.learning.frameworks import Framework
+from p2pfl.learning.frameworks.learner import Learner
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.pytorch.lightning_dataset import PyTorchExportStrategy
+from p2pfl.learning.frameworks.pytorch.lightning_logger import FederatedLogger
 from p2pfl.management.logger import logger
 
 torch.set_num_threads(1)
 
 
-class LightningLearner(NodeLearner):
+class LightningLearner(Learner):
     """
     Learner with PyTorch Lightning.
 
@@ -52,16 +52,10 @@ class LightningLearner(NodeLearner):
     """
 
     def __init__(
-        self,
-        model: P2PFLModel,
-        data: P2PFLDataset,
-        self_addr: str = "unknown-node",
-        callbacks: Optional[List[Callback]] = None,
+        self, model: P2PFLModel, data: P2PFLDataset, self_addr: str = "unknown-node", aggregator: Optional[Aggregator] = None
     ) -> None:
         """Initialize the learner."""
-        if callbacks is None:
-            callbacks = []
-        super().__init__(model, data, self_addr, callbacks)
+        super().__init__(model, data, self_addr, aggregator)
         self.__trainer: Optional[Trainer] = None
         self.experiment: Optional[Experiment] = None
 
@@ -92,17 +86,17 @@ class LightningLearner(NodeLearner):
                     logger=self.logger,
                     enable_checkpointing=False,
                     enable_model_summary=False,
-                    callbacks=self.callbacks,
+                    callbacks=self.callbacks.copy(),  # type: ignore
                 )
                 pt_model, pt_data = self.__get_pt_model_data()
-
-                self.set_callbacks_additional_info(self.callbacks)
                 self.__trainer.fit(pt_model, pt_data)
-                self.get_callbacks_additional_info(self.callbacks)
-
                 self.__trainer = None
+
             # Set model contribution
             self.model.set_contribution([self._self_addr], self.data.get_num_samples())
+
+            # Set callback info
+            self.add_callback_info_to_model()
 
             return self.model
 
@@ -148,13 +142,12 @@ class LightningLearner(NodeLearner):
             )
             raise e
 
-    @staticmethod
-    def get_framework() -> str:
+    def get_framework(self) -> str:
         """
-        Retrieve the framework name used by the learner.
+        Retrieve the learner name.
 
         Returns:
-            str: The framework name ('pytorch').
+            The name of the learner class.
 
         """
-        return FrameworkIdentifier.PYTORCH.value
+        return Framework.PYTORCH.value

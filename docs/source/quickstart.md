@@ -49,8 +49,8 @@ This tutorial demonstrates how to train a **Multilayer Perceptron (MLP)** on the
 
 ```python
 from p2pfl.node import Node
-from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
-from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
+from p2pfl.learning.frameworks.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
+from p2pfl.learning.frameworks.pytorch.mnist_examples.models.mlp import MLP
 
 # Start the node
 node = Node(
@@ -70,8 +70,8 @@ node.stop()
 
 ```python
 from p2pfl.node import Node
-from p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
-from p2pfl.learning.pytorch.mnist_examples.models.mlp import MLP
+from p2pfl.learning.frameworks.pytorch.mnist_examples.mnistfederated_dm import MnistFederatedDM
+from p2pfl.learning.frameworks.pytorch.mnist_examples.models.mlp import MLP
 import time
 
 # Start the node

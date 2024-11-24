@@ -23,7 +23,7 @@ from typing import Optional, Type, Union
 from p2pfl.communication.commands.message.metrics_command import MetricsCommand
 from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
-from p2pfl.learning.learner import NodeLearner
+from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.stage import Stage
@@ -41,7 +41,7 @@ class RoundFinishedStage(Stage):
     @staticmethod
     def execute(
         state: Optional[NodeState] = None,
-        learner: Optional[NodeLearner] = None,
+        learner: Optional[Learner] = None,
         communication_protocol: Optional[CommunicationProtocol] = None,
         aggregator: Optional[Aggregator] = None,
         **kwargs,
@@ -74,7 +74,7 @@ class RoundFinishedStage(Stage):
             return None
 
     @staticmethod
-    def __evaluate(state: NodeState, learner: NodeLearner, communication_protocol: CommunicationProtocol) -> None:
+    def __evaluate(state: NodeState, learner: Learner, communication_protocol: CommunicationProtocol) -> None:
         logger.info(state.addr, "🔬 Evaluating...")
         results = learner.evaluate()  # TODO: Implement Experiment stuff
         logger.info(state.addr, f"📈 Evaluated. Results: {results}")

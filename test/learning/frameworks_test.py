@@ -30,19 +30,19 @@ from torch.utils.data import DataLoader
 
 from p2pfl.experiment import Experiment
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-from p2pfl.learning.exceptions import ModelNotMatchingError
-from p2pfl.learning.flax.flax_dataset import FlaxExportStrategy
-from p2pfl.learning.flax.flax_learner import FlaxLearner
-from p2pfl.learning.flax.flax_model import MLP as MLP_FLASK
-from p2pfl.learning.flax.flax_model import FlaxModel
-from p2pfl.learning.pytorch.lightning_dataset import PyTorchExportStrategy, TorchvisionDatasetFactory
-from p2pfl.learning.pytorch.lightning_learner import LightningLearner
-from p2pfl.learning.pytorch.lightning_model import MLP as MLP_PT
-from p2pfl.learning.pytorch.lightning_model import LightningModel
-from p2pfl.learning.tensorflow.keras_dataset import KerasExportStrategy
-from p2pfl.learning.tensorflow.keras_learner import KerasLearner
-from p2pfl.learning.tensorflow.keras_model import MLP as MLP_KERAS
-from p2pfl.learning.tensorflow.keras_model import KerasModel
+from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
+from p2pfl.learning.frameworks.flax.flax_dataset import FlaxExportStrategy
+from p2pfl.learning.frameworks.flax.flax_learner import FlaxLearner
+from p2pfl.learning.frameworks.flax.flax_model import MLP as MLP_FLASK
+from p2pfl.learning.frameworks.flax.flax_model import FlaxModel
+from p2pfl.learning.frameworks.pytorch.lightning_dataset import PyTorchExportStrategy, TorchvisionDatasetFactory
+from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
+from p2pfl.learning.frameworks.pytorch.lightning_model import MLP as MLP_PT
+from p2pfl.learning.frameworks.pytorch.lightning_model import LightningModel
+from p2pfl.learning.frameworks.tensorflow.keras_dataset import KerasExportStrategy
+from p2pfl.learning.frameworks.tensorflow.keras_learner import KerasLearner
+from p2pfl.learning.frameworks.tensorflow.keras_model import MLP as MLP_KERAS
+from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel
 from p2pfl.management.logger import logger
 
 ####

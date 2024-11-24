@@ -18,12 +18,15 @@
 
 """Keras Logger for P2PFL."""
 
+from typing import Any
+
 import tensorflow as tf  # type: ignore
 
+from p2pfl.learning.frameworks.learner import P2PFLCallback
 from p2pfl.management.logger import logger as P2PLogger
 
 
-class FederatedLogger(tf.keras.callbacks.Callback):
+class FederatedLogger(tf.keras.callbacks.Callback, P2PFLCallback):
     """
     Keras Logger for Federated Learning. Handles local training logging.
 
@@ -35,16 +38,23 @@ class FederatedLogger(tf.keras.callbacks.Callback):
     def __init__(self, node_name: str) -> None:
         """Initialize the callback."""
         super().__init__()
+        P2PFLCallback.__init__(self)
         self.self_name = node_name
         self.step = 0  # Initialize training step counter
 
+    @staticmethod
+    def get_name() -> str:
+        """Get the name of the callback."""
+        return "TrainLogger"
+
     def on_epoch_end(self, epoch, logs=None):
         """Log metrics at the end of each epoch."""
-        return
-
+        """
         if logs is not None:
             for k, v in logs.items():
                 P2PLogger.log_metric(self.self_name, k, v, self.step)
+        """
+        pass
 
     def on_train_batch_end(self, batch, logs=None):
         """Log metrics at the end of each batch (optional)."""

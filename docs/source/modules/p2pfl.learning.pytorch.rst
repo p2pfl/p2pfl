@@ -12,7 +12,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   p2pfl.learning.pytorch.mnist_examples
+   p2pfl.learning.frameworks.pytorch.mnist_examples
 
 Submodules
 ----------
@@ -20,5 +20,5 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   p2pfl.learning.pytorch.lightning_learner
-   p2pfl.learning.pytorch.lightning_logger
+   p2pfl.learning.frameworks.pytorch.lightning_learner
+   p2pfl.learning.frameworks.pytorch.lightning_logger

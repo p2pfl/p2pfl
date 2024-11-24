@@ -24,7 +24,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
-from p2pfl.learning.exceptions import DecodingParamsError
+from p2pfl.learning.frameworks.exceptions import DecodingParamsError
 
 
 class P2PFLModel:
@@ -52,13 +52,13 @@ class P2PFLModel:
     ) -> None:
         """Initialize the model."""
         self.model = model
-        self.additional_info: Dict[str, Any] = {}
         self.contributors: List[str] = []
         if contributors is not None:
             self.contributors = contributors
         self.num_samples = 0
         if num_samples is not None:
             self.num_samples = num_samples
+        self.additional_info: Dict[str, Any] = {}
         if additional_info is not None:
             self.additional_info = additional_info
         if params is not None:
@@ -123,26 +123,29 @@ class P2PFLModel:
         """
         raise NotImplementedError
 
-    def add_info(self, key: str, value: Any) -> None:
+    def add_info(self, callback: str, info: Any) -> None:
         """
         Add additional information to the learner state.
 
         Args:
-            key: The key of the information.
-            value: The value of the information.
+            callback: The callback to add the information
+            info: The information for the callback.
 
         """
-        self.additional_info[key] = value
+        self.additional_info[callback] = info
 
-    def get_info(self, key: str) -> Optional[List[Any]]:
+    def get_info(self, callback: Optional[str] = None) -> Any:
         """
         Get additional information from the learner state.
 
         Args:
+            callback: The callback to add the information
             key: The key of the information.
 
         """
-        return self.additional_info[key]
+        if callback is None:
+            return self.additional_info
+        return self.additional_info[callback]
 
     def set_contribution(self, contributors: List[str], num_samples: int) -> None:
         """

@@ -30,6 +30,8 @@ datasets = "2.15.0"
 flax = "^0.10.0"
 
 pandas = "^2.2.3"
+tqdm = "^4.67.0"
+types-tqdm = "^4.67.0.20241119"
 [tool.poetry.extras]
 torch = ["torch", "torchvision", "torchmetrics", "lightning"]
 tensorflow = ["tensorflow", "keras", "types-tensorflow"]

@@ -23,12 +23,10 @@ from typing import Any, Dict, List, Optional
 import tensorflow as tf  # type: ignore
 from keras import callbacks  # type: ignore
 
-from p2pfl.learning.callbacks.decorators import register
-from p2pfl.learning.framework_identifier import FrameworkIdentifier
+from p2pfl.learning.frameworks.callback import P2PFLCallback
 
 
-@register(callback_key='scaffold', framework=FrameworkIdentifier.KERAS.value)
-class SCAFFOLDCallback(callbacks.Callback):
+class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
     """
     Callback for SCAFFOLD operations to use with TensorFlow Keras.
 
@@ -47,25 +45,25 @@ class SCAFFOLDCallback(callbacks.Callback):
         self.K: int = 0
         self.additional_info: Dict[str, Any] = {}
 
+    @staticmethod
+    def get_name() -> str:
+        """Return the name of the callback."""
+        return "scaffold"
+
     def on_train_begin(self, logs: Optional[Dict[str, Any]] = None) -> None:
         """Store the global model and the initial learning rate."""
         if not self.c_i:
-            self.c_i = [tf.Variable(tf.zeros_like(param), trainable=False)
-                       for param in self.model.trainable_variables]
+            self.c_i = [tf.Variable(tf.zeros_like(param), trainable=False) for param in self.model.trainable_variables]
 
         if self.K == 0:
-            if 'global_c' not in self.additional_info:
-                self.additional_info['global_c'] = None
+            if "global_c" not in self.additional_info:
+                self.additional_info["global_c"] = None
 
-            c = self.additional_info['global_c']
+            c = self.additional_info["global_c"]
             if c is None:
-                self.c = [tf.Variable(tf.zeros_like(param), trainable=False)
-                          for param in self.model.trainable_variables]
+                self.c = [tf.Variable(tf.zeros_like(param), trainable=False) for param in self.model.trainable_variables]
             else:
-                self.c = [
-                    tf.Variable(tf.convert_to_tensor(c_np), trainable=False)
-                    for c_np in c
-                ]
+                self.c = [tf.Variable(tf.convert_to_tensor(c_np), trainable=False) for c_np in c]
 
         self.initial_model_params = [tf.Variable(param.numpy()) for param in self.model.trainable_variables]
         self.K = 0
@@ -80,7 +78,7 @@ class SCAFFOLDCallback(callbacks.Callback):
 
         """
         optimizer = self.model.optimizer
-        if hasattr(optimizer, 'learning_rate'):
+        if hasattr(optimizer, "learning_rate"):
             lr = optimizer.learning_rate
             if isinstance(lr, tf.keras.optimizers.schedules.LearningRateSchedule):
                 self.saved_lr = tf.keras.backend.get_value(lr(self.model.optimizer.iterations))
@@ -88,7 +86,6 @@ class SCAFFOLDCallback(callbacks.Callback):
                 self.saved_lr = tf.keras.backend.get_value(lr)
         else:
             raise AttributeError("The optimizer does not have a learning rate attribute.")
-
 
     def on_train_batch_end(self, batch: Any, logs: Optional[Dict[str, Any]] = None) -> None:
         """
@@ -108,7 +105,6 @@ class SCAFFOLDCallback(callbacks.Callback):
             param.assign_add(adjustment)
         self.K += 1
 
-
     def on_train_end(self, logs: Optional[Dict[str, Any]] = None) -> None:
         """
         Restore the global model.
@@ -123,7 +119,6 @@ class SCAFFOLDCallback(callbacks.Callback):
         if not x_g or self.saved_lr is None:
             raise AttributeError("Necessary attributes are not initialized.")
 
-
         previous_c_i = [c_i_var.numpy() for c_i_var in self.c_i]
 
         for idx, (_, x, y) in enumerate(zip(self.c_i, x_g, y_i)):
@@ -134,16 +129,5 @@ class SCAFFOLDCallback(callbacks.Callback):
         delta_y_i = [y - x for y, x in zip(y_i, x_g)]
         delta_c_i = [c_new.numpy() - c_old for c_new, c_old in zip(self.c_i, previous_c_i)]
 
-        self.additional_info['delta_y_i'] = delta_y_i
-        self.additional_info['delta_c_i'] = delta_c_i
-
-    def set_global_c(self, global_c_np: Optional[List[tf.Tensor]]) -> None:
-        """
-        Set the global control variate from an aggregator.
-
-        Args:
-            global_c_np: The global control variate.
-
-        """
-        self.additional_info['global_c'] = global_c_np
-
+        self.additional_info["delta_y_i"] = delta_y_i
+        self.additional_info["delta_c_i"] = delta_c_i

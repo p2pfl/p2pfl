@@ -23,9 +23,9 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 import pytest
 
-from p2pfl.learning import P2PFLModel  # Adjust import as needed
-from p2pfl.learning.aggregators.aggregator import NoModelsToAggregateError  # Adjust import as needed
-from p2pfl.learning.aggregators.scaffold import ScaffoldAggregator  # Adjust import as needed
+from p2pfl.learning.aggregators.aggregator import NoModelsToAggregateError
+from p2pfl.learning.aggregators.scaffold import ScaffoldAggregator
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 
 
 class MockP2PFLModel(P2PFLModel):
@@ -36,7 +36,7 @@ class MockP2PFLModel(P2PFLModel):
         params: List[np.ndarray],
         num_samples: int,
         additional_info: Optional[Dict[str, Any]] = None,
-        contributors: Optional[List[str]] = None
+        contributors: Optional[List[str]] = None,
     ) -> None:
         """
         Initialize the MockP2PFLModel.
@@ -65,12 +65,7 @@ class MockP2PFLModel(P2PFLModel):
         """Return additional information."""
         return self.additional_info[key]
 
-    def build_copy(
-        self,
-        params: List[np.ndarray],
-        num_samples: int,
-        contributors: List[str]
-    ) -> 'MockP2PFLModel':
+    def build_copy(self, params: List[np.ndarray], num_samples: int, contributors: List[str]) -> "MockP2PFLModel":
         """
         Build a copy of the model with the specified parameters.
 
@@ -81,10 +76,7 @@ class MockP2PFLModel(P2PFLModel):
 
         """
         return MockP2PFLModel(
-            params=params,
-            num_samples=num_samples,
-            additional_info=self.additional_info.copy(),
-            contributors=contributors
+            params=params, num_samples=num_samples, additional_info=self.additional_info.copy(), contributors=contributors
         )
 
     def add_info(self, key: str, value: Any) -> None:
@@ -103,32 +95,26 @@ def test_aggregate_with_valid_models() -> None:
         params=[np.array([1.0, 2.0]), np.array([3.0, 4.0])],
         num_samples=10,
         additional_info={
-            'delta_y_i': [
-                np.array([0.1, 0.2]),
-                np.array([0.3, 0.4])
-            ],
-            'delta_c_i': [
-                np.array([0.01, 0.02]),
-                np.array([0.03, 0.04])
-            ]
+        "scaffold": {
+                "delta_y_i": [np.array([0.1, 0.2]), np.array([0.3, 0.4])],
+                "delta_c_i": [np.array([0.01, 0.02]), np.array([0.03, 0.04])],
+            }
         },
-        contributors=["contributor1", "contributor2"]
+        contributors=["contributor1", "contributor2"],
     )
     model2 = MockP2PFLModel(
         params=[np.array([2.0, 3.0]), np.array([4.0, 5.0])],
         num_samples=20,
         additional_info={
-            'delta_y_i': [
-                np.array([0.2, 0.3]),
-                np.array([0.4, 0.5])
-            ],
-            'delta_c_i': [
-                np.array([0.02, 0.03]),
-                np.array([0.04, 0.05])
-            ]
+            "scaffold": {
+                "delta_y_i": [np.array([0.2, 0.3]), np.array([0.4, 0.5])],
+                "delta_c_i": [np.array([0.02, 0.03]), np.array([0.04, 0.05])],
+            }
         },
-        contributors=["contributor1", "contributor2"]
+        contributors=["contributor1", "contributor2"],
     )
+
+    raise ValueError("No se hasta que punto esto cumple su objetivo, no converge y está fallando")
 
     # Initialize the ScaffoldAggregator with a global learning rate
     aggregator = ScaffoldAggregator(node_name="test_node", global_lr=0.1)
@@ -143,17 +129,15 @@ def test_aggregate_with_valid_models() -> None:
     total_samples = model1.get_num_samples() + model2.get_num_samples()
 
     # Layer 1
-    delta_y_layer1_model1 = model1.get_info('delta_y_i')[0]  # [0.1, 0.2]
-    delta_y_layer1_model2 = model2.get_info('delta_y_i')[0]  # [0.2, 0.3]
-    accum_y_layer1 = (delta_y_layer1_model1 * model1.get_num_samples() +
-                      delta_y_layer1_model2 * model2.get_num_samples()) / total_samples
+    delta_y_layer1_model1 = model1.get_info("delta_y_i")[0]  # [0.1, 0.2]
+    delta_y_layer1_model2 = model2.get_info("delta_y_i")[0]  # [0.2, 0.3]
+    accum_y_layer1 = (delta_y_layer1_model1 * model1.get_num_samples() + delta_y_layer1_model2 * model2.get_num_samples()) / total_samples
     expected_param_layer1 = accum_y_layer1 * aggregator.global_lr  # Multiply by global_lr
 
     # Layer 2
-    delta_y_layer2_model1 = model1.get_info('delta_y_i')[1]  # [0.3, 0.4]
-    delta_y_layer2_model2 = model2.get_info('delta_y_i')[1]  # [0.4, 0.5]
-    accum_y_layer2 = (delta_y_layer2_model1 * model1.get_num_samples() +
-                      delta_y_layer2_model2 * model2.get_num_samples()) / total_samples
+    delta_y_layer2_model1 = model1.get_info("delta_y_i")[1]  # [0.3, 0.4]
+    delta_y_layer2_model2 = model2.get_info("delta_y_i")[1]  # [0.4, 0.5]
+    accum_y_layer2 = (delta_y_layer2_model1 * model1.get_num_samples() + delta_y_layer2_model2 * model2.get_num_samples()) / total_samples
     expected_param_layer2 = accum_y_layer2 * aggregator.global_lr  # Multiply by global_lr
 
     expected_params = [expected_param_layer1, expected_param_layer2]
@@ -164,8 +148,8 @@ def test_aggregate_with_valid_models() -> None:
 
     # Calculate expected global control variates
     # accum_c = sum(delta_c_i) / num_models
-    accum_c_layer1 = (model1.get_info('delta_c_i')[0] + model2.get_info('delta_c_i')[0]) / 2
-    accum_c_layer2 = (model1.get_info('delta_c_i')[1] + model2.get_info('delta_c_i')[1]) / 2
+    accum_c_layer1 = (model1.get_info("delta_c_i")[0] + model2.get_info("delta_c_i")[0]) / 2
+    accum_c_layer2 = (model1.get_info("delta_c_i")[1] + model2.get_info("delta_c_i")[1]) / 2
     expected_global_c = [accum_c_layer1, accum_c_layer2]
 
     # Assert that the aggregator's 'c' parameter is updated correctly
@@ -174,9 +158,9 @@ def test_aggregate_with_valid_models() -> None:
 
     # Optionally, verify contributors
     expected_contributors = ["contributor1", "contributor2", "contributor1", "contributor2"]
-    assert aggregated_model.get_contributors() == expected_contributors, (
-        f"Expected contributors {expected_contributors}, but got {aggregated_model.get_contributors()}"
-    )
+    assert (
+        aggregated_model.get_contributors() == expected_contributors
+    ), f"Expected contributors {expected_contributors}, but got {aggregated_model.get_contributors()}"
 
 
 def test_aggregate_with_no_models() -> None:
@@ -192,12 +176,11 @@ def test_aggregate_with_missing_required_info() -> None:
         params=[np.array([1.0, 2.0]), np.array([3.0, 4.0])],
         num_samples=10,
         additional_info={
-            'delta_y_i': [
-                np.array([0.1, 0.2]),
-                np.array([0.3, 0.4])
-            ]  # Missing 'delta_c_i'
+            "scaffold": {
+                "delta_c_i": [np.array([0.02, 0.03]), np.array([0.04, 0.05])],
+            }
         },
-        contributors=["contributor1", "contributor2"]
+        contributors=["contributor1", "contributor2"],
     )
 
     aggregator = ScaffoldAggregator(node_name="test_node")
@@ -212,32 +195,24 @@ def test_additional_parameters_communication() -> None:
         params=[np.array([1.0, 2.0]), np.array([3.0, 4.0])],
         num_samples=10,
         additional_info={
-            'delta_y_i': [
-                np.array([0.1, 0.2]),
-                np.array([0.3, 0.4])
-            ],
-            'delta_c_i': [
-                np.array([0.01, 0.02]),
-                np.array([0.03, 0.04])
-            ]
+            "scaffold": {
+                "delta_y_i": [np.array([0.1, 0.2]), np.array([0.3, 0.4])],
+                "delta_c_i": [np.array([0.01, 0.02]), np.array([0.03, 0.04])],
+            }
         },
-        contributors=["contributor1", "contributor2"]
+        contributors=["contributor1", "contributor2"],
     )
     model2 = MockP2PFLModel(
         params=[np.array([2.0, 3.0]), np.array([4.0, 5.0])],
         num_samples=20,
         additional_info={
-            'delta_y_i': [
-                np.array([0.2, 0.3]),
-                np.array([0.4, 0.5])
-            ],
-            'delta_c_i': [
-                np.array([0.02, 0.03]),
-                np.array([0.04, 0.05])
-            ]
+            "delta_y_i": [np.array([0.2, 0.3]), np.array([0.4, 0.5])],
+            "delta_c_i": [np.array([0.02, 0.03]), np.array([0.04, 0.05])],
         },
-        contributors=["contributor1", "contributor2"]
+        contributors=["contributor1", "contributor2"],
     )
+
+    raise ValueError("No se hasta que punto esto cumple su objetivo, no converge y está fallando")
 
     # Initialize the aggregator
     aggregator = ScaffoldAggregator(node_name="test_node", global_lr=0.1)
@@ -249,32 +224,28 @@ def test_additional_parameters_communication() -> None:
     total_samples = model1.get_num_samples() + model2.get_num_samples()
 
     # Calculate expected global control variate 'c'
-    accum_c_layer1 = (model1.get_info('delta_c_i')[0] + model2.get_info('delta_c_i')[0]) / 2
-    accum_c_layer2 = (model1.get_info('delta_c_i')[1] + model2.get_info('delta_c_i')[1]) / 2
+    accum_c_layer1 = (model1.get_info("delta_c_i")[0] + model2.get_info("delta_c_i")[0]) / 2
+    accum_c_layer2 = (model1.get_info("delta_c_i")[1] + model2.get_info("delta_c_i")[1]) / 2
     expected_global_c = [accum_c_layer1, accum_c_layer2]
 
     # Verify that aggregator's 'c' parameter is updated correctly
     for actual_c, expected_c in zip(aggregator.c, expected_global_c):
-        assert np.allclose(actual_c, expected_c), (
-            f"Aggregator 'c' parameter not updated correctly. Expected {expected_c}, got {actual_c}"
-        )
+        assert np.allclose(actual_c, expected_c), f"Aggregator 'c' parameter not updated correctly. Expected {expected_c}, got {actual_c}"
 
     # Calculate expected aggregated parameters based on the aggregation logic
     # For each layer:
     # aggregated_param = (sum(delta_y_i * num_samples) / total_samples) * global_lr
 
     # Layer 1
-    delta_y_layer1_model1 = model1.get_info('delta_y_i')[0]  # [0.1, 0.2]
-    delta_y_layer1_model2 = model2.get_info('delta_y_i')[0]  # [0.2, 0.3]
-    accum_y_layer1 = (delta_y_layer1_model1 * model1.get_num_samples() +
-                      delta_y_layer1_model2 * model2.get_num_samples()) / total_samples
+    delta_y_layer1_model1 = model1.get_info("delta_y_i")[0]  # [0.1, 0.2]
+    delta_y_layer1_model2 = model2.get_info("delta_y_i")[0]  # [0.2, 0.3]
+    accum_y_layer1 = (delta_y_layer1_model1 * model1.get_num_samples() + delta_y_layer1_model2 * model2.get_num_samples()) / total_samples
     expected_param_layer1 = accum_y_layer1 * aggregator.global_lr
 
     # Layer 2
-    delta_y_layer2_model1 = model1.get_info('delta_y_i')[1]  # [0.3, 0.4]
-    delta_y_layer2_model2 = model2.get_info('delta_y_i')[1]  # [0.4, 0.5]
-    accum_y_layer2 = (delta_y_layer2_model1 * model1.get_num_samples() +
-                      delta_y_layer2_model2 * model2.get_num_samples()) / total_samples
+    delta_y_layer2_model1 = model1.get_info("delta_y_i")[1]  # [0.3, 0.4]
+    delta_y_layer2_model2 = model2.get_info("delta_y_i")[1]  # [0.4, 0.5]
+    accum_y_layer2 = (delta_y_layer2_model1 * model1.get_num_samples() + delta_y_layer2_model2 * model2.get_num_samples()) / total_samples
     expected_param_layer2 = accum_y_layer2 * aggregator.global_lr
 
     expected_params = [expected_param_layer1, expected_param_layer2]
@@ -282,12 +253,11 @@ def test_additional_parameters_communication() -> None:
     # Verify that aggregated model parameters are correct
     for actual_param, expected_param in zip(aggregated_model.get_parameters(), expected_params):
         assert np.allclose(actual_param, expected_param), (
-            f"Aggregated model parameters not updated correctly. "
-            f"Expected {expected_param}, got {actual_param}"
+            f"Aggregated model parameters not updated correctly. " f"Expected {expected_param}, got {actual_param}"
         )
 
     # Optionally, verify contributors
     expected_contributors = ["contributor1", "contributor2", "contributor1", "contributor2"]
-    assert aggregated_model.get_contributors() == expected_contributors, (
-        f"Expected contributors {expected_contributors}, but got {aggregated_model.get_contributors()}"
-    )
+    assert (
+        aggregated_model.get_contributors() == expected_contributors
+    ), f"Expected contributors {expected_contributors}, but got {aggregated_model.get_contributors()}"

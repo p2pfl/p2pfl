@@ -27,8 +27,8 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy  # type: ignor
 from tensorflow.keras.metrics import SparseCategoricalAccuracy  # type: ignore
 from tensorflow.keras.optimizers import Adam  # type: ignore
 
-from p2pfl.learning.exceptions import ModelNotMatchingError
-from p2pfl.learning.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 
 #####################
 #    KerasModel     #

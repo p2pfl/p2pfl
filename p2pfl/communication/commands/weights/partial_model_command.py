@@ -24,8 +24,8 @@ from p2pfl.communication.commands.command import Command
 from p2pfl.communication.commands.message.models_agregated_command import ModelsAggregatedCommand
 from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
-from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
-from p2pfl.learning.learner import NodeLearner
+from p2pfl.learning.frameworks.exceptions import DecodingParamsError, ModelNotMatchingError
+from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 
@@ -39,7 +39,7 @@ class PartialModelCommand(Command):
         stop: Callable[[], None],
         aggregator: Aggregator,
         comm_proto: CommunicationProtocol,
-        learner: NodeLearner,
+        learner: Learner,
     ) -> None:
         """Initialize PartialModelCommand."""
         self.state = state

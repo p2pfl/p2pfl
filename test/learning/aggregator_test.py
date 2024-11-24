@@ -24,8 +24,8 @@ import numpy as np
 import pytest
 
 from p2pfl.learning.aggregators.fedavg import FedAvg
-from p2pfl.learning.p2pfl_model import P2PFLModel
-from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.pytorch.lightning_model import MLP, LightningModel
 
 
 class P2PFLModelMock(P2PFLModel):

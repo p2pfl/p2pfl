@@ -18,7 +18,7 @@
 
 """Flax Learner for P2PFL."""
 
-from typing import Any, Dict, List, Optional, Tuple, cast
+from typing import Any, Dict, Optional, Tuple, cast
 
 import jax
 import jax.numpy as jnp
@@ -27,16 +27,17 @@ import tqdm
 from flax.core import FrozenDict
 from flax.training import train_state
 
+from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-from p2pfl.learning.flax.flax_dataset import FlaxExportStrategy
-from p2pfl.learning.flax.flax_model import FlaxModel
-from p2pfl.learning.framework_identifier import FrameworkIdentifier
-from p2pfl.learning.learner import NodeLearner
-from p2pfl.learning.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks import Framework
+from p2pfl.learning.frameworks.flax.flax_dataset import FlaxExportStrategy
+from p2pfl.learning.frameworks.flax.flax_model import FlaxModel
+from p2pfl.learning.frameworks.learner import Learner
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
 
 
-class FlaxLearner(NodeLearner):
+class FlaxLearner(Learner):
     """
     Learner for Flax models in P2PFL.
 
@@ -52,19 +53,15 @@ class FlaxLearner(NodeLearner):
         model: FlaxModel,
         data: P2PFLDataset,
         self_addr: str = "unknown-node",
-        callbacks: Optional[List[Any]] = None
+        aggregator: Optional[Aggregator] = None,
     ) -> None:
         """Initialize the FlaxLearner."""
-        if callbacks is None:
-            callbacks = []
-        super().__init__(model, data, self_addr, callbacks)
+        super().__init__(model, data, self_addr, aggregator)
         # Initialize optimizer
         self.optimizer = optax.adam(learning_rate=1e-3)
         self.state = train_state.TrainState.create(
-            apply_fn=self.flax_model.model.apply,
-            params={"params": self.flax_model.model_params},
-            tx=self.optimizer
-        ) # type: ignore
+            apply_fn=self.flax_model.model.apply, params={"params": self.flax_model.model_params}, tx=self.optimizer
+        )  # type: ignore
 
     @property
     def flax_model(self) -> FlaxModel:
@@ -173,13 +170,12 @@ class FlaxLearner(NodeLearner):
         # Need to implement a custom callback or use a flag to stop training.
         logger.error(self._self_addr, "Interrupting training (not fully implemented for Flax).")
 
-    @staticmethod
-    def get_framework() -> str:
+    def get_framework(self) -> str:
         """
-        Retrieve the framework name used by the learner.
+        Retrieve the learner name.
 
         Returns:
-            str: The framework name ('flax').
+            The name of the learner class.
 
         """
-        return FrameworkIdentifier.FLAX.value
+        return Framework.FLAX.value

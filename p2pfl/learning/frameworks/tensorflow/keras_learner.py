@@ -18,22 +18,22 @@
 
 """Keras learner for P2PFL."""
 
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import tensorflow as tf  # type: ignore
-from keras import callbacks  # type: ignore
 
-from p2pfl.learning.callbacks.tensorflow.keras_logger import FederatedLogger
+from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-from p2pfl.learning.framework_identifier import FrameworkIdentifier
-from p2pfl.learning.learner import NodeLearner
-from p2pfl.learning.p2pfl_model import P2PFLModel
-from p2pfl.learning.tensorflow.keras_dataset import KerasExportStrategy
-from p2pfl.learning.tensorflow.keras_model import KerasModel
+from p2pfl.learning.frameworks import Framework
+from p2pfl.learning.frameworks.learner import Learner
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.tensorflow.callbacks.keras_logger import FederatedLogger
+from p2pfl.learning.frameworks.tensorflow.keras_dataset import KerasExportStrategy
+from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel
 from p2pfl.management.logger import logger
 
 
-class KerasLearner(NodeLearner):
+class KerasLearner(Learner):
     """
     Learner for TensorFlow/Keras models in P2PFL.
 
@@ -45,12 +45,10 @@ class KerasLearner(NodeLearner):
     """
 
     def __init__(
-        self, model: KerasModel, data: P2PFLDataset, self_addr: str = "unknown-node", callbacks: Optional[List[callbacks.Callback]] = None
+        self, model: KerasModel, data: P2PFLDataset, self_addr: str = "unknown-node", aggregator: Optional[Aggregator] = None
     ) -> None:
         """Initialize the KerasLearner."""
-        if callbacks is None:
-            callbacks = []
-        super().__init__(model, data, self_addr, callbacks)
+        super().__init__(model, data, self_addr, aggregator)
         self.callbacks.append(FederatedLogger(self_addr))
         # Compile the model (you might need to customize this)
         self.model.model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
@@ -71,16 +69,17 @@ class KerasLearner(NodeLearner):
         try:
             if self.epochs > 0:
                 model, data = self.__get_tf_model_data(train=True)
-                self.set_callbacks_additional_info(self.callbacks)
                 model.fit(
                     data,
                     epochs=self.epochs,
-                    # callbacks=[FederatedLogger(self.__self_addr)],
-                    callbacks=self.callbacks,
+                    callbacks=self.callbacks,  # type: ignore
                 )
-                self.get_callbacks_additional_info(self.callbacks)
+
             # Set model contribution
             self.model.set_contribution([self._self_addr], self.data.get_num_samples(train=True))
+
+            # Set callback info
+            self.add_callback_info_to_model()
 
             return self.model
         except Exception as e:
@@ -111,13 +110,12 @@ class KerasLearner(NodeLearner):
             logger.error(self._self_addr, f"Evaluation error with Keras: {e}")
             raise e
 
-    @staticmethod
-    def get_framework() -> str:
+    def get_framework(self) -> str:
         """
-        Retrieve the framework name used by the learner.
+        Retrieve the learner name.
 
         Returns:
-            str: The framework name ('tensorflow').
+            The name of the learner class.
 
         """
-        return FrameworkIdentifier.KERAS.value
+        return Framework.TENSORFLOW.value
