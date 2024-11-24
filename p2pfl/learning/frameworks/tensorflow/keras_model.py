@@ -24,7 +24,6 @@ import numpy as np
 import tensorflow as tf  # type: ignore
 from tensorflow.keras.layers import Dense, Flatten  # type: ignore
 from tensorflow.keras.losses import SparseCategoricalCrossentropy  # type: ignore
-from tensorflow.keras.metrics import SparseCategoricalAccuracy  # type: ignore
 from tensorflow.keras.optimizers import Adam  # type: ignore
 
 from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
@@ -136,9 +135,8 @@ class MLP(tf.keras.Model):
         self.output_layer = Dense(out_channels)
 
         # Define loss, optimizer, and metrics
-        self.loss_fn = SparseCategoricalCrossentropy(from_logits=True)
+        self.loss = SparseCategoricalCrossentropy(from_logits=True)
         self.optimizer = Adam(learning_rate=lr_rate)
-        self.metric = SparseCategoricalAccuracy()
 
     def call(self, inputs):
         """Forward pass of the MLP."""

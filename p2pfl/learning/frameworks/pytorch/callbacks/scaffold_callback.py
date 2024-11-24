@@ -22,6 +22,7 @@ import copy
 from typing import Any, Dict, List, Optional
 
 import lightning as pl
+import numpy as np
 import torch
 from lightning.pytorch.callbacks import Callback
 
@@ -59,21 +60,23 @@ class SCAFFOLDCallback(Callback, P2PFLCallback):
             pl_module: The model.
 
         """
+        # Update local model with global model
+        global_model_params = self.additional_info.get('global_model_params')
+        if global_model_params is not None:
+            self._set_parameters(pl_module, global_model_params)
+
         if not self.c_i:
             self.c_i = [torch.zeros_like(param) for param in self._get_parameters(pl_module)]
 
-        if self.K == 0:
-            if "global_c" not in self.additional_info:
-                self.additional_info["global_c"] = None
-
-            c = self.additional_info["global_c"]
-            if c is None:
+        global_c = self.additional_info.get("global_c")
+        if global_c is not None:
+            self.c = [torch.from_numpy(c_np).to(pl_module.device) for c_np in global_c]
+        else:
+            if not self.c:
                 self.c = [torch.zeros_like(param) for param in self._get_parameters(pl_module)]
-            else:
-                self.c = [torch.from_numpy(c_np).to(pl_module.device) for c_np in c]
 
         self.initial_model_params = copy.deepcopy(self._get_parameters(pl_module))
-        self.K = 0
+        self.K = 0 # reset local steps counter
 
     def on_train_batch_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule, batch: Any, batch_idx: int) -> None:
         """
@@ -108,7 +111,7 @@ class SCAFFOLDCallback(Callback, P2PFLCallback):
         eta_l = self.saved_lr
         for param, c_i_param, c_param in zip(self._get_parameters(pl_module), self.c_i, self.c):
             if param.grad is not None:
-                param.grad += eta_l * c_i_param - eta_l * c_param
+                param.grad += eta_l * (c_i_param - c_param)
         self.K += 1
 
     def on_train_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
@@ -123,8 +126,8 @@ class SCAFFOLDCallback(Callback, P2PFLCallback):
         if not self.initial_model_params or self.saved_lr is None:
             raise AttributeError("Necessary attributes are not initialized.")
 
-        y_i = [param.clone().detach() for param in self._get_parameters(pl_module)]
-        x_g = self.initial_model_params
+        y_i = self._get_parameters(pl_module)
+        x_g = self.initial_model_params # global model at the beginning of the training
         previous_c_i = [c.clone() for c in self.c_i]
 
         for idx, (c_i, x, y) in enumerate(zip(self.c_i, x_g, y_i)):
@@ -143,3 +146,10 @@ class SCAFFOLDCallback(Callback, P2PFLCallback):
 
     def _get_parameters(self, pl_module: pl.LightningModule) -> List[torch.Tensor]:
         return [param.cpu() for _, param in pl_module.state_dict().items()]
+
+    def _set_parameters(self, pl_module: pl.LightningModule, parameters: List[np.ndarray]) -> None:
+        """Set model parameters from a list of numpy arrays."""
+        state_dict = pl_module.state_dict()
+        for (name, _), param in zip(state_dict.items(), parameters):
+            state_dict[name] = torch.from_numpy(param).to(pl_module.device)
+        pl_module.load_state_dict(state_dict)

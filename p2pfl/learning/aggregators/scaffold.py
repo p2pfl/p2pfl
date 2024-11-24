@@ -36,7 +36,7 @@ class ScaffoldAggregator(Aggregator):
 
     REQUIRED_INFO_KEYS = ["delta_y_i", "delta_c_i"]
 
-    def __init__(self, node_name: str = "unknown", global_lr: float = 1):
+    def __init__(self, node_name: str = "unknown", global_lr: float = 0.1):
         """
         Initialize the aggregator.
 
@@ -46,8 +46,10 @@ class ScaffoldAggregator(Aggregator):
 
         """
         super().__init__(node_name)
-        self.c: List[np.ndarray] = []  # global control variates
         self.global_lr = global_lr
+        self.c: List[np.ndarray] = []  # global control variates
+        self.global_model_params: List[np.ndarray] = [] # simulate global model
+        self.partial_aggregation = False
 
     def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
         """
@@ -63,28 +65,35 @@ class ScaffoldAggregator(Aggregator):
         total_samples = sum([m.get_num_samples() for m in models])
         # initialize the accumulators for the model and the control variates
         first_model_weights = models[0].get_parameters()
-        accum_y = [np.zeros_like(layer) for layer in first_model_weights]
+        accum_delta_y = [np.zeros_like(layer) for layer in first_model_weights]
 
         # Accumulate weighted model updates
         for m in models:
             delta_y_i = self._get_and_validate_model_info(m)["delta_y_i"]
             num_samples = m.get_num_samples()
             for i, layer in enumerate(delta_y_i):
-                accum_y[i] += layer * num_samples
+                accum_delta_y[i] += layer * num_samples
 
         # Normalize the accumulated model updates
-        accum_y = [layer / total_samples for layer in accum_y]
-        accum_y = [layer * self.global_lr for layer in accum_y]  # apply global learning rate
+        accum_delta_y = [layer / total_samples for layer in accum_delta_y]
+        accum_delta_y = [layer * self.global_lr for layer in accum_delta_y]  # apply global learning rate
+
+        # Update global model
+        if not self.global_model_params:
+            self.global_model_params = models[0].get_parameters()
+        self.global_model_params = [
+            param + delta for param, delta in zip(self.global_model_params, accum_delta_y)
+        ]
 
         # Accumulate control variates
         delta_c_i_first = self._get_and_validate_model_info(models[0])["delta_c_i"]
+        accum_c = [np.zeros_like(layer) for layer in delta_c_i_first]
+
         if delta_c_i_first is None:
             raise ValueError("delta_c_i cannot be None after validation")
-        accum_c = [np.zeros_like(layer) for layer in delta_c_i_first]
+
         for m in models:
             delta_c_i = self._get_and_validate_model_info(m)["delta_c_i"]
-            if delta_c_i is None:
-                raise ValueError("delta_c_i cannot be None after validation")
             for i in range(len(accum_c)):
                 accum_c[i] += delta_c_i[i]
 
@@ -104,9 +113,17 @@ class ScaffoldAggregator(Aggregator):
         for m in models:
             contributors.extend(m.get_contributors())
 
-        # Return the aggregated model with only the global control variates
-        aggregated_model = models[0].build_copy(params=accum_y, num_samples=total_samples, contributors=contributors)
-        aggregated_model.add_info("scaffold", {"global_c": self.c})
+        # Return the aggregated model with the global model parameters and the control variates
+        aggregated_model = models[0].build_copy(
+            params=self.global_model_params,
+            num_samples=total_samples,
+            contributors=contributors
+        )
+        aggregated_model.add_info("scaffold", {
+            "global_c": self.c,
+            "global_model_params": self.global_model_params
+        })
+
         return aggregated_model
 
     def get_required_callbacks(self) -> List[str]:
@@ -125,3 +142,4 @@ class ScaffoldAggregator(Aggregator):
         if not all(key in info for key in self.REQUIRED_INFO_KEYS):
             raise ValueError(f"Model is missing required info keys: {self.REQUIRED_INFO_KEYS}" f"Model info keys: {info.keys()}")
         return info
+

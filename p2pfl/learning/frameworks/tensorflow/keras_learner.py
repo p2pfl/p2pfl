@@ -50,8 +50,11 @@ class KerasLearner(Learner):
         """Initialize the KerasLearner."""
         super().__init__(model, data, self_addr, aggregator)
         self.callbacks.append(FederatedLogger(self_addr))
-        # Compile the model (you might need to customize this)
-        self.model.model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
+        self.model.model.compile(
+            optimizer=self.model.model.optimizer,
+            loss=self.model.model.loss,
+            metrics=['sparse_categorical_accuracy'],
+        )
 
     def __get_tf_model_data(self, train: bool = True) -> Tuple[tf.keras.Model, tf.data.Dataset]:
         # Get Model

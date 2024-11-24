@@ -22,16 +22,61 @@ from typing import Any, Dict, List, Optional
 
 import tensorflow as tf  # type: ignore
 from keras import callbacks  # type: ignore
+from tensorflow.keras.optimizers import Optimizer
 
 from p2pfl.learning.frameworks.callback import P2PFLCallback
 
+
+class ScaffoldOptimizer(Optimizer):
+    """Custom optimizer for to implement SCAFFOLD gradient adjustment."""
+
+    def __init__(self, optimizer, c_i, c, eta_l, name="ScaffoldOptimizer", **kwargs):
+        """
+        Initialize the optimizer.
+
+        Args:
+            optimizer: The optimizer to use.
+            c_i: The control variate for the current iteration.
+            c: The global control variate.
+            eta_l: The learning rate.
+            name: The name of the optimizer.
+            **kwargs: Additional arguments.
+
+        """
+        super().__init__(name, **kwargs)
+        self.optimizer = optimizer
+        self.c_i = c_i
+        self.c = c
+        self.eta_l = eta_l
+
+    @tf.function
+    def apply_gradients(self, grads_and_vars, name=None, **kwargs):
+        """Apply gradients with SCAFFOLD adjustments."""
+        adjustment = []
+        for (grad, var), c_i_var, c_var in zip(grads_and_vars, self.c_i, self.c):
+            if grad is not None:
+                adjusted_grad = grad + self.eta_l * (c_i_var - c_var)
+                adjustment.append((adjusted_grad, var))
+            else:
+                adjustment.append((grad, var))
+        self.optimizer.apply_gradients(adjustment, **kwargs)
+
+    def get_config(self):
+        """Return the optimizer configuration."""
+        config = {
+            'optimizer': tf.keras.optimizers.serialize(self.optimizer),
+            'eta_l': self.eta_l,
+        }
+        base_config = super().get_config()
+        return {**base_config, **config}
 
 class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
     """
     Callback for SCAFFOLD operations to use with TensorFlow Keras.
 
-    At the beginning of the training, the callback stores the global model and the initial learning rate.
-    After optimization steps, it applies control variate adjustments.
+    At the beginning of the training, the callback initializes control variates and substitutes
+    the optimizer with a custom one to apply control variate adjustments.
+    After training, it updates the local control variate (c_i) and computes the deltas.
 
     """
 
@@ -51,63 +96,51 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
         return "scaffold"
 
     def on_train_begin(self, logs: Optional[Dict[str, Any]] = None) -> None:
-        """Store the global model and the initial learning rate."""
-        if not self.c_i:
-            self.c_i = [tf.Variable(tf.zeros_like(param), trainable=False) for param in self.model.trainable_variables]
-
-        if self.K == 0:
-            if "global_c" not in self.additional_info:
-                self.additional_info["global_c"] = None
-
-            c = self.additional_info["global_c"]
-            if c is None:
-                self.c = [tf.Variable(tf.zeros_like(param), trainable=False) for param in self.model.trainable_variables]
-            else:
-                self.c = [tf.Variable(tf.convert_to_tensor(c_np), trainable=False) for c_np in c]
-
-        self.initial_model_params = [tf.Variable(param.numpy()) for param in self.model.trainable_variables]
-        self.K = 0
-
-    def on_train_batch_begin(self, batch: Any, logs: Optional[Dict[str, Any]] = None) -> None:
-        """
-        Store the learning rate.
-
-        Args:
-            batch: The batch.
-            logs: The logs.
-
-        """
+        """Initialize control variates and replace the optimizer with custom one."""
         optimizer = self.model.optimizer
-        if hasattr(optimizer, "learning_rate"):
+        if hasattr(optimizer, 'learning_rate'):
             lr = optimizer.learning_rate
             if isinstance(lr, tf.keras.optimizers.schedules.LearningRateSchedule):
-                self.saved_lr = tf.keras.backend.get_value(lr(self.model.optimizer.iterations))
+                self.saved_lr = tf.keras.backend.get_value(lr(optimizer.iterations))
             else:
                 self.saved_lr = tf.keras.backend.get_value(lr)
         else:
             raise AttributeError("The optimizer does not have a learning rate attribute.")
 
+        if not self.c_i:
+            self.c_i = [tf.Variable(tf.zeros_like(param), trainable=False) for param in self.model.trainable_variables]
+
+        global_c = self.additional_info.get('global_c')
+        if global_c is not None:
+            self.c = [tf.Variable(tf.convert_to_tensor(c_np), trainable=False) for c_np in global_c]
+        else:
+            if not self.c:
+                self.c = [tf.Variable(tf.zeros_like(param), trainable=False) for param in self.model.trainable_variables]
+
+        self.initial_model_params = [tf.Variable(param.numpy()) for param in self.model.trainable_variables]
+        self.K = 0
+
+        self.model.optimizer = ScaffoldOptimizer(
+            optimizer=optimizer,
+            c_i=self.c_i,
+            c=self.c,
+            eta_l=self.saved_lr,
+        )
+
     def on_train_batch_end(self, batch: Any, logs: Optional[Dict[str, Any]] = None) -> None:
         """
-        Modify model by applying control variate adjustments after the optimizer step.
+        Increment the local step counter after each batch.
 
         Args:
             batch: The batch.
             logs: The logs.
 
         """
-        if self.saved_lr is None:
-            raise AttributeError("Learning rate has not been set.")
-
-        eta_l = self.saved_lr
-        for param, c_i_var, c_var in zip(self.model.trainable_variables, self.c_i, self.c):
-            adjustment = eta_l * c_i_var - eta_l * c_var
-            param.assign_add(adjustment)
         self.K += 1
 
     def on_train_end(self, logs: Optional[Dict[str, Any]] = None) -> None:
         """
-        Restore the global model.
+        Update local control variate (c_i) and compute deltas.
 
         Args:
             logs: The logs.
@@ -121,13 +154,18 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
 
         previous_c_i = [c_i_var.numpy() for c_i_var in self.c_i]
 
-        for idx, (_, x, y) in enumerate(zip(self.c_i, x_g, y_i)):
-            adjustment = (x - y) / (self.K * self.saved_lr)
-            self.c_i[idx].assign_add(adjustment)
+        for idx, c_i_var in enumerate(self.c_i):
+            adjustment = (x_g[idx] - y_i[idx]) / (self.K * self.saved_lr)
+            c_i_var.assign_add(adjustment)
 
         # Compute delta y_i and delta c_i
-        delta_y_i = [y - x for y, x in zip(y_i, x_g)]
-        delta_c_i = [c_new.numpy() - c_old for c_new, c_old in zip(self.c_i, previous_c_i)]
+        delta_y_i = [y_i_param - x_g_param for y_i_param, x_g_param in zip(y_i, x_g)]
+        delta_c_i = [c_i_new.numpy() - c_i_old for c_i_new, c_i_old in zip(self.c_i, previous_c_i)]
 
         self.additional_info["delta_y_i"] = delta_y_i
         self.additional_info["delta_c_i"] = delta_c_i
+
+    def set_additional_info(self, info: Dict[str, Any]) -> None:
+        """Set additional information required for SCAFFOLD."""
+        self.additional_info = info
+
