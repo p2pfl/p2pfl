@@ -19,7 +19,10 @@
 
 import random
 from abc import abstractmethod
-from typing import List, Tuple, Union
+from typing import Dict, Iterable, List, Optional, Tuple, Union
+
+import pandas as pd
+import numpy as np
 
 from datasets import Dataset  # type: ignore
 
@@ -164,96 +167,7 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
     """
 
     @staticmethod
-    def generate_partitions(
-        train_data: Dataset,
-        test_data: Dataset,
-        num_partitions: int,
-        seed: int = 666,
-        label_tag: str = "label",
-        alpha: Union[int, float, list[float]] = 1,
-        min_partition_size: int = 10,
-        self_balancing: bool = False,
-        shuffle: bool = True,
-        **kwargs,
-    ) -> Tuple[List[List[int]], List[List[int]]]:
-        """
-        Generate partitions of the dataset using Dirichlet.
-
-        Args:
-            train_data: The training Dataset object to partition.
-            test_data: The test Dataset object to partition.
-            num_partitions: The number of partitions to create.
-            seed: The random seed to use for reproducibility.
-            label_tag: The name of the column containing the labels.
-            alpha: The alpha parameters of the dirichlet distribution
-            min_partition_size: The minimum partition size allowed in train and test.
-            self_balancing: Whether the partitions should be balanced or not.
-                The balancing is done by not allowing some label values to go 
-                in partitions that are already overly big.
-            shuffle: Whether to shuffle the indexes or not
-            **kwargs: Additional keyword arguments that may be required by specific strategies.
-
-        Returns:
-            A tuple containing two lists of lists:
-                - The first list contains lists of indices for the training data partitions.
-                - The second list contains lists of indices for the test data partitions.
-
-        """
-        return (
-            [], [] # train and test list of indexes
-        )
-
-    def __partition_data():
-        # Attributes based on the constructor
-        self._num_partitions = num_partitions
-        self._check_num_partitions_greater_than_zero()
-        self._alpha: NDArrayFloat = self._initialize_alpha(alpha)
-        self._partition_by = partition_by
-        self._min_partition_size: int = min_partition_size
-        self._self_balancing = self_balancing
-        self._shuffle = shuffle
-        self._seed = seed
-        self._rng = np.random.default_rng(seed=self._seed)  # NumPy random generator
-
-        # Utility attributes
-        # The attributes below are determined during the first call to load_partition
-        self._avg_num_of_samples_per_partition: Optional[float] = None
-        self._unique_classes: Optional[Union[list[int], list[str]]] = None
-        self._partition_id_to_indices: dict[int, list[int]] = {}
-        self._partition_id_to_indices_determined = False
-
-
-    def load_partition(self, partition_id: int) -> datasets.Dataset:
-        """Load a partition based on the partition index.
-
-        Parameters
-        ----------
-        partition_id : int
-            the index that corresponds to the requested partition
-
-        Returns
-        -------
-        dataset_partition : Dataset
-            single partition of a dataset
-        """
-        # The partitioning is done lazily - only when the first partition is
-        # requested. Only the first call creates the indices assignments for all the
-        # partition indices.
-        self._check_num_partitions()
-        self._determine_partition_id_to_indices_if_needed()
-        return self.dataset.select(self._partition_id_to_indices[partition_id])
-
-
-    @property
-    def num_partitions(self) -> int:
-        """Total number of partitions."""
-        self._check_num_partitions()
-        self._determine_partition_id_to_indices_if_needed()
-        return self._num_partitions
-
-    def _initialize_alpha(
-        self, alpha: Union[int, float, list[float], NDArrayFloat]
-    ) -> NDArrayFloat:
+    def _preprocess_alpha(alpha: Union[int, float, list[float]], num_partitions: int) -> list[float]:
         """Convert alpha to the used format in the code a NDArrayFloat.
 
         The alpha can be provided in constructor can be in different format for user
@@ -271,182 +185,200 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
             Concentration parameter in a format ready to used in computation.
         """
         if isinstance(alpha, int):
-            alpha = np.array([float(alpha)], dtype=float).repeat(self._num_partitions)
+            alpha = [float(alpha)] * num_partitions
         elif isinstance(alpha, float):
-            alpha = np.array([alpha], dtype=float).repeat(self._num_partitions)
+            alpha = [alpha] * num_partitions
         elif isinstance(alpha, list):
-            if len(alpha) != self._num_partitions:
-                raise ValueError(
-                    "If passing alpha as a List, it needs to be of length of equal to "
-                    "num_partitions."
-                )
-            alpha = np.asarray(alpha)
-        elif isinstance(alpha, np.ndarray):
-            # pylint: disable=R1720
-            if alpha.ndim == 1 and alpha.shape[0] != self._num_partitions:
-                raise ValueError(
-                    "If passing alpha as an NDArray, its length needs to be of length "
-                    "equal to num_partitions."
-                )
-            elif alpha.ndim == 2:
-                alpha = alpha.flatten()
-                if alpha.shape[0] != self._num_partitions:
-                    raise ValueError(
-                        "If passing alpha as an NDArray, its size needs to be of length"
-                        " equal to num_partitions."
-                    )
+            if len(alpha) != num_partitions:
+                raise ValueError("If passing alpha as a List, it needs to be of length of equal to " "num_partitions.")
+            alpha = [float(a) for a in alpha]
         else:
             raise ValueError("The given alpha format is not supported.")
-        if not (alpha > 0).all():
-            raise ValueError(
-                f"Alpha values should be strictly greater than zero. "
-                f"Instead it'd be converted to {alpha}"
-            )
+        if not all(a > 0 for a in alpha):
+            raise ValueError(f"Alpha values should be strictly greater than zero. " f"Instead it'd be converted to {alpha}")
         return alpha
 
-    def _determine_partition_id_to_indices_if_needed(
-        self,
-    ) -> None:
-        """Create an assignment of indices to the partition indices."""
-        if self._partition_id_to_indices_determined:
-            return
+    @classmethod
+    def _adapt_class_division_proportions(
+        cls, class_division_proportions: List[float], active_partitions: Optional[list[bool]]
+    ) -> list[float]:
+        """
+        Adapt the class_division_proportions to the active_partitions.
+        Only used if self_balancing is True.
+        """
+        if active_partitions is None:
+            return class_division_proportions
+        else:
+            unnormalized_result = [proportion * active for proportion, active in zip(class_division_proportions, active_partitions)]
+            return [element / sum(unnormalized_result) for element in unnormalized_result]
 
-        # Generate information needed for Dirichlet partitioning
-        self._unique_classes = self.dataset.unique(self._partition_by)
-        assert self._unique_classes is not None
-        # This is needed only if self._self_balancing is True (the default option)
-        self._avg_num_of_samples_per_partition = (
-            self.dataset.num_rows / self._num_partitions
+    @classmethod
+    def _calculate_assigned_proportion(cls, result: pd.DataFrame, class_proportions: dict[str | int, float]):
+        return sum(class_proportions[label] * result[label] for label in result.columns)
+
+    @classmethod
+    def _recalculate_active_partitions(cls, result: pd.DataFrame, class_proportions: dict[str | int, float]) -> list[bool]:
+        """
+        Update the active_partitions based on how much proportion of the dataset is already assigned to each partition.
+        Only used if self_balancing is True.
+        """
+
+        proportion_already_assigned = cls._calculate_assigned_proportion(result, class_proportions)
+        partitions_to_keep = pd.Series(index=result.index, data=False)
+        partitions_to_keep.loc[proportion_already_assigned < 1 / len(result)] = True
+        active_partitions = partitions_to_keep.to_list()
+
+        return active_partitions
+
+    @classmethod
+    def _generate_proportions(
+        cls,
+        num_partitions,
+        class_proportions: dict[Union[str, int], float],
+        min_partition_proportion: float,
+        alpha: list[float],
+        random_generator: np.random.Generator,
+        balancing: bool,
+        max_tries: int = 10,
+    ) -> pd.DataFrame:
+        """
+        Determine the proportions of the Dirichlet distribution
+        """
+
+        assert sum(class_proportions.values()) == 1
+
+        for _ in range(max_tries):
+            result = pd.DataFrame(index=pd.RangeIndex(start=0, stop=num_partitions, name="partition"))
+            active_partitions = [True] * num_partitions if balancing else None
+
+            for class_label in class_proportions.keys():
+                division_proportions = cls._adapt_class_division_proportions(
+                    class_division_proportions=random_generator.dirichlet(alpha), active_partitions=active_partitions
+                )
+                result[class_label] = division_proportions
+
+                if active_partitions is not None:
+                    active_partitions = cls._recalculate_active_partitions(result, class_proportions)
+
+            if min(cls._calculate_assigned_proportion(result, class_proportions)) >= min_partition_proportion:
+                return result
+
+            # Here it should be implemented a warning saying that the min condition is not satisfied and that
+            # the sampling will be repeated. This is not a desired behavior.
+        raise ValueError("Could not find a valid partitioning after max_tries. Try with other parameters.")
+
+    @classmethod
+    def _apply_proportions(
+        cls,
+        index_list: list[int],
+        proportions: pd.Series,
+    ):
+        cut_points = (proportions.cumsum()[:-1] * len(index_list)).round().astype(int)
+        return np.split(index_list, cut_points)
+
+    @classmethod
+    def _partition_data(
+        cls,
+        data: Dataset,
+        label_tag: str,
+        num_partitions: int,
+        min_partition_size: int,
+        alpha: list[float],
+        random_generator: np.random.Generator,
+        balancing: bool,
+        max_tries: int = 10,
+    ) -> List[List[int]]:
+        """
+        Partition the data and return the list of indexes
+        """
+        class_proportions = {label: data[label_tag].count(label) / len(data[label_tag]) for label in set(data[label_tag])}
+        proportions = cls._generate_proportions(
+            num_partitions=num_partitions,
+            class_proportions=class_proportions,
+            min_partition_proportion=min_partition_size / len(data),
+            alpha=alpha,
+            random_generator=random_generator,
+            balancing=balancing,
+            max_tries=max_tries,
         )
 
-        # Change targets list data type to numpy
-        targets = np.array(self.dataset[self._partition_by])
+        result: List[List[int]] = [[] for _ in range(num_partitions)]
 
-        # Repeat the sampling procedure based on the Dirichlet distribution until the
-        # min_partition_size is reached.
-        sampling_try = 0
-        while True:
-            # Prepare data structure to store indices assigned to partition ids
-            partition_id_to_indices: dict[int, list[int]] = {}
-            for nid in range(self._num_partitions):
-                partition_id_to_indices[nid] = []
+        for label in class_proportions:
+            label_index = [idx for idx, lab in enumerate(data[label_tag]) if lab == label]
+            for partition, index_list in enumerate(cls._apply_proportions(label_index, proportions[label])):
+                result[partition].extend(index_list)
 
-            # Iterated over all unique labels (they are not necessarily of type int)
-            for k in self._unique_classes:
-                # Access all the indices associated with class k
-                indices_representing_class_k = np.nonzero(targets == k)[0]
-                # Determine division (the fractions) of the data representing class k
-                # among the partitions
-                class_k_division_proportions = self._rng.dirichlet(self._alpha)
-                nid_to_proportion_of_k_samples = {}
-                for nid in range(self._num_partitions):
-                    nid_to_proportion_of_k_samples[nid] = class_k_division_proportions[
-                        nid
-                    ]
-                # Balancing (not mentioned in the paper but implemented)
-                # Do not assign additional samples to the partition if it already has
-                # more than the average numbers of samples per partition. Note that it
-                # might especially affect classes that are later in the order. This is
-                # the reason for more sparse division that the alpha might suggest.
-                if self._self_balancing:
-                    assert self._avg_num_of_samples_per_partition is not None
-                    for nid in nid_to_proportion_of_k_samples.copy():
-                        if (
-                            len(partition_id_to_indices[nid])
-                            > self._avg_num_of_samples_per_partition
-                        ):
-                            nid_to_proportion_of_k_samples[nid] = 0
+        return result
 
-                    # Normalize the proportions such that they sum up to 1
-                    sum_proportions = sum(nid_to_proportion_of_k_samples.values())
-                    for nid, prop in nid_to_proportion_of_k_samples.copy().items():
-                        nid_to_proportion_of_k_samples[nid] = prop / sum_proportions
+    @classmethod
+    def generate_partitions(
+        cls,
+        train_data: Dataset,
+        test_data: Dataset,
+        num_partitions: int,
+        seed: int = 666,
+        label_tag: str = "label",
+        alpha: Union[int, float, list[float]] = 1,
+        min_partition_size: int = 2,
+        self_balancing: bool = False,
+        **kwargs,
+    ) -> Tuple[List[List[int]], List[List[int]]]:
+        """
+        Generate partitions of the dataset using Dirichlet.
 
-                # Determine the split indices
-                cumsum_division_fractions = np.cumsum(
-                    list(nid_to_proportion_of_k_samples.values())
-                )
-                cumsum_division_numbers = cumsum_division_fractions * len(
-                    indices_representing_class_k
-                )
-                # [:-1] is because the np.split requires the division indices but the
-                # last element represents the sum = total number of samples
-                indices_on_which_split = cumsum_division_numbers.astype(int)[:-1]
+        Args:
+            train_data: The training Dataset object to partition.
+            test_data: The test Dataset object to partition.
+            num_partitions: The number of partitions to create.
+            seed: The random seed to use for reproducibility.
+            label_tag: The name of the column containing the labels.
+            alpha: The alpha parameters of the dirichlet distribution
+            min_partition_size: The minimum partition size allowed in train and test.
+            self_balancing: Whether the partitions should be balanced or not.
+                The balancing is done by not allowing some label values to go
+                in partitions that are already overly big.
+            shuffle: Whether to shuffle the indexes or not
+            **kwargs: Additional keyword arguments that may be required by specific strategies.
 
-                split_indices = np.split(
-                    indices_representing_class_k, indices_on_which_split
-                )
+        Returns:
+            A tuple containing two lists of lists:
+                - The first list contains lists of indices for the training data partitions.
+                - The second list contains lists of indices for the test data partitions.
 
-                # Append new indices (coming from class k) to the existing indices
-                for nid, indices in partition_id_to_indices.items():
-                    indices.extend(split_indices[nid].tolist())
+        """
 
-            # Determine if the indices assignment meets the min_partition_size
-            # If it does not mean the requirement repeat the Dirichlet sampling process
-            # Otherwise break the while loop
-            min_sample_size_on_client = min(
-                len(indices) for indices in partition_id_to_indices.values()
-            )
-            if min_sample_size_on_client >= self._min_partition_size:
-                break
-            sample_sizes = [
-                len(indices) for indices in partition_id_to_indices.values()
-            ]
-            alpha_not_met = [
-                self._alpha[i]
-                for i, ss in enumerate(sample_sizes)
-                if ss == min(sample_sizes)
-            ]
-            mssg_list_alphas = (
-                (
-                    "Generating partitions by sampling from a list of very wide range "
-                    "of alpha values can be hard to achieve. Try reducing the range "
-                    f"between maximum ({max(self._alpha)}) and minimum alpha "
-                    f"({min(self._alpha)}) values or increasing all the values."
-                )
-                if len(self._alpha.flatten().tolist()) > 0
-                else ""
-            )
-            warnings.warn(
-                f"The specified min_partition_size ({self._min_partition_size}) was "
-                f"not satisfied for alpha ({alpha_not_met}) after "
-                f"{sampling_try} attempts at sampling from the Dirichlet "
-                f"distribution. The probability sampling from the Dirichlet "
-                f"distribution will be repeated. Note: This is not a desired "
-                f"behavior. It is recommended to adjust the alpha or "
-                f"min_partition_size instead. {mssg_list_alphas}",
-                stacklevel=1,
-            )
-            if sampling_try == 10:
-                raise ValueError(
-                    "The max number of attempts (10) was reached. "
-                    "Please update the values of alpha and try again."
-                )
-            sampling_try += 1
+        alpha = cls._preprocess_alpha(alpha, num_partitions)
+        cls._check_num_partitions(num_partitions=num_partitions, len_smallest_dataset=min(len(train_data), len(test_data)))
 
-        # Shuffle the indices not to have the datasets with targets in sequences like
-        # [00000, 11111, ...]) if the shuffle is True
-        if self._shuffle:
-            for indices in partition_id_to_indices.values():
-                # In place shuffling
-                self._rng.shuffle(indices)
-        self._partition_id_to_indices = partition_id_to_indices
-        self._partition_id_to_indices_determined = True
+        random_generator = np.random.default_rng(seed=seed)
+        return cls._partition_data(
+            data=train_data,
+            label_tag=label_tag,
+            num_partitions=num_partitions,
+            min_partition_size=min_partition_size,
+            alpha=alpha,
+            random_generator=random_generator,
+            balancing=self_balancing,
+        ), cls._partition_data(
+            data=test_data,
+            label_tag=label_tag,
+            num_partitions=num_partitions,
+            min_partition_size=min_partition_size,
+            alpha=alpha,
+            random_generator=random_generator,
+            balancing=self_balancing,
+        )
 
-    def _check_num_partitions(num_partitions, min_rows) -> None:
+    @classmethod
+    def _check_num_partitions(cls, num_partitions, len_smallest_dataset) -> None:
         """Test num_partitions."""
-        if num_partitions > min_rows:
-            raise ValueError(
-                "The number of partitions needs to be smaller than the number of "
-                "samples in the smallest dataset."
-            )
+        if num_partitions > len_smallest_dataset:
+            raise ValueError("The number of partitions needs to be smaller than the number of samples in the smallest dataset.")
         if not num_partitions > 0:
             raise ValueError("The number of partitions needs to be greater than zero.")
         if int(num_partitions) != num_partitions:
             raise ValueError("The number of partitions needs to be an integer")
-
-
-
 
 
 class PercentageBasedNonIIDPartitionStrategy(DataPartitionStrategy):

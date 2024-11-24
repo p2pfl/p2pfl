@@ -17,11 +17,13 @@
 #
 """P2PFL dataset tests."""
 
+import numpy as np
+
 import pytest
 from datasets import DatasetDict, load_dataset  # type: ignore
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
+from p2pfl.learning.dataset.partition_strategies import DirichletPartitionStrategy, RandomIIDPartitionStrategy
 
 
 @pytest.fixture
@@ -84,22 +86,60 @@ def test_export_without_split_partition():
 
 def test_generate_partitions(mnist_dataset):
     """Test the generation of partitions."""
-    strategy = RandomIIDPartitionStrategy
-    num_partitions = 3
-    partitions = mnist_dataset.generate_partitions(num_partitions=num_partitions, strategy=strategy)
+    for strategy in [DirichletPartitionStrategy, RandomIIDPartitionStrategy]:
+        num_partitions = 3
+        partitions = mnist_dataset.generate_partitions(num_partitions=num_partitions, strategy=strategy)
 
-    # check
-    assert len(partitions) == 3
+        # check
+        assert len(partitions) == 3
 
-    train_size = mnist_dataset.get_num_samples(train=True)
-    test_size = mnist_dataset.get_num_samples(train=False)
+        train_size = mnist_dataset.get_num_samples(train=True)
+        test_size = mnist_dataset.get_num_samples(train=False)
 
-    # Check that all the indexes are unique and that they are all in the dataset
-    partitions_train_samples = sum([partition.get_num_samples(train=True) for partition in partitions])
-    partitions_test_samples = sum([partition.get_num_samples(train=False) for partition in partitions])
-    assert partitions_train_samples == train_size
-    assert partitions_test_samples == test_size
+        # Check that all the indexes are unique and that they are all in the dataset
+        partitions_train_samples = sum([partition.get_num_samples(train=True) for partition in partitions])
+        partitions_test_samples = sum([partition.get_num_samples(train=False) for partition in partitions])
+        assert partitions_train_samples == train_size
+        assert partitions_test_samples == test_size
 
-    # Check item
-    item = partitions[0].get(0, train=True)
-    __test_mnist_sample(item)
+        # Check item
+        item = partitions[0].get(0, train=True)
+        __test_mnist_sample(item)
+
+
+@pytest.mark.parametrize("num_partitions, class_proportions, min_partition_proportion, alpha, balancing, expected_A, expected_B",
+                         [
+                                (3, {"A": 0.9, "B": 0.1}, 0.05, [1,1,3], True, [0.2, 0.2, 0.6], [0.5, 0.5, 0.0]),
+                                (3, {"A": 0.9, "B": 0.1}, 0.05, [1,1,3], False, [0.2, 0.2, 0.6], [0.2, 0.2, 0.6]),
+                                (3, {"A": 0.5, "B": 0.5}, 0.05, [1,1,3], True, [0.2, 0.2, 0.6], [0.2, 0.2, 0.6]),
+                                (3, {"A": 0.5, "B": 0.5}, 0.1, [0.09, 0.5, 0.41], False, None, None),
+                         ])
+def test_dirichlet_generate_proportions(num_partitions, class_proportions, min_partition_proportion, alpha, balancing, expected_A, expected_B):
+
+    random_generator = np.random.default_rng(seed=1)
+    M = 10**10
+    alpha = [a * M for a in alpha]
+    
+    if expected_A is None:
+        with pytest.raises(ValueError):
+            DirichletPartitionStrategy._generate_proportions(
+                num_partitions=num_partitions,
+                class_proportions=class_proportions,
+                min_partition_proportion=min_partition_proportion,
+                alpha=alpha,
+                random_generator=random_generator,
+                balancing=balancing
+            )
+        return
+
+    result = DirichletPartitionStrategy._generate_proportions(
+        num_partitions=num_partitions,
+        class_proportions=class_proportions,
+        min_partition_proportion=min_partition_proportion,
+        alpha=alpha,
+        random_generator=random_generator,
+        balancing=balancing
+    )
+
+    assert np.isclose(result["A"].to_list(), expected_A, rtol=1e-3).all()
+    assert np.isclose(result["B"].to_list(), expected_B, rtol=1e-3).all()
