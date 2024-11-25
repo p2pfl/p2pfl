@@ -37,6 +37,7 @@ from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.settings import Settings
+from p2pfl.utils.topologies import InLineTopology
 from p2pfl.utils.utils import wait_convergence, wait_to_finish
 
 
@@ -197,10 +198,8 @@ def mnist(
         nodes.append(node)
 
     try:
-        # Node Connection
-        for i in range(len(nodes) - 1):
-            nodes[i + 1].connect(nodes[i].addr)
-            time.sleep(0.1)
+        InLineTopology(nodes) # Node Connection
+
         wait_convergence(nodes, n - 1, only_direct=False, wait=60)  # type: ignore
 
         if r < 1:
