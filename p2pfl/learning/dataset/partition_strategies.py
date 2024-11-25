@@ -19,11 +19,10 @@
 
 import random
 from abc import abstractmethod
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
-import pandas as pd
 import numpy as np
-
+import pandas as pd
 from datasets import Dataset  # type: ignore
 
 
@@ -161,28 +160,30 @@ class LabelSkewedPartitionStrategy(DataPartitionStrategy):
 
 class DirichletPartitionStrategy(DataPartitionStrategy):
     """
-    Explanation.
+    Data partition strategy based on the Dirichlet distribution.
 
-    Explanation.
+    It assigns data to different partitions (clients) so that the
+    distribution of classes in each partition follows a Dirichlet distribution,
+    where alpha determines the concentration of the distribution.
+
     """
 
     @staticmethod
     def _preprocess_alpha(alpha: Union[int, float, list[float]], num_partitions: int) -> list[float]:
-        """Convert alpha to the used format in the code a NDArrayFloat.
+        """
+        Convert alpha to the used format in the code (ndaarray).
 
         The alpha can be provided in constructor can be in different format for user
         convenience. The format into which it's transformed here is used throughout the
         code for computation.
 
-        Parameters
-        ----------
-            alpha : Union[int, float, List[float], NDArrayFloat]
-                Concentration parameter to the Dirichlet distribution
+        Args:
+            alpha : Concentration parameter to the Dirichlet distribution
+            num_partitions : Number of partitions to create
 
-        Returns
-        -------
-        alpha : NDArrayFloat
-            Concentration parameter in a format ready to used in computation.
+        Returns:
+            alpha : concentration parameter in a format ready to used in computation.
+
         """
         if isinstance(alpha, int):
             alpha = [float(alpha)] * num_partitions
@@ -203,8 +204,14 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
         cls, class_division_proportions: List[float], active_partitions: Optional[list[bool]]
     ) -> list[float]:
         """
-        Adapt the class_division_proportions to the active_partitions.
+        Adapt the class division proportions to the active partitions.
+
         Only used if self_balancing is True.
+
+        Args:
+            class_division_proportions: The proportions of the Dirichlet distribution.
+            active_partitions: The partitions that are still active.
+
         """
         if active_partitions is None:
             return class_division_proportions
@@ -220,9 +227,14 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
     def _recalculate_active_partitions(cls, result: pd.DataFrame, class_proportions: dict[str | int, float]) -> list[bool]:
         """
         Update the active_partitions based on how much proportion of the dataset is already assigned to each partition.
-        Only used if self_balancing is True.
-        """
 
+        Only used if self_balancing is True.
+
+        Args:
+            result: The proportions of the Dirichlet distribution.
+            class_proportions: The proportions of the classes in the dataset
+
+        """
         proportion_already_assigned = cls._calculate_assigned_proportion(result, class_proportions)
         partitions_to_keep = pd.Series(index=result.index, data=False)
         partitions_to_keep.loc[proportion_already_assigned < 1 / len(result)] = True
@@ -242,16 +254,26 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
         max_tries: int = 10,
     ) -> pd.DataFrame:
         """
-        Determine the proportions of the Dirichlet distribution
-        """
+        Determine the proportions of the Dirichlet distribution.
 
-        assert sum(class_proportions.values()) == 1
+        Args:
+            num_partitions: The number of partitions to create.
+            class_proportions: The proportions of the classes in the dataset.
+            min_partition_proportion: The minimum partition size allowed.
+            alpha: The alpha parameters of the Dirichlet distribution.
+            random_generator: The random number generator.
+            balancing: Whether the partitions should be balanced or not.
+            max_tries: The maximum number of tries to find a valid partitioning.
+
+        """
+        if not sum(class_proportions.values()) == 1:
+            raise ValueError("The sum of the class proportions must be 1")
 
         for _ in range(max_tries):
             result = pd.DataFrame(index=pd.RangeIndex(start=0, stop=num_partitions, name="partition"))
             active_partitions = [True] * num_partitions if balancing else None
 
-            for class_label in class_proportions.keys():
+            for class_label in class_proportions:
                 division_proportions = cls._adapt_class_division_proportions(
                     class_division_proportions=random_generator.dirichlet(alpha), active_partitions=active_partitions
                 )
@@ -289,7 +311,18 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
         max_tries: int = 10,
     ) -> List[List[int]]:
         """
-        Partition the data and return the list of indexes
+        Partition the data and return the list of indexes.
+
+        Args:
+            data: The dataset to partition.
+            label_tag: The name of the column containing the labels.
+            num_partitions: The number of partitions to create.
+            min_partition_size: The minimum partition size allowed.
+            alpha: The alpha parameters of the Dirichlet distribution.
+            random_generator: The random number generator.
+            balancing: Whether the partitions should be balanced or not.
+            max_tries: The maximum number of tries to find a valid partitioning.
+
         """
         class_proportions = {label: data[label_tag].count(label) / len(data[label_tag]) for label in set(data[label_tag])}
         proportions = cls._generate_proportions(
@@ -325,7 +358,10 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
         **kwargs,
     ) -> Tuple[List[List[int]], List[List[int]]]:
         """
-        Generate partitions of the dataset using Dirichlet.
+        Generate partitions of the dataset using Dirichlet distribution.
+
+        It divides the data into partitions so that the distribution of classes in each partition
+        follows a Dirichlet distribution controlled by the alpha parameter.
 
         Args:
             train_data: The training Dataset object to partition.
@@ -347,7 +383,6 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
                 - The second list contains lists of indices for the test data partitions.
 
         """
-
         alpha = cls._preprocess_alpha(alpha, num_partitions)
         cls._check_num_partitions(num_partitions=num_partitions, len_smallest_dataset=min(len(train_data), len(test_data)))
 
