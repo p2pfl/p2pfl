@@ -4,6 +4,10 @@
 
 We strongly recommend using [**p2pfl web services**](https://p2pfl.com) for simplified orchestration and management of your federated learning experiments. This web-based dashboard provides an intuitive interface for controlling nodes, monitoring progress, and visualizing results, making everything more visual and user-friendly.
 
+## ⚠️ Before Starting
+
+> **Note**: For detailed installation instructions, please refer to the [**installation guide**](installation.md). It covers everything you need to install **p2pfl**, including options for users, developers, and advanced manual installations.
+
 ## 💻 Using the CLI
 
 P2PFL provides a command-line interface (**CLI**) to simplify running experiments. You can launch the CLI using `python -m p2pfl`. This interface provides a convenient way to explore and run different federated learning experiments without manually writing code for each node. You can easily switch to different communication protocols, aggregators, and ML frameworks.
