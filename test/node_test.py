@@ -65,6 +65,7 @@ def two_nodes():
 #    Tests Learning    #
 ########################
 
+
 # TODO: Add more frameworks and aggregators
 @pytest.mark.parametrize("x", [(2, 2), (6, 3)])
 def test_convergence(x):
@@ -73,7 +74,7 @@ def test_convergence(x):
 
     # Data
     data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
-    partitions = data.generate_partitions(n*50, RandomIIDPartitionStrategy)
+    partitions = data.generate_partitions(n * 50, RandomIIDPartitionStrategy)
 
     # Node Creation
     nodes = []

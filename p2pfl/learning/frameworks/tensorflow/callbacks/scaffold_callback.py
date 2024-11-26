@@ -27,24 +27,21 @@ from tensorflow.keras.optimizers import Optimizer
 from p2pfl.learning.frameworks.callback import P2PFLCallback
 
 
-class ScaffoldOptimizer(Optimizer):
-    """Custom optimizer for to implement SCAFFOLD gradient adjustment."""
+class ScaffoldOptimizerWrapper(Optimizer):
+    """Wraps an optimizer to only redefine apply_gradients, delegating other calls."""
 
-    def __init__(self, optimizer, c_i, c, eta_l, name="ScaffoldOptimizer", **kwargs):
+    def __init__(self, optimizer, c_i, c, eta_l):
         """
-        Initialize the optimizer.
+        Initialize the wrapper.
 
         Args:
-            optimizer: The optimizer to use.
+            optimizer: The optimizer to wrap.
             c_i: The control variate for the current iteration.
             c: The global control variate.
             eta_l: The learning rate.
-            name: The name of the optimizer.
-            **kwargs: Additional arguments.
 
         """
-        super().__init__(name, **kwargs)
-        self.optimizer = optimizer
+        self._optimizer = optimizer  # Use a different name to avoid recursion in __getattr__
         self.c_i = c_i
         self.c = c
         self.eta_l = eta_l
@@ -59,16 +56,11 @@ class ScaffoldOptimizer(Optimizer):
                 adjustment.append((adjusted_grad, var))
             else:
                 adjustment.append((grad, var))
-        self.optimizer.apply_gradients(adjustment, **kwargs)
+        self._optimizer.apply_gradients(adjustment, **kwargs)
 
-    def get_config(self):
-        """Return the optimizer configuration."""
-        config = {
-            "optimizer": tf.keras.optimizers.serialize(self.optimizer),
-            "eta_l": self.eta_l,
-        }
-        base_config = super().get_config()
-        return {**base_config, **config}
+    def __getattr__(self, name):
+        """Delegate all other attribute/method calls to the original optimizer."""
+        return getattr(self._optimizer, name)
 
 
 class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
@@ -121,12 +113,12 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
         self.initial_model_params = [tf.Variable(param.numpy()) for param in self.model.trainable_variables]
         self.K = 0
 
-        self.model.optimizer = ScaffoldOptimizer(
+        self.model.optimizer = ScaffoldOptimizerWrapper(
             optimizer=optimizer,
             c_i=self.c_i,
             c=self.c,
             eta_l=self.saved_lr,
-        ) # type: ignore
+        )  # type: ignore
 
     def on_train_batch_end(self, batch: Any, logs: Optional[Dict[str, Any]] = None) -> None:
         """

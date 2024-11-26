@@ -18,7 +18,6 @@
 
 """Keras Logger for P2PFL."""
 
-
 import tensorflow as tf  # type: ignore
 
 from p2pfl.learning.frameworks.learner import P2PFLCallback

@@ -263,7 +263,7 @@ if __name__ == "__main__":
     # Parse args
     args = __parse_args()
 
-    set_standalone_settings(disable_ray=args.disable_ray) # todo: not working on the logger because it is imported at the top of the file
+    set_standalone_settings(disable_ray=args.disable_ray)  # todo: not working on the logger because it is imported at the top of the file
 
     if args.profiling:
         import os  # noqa: I001

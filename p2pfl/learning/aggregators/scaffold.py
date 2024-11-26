@@ -33,7 +33,7 @@ class Scaffold(Aggregator):
     Paper: https://arxiv.org/pdf/1910.06378
     The aggregator acts like the server in centralized learning, handling both model and control variate updates.
 
-    Due to the complete decentralization of the enviroment, a global model is also maintained in the aggregator. 
+    Due to the complete decentralization of the enviroment, a global model is also maintained in the aggregator.
     This consumes additional bandwidth.
 
     ::todo:: Improve efficiency by estimating the global model.
