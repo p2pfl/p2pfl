@@ -75,8 +75,7 @@ Alternatively, you can install it from source. This installation method is recom
 
 #### 🐍 Python
 
-
-To install the library for development we recommend using a virtual environment. We use [Poetry](https://python-poetry.org/) for this purpose.
+> **Prerequisite**: Before installing the library, ensure that **Poetry** is installed. If you haven't installed it yet, follow the instructions in the official [Poetry Installation Guide](https://python-poetry.org/docs/).
 
 
 ```bash

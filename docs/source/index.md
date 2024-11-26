@@ -10,6 +10,10 @@ See [Installation](installation.md) for instructions on how to install P2PFL.
 
 See [Quickstart](quickstart.md) for a quick introduction to P2PFL.
 
+## 📖 Manual
+
+See [Manual](manual.md) for a detailed explanation of P2PFL options.
+
 ## 🌐 P2PFL Web Services
 
 See [P2PFL Web Services](p2pfl_ws.md) for a guide on how to use the P2PFL Web Services.
