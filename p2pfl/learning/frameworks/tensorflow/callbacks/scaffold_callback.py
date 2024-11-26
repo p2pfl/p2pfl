@@ -64,11 +64,12 @@ class ScaffoldOptimizer(Optimizer):
     def get_config(self):
         """Return the optimizer configuration."""
         config = {
-            'optimizer': tf.keras.optimizers.serialize(self.optimizer),
-            'eta_l': self.eta_l,
+            "optimizer": tf.keras.optimizers.serialize(self.optimizer),
+            "eta_l": self.eta_l,
         }
         base_config = super().get_config()
         return {**base_config, **config}
+
 
 class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
     """
@@ -98,7 +99,7 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
     def on_train_begin(self, logs: Optional[Dict[str, Any]] = None) -> None:
         """Initialize control variates and replace the optimizer with custom one."""
         optimizer = self.model.optimizer
-        if hasattr(optimizer, 'learning_rate'):
+        if hasattr(optimizer, "learning_rate"):
             lr = optimizer.learning_rate
             if isinstance(lr, tf.keras.optimizers.schedules.LearningRateSchedule):
                 self.saved_lr = tf.keras.backend.get_value(lr(optimizer.iterations))
@@ -110,7 +111,7 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
         if not self.c_i:
             self.c_i = [tf.Variable(tf.zeros_like(param), trainable=False) for param in self.model.trainable_variables]
 
-        global_c = self.additional_info.get('global_c')
+        global_c = self.additional_info.get("global_c")
         if global_c is not None:
             self.c = [tf.Variable(tf.convert_to_tensor(c_np), trainable=False) for c_np in global_c]
         else:
@@ -125,7 +126,7 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
             c_i=self.c_i,
             c=self.c,
             eta_l=self.saved_lr,
-        )
+        ) # type: ignore
 
     def on_train_batch_end(self, batch: Any, logs: Optional[Dict[str, Any]] = None) -> None:
         """
@@ -168,4 +169,3 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
     def set_additional_info(self, info: Dict[str, Any]) -> None:
         """Set additional information required for SCAFFOLD."""
         self.additional_info = info
-

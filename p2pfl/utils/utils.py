@@ -36,7 +36,7 @@ Module to define constants for the p2pfl system.
 ###################
 
 
-def set_test_settings() -> None:
+def set_test_settings(disable_ray: bool = False) -> None:
     """Set settings for testing."""
     Settings.GRPC_TIMEOUT = 0.5
     Settings.HEARTBEAT_PERIOD = 0.5
@@ -53,6 +53,7 @@ def set_test_settings() -> None:
     Settings.AGGREGATION_TIMEOUT = 60
     Settings.WAIT_HEARTBEATS_CONVERGENCE = 0.2 * Settings.HEARTBEAT_TIMEOUT
     Settings.LOG_LEVEL = "DEBUG"
+    Settings.DISABLE_RAY = disable_ray
     logger.set_level(Settings.LOG_LEVEL)  # Refresh (maybe already initialized)
 
 

@@ -26,12 +26,17 @@ from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregat
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 
 
-class ScaffoldAggregator(Aggregator):
+class Scaffold(Aggregator):
     """
     SCAFFOLD Aggregator.
 
     Paper: https://arxiv.org/pdf/1910.06378
     The aggregator acts like the server in centralized learning, handling both model and control variate updates.
+
+    Due to the complete decentralization of the enviroment, a global model is also maintained in the aggregator. 
+    This consumes additional bandwidth.
+
+    ::todo:: Improve efficiency by estimating the global model.
     """
 
     REQUIRED_INFO_KEYS = ["delta_y_i", "delta_c_i"]
@@ -48,7 +53,7 @@ class ScaffoldAggregator(Aggregator):
         super().__init__(node_name)
         self.global_lr = global_lr
         self.c: List[np.ndarray] = []  # global control variates
-        self.global_model_params: List[np.ndarray] = [] # simulate global model
+        self.global_model_params: List[np.ndarray] = []  # simulate global model
         self.partial_aggregation = False
 
     def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
@@ -81,9 +86,7 @@ class ScaffoldAggregator(Aggregator):
         # Update global model
         if not self.global_model_params:
             self.global_model_params = models[0].get_parameters()
-        self.global_model_params = [
-            param + delta for param, delta in zip(self.global_model_params, accum_delta_y)
-        ]
+        self.global_model_params = [param + delta for param, delta in zip(self.global_model_params, accum_delta_y)]
 
         # Accumulate control variates
         delta_c_i_first = self._get_and_validate_model_info(models[0])["delta_c_i"]
@@ -114,15 +117,8 @@ class ScaffoldAggregator(Aggregator):
             contributors.extend(m.get_contributors())
 
         # Return the aggregated model with the global model parameters and the control variates
-        aggregated_model = models[0].build_copy(
-            params=self.global_model_params,
-            num_samples=total_samples,
-            contributors=contributors
-        )
-        aggregated_model.add_info("scaffold", {
-            "global_c": self.c,
-            "global_model_params": self.global_model_params
-        })
+        aggregated_model = models[0].build_copy(params=self.global_model_params, num_samples=total_samples, contributors=contributors)
+        aggregated_model.add_info("scaffold", {"global_c": self.c, "global_model_params": self.global_model_params})
 
         return aggregated_model
 
@@ -142,4 +138,3 @@ class ScaffoldAggregator(Aggregator):
         if not all(key in info for key in self.REQUIRED_INFO_KEYS):
             raise ValueError(f"Model is missing required info keys: {self.REQUIRED_INFO_KEYS}" f"Model info keys: {info.keys()}")
         return info
-

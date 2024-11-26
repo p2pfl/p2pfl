@@ -53,7 +53,7 @@ class KerasLearner(Learner):
         self.model.model.compile(
             optimizer=self.model.model.optimizer,
             loss=self.model.model.loss,
-            metrics=['sparse_categorical_accuracy'],
+            metrics=["sparse_categorical_accuracy"],
         )
 
     def __get_tf_model_data(self, train: bool = True) -> Tuple[tf.keras.Model, tf.data.Dataset]:

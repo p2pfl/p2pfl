@@ -16,7 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""Unit tests for the ScaffoldAggregator."""
+"""Unit tests for the Scaffold."""
 
 from typing import Any, Dict, List, Optional
 
@@ -24,12 +24,12 @@ import numpy as np
 import pytest
 
 from p2pfl.learning.aggregators.aggregator import NoModelsToAggregateError
-from p2pfl.learning.aggregators.scaffold import ScaffoldAggregator
+from p2pfl.learning.aggregators.scaffold import Scaffold
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 
 
 class MockP2PFLModel(P2PFLModel):
-    """Mock P2PFLModel for testing the ScaffoldAggregator."""
+    """Mock P2PFLModel for testing the Scaffold."""
 
     def __init__(
         self,
@@ -61,9 +61,29 @@ class MockP2PFLModel(P2PFLModel):
         """Return the number of samples."""
         return self.num_samples
 
-    def get_info(self, key: str) -> Any:
-        """Return additional information."""
-        return self.additional_info[key]
+    def add_info(self, callback: str, info: Any) -> None:
+        """
+        Add additional information to the learner state.
+
+        Args:
+            callback: The callback to add the information
+            info: The information for the callback.
+
+        """
+        self.additional_info[callback] = info
+
+    def get_info(self, callback: Optional[str] = None) -> Any:
+        """
+        Get additional information from the learner state.
+
+        Args:
+            callback: The callback to add the information
+            key: The key of the information.
+
+        """
+        if callback is None:
+            return self.additional_info
+        return self.additional_info[callback]
 
     def build_copy(self, params: List[np.ndarray], num_samples: int, contributors: List[str]) -> "MockP2PFLModel":
         """
@@ -79,10 +99,6 @@ class MockP2PFLModel(P2PFLModel):
             params=params, num_samples=num_samples, additional_info=self.additional_info.copy(), contributors=contributors
         )
 
-    def add_info(self, key: str, value: Any) -> None:
-        """Add additional information."""
-        self.additional_info[key] = value
-
     def get_contributors(self) -> List[str]:
         """Return the contributors."""
         return self._contributors
@@ -95,7 +111,7 @@ def test_aggregate_with_valid_models() -> None:
         params=[np.array([1.0, 2.0]), np.array([3.0, 4.0])],
         num_samples=10,
         additional_info={
-        "scaffold": {
+            "scaffold": {
                 "delta_y_i": [np.array([0.1, 0.2]), np.array([0.3, 0.4])],
                 "delta_c_i": [np.array([0.01, 0.02]), np.array([0.03, 0.04])],
             }
@@ -116,8 +132,8 @@ def test_aggregate_with_valid_models() -> None:
 
     raise ValueError("No se hasta que punto esto cumple su objetivo, no converge y está fallando")
 
-    # Initialize the ScaffoldAggregator with a global learning rate
-    aggregator = ScaffoldAggregator(node_name="test_node", global_lr=0.1)
+    # Initialize the Scaffold with a global learning rate
+    aggregator = Scaffold(node_name="test_node", global_lr=0.1)
 
     # Perform aggregation
     aggregated_model = aggregator.aggregate([model1, model2])
@@ -165,7 +181,7 @@ def test_aggregate_with_valid_models() -> None:
 
 def test_aggregate_with_no_models() -> None:
     """Test that aggregating with no models raises the appropriate error."""
-    aggregator = ScaffoldAggregator(node_name="test_node")
+    aggregator = Scaffold(node_name="test_node")
     with pytest.raises(NoModelsToAggregateError):
         aggregator.aggregate([])
 
@@ -183,7 +199,7 @@ def test_aggregate_with_missing_required_info() -> None:
         contributors=["contributor1", "contributor2"],
     )
 
-    aggregator = ScaffoldAggregator(node_name="test_node")
+    aggregator = Scaffold(node_name="test_node")
     with pytest.raises(ValueError):
         aggregator.aggregate([model])
 
@@ -215,7 +231,7 @@ def test_additional_parameters_communication() -> None:
     raise ValueError("No se hasta que punto esto cumple su objetivo, no converge y está fallando")
 
     # Initialize the aggregator
-    aggregator = ScaffoldAggregator(node_name="test_node", global_lr=0.1)
+    aggregator = Scaffold(node_name="test_node", global_lr=0.1)
 
     # Perform aggregation
     aggregated_model = aggregator.aggregate([model1, model2])

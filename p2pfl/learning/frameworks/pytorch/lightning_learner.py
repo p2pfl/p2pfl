@@ -59,7 +59,6 @@ class LightningLearner(Learner):
         self.__trainer: Optional[Trainer] = None
         self.experiment: Optional[Experiment] = None
 
-        # TODO: Federated logger is not a Lighting callback
         # Start logging
         self.logger = FederatedLogger(self_addr)
         # To avoid GPU/TPU printings

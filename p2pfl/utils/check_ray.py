@@ -20,9 +20,14 @@
 
 import importlib
 
+from p2pfl.settings import Settings
+
 
 def ray_installed() -> bool:
     """Check if ray is installed."""
+    if Settings.DISABLE_RAY:
+        return False
+
     if importlib.util.find_spec("ray") is not None:
         # Try to initialize ray
         import ray

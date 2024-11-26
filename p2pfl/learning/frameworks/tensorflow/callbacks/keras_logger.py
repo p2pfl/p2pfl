@@ -18,7 +18,6 @@
 
 """Keras Logger for P2PFL."""
 
-from typing import Any
 
 import tensorflow as tf  # type: ignore
 

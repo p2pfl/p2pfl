@@ -61,7 +61,7 @@ class SCAFFOLDCallback(Callback, P2PFLCallback):
 
         """
         # Update local model with global model
-        global_model_params = self.additional_info.get('global_model_params')
+        global_model_params = self.additional_info.get("global_model_params")
         if global_model_params is not None:
             self._set_parameters(pl_module, global_model_params)
 
@@ -76,7 +76,7 @@ class SCAFFOLDCallback(Callback, P2PFLCallback):
                 self.c = [torch.zeros_like(param) for param in self._get_parameters(pl_module)]
 
         self.initial_model_params = copy.deepcopy(self._get_parameters(pl_module))
-        self.K = 0 # reset local steps counter
+        self.K = 0  # reset local steps counter
 
     def on_train_batch_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule, batch: Any, batch_idx: int) -> None:
         """
@@ -127,7 +127,7 @@ class SCAFFOLDCallback(Callback, P2PFLCallback):
             raise AttributeError("Necessary attributes are not initialized.")
 
         y_i = self._get_parameters(pl_module)
-        x_g = self.initial_model_params # global model at the beginning of the training
+        x_g = self.initial_model_params  # global model at the beginning of the training
         previous_c_i = [c.clone() for c in self.c_i]
 
         for idx, (c_i, x, y) in enumerate(zip(self.c_i, x_g, y_i)):
