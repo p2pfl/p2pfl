@@ -24,9 +24,9 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 import ray
 from ray.util.actor_pool import ActorPool
 
-from p2pfl.learning.learner import NodeLearner
-from p2pfl.learning.p2pfl_model import P2PFLModel
-from p2pfl.learning.simulation.utils import check_client_resources, pool_size_from_resources
+from p2pfl.learning.frameworks.learner import Learner
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.simulation.utils import check_client_resources, pool_size_from_resources
 from p2pfl.management.logger import logger
 
 ###
@@ -45,7 +45,7 @@ class VirtualLearnerActor:
         logger.debug(self.__class__.__name__, f"Manually terminating {self.__class__.__name__}")
         ray.actor.exit_actor()
 
-    def fit(self, addr: str, learner: NodeLearner) -> Tuple[str, P2PFLModel]:
+    def fit(self, addr: str, learner: Learner) -> Tuple[str, P2PFLModel]:
         """Fit the model."""
         try:
             model = learner.fit()
@@ -55,7 +55,7 @@ class VirtualLearnerActor:
 
         return addr, model
 
-    def evaluate(self, addr: str, learner: NodeLearner) -> Tuple[str, Dict[str, float]]:
+    def evaluate(self, addr: str, learner: Learner) -> Tuple[str, Dict[str, float]]:
         """Evaluate the model."""
         try:
             results = learner.evaluate()
@@ -164,7 +164,7 @@ class SuperActorPool(ActorPool):
             self.num_actors += num_actors
             logger.info("ActorPool", f"Created {num_actors} actors")
 
-    def submit(self, fn: Any, value: Tuple[str, NodeLearner]) -> None:
+    def submit(self, fn: Any, value: Tuple[str, Learner]) -> None:
         """
         Submit a task to an idle actor in the pool.
 
@@ -183,7 +183,7 @@ class SuperActorPool(ActorPool):
             self._next_task_index += 1
             self._addr_to_future[addr]["future"] = future_key
 
-    def submit_learner_job(self, actor_fn: Any, job: Tuple[str, NodeLearner]) -> None:
+    def submit_learner_job(self, actor_fn: Any, job: Tuple[str, Learner]) -> None:
         """
         Submit a learner job to the pool, handling pending submits if no idle actors are available.
 

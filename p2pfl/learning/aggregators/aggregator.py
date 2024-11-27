@@ -21,7 +21,7 @@
 import threading
 from typing import List
 
-from p2pfl.learning.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 
@@ -49,6 +49,7 @@ class Aggregator:
         self.node_name = node_name
         self.__train_set: List[str] = []
         self.__models: List[P2PFLModel] = []
+        self.partial_aggregation = False
 
         # Locks
         self.__agg_lock = threading.Lock()
@@ -64,6 +65,16 @@ class Aggregator:
 
         """
         raise NotImplementedError
+
+    def get_required_callbacks(self) -> List[str]:
+        """
+        Get the required callbacks for the aggregation.
+
+        Returns:
+            List of required callbacks.
+
+        """
+        return []
 
     def set_nodes_to_aggregate(self, nodes_to_aggregate: List[str]) -> None:
         """
@@ -157,7 +168,7 @@ class Aggregator:
             else:
                 logger.debug(
                     self.node_name,
-                    f"Can't add a model from a node ({model.get_contributors()}) that is not in the training test.",
+                    f"Can't add a model from a node ({model.get_contributors()}) that is not in the training set.",
                 )
         else:
             logger.debug(self.node_name, "🚫 Received a model when is not needed (already aggregated).")
@@ -213,7 +224,7 @@ class Aggregator:
         missing_models = set(self.__train_set) - set(agg_models)
         return missing_models
 
-    def get_partial_aggregation(self, except_nodes: List[str]) -> P2PFLModel:
+    def __get_partial_aggregation(self, except_nodes: List[str]) -> P2PFLModel:
         """
         Obtain a partial aggregation.
 
@@ -230,3 +241,33 @@ class Aggregator:
                 models_to_aggregate.append(m)
 
         return self.aggregate(models_to_aggregate)
+
+    def __get_remaining_model(self, except_nodes) -> P2PFLModel:
+        """
+        Obtain a random model from the remaining nodes.
+
+        Args:
+            except_nodes: List of nodes to exclude from the aggregation.
+
+        Return:
+            Aggregated model, nodes aggregated and aggregation weight.
+
+        """
+        for m in self.__models.copy():
+            contributors = m.get_contributors()
+            if all(n not in except_nodes for n in contributors):
+                return m
+        raise NoModelsToAggregateError("No remaining models available for aggregation.")
+
+    def get_model(self, except_nodes) -> P2PFLModel:
+        """
+        Get corresponding aggregation depending if aggregator supports partial aggregations.
+
+        Args:
+            except_nodes: List of nodes to exclude from the aggregation.
+
+        """
+        if self.partial_aggregation:
+            return self.__get_partial_aggregation(except_nodes)
+        else:
+            return self.__get_remaining_model(except_nodes)

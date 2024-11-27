@@ -15,28 +15,4 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-
-"""Check if ray is installed."""
-
-import importlib
-
-from p2pfl.settings import Settings
-
-
-def ray_installed() -> bool:
-    """Check if ray is installed."""
-    if Settings.DISABLE_RAY:
-        return False
-
-    if importlib.util.find_spec("ray") is not None:
-        # Try to initialize ray
-        import ray
-
-        # If ray not initialized, initialize it
-        if not ray.is_initialized():
-            ray.init(
-                namespace="p2pfl",
-                # include_dashboard=False
-            )
-        return True
-    return False
+"""Pytorch callbacks for federated learning."""

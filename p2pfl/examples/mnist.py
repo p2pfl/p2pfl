@@ -30,16 +30,17 @@ import numpy as np
 
 from p2pfl.communication.protocols.grpc.grpc_communication_protocol import GrpcCommunicationProtocol
 from p2pfl.communication.protocols.memory.memory_communication_protocol import InMemoryCommunicationProtocol
+from p2pfl.learning.aggregators.scaffold import Scaffold
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
-from p2pfl.learning.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.settings import Settings
 from p2pfl.utils.utils import wait_convergence, wait_to_finish
 
 
-def set_standalone_settings() -> None:
+def set_standalone_settings(disable_ray: bool = False) -> None:
     """
     Set settings for testing.
 
@@ -65,6 +66,7 @@ def set_standalone_settings() -> None:
     Settings.WAIT_HEARTBEATS_CONVERGENCE = 0.2 * Settings.HEARTBEAT_TIMEOUT
     Settings.LOG_LEVEL = "INFO"
     Settings.EXCLUDE_BEAT_LOGS = True
+    Settings.DISABLE_RAY = disable_ray
     logger.set_level(Settings.LOG_LEVEL)  # Refresh (maybe already initialized)
 
 
@@ -91,20 +93,34 @@ def __parse_args() -> argparse.Namespace:
     parser.add_argument("--epochs", type=int, help="The number of epochs.", default=2)
     parser.add_argument("--show_metrics", action="store_true", help="Show metrics.", default=True)
     parser.add_argument("--measure_time", action="store_true", help="Measure time.", default=False)
-    parser.add_argument("--use_unix_socket", action="store_true", help="Use Unix socket.", default=False)
-    parser.add_argument("--use_local_protocol", action="store_true", help="Use local protocol.", default=False)
     parser.add_argument("--token", type=str, help="The API token for the Web Logger.", default="")
-    parser.add_argument("--tensorflow", action="store_true", help="Use TensorFlow.", default=False)
+    parser.add_argument("--protocol", type=str, help="The protocol to use.", default="grpc", choices=["grpc", "unix", "memory"])
+    parser.add_argument("--framework", type=str, help="The framework to use.", default="pytorch", choices=["pytorch", "tensorflow", "flax"])
+    parser.add_argument("--aggregator", type=str, help="The aggregator to use.", default="fedavg", choices=["fedavg", "scaffold"])
     parser.add_argument("--profiling", action="store_true", help="Enable profiling.", default=False)
     parser.add_argument("--reduced_dataset", action="store_true", help="Use a reduced dataset just for testing.", default=False)
-
-    # check (cannot use the unix socket and the local protocol at the same time)
+    parser.add_argument("--disable_ray", action="store_true", help="Disable Ray.", default=False)
     args = parser.parse_args()
-
-    if args.use_unix_socket and args.use_local_protocol:
-        parser.error("Cannot use the unix socket and the local protocol at the same time.")
-
     return args
+
+
+def create_tensorflow_model() -> P2PFLModel:
+    """Create a TensorFlow model."""
+    import tensorflow as tf  # type: ignore
+
+    from p2pfl.learning.frameworks.tensorflow.keras_model import MLP as MLP_KERAS
+    from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel
+
+    model = MLP_KERAS()  # type: ignore[no-untyped-call]
+    model(tf.zeros((1, 28, 28, 1)))
+    return KerasModel(model)
+
+
+def create_pytorch_model() -> P2PFLModel:
+    """Create a PyTorch model."""
+    from p2pfl.learning.frameworks.pytorch.lightning_model import MLP, LightningModel
+
+    return LightningModel(MLP())  # type: ignore[no-untyped-call]
 
 
 def mnist(
@@ -113,9 +129,9 @@ def mnist(
     e: int,
     show_metrics: bool = True,
     measure_time: bool = False,
-    use_unix_socket: bool = False,
-    use_local_protocol: bool = False,
-    use_tensorflow: bool = False,
+    protocol: str = "grpc",
+    framework: str = "pytorch",
+    aggregator: str = "fedavg",
     reduced_dataset: bool = False,
 ) -> None:
     """
@@ -127,9 +143,9 @@ def mnist(
         e: The number of epochs.
         show_metrics: Show metrics.
         measure_time: Measure time.
-        use_unix_socket: Use Unix socket.
-        use_local_protocol: Use local protocol
-        use_tensorflow: Use TensorFlow.
+        protocol: The protocol to use.
+        framework: The framework to use.
+        aggregator: The aggregator to use.
         reduced_dataset: Use a reduced dataset just for testing.
 
     """
@@ -142,33 +158,41 @@ def mnist(
             "For in-line topology TTL must be greater than the number of nodes." "Otherwise, some messages will not be delivered."
         )
 
+    # Imports
+    if framework == "tensorflow":
+        from p2pfl.learning.frameworks.tensorflow.keras_learner import KerasLearner
+
+        model_fn = create_tensorflow_model
+        learner = KerasLearner
+    elif framework == "pytorch":
+        from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
+
+        model_fn = create_pytorch_model
+        learner = LightningLearner  # type: ignore
+    else:
+        raise ValueError(f"Framework {args.framework} not added on this example.")
+
     # Data
     data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
     partitions = data.generate_partitions(
-        n * 100 if reduced_dataset else n,
+        n * 50 if reduced_dataset else n,
         RandomIIDPartitionStrategy,  # type: ignore
     )
 
     # Node Creation
     nodes = []
     for i in range(n):
-        address = f"node-{i}" if use_local_protocol else f"unix:///tmp/p2pfl-{i}.sock" if use_unix_socket else "127.0.0.1"
-
-        # Create the model
-        p2pfl_model: P2PFLModel = LightningModel(MLP())
-        if use_tensorflow:
-            model = MLP_KERAS()  # type: ignore
-            model(tf.zeros((1, 28, 28, 1)))  # type: ignore
-            p2pfl_model = KerasModel(model)
+        address = f"node-{i}" if protocol == "memory" else f"unix:///tmp/p2pfl-{i}.sock" if protocol == "unix" else "127.0.0.1"
 
         # Nodes
         node = Node(
-            p2pfl_model,
+            model_fn(),
             partitions[i],
-            learner=KerasLearner if use_tensorflow else LightningLearner,  # type: ignore
-            protocol=InMemoryCommunicationProtocol if use_local_protocol else GrpcCommunicationProtocol,  # type: ignore
+            learner=learner,  # type: ignore
+            protocol=InMemoryCommunicationProtocol if protocol == "memory" else GrpcCommunicationProtocol,  # type: ignore
             address=address,
             simulation=True,
+            aggregator=Scaffold() if aggregator == "scaffold" else None,
         )
         node.start()
         nodes.append(node)
@@ -236,20 +260,10 @@ def mnist(
 
 
 if __name__ == "__main__":
-    set_standalone_settings()
-
     # Parse args
     args = __parse_args()
 
-    # Imports
-    if args.tensorflow:
-        import tensorflow as tf  # noqa: I001
-        from p2pfl.learning.tensorflow.keras_learner import KerasLearner
-        from p2pfl.learning.tensorflow.keras_model import MLP as MLP_KERAS
-        from p2pfl.learning.tensorflow.keras_model import KerasModel
-    else:
-        from p2pfl.learning.pytorch.lightning_learner import LightningLearner
-        from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
+    set_standalone_settings(disable_ray=args.disable_ray)  # todo: not working on the logger because it is imported at the top of the file
 
     if args.profiling:
         import os  # noqa: I001
@@ -270,8 +284,9 @@ if __name__ == "__main__":
             args.epochs,
             show_metrics=args.show_metrics,
             measure_time=args.measure_time,
-            use_unix_socket=args.use_unix_socket,
-            use_local_protocol=args.use_local_protocol,
+            protocol=args.protocol,
+            framework=args.framework,
+            aggregator=args.aggregator,
             reduced_dataset=args.reduced_dataset,
         )
     finally:

@@ -20,15 +20,15 @@
 from unittest.mock import MagicMock, patch
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-from p2pfl.learning.learner import NodeLearner
-from p2pfl.learning.p2pfl_model import P2PFLModel
-from p2pfl.learning.simulation.actor_pool import SuperActorPool
-from p2pfl.learning.simulation.virtual_learner import VirtualNodeLearner
+from p2pfl.learning.frameworks.learner import Learner
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.simulation.actor_pool import SuperActorPool
+from p2pfl.learning.frameworks.simulation.virtual_learner import VirtualNodeLearner
 
 
 def test_virtual_node_learner_initialization():
     """Test the initialization of the VirtualNodeLearner class."""
-    learner = MagicMock(spec=NodeLearner)
+    learner = MagicMock(spec=Learner)
     addr = "test_addr"
     virtual_learner = VirtualNodeLearner(learner, addr)
     assert virtual_learner.learner == learner
@@ -38,7 +38,7 @@ def test_virtual_node_learner_initialization():
 
 def test_set_addr():
     """Test the set_addr method of the VirtualNodeLearner class."""
-    learner = MagicMock(spec=NodeLearner)
+    learner = MagicMock(spec=Learner)
     virtual_learner = VirtualNodeLearner(learner, "initial_addr")
     new_addr = "new_addr"
     virtual_learner.set_addr(new_addr)
@@ -48,7 +48,7 @@ def test_set_addr():
 
 def test_set_model():
     """Test the set_model method of the VirtualNodeLearner class."""
-    learner = MagicMock(spec=NodeLearner)
+    learner = MagicMock(spec=Learner)
     virtual_learner = VirtualNodeLearner(learner, "test_addr")
     model = MagicMock(spec=P2PFLModel)
     virtual_learner.set_model(model)
@@ -57,7 +57,7 @@ def test_set_model():
 
 def test_get_model():
     """Test the get_model method of the VirtualNodeLearner class."""
-    learner = MagicMock(spec=NodeLearner)
+    learner = MagicMock(spec=Learner)
     virtual_learner = VirtualNodeLearner(learner, "test_addr")
     model = MagicMock(spec=P2PFLModel)
     learner.get_model.return_value = model
@@ -68,7 +68,7 @@ def test_get_model():
 
 def test_set_data():
     """Test the set_data method of the VirtualNodeLearner class."""
-    learner = MagicMock(spec=NodeLearner)
+    learner = MagicMock(spec=Learner)
     virtual_learner = VirtualNodeLearner(learner, "test_addr")
     data = MagicMock(spec=P2PFLDataset)
     virtual_learner.set_data(data)
@@ -77,7 +77,7 @@ def test_set_data():
 
 def test_get_data():
     """Test the get_data method of the VirtualNodeLearner class."""
-    learner = MagicMock(spec=NodeLearner)
+    learner = MagicMock(spec=Learner)
     virtual_learner = VirtualNodeLearner(learner, "test_addr")
     data = MagicMock(spec=P2PFLDataset)
     learner.get_data.return_value = data
@@ -88,7 +88,7 @@ def test_get_data():
 
 def test_set_epochs():
     """Test the set_epochs method of the VirtualNodeLearner class."""
-    learner = MagicMock(spec=NodeLearner)
+    learner = MagicMock(spec=Learner)
     virtual_learner = VirtualNodeLearner(learner, "test_addr")
     epochs = 10
     virtual_learner.set_epochs(epochs)
@@ -97,7 +97,7 @@ def test_set_epochs():
 
 def test_fit():
     """Test the fit method of the VirtualNodeLearner class."""
-    learner = MagicMock(spec=NodeLearner)
+    learner = MagicMock(spec=Learner)
     virtual_learner = VirtualNodeLearner(learner, "test_addr")
     model = MagicMock(spec=P2PFLModel)
     with patch.object(SuperActorPool, "submit_learner_job") as mock_submit_learner_job, patch.object(
@@ -113,7 +113,7 @@ def test_fit():
 def _test_interrupt_fit():
     """Test the interrupt_fit method of the VirtualNodeLearner class."""
     # TODO
-    learner = MagicMock(spec=NodeLearner)
+    learner = MagicMock(spec=Learner)
     virtual_learner = VirtualNodeLearner(learner, "test_addr")
     with patch.object(SuperActorPool, "submit") as mock_submit:
         virtual_learner.interrupt_fit()
@@ -122,7 +122,7 @@ def _test_interrupt_fit():
 
 def test_evaluate():
     """Test the evaluate method of the VirtualNodeLearner class."""
-    learner = MagicMock(spec=NodeLearner)
+    learner = MagicMock(spec=Learner)
     virtual_learner = VirtualNodeLearner(learner, "test_addr")
     evaluation_result = {"accuracy": 0.9}
     with patch.object(SuperActorPool, "submit_learner_job") as mock_submit_learner_job, patch.object(

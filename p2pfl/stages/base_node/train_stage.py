@@ -25,7 +25,7 @@ from p2pfl.communication.commands.message.models_ready_command import ModelsRead
 from p2pfl.communication.commands.weights.partial_model_command import PartialModelCommand
 from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
-from p2pfl.learning.learner import NodeLearner
+from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.stage import EarlyStopException, Stage, check_early_stop
@@ -44,7 +44,7 @@ class TrainStage(Stage):
     def execute(
         state: Optional[NodeState] = None,
         communication_protocol: Optional[CommunicationProtocol] = None,
-        learner: Optional[NodeLearner] = None,
+        learner: Optional[Learner] = None,
         aggregator: Optional[Aggregator] = None,
         **kwargs,
     ) -> Union[Type["Stage"], None]:
@@ -73,6 +73,7 @@ class TrainStage(Stage):
 
             # Aggregate Model
             models_added = aggregator.add_model(learner.get_model())
+
             # send model added msg ---->> redundant (a node always owns its model)
             # TODO: print("Broadcast redundante")
             communication_protocol.broadcast(
@@ -99,7 +100,7 @@ class TrainStage(Stage):
             return None
 
     @staticmethod
-    def __evaluate(state: NodeState, learner: NodeLearner, communication_protocol: CommunicationProtocol) -> None:
+    def __evaluate(state: NodeState, learner: Learner, communication_protocol: CommunicationProtocol) -> None:
         logger.info(state.addr, "🔬 Evaluating...")
         results = learner.evaluate()
         logger.info(state.addr, f"📈 Evaluated. Results: {results}")
@@ -151,12 +152,12 @@ class TrainStage(Stage):
 
         def model_fn(node: str) -> Any:
             try:
-                model = aggregator.get_partial_aggregation(TrainStage.__get_aggregated_models(node, state))
+                model = aggregator.get_model(TrainStage.__get_aggregated_models(node, state))
             except NoModelsToAggregateError:
+                logger.info(state.addr, f"❔ No models to aggregate from {node}.")
                 return None
             if state.round is None:
                 raise Exception("Round not initialized.")
-
             return communication_protocol.build_weights(
                 PartialModelCommand.get_name(),
                 state.round,

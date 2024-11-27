@@ -20,11 +20,11 @@
 
 import copy
 import pickle
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
-from p2pfl.learning.exceptions import DecodingParamsError
+from p2pfl.learning.frameworks.exceptions import DecodingParamsError
 
 
 class P2PFLModel:
@@ -48,19 +48,19 @@ class P2PFLModel:
         params: Optional[Union[List[np.ndarray], bytes]] = None,
         num_samples: Optional[int] = None,
         contributors: Optional[List[str]] = None,
-        aditional_info: Optional[Dict[str, str]] = None,
+        additional_info: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Initialize the model."""
         self.model = model
-        self.additional_info: Dict[str, str] = {}
         self.contributors: List[str] = []
         if contributors is not None:
             self.contributors = contributors
         self.num_samples = 0
         if num_samples is not None:
             self.num_samples = num_samples
-        if aditional_info is not None:
-            self.additional_info = aditional_info
+        self.additional_info: Dict[str, Any] = {}
+        if additional_info is not None:
+            self.additional_info = additional_info
         if params is not None:
             self.set_parameters(params)
 
@@ -78,9 +78,13 @@ class P2PFLModel:
         """
         if params is None:
             params = self.get_parameters()
-        return pickle.dumps(params)  # serializing the entire NumPy array
+        data_to_serialize = {
+            "params": params,
+            "additional_info": self.additional_info,
+        }
+        return pickle.dumps(data_to_serialize)
 
-    def decode_parameters(self, data: bytes) -> List[np.ndarray]:
+    def decode_parameters(self, data: bytes) -> Tuple[List[np.ndarray], Dict[str, Any]]:
         """
         Decode the parameters of the model.
 
@@ -89,10 +93,10 @@ class P2PFLModel:
 
         """
         try:
-            # params_dict = zip(self.get_parameters().keys(), pickle.loads(data))
-            # return OrderedDict({k: torch.tensor(v) for k, v in params_dict})
-            params_dict = pickle.loads(data)
-            return params_dict
+            loaded_data = pickle.loads(data)
+            params = loaded_data["params"]
+            additional_info = loaded_data["additional_info"]
+            return params, additional_info
         except Exception as e:
             raise DecodingParamsError("Error decoding parameters") from e
 
@@ -119,26 +123,29 @@ class P2PFLModel:
         """
         raise NotImplementedError
 
-    def add_info(self, key: str, value: str) -> None:
+    def add_info(self, callback: str, info: Any) -> None:
         """
         Add additional information to the learner state.
 
         Args:
-            key: The key of the information.
-            value: The value of the information.
+            callback: The callback to add the information
+            info: The information for the callback.
 
         """
-        self.additional_info[key] = value
+        self.additional_info[callback] = info
 
-    def get_info(self, key: str) -> str:
+    def get_info(self, callback: Optional[str] = None) -> Any:
         """
         Get additional information from the learner state.
 
         Args:
+            callback: The callback to add the information
             key: The key of the information.
 
         """
-        return self.additional_info[key]
+        if callback is None:
+            return self.additional_info
+        return self.additional_info[callback]
 
     def set_contribution(self, contributors: List[str], num_samples: int) -> None:
         """

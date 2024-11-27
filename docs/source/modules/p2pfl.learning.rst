@@ -21,5 +21,5 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   p2pfl.learning.exceptions
-   p2pfl.learning.learner
+   p2pfl.learning.frameworks.exceptions
+   p2pfl.learning.frameworks.learner

@@ -20,7 +20,7 @@
 
 from typing import Callable, List, Optional
 
-import tensorflow as tf
+import tensorflow as tf  # type: ignore
 from datasets import Dataset  # type: ignore
 
 from p2pfl.learning.dataset.p2pfl_dataset import DataExportStrategy

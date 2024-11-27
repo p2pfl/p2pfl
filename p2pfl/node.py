@@ -21,7 +21,7 @@ import contextlib
 import os
 import threading
 import traceback
-from typing import Any, Dict, Type
+from typing import Any, Dict, Optional, Type
 
 from p2pfl.communication.commands.message.metrics_command import MetricsCommand
 from p2pfl.communication.commands.message.model_initialized_command import ModelInitializedCommand
@@ -38,13 +38,13 @@ from p2pfl.communication.protocols.grpc.grpc_communication_protocol import (
     GrpcCommunicationProtocol,
 )
 from p2pfl.exceptions import LearnerRunningException, NodeRunningException, ZeroRoundsException
-from p2pfl.learning import try_init_learner_with_ray
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-from p2pfl.learning.learner import NodeLearner
-from p2pfl.learning.p2pfl_model import P2PFLModel
-from p2pfl.learning.pytorch.lightning_learner import LightningLearner
+from p2pfl.learning.frameworks.learner import Learner
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
+from p2pfl.learning.frameworks.simulation import try_init_learner_with_ray
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.workflows import LearningWorkflow
@@ -91,8 +91,8 @@ class Node:
         model: P2PFLModel,
         data: P2PFLDataset,
         address: str = "127.0.0.1",
-        learner: Type[NodeLearner] = LightningLearner,
-        aggregator: Type[Aggregator] = FedAvg,
+        learner: Type[Learner] = LightningLearner,
+        aggregator: Optional[Aggregator] = None,
         protocol: Type[CommunicationProtocol] = GrpcCommunicationProtocol,
         simulation: bool = False,
         **kwargs,
@@ -102,9 +102,11 @@ class Node:
         self._communication_protocol = protocol(address)
         self.addr = self._communication_protocol.get_address()
 
+        # Callbacks
+        self.aggregator = FedAvg() if aggregator is None else aggregator
+
         # Learning
-        self.learner = try_init_learner_with_ray(learner, model, data, self.addr)
-        self.aggregator = aggregator(node_name=self.addr)
+        self.learner = try_init_learner_with_ray(learner, model, data, self.addr, self.aggregator)
 
         # State
         self.__running = False
@@ -252,7 +254,7 @@ class Node:
     #    Learning Setters    #
     ##########################
 
-    def set_learner(self, learner: NodeLearner) -> None:
+    def set_learner(self, learner: Learner) -> None:
         """
         Set the learner to be used in the learning process.
 

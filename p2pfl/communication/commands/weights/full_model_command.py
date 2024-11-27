@@ -22,8 +22,8 @@ from typing import Callable, Optional
 
 from p2pfl.communication.commands.command import Command
 from p2pfl.learning.aggregators.aggregator import Aggregator
-from p2pfl.learning.exceptions import DecodingParamsError, ModelNotMatchingError
-from p2pfl.learning.learner import NodeLearner
+from p2pfl.learning.frameworks.exceptions import DecodingParamsError, ModelNotMatchingError
+from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 
@@ -31,7 +31,7 @@ from p2pfl.node_state import NodeState
 class FullModelCommand(Command):
     """FullModelCommand."""
 
-    def __init__(self, state: NodeState, stop: Callable[[], None], aggregator: Aggregator, learner: NodeLearner) -> None:
+    def __init__(self, state: NodeState, stop: Callable[[], None], aggregator: Aggregator, learner: Learner) -> None:
         """Initialize FullModelCommand."""
         self.state = state
         self.stop = stop
