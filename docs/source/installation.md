@@ -5,14 +5,14 @@ The fastest way to start using the library is with **GitHub Codespaces**. It pro
 
 To use GitHub Codespaces:
 
-  1. Click on [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/p2pfl/p2pfl/tree/develop?quickstart=1)
+  1. Click on&nbsp;: <br/> &nbsp;[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/p2pfl/p2pfl/tree/develop?quickstart=1)
   2. Create a new Codespace or open an existing one.
   3. Once the environment is ready, the library and its dependencies will already be set up.
 
 Alternatively:
 
 1. Navigate to the [p2pfl](https://github.com/p2pfl/p2pfl) repository.
-2. Click on the green `<> Code` button, then select `Open with Codespaces`.
+2. Click on the green `<> Code` button, then select the codespaces tab.
 3. Create a new Codespace or open an existing one.
 4. Once the environment is ready, the library and its dependencies will already be set up.
 
