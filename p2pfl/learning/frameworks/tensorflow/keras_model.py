@@ -18,17 +18,16 @@
 
 """Keras model abstraction for P2PFL."""
 
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
-import tensorflow as tf
-from tensorflow.keras.layers import Dense, Flatten
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
-from tensorflow.keras.metrics import SparseCategoricalAccuracy
-from tensorflow.keras.optimizers import Adam
+import tensorflow as tf  # type: ignore
+from tensorflow.keras.layers import Dense, Flatten  # type: ignore
+from tensorflow.keras.losses import SparseCategoricalCrossentropy  # type: ignore
+from tensorflow.keras.optimizers import Adam  # type: ignore
 
-from p2pfl.learning.exceptions import ModelNotMatchingError
-from p2pfl.learning.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 
 #####################
 #    KerasModel     #
@@ -60,7 +59,7 @@ class KerasModel(P2PFLModel):
         params: Optional[Union[List[np.ndarray], bytes]] = None,
         num_samples: Optional[int] = None,
         contributors: Optional[List[str]] = None,
-        additional_info: Optional[Dict[str, str]] = None,
+        additional_info: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Initialize the KerasModel."""
         super().__init__(model, params, num_samples, contributors, additional_info)
@@ -93,7 +92,8 @@ class KerasModel(P2PFLModel):
 
         """
         if isinstance(params, bytes):
-            params = self.decode_parameters(params)
+            params, additional_info = self.decode_parameters(params)
+            self.additional_info.update(additional_info)
 
         # Set weights layer by layer
         try:
@@ -135,9 +135,8 @@ class MLP(tf.keras.Model):
         self.output_layer = Dense(out_channels)
 
         # Define loss, optimizer, and metrics
-        self.loss_fn = SparseCategoricalCrossentropy(from_logits=True)
+        self.loss = SparseCategoricalCrossentropy(from_logits=True)
         self.optimizer = Adam(learning_rate=lr_rate)
-        self.metric = SparseCategoricalAccuracy()
 
     def call(self, inputs):
         """Forward pass of the MLP."""

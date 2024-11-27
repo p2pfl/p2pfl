@@ -18,21 +18,22 @@
 
 """Keras learner for P2PFL."""
 
-from typing import Dict, List, Tuple, Union
+from typing import Dict, Optional, Tuple
 
-import numpy as np
-import tensorflow as tf
+import tensorflow as tf  # type: ignore
 
+from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-from p2pfl.learning.learner import NodeLearner
-from p2pfl.learning.p2pfl_model import P2PFLModel
-from p2pfl.learning.tensorflow.keras_dataset import KerasExportStrategy
-from p2pfl.learning.tensorflow.keras_logger import FederatedLogger
-from p2pfl.learning.tensorflow.keras_model import KerasModel
+from p2pfl.learning.frameworks import Framework
+from p2pfl.learning.frameworks.learner import Learner
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.tensorflow.callbacks.keras_logger import FederatedLogger
+from p2pfl.learning.frameworks.tensorflow.keras_dataset import KerasExportStrategy
+from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel
 from p2pfl.management.logger import logger
 
 
-class KerasLearner(NodeLearner):
+class KerasLearner(Learner):
     """
     Learner for TensorFlow/Keras models in P2PFL.
 
@@ -43,68 +44,17 @@ class KerasLearner(NodeLearner):
 
     """
 
-    def __init__(self, model: KerasModel, data: P2PFLDataset, self_addr: str = "unknown-node") -> None:
+    def __init__(
+        self, model: KerasModel, data: P2PFLDataset, self_addr: str = "unknown-node", aggregator: Optional[Aggregator] = None
+    ) -> None:
         """Initialize the KerasLearner."""
-        self.model = model
-        self.data = data
-        self.__self_addr = self_addr
-        self.epochs = 1  # Default epochs
-
-        # Compile the model (you might need to customize this)
-        self.model.model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
-
-    def set_model(self, model: Union[P2PFLModel, List[np.ndarray], bytes]) -> None:
-        """
-        Set the model of the learner.
-
-        Args:
-            model: The model of the learner.
-
-        """
-        if isinstance(model, KerasModel):
-            self.model = model
-        elif isinstance(model, (list, bytes)):
-            self.model.set_parameters(model)
-
-    def get_model(self) -> KerasModel:
-        """
-        Get the model of the learner.
-
-        Returns:
-            The model of the learner.
-
-        """
-        return self.model
-
-    def set_data(self, data: P2PFLDataset) -> None:
-        """
-        Set the data of the learner.
-
-        Args:
-            data: The data of the learner.
-
-        """
-        self.data = data
-
-    def get_data(self) -> P2PFLDataset:
-        """
-        Get the data of the learner.
-
-        Returns:
-            The data of the learner.
-
-        """
-        return self.data
-
-    def set_epochs(self, epochs: int) -> None:
-        """
-        Set the number of epochs.
-
-        Args:
-            epochs: The number of epochs.
-
-        """
-        self.epochs = epochs
+        super().__init__(model, data, self_addr, aggregator)
+        self.callbacks.append(FederatedLogger(self_addr))
+        self.model.model.compile(
+            optimizer=self.model.model.optimizer,
+            loss=self.model.model.loss,
+            metrics=["sparse_categorical_accuracy"],
+        )
 
     def __get_tf_model_data(self, train: bool = True) -> Tuple[tf.keras.Model, tf.data.Dataset]:
         # Get Model
@@ -125,21 +75,25 @@ class KerasLearner(NodeLearner):
                 model.fit(
                     data,
                     epochs=self.epochs,
-                    callbacks=[FederatedLogger(self.__self_addr)],
+                    callbacks=self.callbacks,  # type: ignore
                 )
+
             # Set model contribution
-            self.model.set_contribution([self.__self_addr], self.data.get_num_samples(train=True))
+            self.model.set_contribution([self._self_addr], self.data.get_num_samples(train=True))
+
+            # Set callback info
+            self.add_callback_info_to_model()
 
             return self.model
         except Exception as e:
-            logger.error(self.__self_addr, f"Error in training with Keras: {e}")
+            logger.error(self._self_addr, f"Error in training with Keras: {e}")
             raise e
 
     def interrupt_fit(self) -> None:
         """Interrupt the training process."""
         # Keras doesn't have a direct way to interrupt fit.
         # Need to implement a custom callback or use a flag to stop training.
-        logger.error(self.__self_addr, "Interrupting training (not fully implemented for Keras).")
+        logger.error(self._self_addr, "Interrupting training (not fully implemented for Keras).")
 
     def evaluate(self) -> Dict[str, float]:
         """Evaluate the Keras model."""
@@ -151,10 +105,20 @@ class KerasLearner(NodeLearner):
                     results = [results]
                 results_dict = dict(zip(model.metrics_names, results))
                 for k, v in results_dict.items():
-                    logger.log_metric(self.__self_addr, k, v)
+                    logger.log_metric(self._self_addr, k, v)
                 return results_dict
             else:
                 return {}
         except Exception as e:
-            logger.error(self.__self_addr, f"Evaluation error with Keras: {e}")
+            logger.error(self._self_addr, f"Evaluation error with Keras: {e}")
             raise e
+
+    def get_framework(self) -> str:
+        """
+        Retrieve the learner name.
+
+        Returns:
+            The name of the learner class.
+
+        """
+        return Framework.TENSORFLOW.value

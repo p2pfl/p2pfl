@@ -22,13 +22,14 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from p2pfl.learning.simulation.actor_pool import SuperActorPool
+from p2pfl.learning.frameworks.simulation.actor_pool import SuperActorPool
 
 
 @pytest.fixture(autouse=True)
 def reset_singletons():
     """Reset the singleton instance of the SuperActorPool class."""
     SuperActorPool._instance = None
+
 
 def test_super_actor_pool_initialization():
     """Test the initialization of the SuperActorPool class."""
@@ -42,10 +43,11 @@ def test_super_actor_pool_singleton():
     pool2 = SuperActorPool(resources={"num_cpus": 2})
     assert pool1 is pool2
 
+
 def test_create_actor_with_correct_resources():
     """Test the create_actor method of the SuperActorPool class with the correct."""
     pool = SuperActorPool(resources={"num_cpus": 2})
-    with patch("p2pfl.learning.simulation.actor_pool.VirtualLearnerActor.options") as mock_options:
+    with patch("p2pfl.learning.frameworks.simulation.actor_pool.VirtualLearnerActor.options") as mock_options:
         mock_options.return_value.remote.return_value = MagicMock()
         actor = pool.create_actor()
         time.sleep(1)  # due to remotes
@@ -148,7 +150,7 @@ def test_check_actor_fits_in_pool():
     """
     pool = SuperActorPool(resources={"num_cpus": 2})
     pool.num_actors = 10
-    with patch("p2pfl.learning.simulation.utils.pool_size_from_resources", return_value=5):
+    with patch("p2pfl.learning.frameworks.simulation.utils.pool_size_from_resources", return_value=5):
         result = pool._check_actor_fits_in_pool()
     assert result is False
 

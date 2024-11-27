@@ -26,14 +26,15 @@ import tensorflow as tf
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
-from p2pfl.learning.flax.flax_learner import FlaxLearner
-from p2pfl.learning.flax.flax_model import MLP as MLP_FLAX
-from p2pfl.learning.flax.flax_model import FlaxModel
-from p2pfl.learning.pytorch.lightning_learner import LightningLearner
-from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
-from p2pfl.learning.tensorflow.keras_learner import KerasLearner
-from p2pfl.learning.tensorflow.keras_model import MLP as MLP_KERAS
-from p2pfl.learning.tensorflow.keras_model import KerasModel
+from p2pfl.learning.frameworks.flax.flax_learner import FlaxLearner
+from p2pfl.learning.frameworks.flax.flax_model import MLP as MLP_FLAX
+from p2pfl.learning.frameworks.flax.flax_model import FlaxModel
+from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
+from p2pfl.learning.frameworks.pytorch.lightning_model import MLP, LightningModel
+from p2pfl.learning.frameworks.tensorflow.keras_learner import KerasLearner
+from p2pfl.learning.frameworks.tensorflow.keras_model import MLP as MLP_KERAS
+from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel
+from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.utils.utils import (
     check_equal_models,
@@ -42,7 +43,7 @@ from p2pfl.utils.utils import (
     wait_to_finish,
 )
 
-set_test_settings()
+set_test_settings(disable_ray=True)
 
 
 @pytest.fixture
@@ -65,15 +66,20 @@ def two_nodes():
 ########################
 
 
-@pytest.mark.parametrize("x", [(2, 1), (2, 2), (6, 3)])
+# TODO: Add more frameworks and aggregators
+@pytest.mark.parametrize("x", [(2, 2), (6, 3)])
 def test_convergence(x):
     """Test convergence (on learning) of two nodes."""
     n, r = x
 
+    # Data
+    data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
+    partitions = data.generate_partitions(n * 50, RandomIIDPartitionStrategy)
+
     # Node Creation
     nodes = []
-    for _ in range(n):
-        node = Node(LightningModel(MLP()), P2PFLDataset.from_huggingface("p2pfl/MNIST"))
+    for i in range(n):
+        node = Node(LightningModel(MLP()), partitions[i])
         node.start()
         nodes.append(node)
 
@@ -84,7 +90,7 @@ def test_convergence(x):
     wait_convergence(nodes, n - 1, only_direct=False)
 
     # Start Learning
-    nodes[0].set_start_learning(rounds=r, epochs=0)
+    nodes[0].set_start_learning(rounds=r, epochs=1)
 
     # Wait
     wait_to_finish(nodes)
@@ -108,6 +114,13 @@ def test_convergence(x):
                     assert st == gt
 
     check_equal_models(nodes)
+
+    # Get accuracies
+    accuracies = [metrics["test_metric"] for metrics in list(logger.get_global_logs().values())[0].values()]
+    # Get last round accuracies
+    last_round_accuracies = [acc for node_acc in accuracies for r, acc in node_acc if r == 1]
+    # Assert that the accuracies are higher than 0.5
+    assert all(acc > 0.5 for acc in last_round_accuracies)
 
     # Stop Nodes
     [n.stop() for n in nodes]

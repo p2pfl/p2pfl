@@ -24,8 +24,8 @@ import numpy as np
 import pytest
 
 from p2pfl.learning.aggregators.fedavg import FedAvg
-from p2pfl.learning.p2pfl_model import P2PFLModel
-from p2pfl.learning.pytorch.lightning_model import MLP, LightningModel
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.pytorch.lightning_model import MLP, LightningModel
 
 
 class P2PFLModelMock(P2PFLModel):
@@ -133,7 +133,7 @@ def test_aggregator_lifecycle():
     aggregator.add_model(model23)
 
     # Get partial aggregation
-    partial_model = aggregator.get_partial_aggregation(["node2", "node3"])
+    partial_model = aggregator.get_model(["node2", "node3"])
     assert all((partial_model.get_parameters()[i] == model1.get_parameters()[i]).all() for i in range(len(partial_model.get_parameters())))
 
     # Check if the model was added

@@ -22,7 +22,7 @@ from typing import Any, List, Optional, Type, Union
 from p2pfl.communication.commands.weights.full_model_command import FullModelCommand
 from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
-from p2pfl.learning.learner import NodeLearner
+from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.stage import Stage, check_early_stop
@@ -42,7 +42,7 @@ class GossipModelStage(Stage):
         state: Optional[NodeState] = None,
         communication_protocol: Optional[CommunicationProtocol] = None,
         aggregator: Optional[Aggregator] = None,
-        learner: Optional[NodeLearner] = None,
+        learner: Optional[Learner] = None,
         **kwargs,
     ) -> Union[Type["Stage"], None]:
         """Execute the stage."""
@@ -56,7 +56,7 @@ class GossipModelStage(Stage):
     def __gossip_model_difusion(
         state: NodeState,
         communication_protocol: CommunicationProtocol,
-        learner: NodeLearner,
+        learner: Learner,
     ) -> None:
         logger.info(state.addr, "🗣️ Gossiping aggregated model.")
         fixed_round = state.round

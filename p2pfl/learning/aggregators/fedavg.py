@@ -23,7 +23,7 @@ from typing import List
 import numpy as np
 
 from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
-from p2pfl.learning.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 
 
 class FedAvg(Aggregator):
@@ -32,6 +32,11 @@ class FedAvg(Aggregator):
 
     Paper: https://arxiv.org/abs/1602.05629.
     """
+
+    def __init__(self, node_name: str = "unknown") -> None:
+        """Initialize the aggregator."""
+        super().__init__(node_name)
+        self.partial_aggregation = True
 
     def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
         """

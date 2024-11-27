@@ -34,7 +34,7 @@ class NodeState:
         round(int): The current round.
         total_rounds(int): The total rounds of the experiment.
         simulation(bool): If the node is a simulation.
-        learner(NodeLearner): The learner of the node.
+        learner(Learner): The learner of the node.
         models_aggregated(Dict[str, List[str]]): The models aggregated by the node.
         nei_status(Dict[str, int]): The status of the neighbors.
         train_set(List[str]): The train set of the node.

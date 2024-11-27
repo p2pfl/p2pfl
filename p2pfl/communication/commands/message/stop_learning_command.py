@@ -22,7 +22,7 @@ import contextlib
 
 from p2pfl.communication.commands.command import Command
 from p2pfl.learning.aggregators.aggregator import Aggregator
-from p2pfl.learning.learner import NodeLearner
+from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 
@@ -30,7 +30,7 @@ from p2pfl.node_state import NodeState
 class StopLearningCommand(Command):
     """StopLearning command."""
 
-    def __init__(self, state: NodeState, aggregator: Aggregator, learner: NodeLearner) -> None:
+    def __init__(self, state: NodeState, aggregator: Aggregator, learner: Learner) -> None:
         """Initialize the command."""
         self.state = state
         self.aggregator = aggregator

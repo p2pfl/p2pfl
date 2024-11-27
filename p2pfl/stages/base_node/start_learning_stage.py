@@ -24,7 +24,7 @@ from p2pfl.communication.commands.message.model_initialized_command import Model
 from p2pfl.communication.commands.weights.init_model_command import InitModelCommand
 from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
-from p2pfl.learning.learner import NodeLearner
+from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.settings import Settings
@@ -45,7 +45,7 @@ class StartLearningStage(Stage):
         rounds: Optional[int] = None,
         epochs: Optional[int] = None,
         state: Optional[NodeState] = None,
-        learner: Optional[NodeLearner] = None,
+        learner: Optional[Learner] = None,
         communication_protocol: Optional[CommunicationProtocol] = None,
         aggregator: Optional[Aggregator] = None,
         **kwargs,
@@ -82,7 +82,7 @@ class StartLearningStage(Stage):
     def __gossip_model(
         state: NodeState,
         communication_protocol: CommunicationProtocol,
-        learner: NodeLearner,
+        learner: Learner,
     ) -> None:
         def early_stopping_fn():
             return state.round is None

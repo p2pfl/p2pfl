@@ -18,15 +18,15 @@
 
 """Convolutional Neural Network (for MNIST) with PyTorch Lightning."""
 
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import lightning as L
 import numpy as np
 import torch
 from torchmetrics import Accuracy, Metric
 
-from p2pfl.learning.exceptions import ModelNotMatchingError
-from p2pfl.learning.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 
 #########################
 #    LightningModel     #
@@ -42,7 +42,7 @@ class LightningModel(P2PFLModel):
         params: The parameters of the model.
         num_samples: The number of samples.
         contributors: The contributors of the model.
-        aditional_info: Additional information.
+        additional_info: Additional information.
 
     """
 
@@ -52,10 +52,10 @@ class LightningModel(P2PFLModel):
         params: Optional[Union[List[np.ndarray], bytes]] = None,
         num_samples: Optional[int] = None,
         contributors: Optional[List[str]] = None,
-        aditional_info: Optional[Dict[str, str]] = None,
+        additional_info: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Initialize the model."""
-        super().__init__(model, params, num_samples, contributors, aditional_info)
+        super().__init__(model, params, num_samples, contributors, additional_info)
 
     def get_parameters(self) -> List[np.ndarray]:
         """
@@ -80,7 +80,8 @@ class LightningModel(P2PFLModel):
         """
         # Decode parameters
         if isinstance(params, bytes):
-            params = self.decode_parameters(params)
+            params, additional_info = self.decode_parameters(params)
+            self.additional_info.update(additional_info)
 
         # Build state_dict
         state_dict = self.model.state_dict()
