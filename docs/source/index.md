@@ -1,6 +1,6 @@
 # P2P Federated Learning
 
-P2PFL is a general-purpose open-source library for the execution (simulated and in real environments) of Decentralized Federated Learning systems, specifically making use of P2P networks and the Gossisp protocol.
+P2PFL is a decentralized federated learning library that enables federated learning on peer-to-peer networks using gossip protocols, making collaborative AI model training possible without reliance on central servers.
 
 ## 📥 Installation
 
@@ -9,6 +9,10 @@ See [Installation](installation.md) for instructions on how to install P2PFL.
 ## 🎬 Quickstart
 
 See [Quickstart](quickstart.md) for a quick introduction to P2PFL.
+
+## 📖 Manual
+
+See [Manual](manual.md) for a detailed explanation of P2PFL options.
 
 ## 🌐 P2PFL Web Services
 
