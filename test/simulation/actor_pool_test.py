@@ -30,6 +30,7 @@ def reset_singletons():
     """Reset the singleton instance of the SuperActorPool class."""
     SuperActorPool._instance = None
 
+
 def test_super_actor_pool_initialization():
     """Test the initialization of the SuperActorPool class."""
     pool = SuperActorPool(resources={"num_cpus": 2})
@@ -41,6 +42,7 @@ def test_super_actor_pool_singleton():
     pool1 = SuperActorPool(resources={"num_cpus": 2})
     pool2 = SuperActorPool(resources={"num_cpus": 2})
     assert pool1 is pool2
+
 
 def test_create_actor_with_correct_resources():
     """Test the create_actor method of the SuperActorPool class with the correct."""
