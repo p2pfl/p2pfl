@@ -166,6 +166,9 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
     distribution of classes in each partition follows a Dirichlet distribution,
     where alpha determines the concentration of the distribution.
 
+    Inspired by the implementation of flower. Thank you so much for taking FL to another level :)
+    Original implementation: https://github.com/adap/flower/blob/main/datasets/flwr_datasets/partitioner/dirichlet_partitioner.py
+
     """
 
     @staticmethod
@@ -275,7 +278,7 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
 
             for class_label in class_proportions:
                 division_proportions = cls._adapt_class_division_proportions(
-                    class_division_proportions=random_generator.dirichlet(alpha), active_partitions=active_partitions
+                    class_division_proportions=list(random_generator.dirichlet(alpha)), active_partitions=active_partitions
                 )
                 result[class_label] = division_proportions
 
@@ -294,9 +297,20 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
         cls,
         index_list: list[int],
         proportions: pd.Series,
+        generator: np.random.Generator,
     ):
-        cut_points = (proportions.cumsum()[:-1] * len(index_list)).round().astype(int)
-        return np.split(index_list, cut_points)
+        """
+        Use the proportions to get the list of indexes for each partition.
+
+        Args:
+            index_list: The list of indexes to partition.
+            proportions: The proportions of the Dirichlet distribution.
+            generator: The random number generator to shuffle the indexes.
+
+        """
+        right_sides = (proportions.cumsum() * len(index_list)).round().astype(int)
+        generator.shuffle(index_list)
+        return [index_list[: right_sides[0]]] + [index_list[right_sides[i - 1] : right_sides[i]] for i in range(1, len(right_sides))]
 
     @classmethod
     def _partition_data(
@@ -339,7 +353,7 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
 
         for label in class_proportions:
             label_index = [idx for idx, lab in enumerate(data[label_tag]) if lab == label]
-            for partition, index_list in enumerate(cls._apply_proportions(label_index, proportions[label])):
+            for partition, index_list in enumerate(cls._apply_proportions(label_index, proportions[label], random_generator)):
                 result[partition].extend(index_list)
 
         return result

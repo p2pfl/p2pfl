@@ -83,27 +83,33 @@ def test_export_without_split_partition():
         dataset.export(None)
 
 
-def test_generate_partitions(mnist_dataset):
+@pytest.mark.parametrize(
+    "strategy",
+    [
+        DirichletPartitionStrategy,
+        RandomIIDPartitionStrategy,
+    ],
+)
+def test_generate_partitions(mnist_dataset, strategy):
     """Test the generation of partitions."""
-    for strategy in [DirichletPartitionStrategy, RandomIIDPartitionStrategy]:
-        num_partitions = 3
-        partitions = mnist_dataset.generate_partitions(num_partitions=num_partitions, strategy=strategy)
+    num_partitions = 3
+    partitions = mnist_dataset.generate_partitions(num_partitions=num_partitions, strategy=strategy)
 
-        # check
-        assert len(partitions) == 3
+    # check
+    assert len(partitions) == 3
 
-        train_size = mnist_dataset.get_num_samples(train=True)
-        test_size = mnist_dataset.get_num_samples(train=False)
+    train_size = mnist_dataset.get_num_samples(train=True)
+    test_size = mnist_dataset.get_num_samples(train=False)
 
-        # Check that all the indexes are unique and that they are all in the dataset
-        partitions_train_samples = sum([partition.get_num_samples(train=True) for partition in partitions])
-        partitions_test_samples = sum([partition.get_num_samples(train=False) for partition in partitions])
-        assert partitions_train_samples == train_size
-        assert partitions_test_samples == test_size
+    # Check that all the indexes are unique and that they are all in the dataset
+    partitions_train_samples = sum([partition.get_num_samples(train=True) for partition in partitions])
+    partitions_test_samples = sum([partition.get_num_samples(train=False) for partition in partitions])
+    assert partitions_train_samples == train_size
+    assert partitions_test_samples == test_size
 
-        # Check item
-        item = partitions[0].get(0, train=True)
-        __test_mnist_sample(item)
+    # Check item
+    item = partitions[0].get(0, train=True)
+    __test_mnist_sample(item)
 
 
 @pytest.mark.parametrize(
