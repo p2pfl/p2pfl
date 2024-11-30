@@ -5457,7 +5457,7 @@ urllib3 = ">=2"
 name = "types-tensorflow"
 version = "2.18.0.20241128"
 description = "Typing stubs for tensorflow"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "types_tensorflow-2.18.0.20241128-py3-none-any.whl", hash = "sha256:00951bdeba6f69e01c81052d443d4cfe8c765e8e538deab362d08e4daee35b5f"},
@@ -5928,4 +5928,4 @@ torch = ["lightning", "torch", "torchmetrics", "torchvision"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "e1daf0c8f5e56e479d646442ba2a901251aa329f7adead2ef4c164f2ccfca984"
+content-hash = "1f251b61db6b9fed8a893398f9ac5ee6e300e554ca8d0c5742cf518536ed9eef"
