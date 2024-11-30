@@ -101,6 +101,7 @@ def __parse_args() -> argparse.Namespace:
     parser.add_argument("--profiling", action="store_true", help="Enable profiling.", default=False)
     parser.add_argument("--reduced_dataset", action="store_true", help="Use a reduced dataset just for testing.", default=False)
     parser.add_argument("--use_scaffold", action="store_true", help="Use the Scaffold aggregator.", default=False)
+    parser.add_argument("--disable_ray", action="store_true", help="Disable Ray.", default=False)
     parser.add_argument(
         "--topology",
         type=str,
