@@ -95,7 +95,7 @@ def test_aggregate_with_valid_models() -> None:
         params=[np.array([1.0, 2.0]), np.array([3.0, 4.0])],
         num_samples=10,
         additional_info={
-        "scaffold": {
+            "scaffold": {
                 "delta_y_i": [np.array([0.1, 0.2]), np.array([0.3, 0.4])],
                 "delta_c_i": [np.array([0.01, 0.02]), np.array([0.03, 0.04])],
             }

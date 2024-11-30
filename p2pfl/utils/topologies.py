@@ -19,81 +19,75 @@
 """Network topologies for the p2pfl package."""
 
 import time
+from enum import Enum
 from typing import List
+
+import numpy as np
 
 from p2pfl.node import Node
 
 
-class BaseTopology:
-    """Base class for network topologies."""
+class TopologyType(Enum):
+    """Enumeration of supported network topologies."""
 
-    def __init__(self, nodes: List[Node]):
+    STAR = "star"
+    FULL = "full"
+    LINE = "line"
+    RING = "ring"
+
+
+class TopologyFactory:
+    """Factory class for generating network topologies."""
+
+    @staticmethod
+    def generate_matrix(topology_type: TopologyType, num_nodes: int) -> np.ndarray:
         """
-        Initialize the network topology.
+        Generate the adjacency matrix for the specified topology.
 
         Args:
-            nodes: List of nodes in the network.
+            topology_type: The type of topology to generate.
+            num_nodes: The number of nodes in the network.
 
         """
-        self.nodes = nodes
-        self.connect()
+        if not isinstance(topology_type, TopologyType):
+            raise TypeError("topology_type must be a TopologyType enum member")
 
-    def connect(self):
+        matrix = np.zeros((num_nodes, num_nodes), dtype=int)  # Initialize as NumPy array
+
+        if topology_type == TopologyType.STAR:
+            matrix[0, 1:] = 1
+            matrix[1:, 0] = 1
+        elif topology_type == TopologyType.FULL:
+            matrix[:] = 1  # Set all to 1
+            np.fill_diagonal(matrix, 0)  # Set diagonal to 0
+        elif topology_type == TopologyType.LINE:
+            for i in range(num_nodes - 1):
+                matrix[i, i + 1] = 1
+                matrix[i + 1, i] = 1
+        elif topology_type == TopologyType.RING:
+            for i in range(num_nodes):
+                matrix[i, (i + 1) % num_nodes] = 1
+                matrix[(i + 1) % num_nodes, i] = 1
+
+        return matrix
+
+    @staticmethod
+    def connect_nodes(adjacency_matrix: np.ndarray, nodes: List[Node]):
         """
-        Generate the network topology.
-
-        Returns:
-            List of nodes in the network.
-
-        """
-        raise NotImplementedError
-
-class InLineTopology(BaseTopology):
-    """In-line network topology."""
-
-    def connect(self):
-        """Generate the in-line network topology."""
-        for i in range(len(self.nodes) - 1):
-            self.nodes[i + 1].connect(self.nodes[i].addr)
-            time.sleep(0.1)
-
-class RingTopology(BaseTopology):
-    """Ring network topology."""
-
-    def connect(self):
-        """Generate the ring network topology."""
-        for i in range(len(self.nodes)):
-            self.nodes[i].connect(self.nodes[(i + 1) % len(self.nodes)].addr)
-            time.sleep(0.1)
-
-class FullyConnectedTopology(BaseTopology):
-    """Fully connected network topology."""
-
-    def connect(self):
-        """Generate the fully connected network topology."""
-        for i in range(len(self.nodes)):
-            for j in range(i + 1, len(self.nodes)):
-                self.nodes[i].connect(self.nodes[j].addr)
-                time.sleep(0.1)
-
-class StarTopology(BaseTopology):
-    """Star network topology."""
-
-    def __init__(self, nodes, center_node_idx):
-        """
-        Generate the star network topology.
+        Connect nodes based on the adjacency matrix.
 
         Args:
-            nodes: List of nodes in the network.
-            center_node_idx: Index of the center node.
+            adjacency_matrix: The adjacency matrix of the network.
+            nodes: The list of nodes in the network.
 
         """
-        self.center_node = center_node_idx
-        super().__init__(nodes)
-
-    def connect(self):
-        """Generate the star network topology."""
-        for i in range(len(self.nodes)):
-            if i != self.center_node:
-                self.nodes[i].connect(self.nodes[self.center_node].addr)
-                time.sleep(0.1)
+        num_nodes = len(nodes)
+        for i in range(num_nodes):
+            for j in range(i + 1, num_nodes):
+                if adjacency_matrix[i, j] == 1:
+                    try:
+                        nodes[i].connect(nodes[j].addr)
+                        print(f"Connected nodes {i} and {j}")
+                        time.sleep(0.1)
+                    except Exception as e:
+                        print(f"Error connecting nodes {i} and {j}: {e}")

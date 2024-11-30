@@ -17,12 +17,14 @@
 #
 """Test the Ray Actor pool."""
 
+import contextlib
 import time
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from p2pfl.learning.frameworks.simulation.actor_pool import SuperActorPool
+with contextlib.suppress(ImportError):
+    from p2pfl.learning.frameworks.simulation.actor_pool import SuperActorPool
 
 
 @pytest.fixture(autouse=True)

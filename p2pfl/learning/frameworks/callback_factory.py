@@ -23,8 +23,6 @@ from typing import Dict, List, Type
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.frameworks import Framework
 from p2pfl.learning.frameworks.callback import P2PFLCallback
-from p2pfl.learning.frameworks.pytorch.callbacks.scaffold_callback import SCAFFOLDCallback as SCAFFOLDCallbackPT
-from p2pfl.learning.frameworks.tensorflow.callbacks.scaffold_callback import SCAFFOLDCallback as SCAFFOLDCallbackTF
 
 ###
 #   FACTORY
@@ -88,5 +86,16 @@ class CallbackFactory:
 #   REGISTER CALLBACKS
 ###
 
-CallbackFactory.register_callback(learner=Framework.PYTORCH.value, callback=SCAFFOLDCallbackPT)
-CallbackFactory.register_callback(learner=Framework.TENSORFLOW.value, callback=SCAFFOLDCallbackTF)
+try:
+    from p2pfl.learning.frameworks.pytorch.callbacks.scaffold_callback import SCAFFOLDCallback as SCAFFOLDCallbackPT
+
+    CallbackFactory.register_callback(learner=Framework.PYTORCH.value, callback=SCAFFOLDCallbackPT)
+except ImportError:
+    pass
+
+try:
+    from p2pfl.learning.frameworks.tensorflow.callbacks.scaffold_callback import SCAFFOLDCallback as SCAFFOLDCallbackTF
+
+    CallbackFactory.register_callback(learner=Framework.TENSORFLOW.value, callback=SCAFFOLDCallbackTF)
+except ImportError:
+    pass

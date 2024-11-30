@@ -17,13 +17,16 @@
 #
 """Virtual node tests."""
 
+import contextlib
 from unittest.mock import MagicMock, patch
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
-from p2pfl.learning.frameworks.simulation.actor_pool import SuperActorPool
-from p2pfl.learning.frameworks.simulation.virtual_learner import VirtualNodeLearner
+
+with contextlib.suppress(ImportError):
+    from p2pfl.learning.frameworks.simulation.actor_pool import SuperActorPool
+    from p2pfl.learning.frameworks.simulation.virtual_learner import VirtualNodeLearner
 
 
 def test_virtual_node_learner_initialization():

@@ -133,7 +133,7 @@ class P2PFLogger:
     def cleanup(self) -> None:
         """Cleanup the logger."""
         # Unregister nodes
-        for node in self._nodes:
+        for node in self._nodes.copy():
             self.unregister_node(node)
 
         # Remove handlers from the logger

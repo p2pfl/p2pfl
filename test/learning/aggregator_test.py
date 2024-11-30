@@ -17,6 +17,7 @@
 #
 """Learning tests."""
 
+import contextlib
 import time
 from typing import Any, Dict, List, Optional, Union
 
@@ -25,7 +26,10 @@ import pytest
 
 from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
-from p2pfl.learning.frameworks.pytorch.lightning_model import MLP, LightningModel
+
+# Import PyTorch models if available
+with contextlib.suppress(ImportError):
+    from p2pfl.learning.frameworks.pytorch.lightning_model import MLP, LightningModel
 
 
 class P2PFLModelMock(P2PFLModel):

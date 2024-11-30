@@ -43,11 +43,16 @@ from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
-from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
 from p2pfl.learning.frameworks.simulation import try_init_learner_with_ray
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.workflows import LearningWorkflow
+
+# Supress error if default learner is not available
+try:
+    from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
+except ImportError:
+    LightningLearner = None  # type: ignore
 
 # Disbalbe grpc log (pytorch causes warnings)
 if logger.get_level_name(logger.get_level()) != "DEBUG":

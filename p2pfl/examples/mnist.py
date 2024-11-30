@@ -37,7 +37,7 @@ from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.settings import Settings
-from p2pfl.utils.topologies import InLineTopology
+from p2pfl.utils.topologies import TopologyFactory, TopologyType
 from p2pfl.utils.utils import wait_convergence, wait_to_finish
 
 
@@ -101,6 +101,13 @@ def __parse_args() -> argparse.Namespace:
     parser.add_argument("--profiling", action="store_true", help="Enable profiling.", default=False)
     parser.add_argument("--reduced_dataset", action="store_true", help="Use a reduced dataset just for testing.", default=False)
     parser.add_argument("--use_scaffold", action="store_true", help="Use the Scaffold aggregator.", default=False)
+    parser.add_argument(
+        "--topology",
+        type=str,
+        choices=[t.value for t in TopologyType],
+        default="line",
+        help="The network topology (star, full, line, ring).",
+    )
     args = parser.parse_args()
 
     # check (cannot use the unix socket and the local protocol at the same time)
@@ -109,6 +116,9 @@ def __parse_args() -> argparse.Namespace:
     # check (cannot use TensorFlow and Flax at the same time)
     if args.tensorflow and args.flax:
         parser.error("Cannot use TensorFlow and Flax at the same time.")
+
+    # parse topology to TopologyType enum
+    args.topology = TopologyType(args.topology)
 
     return args
 
@@ -143,6 +153,7 @@ def mnist(
     use_tensorflow: bool = False,
     reduced_dataset: bool = False,
     use_scalffold: bool = False,
+    topology: TopologyType = TopologyType.LINE,
 ) -> None:
     """
     P2PFL MNIST experiment.
@@ -158,6 +169,7 @@ def mnist(
         use_tensorflow: Use TensorFlow.
         reduced_dataset: Use a reduced dataset just for testing.
         use_scalffold: Use the Scaffold aggregator.
+        topology: The network topology (star, full, line, ring).
 
     """
     if measure_time:
@@ -198,7 +210,8 @@ def mnist(
         nodes.append(node)
 
     try:
-        InLineTopology(nodes) # Node Connection
+        adjacency_matrix = TopologyFactory.generate_matrix(topology, len(nodes))
+        TopologyFactory.connect_nodes(adjacency_matrix, nodes)
 
         wait_convergence(nodes, n - 1, only_direct=False, wait=60)  # type: ignore
 
@@ -297,6 +310,7 @@ if __name__ == "__main__":
             reduced_dataset=args.reduced_dataset,
             use_tensorflow=args.tensorflow,
             use_scalffold=args.use_scaffold,
+            topology=args.topology,
         )
     finally:
         if args.profiling:
