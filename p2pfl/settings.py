@@ -47,6 +47,10 @@ class Settings:
     """
     Exclude heartbeat logs.
     """
+    DISABLE_RAY: bool = False
+    """
+    Disable Ray for debugging (even if installed).
+    """
 
     ######
     # HEARTBEAT

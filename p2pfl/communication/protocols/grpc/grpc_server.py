@@ -62,7 +62,14 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
         self.addr = addr
 
         # Server
-        self.__server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
+        maxMsgLength = 1024 * 1024 * 1024
+        self.__server = grpc.server(
+            futures.ThreadPoolExecutor(max_workers=2),
+            options=[
+                ("grpc.max_send_message_length", maxMsgLength),
+                ("grpc.max_receive_message_length", maxMsgLength),
+            ],
+        )
         self.__server_started = False
 
         # Gossiper
