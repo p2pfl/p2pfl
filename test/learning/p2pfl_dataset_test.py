@@ -17,11 +17,12 @@
 #
 """P2PFL dataset tests."""
 
+import numpy as np
 import pytest
 from datasets import DatasetDict, load_dataset  # type: ignore
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
+from p2pfl.learning.dataset.partition_strategies import DirichletPartitionStrategy, RandomIIDPartitionStrategy
 
 
 @pytest.fixture
@@ -82,9 +83,15 @@ def test_export_without_split_partition():
         dataset.export(None)
 
 
-def test_generate_partitions(mnist_dataset):
+@pytest.mark.parametrize(
+    "strategy",
+    [
+        DirichletPartitionStrategy,
+        RandomIIDPartitionStrategy,
+    ],
+)
+def test_generate_partitions(mnist_dataset, strategy):
     """Test the generation of partitions."""
-    strategy = RandomIIDPartitionStrategy
     num_partitions = 3
     partitions = mnist_dataset.generate_partitions(num_partitions=num_partitions, strategy=strategy)
 
@@ -103,3 +110,45 @@ def test_generate_partitions(mnist_dataset):
     # Check item
     item = partitions[0].get(0, train=True)
     __test_mnist_sample(item)
+
+
+@pytest.mark.parametrize(
+    "num_partitions, class_proportions, min_partition_proportion, alpha, balancing, expected_A, expected_B",
+    [
+        (3, {"A": 0.9, "B": 0.1}, 0.05, [1, 1, 3], True, [0.2, 0.2, 0.6], [0.5, 0.5, 0.0]),
+        (3, {"A": 0.9, "B": 0.1}, 0.05, [1, 1, 3], False, [0.2, 0.2, 0.6], [0.2, 0.2, 0.6]),
+        (3, {"A": 0.5, "B": 0.5}, 0.05, [1, 1, 3], True, [0.2, 0.2, 0.6], [0.2, 0.2, 0.6]),
+        (3, {"A": 0.5, "B": 0.5}, 0.1, [0.09, 0.5, 0.41], False, None, None),
+    ],
+)
+def test_dirichlet_generate_proportions(
+    num_partitions, class_proportions, min_partition_proportion, alpha, balancing, expected_A, expected_B
+):
+    """Test to check proportions of dirichlet sampling."""
+    random_generator = np.random.default_rng(seed=1)
+    M = 10**10
+    alpha = [a * M for a in alpha]
+
+    if expected_A is None:
+        with pytest.raises(ValueError):
+            DirichletPartitionStrategy._generate_proportions(
+                num_partitions=num_partitions,
+                class_proportions=class_proportions,
+                min_partition_proportion=min_partition_proportion,
+                alpha=alpha,
+                random_generator=random_generator,
+                balancing=balancing,
+            )
+        return
+
+    result = DirichletPartitionStrategy._generate_proportions(
+        num_partitions=num_partitions,
+        class_proportions=class_proportions,
+        min_partition_proportion=min_partition_proportion,
+        alpha=alpha,
+        random_generator=random_generator,
+        balancing=balancing,
+    )
+
+    assert np.isclose(result["A"].to_list(), expected_A, rtol=1e-3).all()
+    assert np.isclose(result["B"].to_list(), expected_B, rtol=1e-3).all()

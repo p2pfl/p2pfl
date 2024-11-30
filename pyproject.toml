@@ -25,10 +25,8 @@ typer = "^0.12.3"
 ray = {extras = ["default"], version = "^2.35.0", optional = true}
 tensorflow = {version = "^2.18.0", optional = true}
 keras = {version = "^3.5.0", optional = true}
-types-tensorflow = {version = "^2.17.0.20240820", optional = true}
 datasets = "2.15.0"
-flax = "^0.10.0"
-
+flax = {version = "^0.10.0", optional = true}
 pandas = "^2.2.3"
 tqdm = "^4.67.0"
 types-tqdm = "^4.67.0.20241119"
@@ -36,6 +34,7 @@ types-tqdm = "^4.67.0.20241119"
 torch = ["torch", "torchvision", "torchmetrics", "lightning"]
 tensorflow = ["tensorflow", "keras", "types-tensorflow"]
 ray = ["ray"]
+flax = ["flax"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
@@ -46,6 +45,8 @@ mypy-protobuf = "^3.5.0"
 types-protobuf = "^5.27.0.20240626"
 types-requests = "^2.32.0.20240712"
 ipykernel = "^6.29.5"
+pandas-stubs = "^2.2.3.241126"
+types-tensorflow = {version = "^2.17.0.20240820", optional = true}
 
 [tool.poetry.group.docs.dependencies]
 Sphinx = "^7.2.6"
