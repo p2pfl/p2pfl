@@ -63,7 +63,6 @@ class ScaffoldOptimizerWrapper(Optimizer):
         return getattr(self._optimizer, name)
 
 
-
 class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
     """
     Callback for SCAFFOLD operations to use with TensorFlow Keras.

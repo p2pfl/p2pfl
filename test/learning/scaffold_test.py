@@ -76,72 +76,49 @@ class MockP2PFLModel(P2PFLModel):
         """Return the contributors."""
         return self._contributors
 
+
 def test_scaffold_correct_aggregation():
     """Test if scaffold aggregates delta_y_i and delta_c_i correctly."""
     aggr = Scaffold(node_name="node1", global_lr=0.1)
 
     # Initial params and mock models
-    initial_global_model_params = [
-        np.array([0.0, 0.0]),
-        np.array([0.0, 0.0])
-    ]
+    initial_global_model_params = [np.array([0.0, 0.0]), np.array([0.0, 0.0])]
     aggr.global_model_params = copy.deepcopy(initial_global_model_params)
-    aggr.c = [
-        np.array([0.0, 0.0]),
-        np.array([0.0, 0.0])
-    ]
+    aggr.c = [np.array([0.0, 0.0]), np.array([0.0, 0.0])]
 
     model1 = MockP2PFLModel(
-        params=[
-            np.array([1.0, 1.0]),
-            np.array([1.0, 1.0])
-        ],
+        params=[np.array([1.0, 1.0]), np.array([1.0, 1.0])],
         num_samples=10,
         additional_info={
             "scaffold": {
-                "delta_y_i": [
-                    np.array([1.0, 1.0]),
-                    np.array([1.0, 1.0])
-                ],
-                "delta_c_i": [
-                    np.array([1.0, 1.0]),
-                    np.array([1.0, 1.0])
-                ]
+                "delta_y_i": [np.array([1.0, 1.0]), np.array([1.0, 1.0])],
+                "delta_c_i": [np.array([1.0, 1.0]), np.array([1.0, 1.0])],
             }
         },
-        contributors=["client1"]
+        contributors=["client1"],
     )
 
     model2 = MockP2PFLModel(
-        params=[
-            np.array([2.0, 2.0]),
-            np.array([2.0, 2.0])
-        ],
+        params=[np.array([2.0, 2.0]), np.array([2.0, 2.0])],
         num_samples=20,
         additional_info={
             "scaffold": {
-                "delta_y_i": [
-                    np.array([2.0, 2.0]),
-                    np.array([2.0, 2.0])
-                ],
-                "delta_c_i": [
-                    np.array([2.0, 2.0]),
-                    np.array([2.0, 2.0])
-                ]
+                "delta_y_i": [np.array([2.0, 2.0]), np.array([2.0, 2.0])],
+                "delta_c_i": [np.array([2.0, 2.0]), np.array([2.0, 2.0])],
             }
         },
-        contributors=["client2"]
+        contributors=["client2"],
     )
 
     # Expected values
     total_samples = model1.get_num_samples() + model2.get_num_samples()  # 10 + 20 = 30
     expected_delta_y_i = [
-        (1.0 * 10 + 2.0 * 20) / total_samples * aggr.global_lr, # (1 * 10 + 2 * 20) / 30 * 0.1 = 0.16
-        (1.0 * 10 + 2.0 * 20) / total_samples * aggr.global_lr
+        (1.0 * 10 + 2.0 * 20) / total_samples * aggr.global_lr,  # (1 * 10 + 2 * 20) / 30 * 0.1 = 0.16
+        (1.0 * 10 + 2.0 * 20) / total_samples * aggr.global_lr,
     ]
     expected_global_model_params = [
         initial_global_model_params[0] + expected_delta_y_i[0],  # 0.0 + 0.16 = 0.16
-        initial_global_model_params[1] + expected_delta_y_i[1]
+        initial_global_model_params[1] + expected_delta_y_i[1],
     ]
 
     # Aggregate and check correspondence
@@ -158,7 +135,7 @@ def test_scaffold_correct_aggregation():
     # check correct global control variates updates
     expected_c = [
         (1.0 + 2.0) / 2,  # (1 + 2) / 2 = 1.5
-        (1.0 + 2.0) / 2
+        (1.0 + 2.0) / 2,
     ]
     for global_c, expected in zip(aggr.c, expected_c):
         assert np.allclose(global_c, expected, atol=1e-7), "Global control variates do not match"
@@ -170,33 +147,18 @@ def test_scaffold_no_models():
     with pytest.raises(NoModelsToAggregateError):
         aggr.aggregate([])
 
+
 def test_scaffold_missing_info():
     """Test that aggregating with missing information raises proper exceptions."""
     aggr = Scaffold(node_name="node1")
 
     # mock models with missing delta_y and delta_c
     model_missing_delta_y = MockP2PFLModel(
-        params=[np.array([1.0, 1.0])],
-        num_samples=10,
-        additional_info={
-            "scaffold": {
-                "delta_c_i": [
-                    np.array([1.0, 1.0])
-                ]
-            }
-        }
+        params=[np.array([1.0, 1.0])], num_samples=10, additional_info={"scaffold": {"delta_c_i": [np.array([1.0, 1.0])]}}
     )
 
     model_missing_delta_c = MockP2PFLModel(
-        params=[np.array([1.0, 1.0])],
-        num_samples=10,
-        additional_info={
-            "scaffold": {
-                "delta_y_i": [
-                    np.array([1.0, 1.0])
-                ]
-            }
-        }
+        params=[np.array([1.0, 1.0])], num_samples=10, additional_info={"scaffold": {"delta_y_i": [np.array([1.0, 1.0])]}}
     )
 
     # check that missing delta_y raises ValueError

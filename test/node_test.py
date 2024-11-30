@@ -24,6 +24,7 @@ import pytest
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
+from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.utils.utils import (
     check_equal_models,
@@ -101,7 +102,7 @@ def test_convergence(x):
     nodes[0].set_start_learning(rounds=r, epochs=1)
 
     # Wait
-    wait_to_finish(nodes)
+    wait_to_finish(nodes, timeout=240)
 
     # Check if execution is correct
     for node in nodes:

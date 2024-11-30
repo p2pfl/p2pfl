@@ -55,12 +55,7 @@ def test_generate_matrix(topology_type, expected_matrix):
     "adjacency_matrix, expected_calls",
     [
         (
-            np.array([
-                [0, 1, 1, 1],
-                [1, 0, 0, 0],
-                [1, 0, 0, 0],
-                [1, 0, 0, 0]
-            ]),  # Star topology matrix
+            np.array([[0, 1, 1, 1], [1, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 0]]),  # Star topology matrix
             [
                 [call("address_1"), call("address_2"), call("address_3")],
                 [],
@@ -69,12 +64,7 @@ def test_generate_matrix(topology_type, expected_matrix):
             ],
         ),
         (
-            np.array([
-                [0, 1, 1, 1], 
-                [1, 0, 1, 1], 
-                [1, 1, 0, 1], 
-                [1, 1, 1, 0]
-            ]),  # Full topology matrix
+            np.array([[0, 1, 1, 1], [1, 0, 1, 1], [1, 1, 0, 1], [1, 1, 1, 0]]),  # Full topology matrix
             [
                 [call("address_1"), call("address_2"), call("address_3")],
                 [call("address_2"), call("address_3")],
