@@ -37,15 +37,16 @@ This command allows you to interact with pre-built examples. Here's how you can 
 * **List available examples:** `python -m p2pfl experiment list`. This will display a table of available examples with their descriptions.
 * **Run an example:** `python -m p2pfl experiment run <example_name> [options]`.This will run the specified example.
 
-For instance, to run the `mnist` example (which currently uses **FedAvg**, **PyTorch** and  **gRPC**) with 2 rounds and 1 epoch:
-
-> Instead of **gRPC**, a local **memory based** protocol can be used with the additional `--use_local_protocol` flag.
+For instance, to run the `mnist` example (which currently uses **FedAvg** as aggregator, **PyTorch** as framework and  **gRPC** as communication protocol) with 2 rounds of training with 1 epoch each:
 
 ```bash
 python -m p2pfl experiment run mnist --rounds 2 --epochs 1
 ```
 
 When the the mnist experiment finishes, the training results will be plotted on the screen.
+
+> You can see experiment options by running the help command For example : `python -m p2pfl experiment help mnist`
+
 
 ## 💡 Manual Usage
 
@@ -95,7 +96,7 @@ node = Node(
 node.start()
 
 # Connect to the first node
-node.connect(f"127.0.0.1:{6666}") 
+node.connect(f"127.0.0.1:{6666}")
 
 time.sleep(4)
 
@@ -125,7 +126,7 @@ The example above showcases the fundamental components of p2pfl for creating a s
 
 ### ❄️ TensorFlow Quickstart
 
-> 🚧 Not implemented yet. 
+> 🚧 Not implemented yet.
 
 ### 🌐 Ray Integration for Distributed Learning
 
