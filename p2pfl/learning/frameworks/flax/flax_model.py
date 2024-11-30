@@ -25,6 +25,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 from flax import linen as nn
 
+from p2pfl.learning.frameworks import Framework
 from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 
@@ -150,6 +151,16 @@ class FlaxModel(P2PFLModel):
         """
         flax_model = self.__class__(copy.deepcopy(self.model), copy.deepcopy(self.model_params), **kwargs)
         return flax_model
+
+    def get_framework(self) -> str:
+        """
+        Retrieve the model framework name.
+
+        Returns:
+            The name of the model framework.
+
+        """
+        return Framework.FLAX.value
 
 
 ####

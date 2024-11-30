@@ -183,3 +183,13 @@ class P2PFLModel:
 
         """
         return self.__class__(copy.deepcopy(self.model), **kwargs)
+
+    def get_framework(self) -> str:
+        """
+        Retrieve the model framework name.
+
+        Returns:
+            The name of the model framework.
+
+        """
+        raise NotImplementedError

@@ -25,6 +25,7 @@ import numpy as np
 import torch
 from torchmetrics import Accuracy, Metric
 
+from p2pfl.learning.frameworks import Framework
 from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 
@@ -95,6 +96,16 @@ class LightningModel(P2PFLModel):
             self.model.load_state_dict(state_dict)
         except Exception as e:
             raise ModelNotMatchingError("Not matching models") from e
+
+    def get_framework(self) -> str:
+        """
+        Retrieve the model framework name.
+
+        Returns:
+            The name of the model framework.
+
+        """
+        return Framework.PYTORCH.value
 
 
 ####

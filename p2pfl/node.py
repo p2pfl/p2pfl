@@ -42,17 +42,12 @@ from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.frameworks.learner import Learner
+from p2pfl.learning.frameworks.learner_factory import LearnerFactory
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.learning.frameworks.simulation import try_init_learner_with_ray
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.workflows import LearningWorkflow
-
-# Supress error if default learner is not available
-try:
-    from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
-except ImportError:
-    LightningLearner = None  # type: ignore
 
 # Disbalbe grpc log (pytorch causes warnings)
 if logger.get_level_name(logger.get_level()) != "DEBUG":
@@ -96,7 +91,7 @@ class Node:
         model: P2PFLModel,
         data: P2PFLDataset,
         address: str = "127.0.0.1",
-        learner: Type[Learner] = LightningLearner,
+        learner: Optional[Type[Learner]] = None,
         aggregator: Optional[Aggregator] = None,
         protocol: Type[CommunicationProtocol] = GrpcCommunicationProtocol,
         simulation: bool = False,
@@ -111,6 +106,8 @@ class Node:
         self.aggregator = FedAvg() if aggregator is None else aggregator
 
         # Learning
+        if learner is None: # if no learner, use factory default
+            learner = LearnerFactory.create_learner(model)
         self.learner = try_init_learner_with_ray(learner, model, data, self.addr, self.aggregator)
 
         # State

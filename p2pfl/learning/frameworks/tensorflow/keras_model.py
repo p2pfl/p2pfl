@@ -26,6 +26,7 @@ from tensorflow.keras.layers import Dense, Flatten  # type: ignore
 from tensorflow.keras.losses import SparseCategoricalCrossentropy  # type: ignore
 from tensorflow.keras.optimizers import Adam  # type: ignore
 
+from p2pfl.learning.frameworks import Framework
 from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 
@@ -101,6 +102,15 @@ class KerasModel(P2PFLModel):
         except ValueError as e:
             raise ModelNotMatchingError("Parameters don't match the model. Please check the model architecture and the parameters.") from e
 
+    def get_framework(self) -> str:
+        """
+        Retrieve the model framework name.
+
+        Returns:
+            The name of the model framework.
+
+        """
+        return Framework.TENSORFLOW.value
 
 ####
 # Example MLP
@@ -145,3 +155,13 @@ class MLP(tf.keras.Model):
             x = layer(x)
         x = self.output_layer(x)
         return x
+
+    def get_framework(self) -> str:
+        """
+        Retrieve the model name.
+
+        Returns:
+            The name of the model class.
+
+        """
+        return Framework.TENSORFLOW.value
