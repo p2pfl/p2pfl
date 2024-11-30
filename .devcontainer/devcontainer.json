@@ -26,7 +26,8 @@
 			  "charliermarsh.ruff",
 			  "davidanson.vscode-markdownlint",
 			  "github.copilot",
-			  "zxh404.vscode-proto3"
+			  "zxh404.vscode-proto3",
+			  "tamasfe.even-better-toml"
             ]
           }
     }
