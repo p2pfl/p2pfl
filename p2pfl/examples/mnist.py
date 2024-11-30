@@ -37,6 +37,7 @@ from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.settings import Settings
+from p2pfl.utils.topologies import TopologyFactory, TopologyType
 from p2pfl.utils.utils import wait_convergence, wait_to_finish
 
 
@@ -99,8 +100,19 @@ def __parse_args() -> argparse.Namespace:
     parser.add_argument("--aggregator", type=str, help="The aggregator to use.", default="fedavg", choices=["fedavg", "scaffold"])
     parser.add_argument("--profiling", action="store_true", help="Enable profiling.", default=False)
     parser.add_argument("--reduced_dataset", action="store_true", help="Use a reduced dataset just for testing.", default=False)
+    parser.add_argument("--use_scaffold", action="store_true", help="Use the Scaffold aggregator.", default=False)
     parser.add_argument("--disable_ray", action="store_true", help="Disable Ray.", default=False)
+    parser.add_argument(
+        "--topology",
+        type=str,
+        choices=[t.value for t in TopologyType],
+        default="line",
+        help="The network topology (star, full, line, ring).",
+    )
     args = parser.parse_args()
+    # parse topology to TopologyType enum
+    args.topology = TopologyType(args.topology)
+
     return args
 
 
@@ -133,6 +145,7 @@ def mnist(
     framework: str = "pytorch",
     aggregator: str = "fedavg",
     reduced_dataset: bool = False,
+    topology: TopologyType = TopologyType.LINE,
 ) -> None:
     """
     P2PFL MNIST experiment.
@@ -147,6 +160,7 @@ def mnist(
         framework: The framework to use.
         aggregator: The aggregator to use.
         reduced_dataset: Use a reduced dataset just for testing.
+        topology: The network topology (star, full, line, ring).
 
     """
     if measure_time:
@@ -198,10 +212,9 @@ def mnist(
         nodes.append(node)
 
     try:
-        # Node Connection
-        for i in range(len(nodes) - 1):
-            nodes[i + 1].connect(nodes[i].addr)
-            time.sleep(0.1)
+        adjacency_matrix = TopologyFactory.generate_matrix(topology, len(nodes))
+        TopologyFactory.connect_nodes(adjacency_matrix, nodes)
+
         wait_convergence(nodes, n - 1, only_direct=False, wait=60)  # type: ignore
 
         if r < 1:
@@ -288,6 +301,7 @@ if __name__ == "__main__":
             framework=args.framework,
             aggregator=args.aggregator,
             reduced_dataset=args.reduced_dataset,
+            topology=args.topology,
         )
     finally:
         if args.profiling:

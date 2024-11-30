@@ -107,9 +107,7 @@ EXAMPLES_DIR = pkg_resources.resource_filename("p2pfl", "examples")
 
 def __get_available_examples() -> Dict[str, str]:
     # Load the available examples
-    files = [
-        filename[:-3] for filename in os.listdir(EXAMPLES_DIR)
-        if filename.endswith(".py") and not filename.startswith("__")]
+    files = [filename[:-3] for filename in os.listdir(EXAMPLES_DIR) if filename.endswith(".py") and not filename.startswith("__")]
 
     # Read the docstrings of the examples
     return {file: __read_docstring(os.path.join(EXAMPLES_DIR, file + ".py")) for file in files}
@@ -120,6 +118,7 @@ def __read_docstring(file) -> str:
         content = f.read().split('"""')
         docstring = content[1] if len(content) > 1 else ""
         return docstring.strip()
+
 
 def check_example_exists(example: str) -> None:
     """Check if the example exists."""
@@ -208,8 +207,9 @@ def run(
     except Exception:
         console.print(f"\n\n:x: [bold red]Error running {example}[/bold red]")
 
+
 @exp_app.command()
-def help(example : str) -> None:
+def help(example: str) -> None:
     """
     Show a help message for the specified example.
 
@@ -223,14 +223,14 @@ def help(example : str) -> None:
     console.print(f"\n[bold blue]Displaying help for experiment '{example}':[/bold blue]\n")
     try:
         env = os.environ.copy()
-        env["TF_CPP_MIN_LOG_LEVEL"] = "3" # Suppress TensorFlow warnings
+        env["TF_CPP_MIN_LOG_LEVEL"] = "3"  # Suppress TensorFlow warnings
         result = subprocess.run(
-                [sys.executable, os.path.join(EXAMPLES_DIR, f"{example}.py"), "--help"],
-                check=True,
-                capture_output=True,
-                text=True,
-                env=env,
-            )
+            [sys.executable, os.path.join(EXAMPLES_DIR, f"{example}.py"), "--help"],
+            check=True,
+            capture_output=True,
+            text=True,
+            env=env,
+        )
         help_output = result.stdout
         console.print(Panel(help_output, title=f"[bold green]{example} Help[/bold green]"))
     except subprocess.CalledProcessError as e:

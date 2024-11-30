@@ -17,23 +17,13 @@
 #
 """Node tests."""
 
+import contextlib
 import time
 
-import jax
-import jax.numpy as jnp
 import pytest
-import tensorflow as tf
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
-from p2pfl.learning.frameworks.flax.flax_learner import FlaxLearner
-from p2pfl.learning.frameworks.flax.flax_model import MLP as MLP_FLAX
-from p2pfl.learning.frameworks.flax.flax_model import FlaxModel
-from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
-from p2pfl.learning.frameworks.pytorch.lightning_model import MLP, LightningModel
-from p2pfl.learning.frameworks.tensorflow.keras_learner import KerasLearner
-from p2pfl.learning.frameworks.tensorflow.keras_model import MLP as MLP_KERAS
-from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel
 from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.utils.utils import (
@@ -43,7 +33,26 @@ from p2pfl.utils.utils import (
     wait_to_finish,
 )
 
-set_test_settings(disable_ray=True)
+with contextlib.suppress(ImportError):
+    import tensorflow as tf
+
+    from p2pfl.learning.frameworks.tensorflow.keras_learner import KerasLearner
+    from p2pfl.learning.frameworks.tensorflow.keras_model import MLP as MLP_KERAS
+    from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel
+
+with contextlib.suppress(ImportError):
+    import jax
+    import jax.numpy as jnp
+
+    from p2pfl.learning.frameworks.flax.flax_learner import FlaxLearner
+    from p2pfl.learning.frameworks.flax.flax_model import MLP as MLP_FLAX
+    from p2pfl.learning.frameworks.flax.flax_model import FlaxModel
+
+with contextlib.suppress(ImportError):
+    from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
+    from p2pfl.learning.frameworks.pytorch.lightning_model import MLP, LightningModel
+
+set_test_settings()
 
 
 @pytest.fixture
@@ -93,7 +102,7 @@ def test_convergence(x):
     nodes[0].set_start_learning(rounds=r, epochs=1)
 
     # Wait
-    wait_to_finish(nodes)
+    wait_to_finish(nodes, timeout=240)
 
     # Check if execution is correct
     for node in nodes:
