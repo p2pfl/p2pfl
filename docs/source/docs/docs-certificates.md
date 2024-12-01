@@ -50,6 +50,4 @@ The certificate generation procedure comprises the following steps:
 ---
 
 
-🌟 Ready? **You can view next**: > [Learners](docs-tls.md)
-
-<div style="position: fixed; bottom: 10px; right: 10px; font-size: 0.9em; padding: 10px; border: 1px solid #ccc; border-radius: 5px;"> 🌟 You Can View Next: <a href="docs-learners.md">TLS</a> </div>
+🌟 Ready? **You can view next**: > [mTLS](docs-tls.md)
