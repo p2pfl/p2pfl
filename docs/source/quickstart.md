@@ -28,7 +28,7 @@ from p2pfl.node import Node
 
 # Start the node
 node = Node(
-    model = LightningModel(MLP()), # Wrap the MLP module into a LightningModel
+    model = LightningModel(MLP()), # Wrap your model (a MLP in this example) into a LightningModel
     data = P2PFLDataset.from_huggingface("p2pfl/MNIST"), # Get dataset from Hugging Face
     address= f"127.0.0.1:{6666}", # Introduce a port or remove to use a random one
 )
@@ -52,7 +52,7 @@ from p2pfl.node import Node
 
 # Start the node
 node = Node(
-    model = MLP(), # Multi Layer Perceptron model
+    model = LightningModel(MLP()), # Wrap your model (a MLP in this example) into a LightningModel
     data = P2PFLDataset.from_huggingface("p2pfl/MNIST"),
     address = "127.0.0.1", # Random port
 )
@@ -93,7 +93,7 @@ from p2pfl.node import Node
 
 # Start the node
 node = Node(
-    model = KerasModel(MLP()), # Wrap the MLP module into a LightningModel
+    model = KerasModel(MLP()), # Wrap your model (a MLP in this example) into a KerasModel
     data = P2PFLDataset.from_huggingface("p2pfl/MNIST"), # Get dataset from Hugging Face
     address= f"127.0.0.1:{6666}", # Introduce a port or remove to use a random one
 )
@@ -117,7 +117,7 @@ from p2pfl.node import Node
 
 # Start the node
 node = Node(
-    model = MLP(), # Multi Layer Perceptron model
+    model = KerasModel(MLP()), # Wrap your model (a MLP in this example) into a KerasModel
     data = P2PFLDataset.from_huggingface("p2pfl/MNIST"),
     address = "127.0.0.1", # Random port
 )
