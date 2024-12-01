@@ -13,13 +13,13 @@ files = [
 
 [[package]]
 name = "aiohappyeyeballs"
-version = "2.4.3"
+version = "2.4.4"
 description = "Happy Eyeballs for asyncio"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "aiohappyeyeballs-2.4.3-py3-none-any.whl", hash = "sha256:8a7a83727b2756f394ab2895ea0765a0a8c475e3c71e98d43d76f22b4b435572"},
-    {file = "aiohappyeyeballs-2.4.3.tar.gz", hash = "sha256:75cf88a15106a5002a8eb1dab212525c00d1f4c0fa96e551c9fbe6f09a621586"},
+    {file = "aiohappyeyeballs-2.4.4-py3-none-any.whl", hash = "sha256:a980909d50efcd44795c4afeca523296716d50cd756ddca6af8c65b996e27de8"},
+    {file = "aiohappyeyeballs-2.4.4.tar.gz", hash = "sha256:5fdd7d87889c63183afc18ce9271f9b0a7d32c2303e394468dd45d514a757745"},
 ]
 
 [[package]]
@@ -2235,6 +2235,11 @@ files = [
     {file = "matplotlib-3.9.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:10d3e5c7a99bd28afb957e1ae661323b0800d75b419f24d041ed1cc5d844a764"},
     {file = "matplotlib-3.9.3-cp39-cp39-musllinux_1_2_x86_64.whl", hash = "sha256:816a966d5d376bf24c92af8f379e78e67278833e4c7cbc9fa41872eec629a060"},
     {file = "matplotlib-3.9.3-cp39-cp39-win_amd64.whl", hash = "sha256:3fb0b37c896172899a4a93d9442ffdc6f870165f59e05ce2e07c6fded1c15749"},
+    {file = "matplotlib-3.9.3-pp39-pypy39_pp73-macosx_10_15_x86_64.whl", hash = "sha256:5f2a4ea08e6876206d511365b0bc234edc813d90b930be72c3011bbd7898796f"},
+    {file = "matplotlib-3.9.3-pp39-pypy39_pp73-macosx_11_0_arm64.whl", hash = "sha256:9b081dac96ab19c54fd8558fac17c9d2c9cb5cc4656e7ed3261ddc927ba3e2c5"},
+    {file = "matplotlib-3.9.3-pp39-pypy39_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0a0a63cb8404d1d1f94968ef35738900038137dab8af836b6c21bb6f03d75465"},
+    {file = "matplotlib-3.9.3-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:896774766fd6be4571a43bc2fcbcb1dcca0807e53cab4a5bf88c4aa861a08e12"},
+    {file = "matplotlib-3.9.3.tar.gz", hash = "sha256:cd5dbbc8e25cad5f706845c4d100e2c8b34691b412b93717ce38d8ae803bcfa5"},
 ]
 
 [package.dependencies]
@@ -5123,13 +5128,13 @@ tests = ["pytest", "pytest-cov"]
 
 [[package]]
 name = "textual"
-version = "0.88.0"
+version = "0.88.1"
 description = "Modern Text User Interface framework"
 optional = true
 python-versions = "<4.0.0,>=3.8.1"
 files = [
-    {file = "textual-0.88.0-py3-none-any.whl", hash = "sha256:87a1085a403e3a95aa4b954c530d46947d830e9ad4b8c15490104c0b4a452b6a"},
-    {file = "textual-0.88.0.tar.gz", hash = "sha256:bf9cc3ec9d34957c361eabf739e59272295323478cc822633fb0a7b7cc2a0ac3"},
+    {file = "textual-0.88.1-py3-none-any.whl", hash = "sha256:f2db8ce892007f724dab57a2b791e55f9d7ce04d333c50fb4b6fb7f3990d4cec"},
+    {file = "textual-0.88.1.tar.gz", hash = "sha256:9c56d953dc7d1a8ddf06acc910d9224027e02416551f92920e70f435bd28e062"},
 ]
 
 [package.dependencies]
@@ -5457,7 +5462,7 @@ urllib3 = ">=2"
 name = "types-tensorflow"
 version = "2.18.0.20241128"
 description = "Typing stubs for tensorflow"
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "types_tensorflow-2.18.0.20241128-py3-none-any.whl", hash = "sha256:00951bdeba6f69e01c81052d443d4cfe8c765e8e538deab362d08e4daee35b5f"},
@@ -5922,10 +5927,10 @@ type = ["pytest-mypy"]
 [extras]
 flax = ["flax"]
 ray = ["ray"]
-tensorflow = ["keras", "tensorflow"]
+tensorflow = ["keras", "tensorflow", "types-tensorflow"]
 torch = ["lightning", "torch", "torchmetrics", "torchvision"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "1f251b61db6b9fed8a893398f9ac5ee6e300e554ca8d0c5742cf518536ed9eef"
+content-hash = "1530c0ea0b2a5f263c792b14ffe9519ba4d23b71db3ac92b3f89ea5d20106726"

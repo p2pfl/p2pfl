@@ -22,7 +22,7 @@ jobs:
         run: |
           pip install poetry
           python -m poetry lock --no-update
-          python -m poetry install -E torch
+          python -m poetry install --all-extras
 
       - name: Generate documentation
         run: |
