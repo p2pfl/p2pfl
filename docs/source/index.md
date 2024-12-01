@@ -6,15 +6,16 @@ P2PFL is a decentralized federated learning library that enables federated learn
 
 ```{eval-rst}
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
+   introduction
    installation
    quickstart
-   p2pfl_ws
-   contributing
+   docs-index
+   p2pfl_web_services
    library_design
+   contributing
    api
-
 ```
 
 

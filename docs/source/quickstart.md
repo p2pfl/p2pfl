@@ -1,4 +1,4 @@
-# 📖 Manual
+# 🚀 Quickstart
 
 **P2P Federated Learning (p2pfl)** is a library focused on the easy creation of federated learning systems. It offers flexibility in terms of **communication protocols**, **aggregation algorithms**, and **machine learning frameworks**, allowing you to tailor your federated learning setup to your specific needs.
 
@@ -7,15 +7,6 @@ We strongly recommend using [**p2pfl web services**](https://p2pfl.com) for simp
 ## ⚠️ Before Starting
 
 > **Note**: For detailed installation instructions, please refer to the [**installation guide**](installation.md). It covers everything you need to install **p2pfl**, including options for users, developers, and advanced manual installations.
-
-## 📋 Index
-
-```{eval-rst}
-.. toctree::
-   :maxdepth: 4
-
-```
-
 
 ## 💡 Manual Usage
 

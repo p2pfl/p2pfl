@@ -1,10 +1,10 @@
-# P2P Federated Learning Documentation
+# 📕 Documentation
 
 ## 📋 Index
 
 ```{eval-rst}
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    docs-cli
    docs-nodes
