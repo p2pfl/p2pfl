@@ -1,8 +1,8 @@
-## 📡 Communication Protocols
+# 📡 Communication Protocols
 
 The communication protocols define how the various nodes interact and exchange data. These protocols are essential for facilitating communication between peers in the network. This section provides an overview of the supported protocols in the current version of the framework.
 
-### Supported Protocols
+## Supported Protocols
 
 1. **gRPC (gRPC Remote Procedure Call):**
    gRPC is a high-performance, open-source universal RPC framework that enables efficient communication between distributed systems. In this framework, gRPC is used for reliable, secure, and scalable data exchange between peers. Its key features include:

@@ -33,3 +33,6 @@ Here are the basic steps to set up the cluster:
 3. **Run p2pfl with Ray**: Once the cluster is set up, Ray will automatically manage the distribution of tasks, and the federated learning process can begin by running the appropriate commands or starting the Node processes as described in the previous examples.
 
 
+🌟 Ready? **You can view next**: > [Logger](docs-logger.md)
+
+<div style="position: fixed; bottom: 10px; right: 10px; font-size: 0.9em; padding: 10px; border: 1px solid #ccc; border-radius: 5px;"> 🌟 You Can View Next: <a href="docs-logger.md">Logger</a> </div>
