@@ -1,6 +1,33 @@
 # P2P Federated Learning
 
-P2PFL is a decentralized federated learning library that enables federated learning on peer-to-peer networks using gossip protocols, making collaborative AI model training possible without reliance on central servers.
+**P2PFL** is a decentralized federated learning library that enables federated learning on peer-to-peer networks using gossip protocols, making collaborative AI model training possible without reliance on central servers.
+
+> Important❗️: Tenemos que grabar un video demo
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/m_hR0WdEGZ0?si=JzbYjn_AsIBJn7js" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="display: block; margin: 0 auto;"></iframe>
+
+## 🤗 Community
+
+Have questions, need help, or want to contribute? Join our Slack community!
+
+[![Slack](https://img.shields.io/badge/Chat-Slack-4B0082)](https://join.slack.com/t/p2pfl/shared_invite/zt-2lbqvfeqt-FkutD1LCZ86yK5tP3Duztw)
+
+## 🏁 Getting Started
+
+- **📘 [Introduction](introduction.md):** Learn about the P2PFL ecosystem and its core concepts.
+- **📥 [Installation](installation.md):** Set up P2PFL on your system.
+- **🚀 [Quickstart](quickstart.md):** A hands-on guide to training your first P2P federated learning model.
+
+## 🤿 Deep Dive
+
+- **📝 [Documentation](docs/docs-index.md):** Comprehensive guide to P2PFL's features, options, and configurations.
+- **🏛️ [Library Design](library_design.md):** Understand the architecture and design principles behind P2PFL.
+- **📚 [API Reference](api):** 🤓 Detailed documentation of all functions, classes, and modules.
+
+## ➕ Additional Resources
+
+- **🌐 [Web Services](p2pfl_ws.md):** Utilize P2PFL's web services for monitoring and managing your federated learning tasks.
+- **👫 [Contributing](contributing.md):** Join the development effort and contribute to P2PFL.
 
 ## 📋 Index
 
@@ -11,39 +38,9 @@ P2PFL is a decentralized federated learning library that enables federated learn
    introduction
    installation
    quickstart
-   docs-index
-   p2pfl_web_services
+   docs/docs-index
+   p2pfl_ws
    library_design
    contributing
    api
 ```
-
-
-## 📘 Introduction
-
-See [Introduction](introduction.md) for a brief introduction to P2PFL ecosystem.
-
-## ⚙️ Installation
-
-See [Installation](installation.md) for instructions on how to install P2PFL.
-
-## 🚀 Quickstart
-
-See [Quickstart](quickstart.md) for a quick introduction to P2PFL.
-
-## 📖 Documentation
-
-See [documentation](docs-index.md) for a detailed explanation of P2PFL options.
-
-## 🌐 P2PFL Web Services
-
-See [P2PFL Web Services](p2pfl_ws.md) for a guide on how to use the P2PFL Web Services.
-
-## 👫 Contributing
-
-See [Contributing](contributing.md) for instructions on how to contribute to P2PFL.
-
-## 🏛️ Library Design
-
-Also see the [library design](library_design.md) for more information about the design of the library.
-

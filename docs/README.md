@@ -10,6 +10,7 @@ The P2PFL documentation is created using [Sphinx](https://www.sphinx-doc.org/en/
 To generate the documentation for new modules, you can run the following command:
 
 ```bash
+rm -fr source/modules
 sphinx-apidoc -M -e -f -o source/modules ../p2pfl
 ```
 

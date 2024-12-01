@@ -12,7 +12,6 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   p2pfl.commands
    p2pfl.communication
    p2pfl.examples
    p2pfl.learning
@@ -26,7 +25,8 @@ Submodules
    :maxdepth: 4
 
    p2pfl.cli
+   p2pfl.exceptions
+   p2pfl.experiment
    p2pfl.node
    p2pfl.node_state
    p2pfl.settings
-   p2pfl.utils
