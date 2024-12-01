@@ -50,7 +50,7 @@ See [Workflows](docs-workflows.md) for a detailed guide on typical operations an
 **TODO**
 See [Stages and Commands](docs-stages-and-commands.md) for a breakdown of the key steps and commands in the learning process.
 
-## ➕ Aggregators
+## 🧩 Aggregators
 See [Aggregators](docs-aggregators.md) for information about how models are merged across the decentralized nodes.
 
 ## 📝 Logger

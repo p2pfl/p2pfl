@@ -1,4 +1,4 @@
-# ➕ Aggregators
+# 🧩 Aggregators
 
 ## Overview
 

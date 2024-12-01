@@ -1,4 +1,4 @@
-## 🔀 Network Topologies
+# 🔀 Network Topologies
 
 In a Peer-to-Peer Federated Learning network, the topology defines how Nodes connect and interact. The `TopologyFactory` provides an efficient way to create and manage various network structures, ensuring proper connectivity among Nodes.
 
@@ -70,7 +70,7 @@ print(adjacency_matrix)
 ---
 
 ## Example: Full Topology with 3 Nodes
-1. Define the Nodes:
+#### 1. Define the Nodes:
 ```python
 nodes = [
     Node(address="127.0.0.1:5001"),
@@ -79,12 +79,12 @@ nodes = [
 ]
 ```
 
-2. Generate Full Topology:
+#### 2. Generate Full Topology:
 ```python
 adjacency_matrix = TopologyFactory.generate_matrix(TopologyType.FULL, len(nodes))
 ```
 
-3. Connect the Nodes:
+#### 3. Connect the Nodes:
 ```python
 TopologyFactory.connect_nodes(adjacency_matrix, nodes)
 ```
