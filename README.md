@@ -24,10 +24,11 @@ P2PFL offers a range of features designed to make decentralized federated learni
 | 🌐 Scalable      | Leverages the power of peer-to-peer networks.    |
 | 🧪 Versatile     | Experiment in simulated or real-world environments.|
 | 🔒 Private       | Prioritizes data privacy with decentralized architecture.|
-| 🧩 Flexible      | Integrate with PyTorch and TensorFlow (coming soon!).|
-| 📈 Real-time Monitoring | Manage and track experiment through [P2PFL Web Services platform](https://p2pfl.com). | 
-| 🧠 Model Agnostic | Use any machine learning model you prefer (e.g., PyTorch or Keras models). |
-| 📡 Communication Protocol Agnostic | Choose the communication protocol that best suits your needs (e.g., gRPC). |
+| 🧩 Flexible      | Designed to be easy to modify.|
+| 📈 Real-time Monitoring | Manage and track experiment through [P2PFL Web Services platform](https://p2pfl.com). |
+| 🧠 ML Frameworks | Seamlessly integrate [PyTorch](https://pytorch.org/), [TensorFlow/Keras](https://www.tensorflow.org/), and [JAX](https://github.com/google/jax) models. |
+| 📡 Communication Protocol Agnostic | Choose the communication protocol that best suits your needs (e.g., [gRPC](https://grpc.io/)). |
+| 🔌 Integrations  | Enhanced capabilities through integrations: [Hugging Face Datasets](https://huggingface.co/datasets), ML frameworks, communication protocols, and [Ray](https://www.ray.io/) for large-scale simulations. |
 
 ## 📥 Installation
 
@@ -64,13 +65,12 @@ To start using P2PFL, follow our [quickstart guide](https://pguijas.github.io/p2
 
 ## 📚 Documentation & Resources
 
-* **Documentation:** [https://pguijas.github.io/p2pfl/](https://p2pfl.github.io/p2pfl)
-* **End-of-Degree Project Report:** [other/memoria.pdf](other/memoria.pdf)
-* **Open Source Project Award Report:** [other/memoria-open-source.pdf](other/memoria-open-source.pdf)
+* **Documentation:** [https://p2pfl.github.io/p2pfl/](https://p2pfl.github.io/p2pfl)
+* **Technical Report:** (first version) [other/memoria.pdf](other/memoria.pdf)
 
 ## 🤝 Contributing
 
-We welcome contributions! See `CONTRIBUTING.md` for guidelines. Please adhere to the project's code of conduct in `CODE_OF_CONDUCT.md`.
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. Please adhere to the project's code of conduct in [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ## 💬 Community
 
@@ -80,12 +80,11 @@ Connect with us and stay updated:
 * [**Google Group:**](https://groups.google.com/g/p2pfl) - For discussions and announcements.
 * [**Slack:**](https://join.slack.com/t/p2pfl/shared_invite/zt-2lbqvfeqt-FkutD1LCZ86yK5tP3Duztw) - For real-time conversations and support.
 
-
 ## ⭐ Star History
 
 A big thank you to the community for your interest in P2PFL! We appreciate your support and contributions.
 
-[![Star History Chart](https://api.star-history.com/svg?repos=pguijas/p2pfl&type=Date)](https://star-history.com/#pguijas/p2pfl&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=p2pfl/p2pfl&type=Date)](https://star-history.com/#p2pfl/p2pfl&Date)
 
 ## 📜 License
 

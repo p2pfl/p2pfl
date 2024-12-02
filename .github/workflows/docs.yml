@@ -28,6 +28,7 @@ jobs:
         run: |
           cd docs
           python -m poetry run make clean
+          rm -fr source/modules
           python -m poetry run sphinx-apidoc -M -e -f -o source/modules ../p2pfl
           python -m poetry run make html
           touch ./build/html/.nojekyll
