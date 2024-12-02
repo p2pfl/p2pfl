@@ -8,7 +8,7 @@ Traditional federated learning often depends on a central server to orchestrate 
 
 ## ✨ Key Features
 
-P2PFL offers a range of features designed to make decentralized federated learning accessible and efficient.
+P2PFL offers a range of features designed to make decentralized federated learning accessible and efficient. For detailed information, please refer to our [documentation](docs/docs-index.md).
 
 | Feature          | Description                                      |
 |-------------------|--------------------------------------------------|
@@ -37,7 +37,7 @@ P2PFL is designed to make federated learning easy to explore. We offer several t
 
 For installation and setup, refer to the [installation guide](installation.md). From there, explore these key resources:
 
-- [Documentation](docs-index.md)
+- [Documentation](docs/docs-index.md)
 - [Library design](library_design.md)
 - [API reference](https://p2pfl.github.io/p2pfl/api.html)
 - [Issues](https://github.com/p2pfl/p2pfl/issues)
@@ -52,7 +52,7 @@ The library provides a command-line interface to simplify running experiments an
 - **Launch nodes** with minimal setup.
 - **Monitor experiments** directly on the terminal.
 
-You can refer to [CLI Usage](docs-cli.md) to see more.
+You can refer to [CLI Usage](docs/docs-cli.md) to see more.
 
 ## 🤝 Contributing
 
