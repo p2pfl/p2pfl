@@ -8,19 +8,20 @@ Traditional federated learning often depends on a central server to orchestrate 
 
 ## ✨ Key Features
 
-P2PFL offers a range of features designed to make decentralized federated learning accessible and efficient. For detailed information, please refer to our [documentation](https://p2pfl.github.io/p2pfl/).
+P2PFL offers a range of features designed to make decentralized federated learning accessible and efficient.
 
 | Feature          | Description                                      |
 |-------------------|--------------------------------------------------|
-| 🚀 Easy to Use   | Get started quickly with our intuitive API.       |
+| 🚀 Easy to Use   | [Get started](https://p2pfl.github.io/p2pfl/quickstart.html) quickly with our intuitive API.       |
 | 🛡️ Reliable     | Built for fault tolerance and resilience.       |
 | 🌐 Scalable      | Leverages the power of peer-to-peer networks.    |
 | 🧪 Versatile     | Experiment in simulated or real-world environments.|
 | 🔒 Private       | Prioritizes data privacy with decentralized architecture.|
-| 🧩 Flexible      | Integrate with PyTorch and TensorFlow (coming soon!).|
-| 📈 Real-time Monitoring | Manage and track experiment through [P2PFL Web Services](https://p2pfl.com). |
-| 🧠 Model Agnostic | Use any machine learning model you prefer (e.g., PyTorch models). |
-| 📡 Communication Protocol Agnostic | Choose the communication protocol that best suits your needs (e.g., gRPC). |
+| 🧩 Flexible      | Designed to be easy to modify.|
+| 📈 Real-time Monitoring | Manage and track experiment through [P2PFL Web Services platform](https://p2pfl.com). |
+| 🧠 ML Frameworks | Seamlessly integrate [PyTorch](https://pytorch.org/), [TensorFlow/Keras](https://www.tensorflow.org/), and [JAX](https://github.com/google/jax) models. |
+| 📡 Communication Protocol Agnostic | Choose the communication protocol that best suits your needs (e.g., [gRPC](https://grpc.io/)). |
+| 🔌 Integrations  | Enhanced capabilities through integrations: [Hugging Face Datasets](https://huggingface.co/datasets), ML frameworks, communication protocols, and [Ray](https://www.ray.io/) for large-scale simulations. |
 
 ## 🫂 Who Should Use P2PFL?
 
