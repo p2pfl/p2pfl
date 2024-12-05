@@ -2,6 +2,10 @@
 
 The `P2PFLogger` class is an integral part of the P2PFL framework, providing comprehensive logging functionality for monitoring and debugging federated learning experiments across distributed nodes. The logger captures a wide range of events, from system metrics to node-specific actions, and allows easy management of log levels and formats. Below is an explanation of its core functionalities, with details on decorators that enhance logging operations.
 
+> ME GUSTO MAS QUE NODE CREO PERO CREO QUE DEBERÍA COMPARTIR FORMATO CON EL RESTO DE ELEMENTOS DE LA ARQUITECTURA
+
+
+
 ## 1. **Logger Initialization**
 
 The logger is initialized through the `P2PFLogger` class automatically when you import the module. The logger is designed to handle:

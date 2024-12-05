@@ -1,5 +1,7 @@
 # 🕹️ Simulations
 
+> To disable ray, set `sdc akcakj sxaray=False` in the `p2pfl.config` file.
+
 In the context of **p2pfl**, the **Simulation** section refers to the process of training and evaluating machine learning models in a federated learning environment where tasks such as training, evaluation, and aggregation are distributed across a cluster of computing nodes using **Ray**. This approach enhances the scalability and efficiency of federated learning by allowing tasks to be executed in parallel, improving throughput and reducing overall training time.
 
 **Ray** is a powerful distributed computing framework that allows you to parallelize tasks.  With **Ray's actor pool**, individual tasks are broken down and assigned to different actors, which are isolated, long-running processes that handle specific tasks like training and evaluation.

@@ -32,7 +32,3 @@ The communication protocols define how the various nodes interact and exchange d
         protocol=InMemoryCommunicationProtocol,
     )
     ```
-
-🌟 Ready? **You can view next**: > [Workflows](docs-workflows.md)
-
-<div style="position: fixed; bottom: 10px; right: 10px; font-size: 0.9em; padding: 10px; border: 1px solid #ccc; border-radius: 5px;"> 🌟 You Can View Next: <a href="docs-workflows.md">Workflows</a> </div>

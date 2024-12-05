@@ -1,5 +1,11 @@
 # 🧠 Learners
 
+> MENCION HONORÍFICA A TUTORIAL RAY
+
+> AQUI SE HABLA POQUÍSIMO Y DE NODE UN MONTON, NO ME TIENE SENTIDO
+
+> QUIZA LOS DATASETS DEBEN ESTAR AQUI
+
 ## Overview
 
 **Learners** implement the learning process. Each Learner is associated to a `P2PFLModel` and a `P2PFLDataset`. Each learner updates its model with the data from its dataset. If a learner is not specified when creating a `Node`, it is assigned by default depending on which framework is used. Learners are also responsible of transmiting information from `P2PFLCallbacks` to the `P2PFLModels` and viceversa.
@@ -22,6 +28,3 @@ node = Node(
     learner = YourCustomLearnerClass
 )
 ```
-🌟 Ready? **You can view next**: > [Communication Protocols](docs-communication-protocol.md)
-
-<div style="position: fixed; bottom: 10px; right: 10px; font-size: 0.9em; padding: 10px; border: 1px solid #ccc; border-radius: 5px;"> 🌟 You Can View Next: <a href="docs-communication-protocol.md">Communication Protocols</a> </div>

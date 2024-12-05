@@ -25,34 +25,21 @@ P2PFL offers a range of features designed to make decentralized federated learni
 
 ## 🫂 Who Should Use P2PFL?
 
-P2PFL is ideal for:
+In an era where decentralized AI and privacy-preserving technologies are gaining prominence, P2PFL emerges as a general-purpose tool designed for users aligned with the goals of federated learning, particularly those focusing on decentralized setups. It's a valuable resource for researching, developing, and deploying solutions in this evolving landscape.
 
-- **Researchers** exploring novel algorithms on descentralized environments.
-- **Developers** building applications that require privacy and scalability.
-- **Educators** looking to teach concepts about descentralized systems or federated learning.
+Specifically, P2PFL caters to:
+
+- **🧪 Researchers** Exploring novel decentralized algorithms and protocols. A flexible platform for testing hypotheses and validating research in federated learning.
+- **💻 Developers** Create machine learning based applications that are scalable, privacy-aware and allow for decentralized data management.
+- **🎓 Educators** Teaching and learning about decentralized systems and federated learning. A hands-on tool for exploring concepts, conducting experiments, and showcasing real-world use cases.
 
 ## 🏌 Getting started
 
-P2PFL is designed to make federated learning easy to explore. We offer several tools to introduce you on the framework.
+P2PFL is designed to simplify the journey to federated learning. A set of resources is provided to familiarize users with the framework.
 
-For installation and setup, refer to the [installation guide](installation.md). From there, explore these key resources:
+Start by referring to the simple [installation guide](installation.md). Once the environment is set up, it is suggested to continue with the [quickstart](quickstart.md) to get an overview of the library's functionality. For a deeper dive, review the complete [documentation](docs/docs-index.md) and delve into the [library design](design/library_design.md) to understand the underlying architecture.
 
-- [Documentation](docs/docs-index.md)
-- [Library design](library_design.md)
-- [API reference](https://p2pfl.github.io/p2pfl/api.html)
-- [Issues](https://github.com/p2pfl/p2pfl/issues)
-
-the library, for more information, please refer to the
-
-### Command line interface (CLI)
-
-The library provides a command-line interface to simplify running experiments and managing nodes. With the CLI you can:
-
-- **Run predefined experiments** to quickly explore some example setups.
-- **Launch nodes** with minimal setup.
-- **Monitor experiments** directly on the terminal.
-
-You can refer to [CLI Usage](docs/docs-cli.md) to see more.
+If you need further clarification, the implementation documentation provides detailed information. If you still have questions, feel free to open an [issue](https://github.com/p2pfl/p2pfl/issues) or contact the development team directly. Help is at your disposal.
 
 ## 🤝 Contributing
 

@@ -20,8 +20,8 @@ Have questions, need help, or want to contribute? Join our Slack community!
 
 ## 🤿 Deep Dive
 
+- **🏛️ [Library Design](design/library_design.md):** Understand the architecture and design principles behind P2PFL.
 - **📝 [Documentation](docs/docs-index.md):** Comprehensive guide to P2PFL's features, options, and configurations.
-- **🏛️ [Library Design](library_design.md):** Understand the architecture and design principles behind P2PFL.
 - **📚 [API Reference](api):** 🤓 Detailed documentation of all functions, classes, and modules.
 
 ## ➕ Additional Resources
@@ -38,9 +38,9 @@ Have questions, need help, or want to contribute? Join our Slack community!
    introduction
    installation
    quickstart
-   docs/docs-index
+   design/library_design
    p2pfl_ws
-   library_design
+   docs/docs-index
    contributing
    api
 ```

@@ -64,7 +64,8 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx_autodoc_typehints",
     "sphinx.ext.todo",
-    'sphinxcontrib.mermaid'
+    'sphinxcontrib.mermaid',
+    "sphinx_design"
 ]
 
 # Autodoc options

@@ -1,5 +1,8 @@
 # 🗂️ Datasets
 
+
+ESTO DEBERIA ESTAR EN LEARNER
+
 The **P2PFLDataset** class handles datasets in the P2PFL framework, abstracting dataset loading, manipulation, partitioning, and exporting. It supports various data sources and operations necessary for federated learning.
 
 ## Key Components of the `P2PFLDataset` Class
@@ -138,7 +141,3 @@ num_train_samples = p2pfl_dataset.get_num_samples(train=True)
 num_test_samples = p2pfl_dataset.get_num_samples(train=False)
 
 ```
-
-🌟 Ready? **You can view next**: > [Simulations](docs-simulation.md)
-
-<div style="position: fixed; bottom: 10px; right: 10px; font-size: 0.9em; padding: 10px; border: 1px solid #ccc; border-radius: 5px;"> 🌟 You Can View Next: <a href="docs-simulation.md">Simulations</a> </div>

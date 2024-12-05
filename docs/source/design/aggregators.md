@@ -51,7 +51,3 @@ Some aggregators require additional actions from the model during training, such
 Aggregators define their required callbacks through the `get_required_callbacks()` method, and the learner uses these callbacks to gather the necessary information during training. This information is stored in a shared dictionary, `additional_information`, which ensures that all nodes have the data needed for proper aggregation.
 
 
-
-🌟 Ready? **You can view next**: > [Datasets](docs-datasets.md)
-
-<div style="position: fixed; bottom: 10px; right: 10px; font-size: 0.9em; padding: 10px; border: 1px solid #ccc; border-radius: 5px;"> 🌟 You Can View Next: <a href="docs-datasets.md"> Datasets</a> </div>
