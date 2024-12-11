@@ -2,11 +2,7 @@
 
 The `P2PFLogger` class is an integral part of the P2PFL framework, providing comprehensive logging functionality for monitoring and debugging federated learning experiments across distributed nodes. The logger captures a wide range of events, from system metrics to node-specific actions, and allows easy management of log levels and formats. Below is an explanation of its core functionalities, with details on decorators that enhance logging operations.
 
-> ME GUSTO MAS QUE NODE CREO PERO CREO QUE DEBERÍA COMPARTIR FORMATO CON EL RESTO DE ELEMENTOS DE LA ARQUITECTURA
-
-
-
-## 1. **Logger Initialization**
+## Logger Initialization
 
 The logger is initialized through the `P2PFLogger` class automatically when you import the module. The logger is designed to handle:
 
@@ -16,16 +12,20 @@ The logger is initialized through the `P2PFLogger` class automatically when you 
 
 Upon initialization, the logger sets up the default log level and output format. A colored formatter is used to display log messages with distinct colors for clarity.
 
-## 2. Log Level Management
-You can configure the logging level dynamically using set_level(level) to adjust the verbosity of logs. The available levels range from DEBUG (detailed logs) to CRITICAL (urgent issues). The current log level can be checked using the get_level() method.
+## Log Level Management
+
+You can configure the logging level dynamically using `set_level(level)` to adjust the verbosity of logs. The available levels are the same as standard python logging (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`). The current log level can be checked using the `get_level()` method.
 
 Example usage:
 ```python
-logger.set_level(logging.INFO)  # Set log level to INFO
-current_level = logger.get_level()  # Get current log level
+# Set log level to INFO
+logger.set_level("INFO")
+# Get current log level
+current_level = logger.get_level()
 ```
 
-## 3. Log Message Types
+## Log Message Types
+
 The logger supports various log levels (e.g., INFO, DEBUG, WARNING, ERROR, and CRITICAL), each of which can be used to log messages related to specific events:
 
 - **Info Messages**: General information about node operations or experiment states.
@@ -36,12 +36,29 @@ The logger supports various log levels (e.g., INFO, DEBUG, WARNING, ERROR, and C
 
 For example:
 ```python
-logger.info(node, "Node initialized successfully.")
-logger.debug(node, "Debugging node configuration.")
-logger.error(node, "Node failed to connect to the server.")
+logger.info(node_addr, "Node initialized successfully.")
+logger.debug(node_addr, "Debugging node configuration.")
+logger.error(node_addr, "Node failed to connect to the server.")
 ```
 
-## 4. Metrics Logging
+## Node Registration and Status
+
+The logger supports registering and unregistering nodes within the framework. Each node can be associated with an experiment or round, and the logger keeps track of the experiment's start and end, as well as round transitions.
+
+- **Registering a Node**: A new node can be added using the `register_node()` method.
+- **Unregistering a Node**: A node can be removed using the `unregister_node()` method.
+- **Tracking Node Status**: The logger allows tracking the start and end of experiments or rounds using methods like `experiment_started()`, `experiment_finished()`, `round_started()`, and `round_finished()`.
+
+Example:
+```python
+logger.register_node(node, simulation=True)
+logger.experiment_started(node, experiment)
+```
+
+## Metrics Logging
+
+> Important! The experiment related metrics need to register the node before logging. A training metric cannot be logged if a experiment is not started.
+
 The logger can also record experiment metrics such as loss, accuracy, or system performance metrics. Metrics are logged either locally for specific nodes or globally across all nodes involved in the federated learning experiment.
 
 - **Local Metrics**: Metrics specific to an individual node.
@@ -50,23 +67,10 @@ Metrics are logged using the log_metric() function, which requires the node’s 
 
 Example:
 ```python
-logger.log_metric(node, "accuracy", 0.92, round=5, step=100)
+logger.log_metric(node_addr, "accuracy", 0.92, round=5, step=100)
 ```
 
-## 5. Node Registration and Status
-The logger supports registering and unregistering nodes within the framework. Each node can be associated with an experiment or round, and the logger keeps track of the experiment's start and end, as well as round transitions.
-
-- **Registering a Node**: A new node can be added using the register_node() method.
-- **Unregistering a Node**: A node can be removed using the unregister_node() method.
-- **Tracking Node Status**: The logger allows tracking the start and end of experiments or rounds using methods like experiment_started(), experiment_finished(), round_started(), and round_finished().
-
-Example:
-```python
-logger.register_node(node, simulation=True)
-logger.experiment_started(node, experiment)
-```
-
-## 6. Logging Decorators
+## Logging Decorators
 
 To enhance the functionality of the logger, decorators are used for specific tasks. These decorators wrap another `P2PFLogger` class and add additional functionality:
 
@@ -77,7 +81,7 @@ To enhance the functionality of the logger, decorators are used for specific tas
 
 > Do not use `AsyncLogger` combined with `RayP2PFLogger`.
 
-## 7. Cleanup and Finalization
+## Cleanup and Finalization
 When the logging is no longer needed (e.g., when an experiment ends), the cleanup() method should be called to remove all handlers and unregister nodes. This ensures that all resources are properly released and that no unnecessary handlers remain active.
 
 ```python

@@ -6,6 +6,15 @@ p2pfl.communication.commands package
    :undoc-members:
    :show-inheritance:
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   p2pfl.communication.commands.message
+   p2pfl.communication.commands.weights
+
 Submodules
 ----------
 

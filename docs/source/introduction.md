@@ -37,6 +37,16 @@ Specifically, P2PFL caters to:
 
 P2PFL is designed to simplify the journey to federated learning. A set of resources is provided to familiarize users with the framework.
 
+
+AAAA CAMBIAR
+AAAA CAMBIAR
+AAAA CAMBIAR
+AAAA CAMBIAR
+AAAA CAMBIAR
+AAAA CAMBIAR
+()[asd](sd)
+
+
 Start by referring to the simple [installation guide](installation.md). Once the environment is set up, it is suggested to continue with the [quickstart](quickstart.md) to get an overview of the library's functionality. For a deeper dive, review the complete [documentation](docs/docs-index.md) and delve into the [library design](design/library_design.md) to understand the underlying architecture.
 
 If you need further clarification, the implementation documentation provides detailed information. If you still have questions, feel free to open an [issue](https://github.com/p2pfl/p2pfl/issues) or contact the development team directly. Help is at your disposal.

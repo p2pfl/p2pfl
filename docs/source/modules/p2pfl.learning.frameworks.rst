@@ -12,6 +12,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   p2pfl.learning.frameworks.flax
    p2pfl.learning.frameworks.pytorch
    p2pfl.learning.frameworks.simulation
    p2pfl.learning.frameworks.tensorflow

@@ -27,208 +27,208 @@ Now, we'll briefly explain how to run a simple experiment: 2 nodes training a Mu
 To run it, we simply need to execute `node1.py` first and then `node2.py`:
 
 - **`node1.py`** This node will simply start and wait for connections.
-- **`node2.py`** This node will start, connect to Node 1, and initiate the federated learning process.
+- **`node2.py`** This node will start, connect to the first node, and initiate the federated learning process.
 
 > ⚠️ **Warning**: Warning: Frameworks cannot be mixed, the same framework must be used across all nodes.
 
+### `node1.py`
+
+
 ```{eval-rst}
 .. tab-set::
-    .. tab-item:: node1.py
 
-        .. tab-set::
+    .. tab-item:: PyTorch
 
-            .. tab-item:: PyTorch
+        .. code-block:: python
 
-                .. code-block:: python
+            from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
+            from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
+            from p2pfl.learning.frameworks.pytorch.lightning_model import MLP, LightningModel
+            from p2pfl.node import Node
 
-                    from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-                    from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
-                    from p2pfl.learning.frameworks.pytorch.lightning_model import MLP, LightningModel
-                    from p2pfl.node import Node
+            # Start the node
+            node = Node(
+                model = LightningModel(MLP()), # Wrap your model (a MLP in this example) into a LightningModel
+                data = P2PFLDataset.from_huggingface("p2pfl/MNIST"), # Get dataset from Hugging Face
+                address= f"127.0.0.1:{6666}", # Introduce a port or remove to use a random one
+            )
+            node.start()
 
-                    # Start the node
-                    node = Node(
-                        model = LightningModel(MLP()), # Wrap your model (a MLP in this example) into a LightningModel
-                        data = P2PFLDataset.from_huggingface("p2pfl/MNIST"), # Get dataset from Hugging Face
-                        address= f"127.0.0.1:{6666}", # Introduce a port or remove to use a random one
-                    )
-                    node.start()
+            input("Press any key to stop\n")
 
-                    input("Press any key to stop\n")
+            # Stop the node
+            node.stop()
 
-                    # Stop the node
-                    node.stop()
+    .. tab-item:: Tensorflow
 
-            .. tab-item:: Tensorflow
+        .. code-block:: python
 
-                .. code-block:: python
+            from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
+            from p2pfl.learning.frameworks.tensorflow.keras_learner import KerasLearner
+            from p2pfl.learning.frameworks.tensorflow.keras_model import MLP, KerasModel
+            from p2pfl.node import Node
 
-                    from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-                    from p2pfl.learning.frameworks.tensorflow.keras_learner import KerasLearner
-                    from p2pfl.learning.frameworks.tensorflow.keras_model import MLP, KerasModel
-                    from p2pfl.node import Node
+            # Start the node
+            node = Node(
+                model = MLP()
+                model(tf.zeros((1, 28, 28, 1))) # force initiallization
+                model = KerasModel(model), # Wrap your model (a MLP in this example) into a KerasModel
+                data = P2PFLDataset.from_huggingface("p2pfl/MNIST"), # Get dataset from Hugging Face
+                address= f"127.0.0.1:{6666}", # Introduce a port or remove to use a random one
+            )
+            node.start()
 
-                    # Start the node
-                    node = Node(
-                        model = MLP()
-                        model(tf.zeros((1, 28, 28, 1))) # force initiallization
-                        model = KerasModel(model), # Wrap your model (a MLP in this example) into a KerasModel
-                        data = P2PFLDataset.from_huggingface("p2pfl/MNIST"), # Get dataset from Hugging Face
-                        address= f"127.0.0.1:{6666}", # Introduce a port or remove to use a random one
-                    )
-                    node.start()
+            input("Press any key to stop\n")
 
-                    input("Press any key to stop\n")
+            # Stop the node
+            node.stop()
 
-                    # Stop the node
-                    node.stop()
+    .. tab-item:: Flax
 
-            .. tab-item:: Flax
+        .. code-block:: python
 
-                .. code-block:: python
+            from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
+            from p2pfl.learning.frameworks.flax.flax_learner import FlaxLearner
+            from p2pfl.learning.frameworks.flax.flax_model import MLP, FlaxModel
+            from p2pfl.node import Node
 
-                    from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-                    from p2pfl.learning.frameworks.flax.flax_learner import FlaxLearner
-                    from p2pfl.learning.frameworks.flax.flax_model import MLP, FlaxModel
-                    from p2pfl.node import Node
+            # Start the node
+            node = Node(
+                model = MLP()
+                seed = jax.random.PRNGKey(0)
+                model_params = model.init(seed, jnp.ones((1, 28, 28)))["params"] # force init
+                model = FlaxModel(model, model_params), # Wrap the Multi Layer Perceptron into a FlaxModel
+                data = P2PFLDataset.from_huggingface("p2pfl/MNIST"), # Get dataset from Hugging Face
+                address= f"127.0.0.1:{6666}", # Introduce a port or remove to use a random one
+            )
+            node.start()
 
-                    # Start the node
-                    node = Node(
-                        model = MLP()
-                        seed = jax.random.PRNGKey(0)
-                        model_params = model.init(seed, jnp.ones((1, 28, 28)))["params"] # force init
-                        model = FlaxModel(model, model_params), # Wrap the Multi Layer Perceptron into a FlaxModel
-                        data = P2PFLDataset.from_huggingface("p2pfl/MNIST"), # Get dataset from Hugging Face
-                        address= f"127.0.0.1:{6666}", # Introduce a port or remove to use a random one
-                    )
-                    node.start()
+            input("Press any key to stop\n")
 
-                    input("Press any key to stop\n")
+            # Stop the node
+            node.stop()
+```
+### `node2.py`
 
-                    # Stop the node
-                    node.stop()
-            
+```{eval-rst}
+.. tab-set::
 
-    .. tab-item:: node2.py
+    .. tab-item:: PyTorch
 
-        .. tab-set::
+        .. code-block:: python
 
-            .. tab-item:: PyTorch
+            import time
 
-                .. code-block:: python
+            from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
+            from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
+            from p2pfl.learning.frameworks.pytorch.lightning_model import MLP, LightningModel
+            from p2pfl.node import Node
 
-                    import time
+            # Start the node
+            node = Node(
+                model = LightningModel(MLP()), # Wrap your model (a MLP in this example) into a LightningModel
+                data = P2PFLDataset.from_huggingface("p2pfl/MNIST"),
+                address = "127.0.0.1", # Random port
+            )
+            node.start()
 
-                    from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-                    from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
-                    from p2pfl.learning.frameworks.pytorch.lightning_model import MLP, LightningModel
-                    from p2pfl.node import Node
+            # Connect to the first node
+            node.connect(f"127.0.0.1:{6666}")
 
-                    # Start the node
-                    node = Node(
-                        model = LightningModel(MLP()), # Wrap your model (a MLP in this example) into a LightningModel
-                        data = P2PFLDataset.from_huggingface("p2pfl/MNIST"),
-                        address = "127.0.0.1", # Random port
-                    )
-                    node.start()
+            time.sleep(4)
 
-                    # Connect to the first node
-                    node.connect(f"127.0.0.1:{6666}")
+            # Start learning process
+            node.set_start_learning(rounds=2, epochs=1)
 
-                    time.sleep(4)
+            # Wait 4 results
+            while True:
+                time.sleep(1)
 
-                    # Start learning process
-                    node.set_start_learning(rounds=2, epochs=1)
+                if node.state.round is None:
+                    break
 
-                    # Wait 4 results
-                    while True:
-                        time.sleep(1)
+            # Stop the node
+            node.stop()
 
-                        if node.state.round is None:
-                            break
+    .. tab-item:: Tensorflow
 
-                    # Stop the node
-                    node.stop()
+        .. code-block:: python
 
-            .. tab-item:: Tensorflow
+            import time
 
-                .. code-block:: python
+            from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
+            from p2pfl.learning.frameworks.tensorflow.keras_learner import KerasLearner
+            from p2pfl.learning.frameworks.tensorflow.keras_model import MLP, KerasModel
+            from p2pfl.node import Node
 
-                    import time
+            # Start the node
+            node = Node(
+                model = MLP()
+                model(tf.zeros((1, 28, 28, 1))) # force initiallization
+                model = KerasModel(model), # Wrap your model (a MLP in this example) into a KerasModel
+                data = P2PFLDataset.from_huggingface("p2pfl/MNIST"),
+                address = "127.0.0.1", # Random port
+            )
+            node.start()
 
-                    from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-                    from p2pfl.learning.frameworks.tensorflow.keras_learner import KerasLearner
-                    from p2pfl.learning.frameworks.tensorflow.keras_model import MLP, KerasModel
-                    from p2pfl.node import Node
+            # Connect to the first node
+            node.connect(f"127.0.0.1:{6666}")
 
-                    # Start the node
-                    node = Node(
-                        model = MLP()
-                        model(tf.zeros((1, 28, 28, 1))) # force initiallization
-                        model = KerasModel(model), # Wrap your model (a MLP in this example) into a KerasModel
-                        data = P2PFLDataset.from_huggingface("p2pfl/MNIST"),
-                        address = "127.0.0.1", # Random port
-                    )
-                    node.start()
+            time.sleep(4)
 
-                    # Connect to the first node
-                    node.connect(f"127.0.0.1:{6666}")
+            # Start learning process
+            node.set_start_learning(rounds=2, epochs=1)
 
-                    time.sleep(4)
+            # Wait 4 results
+            while True:
+                time.sleep(1)
 
-                    # Start learning process
-                    node.set_start_learning(rounds=2, epochs=1)
+                if node.state.round is None:
+                    break
 
-                    # Wait 4 results
-                    while True:
-                        time.sleep(1)
+            # Stop the node
+            node.stop()
+        
 
-                        if node.state.round is None:
-                            break
+    .. tab-item:: Flax
 
-                    # Stop the node
-                    node.stop()
-                
+        .. code-block:: python
 
-            .. tab-item:: Flax
+            import time
 
-                .. code-block:: python
+            from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
+            from p2pfl.learning.frameworks.flax.flax_learner import FlaxLearner
+            from p2pfl.learning.frameworks.flax.flax_model import MLP, FlaxModel
+            from p2pfl.node import Node
 
-                    import time
+            # Start the node
+            node = Node(
+                model = MLP()
+                seed = jax.random.PRNGKey(0)
+                model_params = model.init(seed, jnp.ones((1, 28, 28)))["params"] # force init
+                model = FlaxModel(model, model_params), # Wrap the Multi Layer Perceptron into a FlaxModel
+                data = P2PFLDataset.from_huggingface("p2pfl/MNIST"),
+                address = "127.0.0.1", # Random port
+            )
+            node.start()
 
-                    from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-                    from p2pfl.learning.frameworks.flax.flax_learner import FlaxLearner
-                    from p2pfl.learning.frameworks.flax.flax_model import MLP, FlaxModel
-                    from p2pfl.node import Node
+            # Connect to the first node
+            node.connect(f"127.0.0.1:{6666}")
 
-                    # Start the node
-                    node = Node(
-                        model = MLP()
-                        seed = jax.random.PRNGKey(0)
-                        model_params = model.init(seed, jnp.ones((1, 28, 28)))["params"] # force init
-                        model = FlaxModel(model, model_params), # Wrap the Multi Layer Perceptron into a FlaxModel
-                        data = P2PFLDataset.from_huggingface("p2pfl/MNIST"),
-                        address = "127.0.0.1", # Random port
-                    )
-                    node.start()
+            time.sleep(4)
 
-                    # Connect to the first node
-                    node.connect(f"127.0.0.1:{6666}")
+            # Start learning process
+            node.set_start_learning(rounds=2, epochs=1)
 
-                    time.sleep(4)
+            # Wait 4 results
+            while True:
+                time.sleep(1)
 
-                    # Start learning process
-                    node.set_start_learning(rounds=2, epochs=1)
+                if node.state.round is None:
+                    break
 
-                    # Wait 4 results
-                    while True:
-                        time.sleep(1)
-
-                        if node.state.round is None:
-                            break
-
-                    # Stop the node
-                    node.stop()
+            # Stop the node
+            node.stop()
             
 ```
 

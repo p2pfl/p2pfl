@@ -60,40 +60,42 @@ class P2PFLDataset:
     optimizations.
 
     Supported data sources:
+      - CSV files
+      - JSON files
+      - Parquet files
+      - Python dictionaries
+      - Python lists
+      - Pandas DataFrames
+      - Hugging Face datasets
+      - SQL databases
 
-    - CSV files
-    - JSON files
-    - Parquet files
-    - Python dictionaries
-    - Python lists
-    - Pandas DataFrames
-    - Hugging Face datasets
-    - SQL databases
+    To load different data sources, it is recommended to directly instantiate the `datasets.Dataset` object
+    and pass it to the `P2PFLDataset` constructor.
 
-    In order to load different data sources, we recomend to directly instantiate the `datasets.Dataset` object and pass
-    it to the `P2PFLDataset` constructor.
+    Example:
+        Load data from various sources and create a `P2PFLDataset` object:
 
-    For example, if you want to load data from different sources:
+        .. code-block:: python
 
-    ´´´python
-    from datasets import load_dataset, DatasetDict, concatenate_datasets
+            from datasets import load_dataset, DatasetDict, concatenate_datasets
 
-    # Load data from a CSV file
-    dataset_csv = load_dataset("csv", data_files="data.csv")
+            # Load data from a CSV file
+            dataset_csv = load_dataset("csv", data_files="data.csv")
 
-    # Load from the Hub
-    dataset_hub = load_dataset("squad", split="train")
+            # Load from the Hub
+            dataset_hub = load_dataset("squad", split="train")
 
-    # Create the final dataset object
-    p2pfl_dataset = P2PFLDataset(
-        DatasetDict({
-            "train": concatenate_datasets([dataset_csv, dataset_hub]),
-            "test": dataset_json
-        })
-    )
-    ´´´
+            # Create the final dataset object
+            p2pfl_dataset = P2PFLDataset(
+                DatasetDict({
+                    "train": concatenate_datasets([dataset_csv, dataset_hub]),
+                    "test": dataset_json
+                })
+            )
 
-    .. todo:: Add more complex integrations (databricks, etc...)
+    .. todo::
+        Add more complex integrations (databricks, etc.)
+
     """
 
     def __init__(

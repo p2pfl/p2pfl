@@ -13,3 +13,4 @@ Subpackages
    :maxdepth: 4
 
    p2pfl.communication.commands
+   p2pfl.communication.protocols

@@ -302,6 +302,30 @@ class Node:
             raise LearnerRunningException("Data cannot be set after learner is set.")
         self.learner.set_data(data)
 
+    ##########################
+    #    Learning Getters    #
+    ##########################
+
+    def get_model(self) -> P2PFLModel:
+        """
+        Get the model.
+
+        Returns:
+            The current model of the node.
+
+        """
+        return self.learner.get_model()
+
+    def get_data(self) -> P2PFLDataset:
+        """
+        Get the data.
+
+        Returns:
+            The current data of the node.
+
+        """
+        return self.learner.get_data()
+
     ###############################################
     #         Network Learning Management         #
     ###############################################
