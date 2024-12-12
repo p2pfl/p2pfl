@@ -32,6 +32,7 @@ pandas = "^2.2.3"
 tqdm = "^4.67.0"
 types-tqdm = "^4.67.0.20241119"
 sphinx-design = "^0.6.1"
+protobuf = ">=5.29.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
