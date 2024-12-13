@@ -57,10 +57,10 @@ Let's briefly introduce each module:
     :maxdepth: 1
 
     node
-    communication
-    logger
-    state
-    commands
     learner/learner-index
     workflows
+    state
+    logger
+    communication
+    commands
 ```

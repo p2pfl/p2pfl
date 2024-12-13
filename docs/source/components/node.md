@@ -2,7 +2,7 @@
 
 The `Node` class is the core component of the P2PFL library, representing a participant in a decentralized federated learning network. It manages a node's dataset, model, local training process, and communication with peers, enabling collaborative training of machine learning models. Acting as a central hub, the `Node` class orchestrates the different components of the federated learning process, providing a simplified user interface and delegating the underlying logic.
 
-## 💪 Main Functionality
+## Main Functionality
 
 ### Initialization
 

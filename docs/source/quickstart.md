@@ -24,7 +24,7 @@ For a more in-depth understanding of how p2pfl works, we recommend checking the 
 
 Now, we'll briefly explain how to run a simple experiment: 2 nodes training a Multilayer Perceptron (MLP) on the MNIST dataset using p2pfl and different ML frameworks.
 
-To run it, we simply need to execute `node1.py` first and then `node2.py`:
+To run it, we simply need to execute `node1.py` first and then on another terminal `node2.py`:
 
 - **`node1.py`** This node will simply start and wait for connections.
 - **`node2.py`** This node will start, connect to the first node, and initiate the federated learning process.

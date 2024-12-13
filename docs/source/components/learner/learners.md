@@ -44,7 +44,7 @@ print(results)
 
 ## Training Information on Aggregators
 
-Learners manage callbacks, which are essential for aggregators that require additional information during training. Callbacks allow aggregators to interact with the training process on each node, collecting data or influencing training behavior.  This information is then used by the aggregator to combine model updates effectively.  See the [Aggregators](learner/aggregators.md) section for more details.
+Learners manage callbacks, which are essential for aggregators that require additional information during training. Callbacks allow aggregators to interact with the training process on each node, collecting data or influencing training behavior.  This information is then used by the aggregator to combine model updates effectively.
 
 ```python
 # Initialize a learner that computes the additional information required by the Scaffold aggregator

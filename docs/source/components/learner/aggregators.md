@@ -1,13 +1,14 @@
 # 🧩 Aggregators
 
-## Overview
+Aggregators are responsible for combining model updates from multiple nodes during the federated learning process. They play a crucial role in ensuring the model converges effectively and efficiently, orchestrating how nodes collaborate in a decentralized manner.
 
-**Aggregators** are responsible for combining model updates from multiple nodes during federated learning. They play a key role in determining the overall training result and ensure the model converges effectively, orchestrating how nodes collaborate in the learning process.
 
-## Features
-- **Model Aggregation**: Combines updates from multiple nodes to produce a new model.
-- **Compatibility** : Work agnostically to the framework or communication protocols being used.
-- **Support for partial aggregations** : Can perform partial updates when only a subset of nodes contribute.
+## Key Features
+
+*   **Model Aggregation**: Aggregators combine updates received from multiple nodes to produce a new, improved global model.
+*   **Framework Agnostic**: They are designed to work seamlessly with different machine learning frameworks (PyTorch, TensorFlow, Flax) and communication protocols. (EXPLAIN THAT A NUMPY ARRAY REPRESENTATION IS USED)
+*   **Gossip Optimized**: Certain aggregators can perform **partial aggregations**, allowing the aggregation proccess to speed up by avoiding sending n*(n-1) models, being n the number of nodes.
+
 
 ---
 

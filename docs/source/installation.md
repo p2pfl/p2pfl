@@ -19,27 +19,6 @@ Alternatively:
 ## ⚙️ Manual Installation (Advanced)
 If you prefer a fully manual installation or need to customize the setup, follow these steps:
 
-### 📦 Dependency Overview
-
-This library supports **P2P Decentralized Federated Learning** with flexibility for different frameworks and backend integrations. You can choose dependencies tailored for your project’s needs. Below is an overview of the dependency options:
-
-- **Torch**: For PyTorch-based deep learning models, including support for:
-
-    - `torch`: Core PyTorch library.
-    - `torchvision`: Tools for computer vision tasks.
-    - `torchmetrics`: Metrics for evaluating models in PyTorch.
-    - `lightning`: PyTorch Lightning, a framework for high-performance training.
-
-- **TensorFlow**: For TensorFlow-based federated learning setups, including:
-
-    - `tensorflow`: Core TensorFlow library.
-    - `keras`: High-level API for building and training models in TensorFlow.
-    - `types-tensorflow`: Type annotations for TensorFlow.
-
-- **Ray**: For distributed computing and orchestration:
-
-    - `ray`: Framework for scaling distributed applications, useful for coordinating computing resources during training.
-
 ### 👨🏼‍💻 For users
 
 To install the library with specific dependencies, you can use one of the following commands:
@@ -67,9 +46,6 @@ If you want to install **all dependencies**, you can do so with:
 ```bash
 pip install "p2pfl[torch,tensorflow,ray]"
 ```
-
-Alternatively, you can install it from source. This installation method is recommended for developers (detailed in the next section).
-
 
 ### 👨🏼‍🔧 For developers
 
@@ -106,3 +82,25 @@ You can also use the library with Docker. We provide a Docker image with the lib
 docker build -t p2pfl .
 docker run -it --rm p2pfl bash
 ```
+
+
+## 📦 Dependency Overview
+
+This library supports **P2P Decentralized Federated Learning** with flexibility for different frameworks and backend integrations. You can choose dependencies tailored for your project’s needs. Below is an overview of the dependency options:
+
+- **Torch**: For PyTorch-based deep learning models, including support for:
+
+    - `torch`: Core PyTorch library.
+    - `torchvision`: Tools for computer vision tasks.
+    - `torchmetrics`: Metrics for evaluating models in PyTorch.
+    - `lightning`: PyTorch Lightning, a framework for high-performance training.
+
+- **TensorFlow**: For TensorFlow-based federated learning setups, including:
+
+    - `tensorflow`: Core TensorFlow library.
+    - `keras`: High-level API for building and training models in TensorFlow.
+    - `types-tensorflow`: Type annotations for TensorFlow.
+
+- **Ray**: For distributed computing and orchestration:
+
+    - `ray`: Framework for scaling distributed applications, useful for coordinating computing resources during training.

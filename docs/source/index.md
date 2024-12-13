@@ -20,8 +20,26 @@ Have questions, need help, or want to contribute? Join our Slack community!
 
 ## 🤿 Deep Dive
 
+---
+---
+---
+---
+---
+---
+---
+---
+---
+---
+---
+---
+ACTUALIZAR NOMBRES DE COSAS - ANTES SE LLAMABA Library Design y asu
+---
+---
+---
+---
+
 - **🏛️ [Components](components/comp-index.md):** Understand the architecture and main components behind P2PFL.
-- **📝 [Documentation](docs/docs-index.md):** Comprehensive guide to P2PFL's features, options, and configurations.AAAAAAAASADASDFGHDSAFGGDFASGFASDFGHDSAGFADSFG CAMBIAR POR TUTORIALS
+- **📝 [Documentation](components/docs-index.md):** Comprehensive guide to P2PFL's features, options, and configurations.AAAAAAAASADASDFGHDSAFGGDFASGFASDFGHDSAGFADSFG CAMBIAR POR TUTORIALS
 - **📚 [API Reference](api):** 🤓 Detailed documentation of all functions, classes, and modules.
 
 ## ➕ Additional Resources
