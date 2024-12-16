@@ -1,14 +1,14 @@
-![GitHub Logo](https://raw.githubusercontent.com/pguijas/p2pfl/main/other/logo.png)
+![GitHub Logo](https://raw.githubusercontent.com/p2pfl/p2pfl/main/other/logo.png)
 
 # P2PFL - Federated Learning over P2P networks
 
-[![GitHub license](https://img.shields.io/github/license/pguijas/federated_learning_p2p)](https://github.com/pguijas/p2pfl/blob/main/LICENSE.md)
-[![GitHub issues](https://img.shields.io/github/issues/pguijas/federated_learning_p2p)](https://github.com/pguijas/p2pfl/issues)
-![GitHub contributors](https://img.shields.io/github/contributors/pguijas/federated_learning_p2p)
-![GitHub forks](https://img.shields.io/github/forks/pguijas/federated_learning_p2p)
-![GitHub stars](https://img.shields.io/github/stars/pguijas/federated_learning_p2p)
-![GitHub activity](https://img.shields.io/github/commit-activity/m/pguijas/federated_learning_p2p)
-[![Coverage badge](https://img.shields.io/badge/dynamic/json?color=brightgreen&label=coverage&query=%24.message&url=https%3A%2F%2Fraw.githubusercontent.com%2Fpguijas%2Fp2pfl%2Fpython-coverage-comment-action-data%2Fendpoint.json)](https://htmlpreview.github.io/?https://github.com/pguijas/p2pfl/blob/python-coverage-comment-action-data/htmlcov/index.html)
+[![GitHub license](https://img.shields.io/github/license/p2pfl/p2pfl)](https://github.com/p2pfl/p2pfl/blob/main/LICENSE.md)
+[![GitHub issues](https://img.shields.io/github/issues/p2pfl/p2pfl)](https://github.com/p2pfl/p2pfl/issues)
+![GitHub contributors](https://img.shields.io/github/contributors/p2pfl/p2pfl)
+![GitHub forks](https://img.shields.io/github/forks/p2pfl/p2pfl)
+![GitHub stars](https://img.shields.io/github/stars/p2pfl/p2pfl)
+![GitHub activity](https://img.shields.io/github/commit-activity/m/p2pfl/p2pfl)
+[![Coverage badge](https://img.shields.io/badge/dynamic/json?color=brightgreen&label=coverage&query=%24.message&url=https%3A%2F%2Fraw.githubusercontent.com%2Fp2pfl%2Fp2pfl%2Fpython-coverage-comment-action-data%2Fendpoint.json)](https://htmlpreview.github.io/?https://github.com/p2pfl/p2pfl/blob/python-coverage-comment-action-data/htmlcov/index.html)
 [![Slack](https://img.shields.io/badge/Chat-Slack-red)](https://join.slack.com/t/p2pfl/shared_invite/zt-2lbqvfeqt-FkutD1LCZ86yK5tP3Duztw)
 
 P2PFL is a general-purpose open-source library designed for the execution (simulated and in real environments) of Decentralized Federated Learning systems, specifically making use of P2P networks and the gossip protocols.
@@ -45,7 +45,7 @@ pip install "p2pfl[torch]"
 #### 🐍 Python (using Poetry)
 
 ```bash
-git clone https://github.com/pguijas/p2pfl.git
+git clone https://github.com/p2pfl/p2pfl.git
 cd p2pfl
 poetry install -E torch 
 ```
@@ -61,7 +61,7 @@ docker run -it --rm p2pfl bash
 
 ## 🎬 Quickstart
 
-To start using P2PFL, follow our [quickstart guide](https://pguijas.github.io/p2pfl/quickstart.html) in the documentation.
+To start using P2PFL, follow our [quickstart guide](https://p2pfl.github.io/p2pfl/quickstart.html) in the documentation.
 
 ## 📚 Documentation & Resources
 
