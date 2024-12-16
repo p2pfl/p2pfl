@@ -43,11 +43,8 @@ class Aggregator:
 
     def __init__(self, node_name: str = "unknown") -> None:
         """Initialize the aggregator."""
-        #
-        # TODO> REVISAR INICIALIZACIÓN DE ATRIBUTOS RELACIONADAS CON EL AGREGADOR (quiza mejor en state)
-        #
         self.node_name = node_name
-        self.__train_set: List[str] = []
+        self.__train_set: List[str] = [] # TODO: Remove the trainset from the state
         self.__models: List[P2PFLModel] = []
         self.partial_aggregation = False
 
