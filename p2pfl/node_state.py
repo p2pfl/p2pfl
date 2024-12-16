@@ -30,9 +30,6 @@ class NodeState:
     Attributes:
         addr(str): The address of the node.
         status(str): The status of the node.
-        actual_exp_name(str): The name of the experiment.
-        round(int): The current round.
-        total_rounds(int): The total rounds of the experiment.
         simulation(bool): If the node is a simulation.
         learner(Learner): The learner of the node.
         models_aggregated(Dict[str, List[str]]): The models aggregated by the node.
@@ -104,8 +101,8 @@ class NodeState:
         Start a new experiment.
 
         Attributes:
-            exp_name (str): The name of the experiment.
-            total_rounds (int): The total rounds of the experiment.
+            exp_name: The name of the experiment.
+            total_rounds: The total rounds of the experiment.
 
         """
         self.status = "Learning"

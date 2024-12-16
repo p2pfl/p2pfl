@@ -58,4 +58,4 @@ model.get_info("scaffold")
 ```
 ## Ray for Distributed Simulation
 
-P2PFL integrates with **Ray** for efficient distributed simulations of federated learning scenarios on a single machine. The [`VirtualNodeLearner`](#VirtualNodeLearner) class wraps Learners, enabling them to execute as Ray actors. This leverages all available resources for faster simulations.  See the [Simulations](tutorials/simulation.md) section for more information.
+P2PFL integrates with **Ray** for efficient distributed simulations of federated learning scenarios on a single machine. The [`VirtualNodeLearner`](#VirtualNodeLearner) class wraps Learners, enabling them to execute as Ray actors. This leverages all available resources for faster simulations.  See the [Simulations](../../tutorials/simulation.md) section for more information.

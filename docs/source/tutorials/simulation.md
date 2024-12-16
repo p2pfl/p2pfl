@@ -1,40 +1,54 @@
 # 🕹️ Simulations
 
-> To disable ray, set `sdc akcakj sxaray=False` in the `p2pfl.config` file.
+P2PFL leverages **[Ray](https://www.ray.io/)**, a powerful distributed computing framework, to enable efficient simulations of large-scale federated learning scenarios. This allows you to train and evaluate models across a cluster of machines or multiple processes on a single machine, significantly accelerating the process and overcoming the limitations of single-machine setups.
 
-In the context of **p2pfl**, the **Simulation** section refers to the process of training and evaluating machine learning models in a federated learning environment where tasks such as training, evaluation, and aggregation are distributed across a cluster of computing nodes using **Ray**. This approach enhances the scalability and efficiency of federated learning by allowing tasks to be executed in parallel, improving throughput and reducing overall training time.
+## 🌐 Ray Integration for Scalability
 
-**Ray** is a powerful distributed computing framework that allows you to parallelize tasks.  With **Ray's actor pool**, individual tasks are broken down and assigned to different actors, which are isolated, long-running processes that handle specific tasks like training and evaluation.
+P2PFL seamlessly integrates with Ray to distribute the learning process. When Ray is installed, P2PFL automatically creates a pool of **actors**, which are independent Python processes that can be distributed across your cluster. Each actor hosts a `Learner` instance, allowing for parallel training and evaluation.
 
-Here's an explanation of the key elements in the **Simulation** process using Ray:
+### 🧩 Actor Pool
 
-### 🌐 Ray Integration in your experiments
+The core of P2PFL's simulation capabilities is the `SuperActorPool`. This pool manages the lifecycle of `VirtualNodeLearner` actors. Each `VirtualNodeLearner` wraps a standard `Learner`, enabling it to be executed remotely by Ray. This means that each node in your federated learning simulation can be run as an independent actor, managed by the pool.
 
-Once Ray dependencies are installed, it is used automatically without requiring any additional configuration from the user, allowing for efficient parallelism and task management across the network of nodes.
+### 🚀 Benefits of Using Ray
 
-#### 🧩 Cluster Setup
+*   **Scalability:** Distribute the learning process across multiple machines or processes, enabling larger-scale simulations.
+*   **Efficiency:** Parallelize training and evaluation, significantly reducing overall experiment time.
+*   **Fault Tolerance:** Ray's actor model provides fault tolerance. If an actor fails, Ray can automatically restart it.
+*   **Resource Management:** Ray intelligently manages the allocation of resources (CPUs, GPUs) to actors.
 
-To get started with Ray, the user can set up a cluster of nodes. This setup typically involves configuring the available machines or instances to communicate with each other. After this, Ray automatically takes care of distributing tasks among the nodes, freeing the user from the complexity of manual task management.
+### ⚙️ Setting Up a Ray Cluster
 
-Here are the basic steps to set up the cluster:
+> To disable ray (even if installed), set `Settings.DISABLE_RAY=True`.
 
-1. **Start the Ray cluster**: On the head node (the central coordinator):
-   ```bash
-   ray start --head
-   ```
-   On worker nodes (additional machines):
-   ```bash
-   ray start --address='head_node_ip:6379'
-   ```
+To run P2PFL simulations with Ray, you need to set up a Ray cluster. This can be done on a single machine (for smaller simulations) or across multiple machines (for larger simulations).
 
-2. **Verify the cluster**: Check the status of the cluster using the following command:
-   ```bash
-   ray status
-   ```
+#### Single Machine Setup
 
-3. **Run p2pfl with Ray**: Once the cluster is set up, Ray will automatically manage the distribution of tasks, and the federated learning process can begin by running the appropriate commands or starting the Node processes as described in the previous examples.
+For simulations on a single machine, you don't need to explicitly start a Ray cluster. P2PFL will automatically initialize Ray in local mode when you start your experiment.
 
+#### Multi-Machine Setup
 
-🌟 Ready? **You can view next**: > [Logger](docs-logger.md)
+For larger simulations, you'll need to set up a Ray cluster across multiple machines:
 
-<div style="position: fixed; bottom: 10px; right: 10px; font-size: 0.9em; padding: 10px; border: 1px solid #ccc; border-radius: 5px;"> 🌟 You Can View Next: <a href="docs-logger.md">Logger</a> </div>
+1. **Start the head node:** On the machine designated as the head node, run:
+
+    ```bash
+    ray start --head --port=6379
+    ```
+
+2. **Start worker nodes:** On each additional machine, run:
+
+    ```bash
+    ray start --address='<head_node_ip>:6379'
+    ```
+
+    Replace `<head_node_ip>` with the IP address of the head node.
+
+3. **Verify the cluster:** Check the status of your Ray cluster using:
+
+    ```bash
+    ray status
+    ```
+
+Once the cluster is set up, you can run your P2PFL experiment as usual. P2PFL will automatically distribute the `VirtualNodeLearner` actors across the available nodes in the cluster.

@@ -1,4 +1,3 @@
-
 # 🗂️ Datasets
 
 The [`P2PFLDataset`](#P2PFLDataset) class is a key component of the P2PFL framework, providing a flexible and efficient way to manage datasets for federated learning experiments. It simplifies dataset loading, partitioning (both IID and non-IID), and exporting to various machine learning frameworks. It supports a wide range of data sources, making it easy to integrate your existing data into P2PFL.

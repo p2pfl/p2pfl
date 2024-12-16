@@ -11,7 +11,7 @@ gRPC is a high-performance, open-source universal RPC framework that enables eff
 * **Cross-platform compatibility:**  Supports a wide range of languages and platforms, enabling diverse nodes to participate in the federated learning process.
 * **Streamlined communication:**  Offers bidirectional streaming and efficient binary serialization using Protocol Buffers, minimizing communication overhead.
 * **Scalability:**  Designed for high-performance and scalability, making it suitable for large-scale federated networks.
-* **Security:** Supports Transport Layer Security (TLS) and mutual TLS (mTLS) for secure communication, protecting sensitive data during transmission.  See [Mutual TLS (mTLS)](../tutorials/tls.md) and [Certificates](../tutorials/certificates.md) for more information on how to configure secure gRPC communication in P2PFL.
+* **Security:** Supports Transport Layer Security (TLS) and mutual TLS (mTLS) for secure communication, protecting sensitive data during transmission.  See [communication encryption](../tutorials/certificates.md) for more information on how to configure secure gRPC communication in P2PFL.
 
 
 **Usage in the framework:**
@@ -34,7 +34,7 @@ node = Node(
 For scenarios where nodes reside within the same process (e.g., local testing, simulations, debugging), in-memory communication provides a significantly faster and more efficient alternative to network-based protocols like gRPC.  By directly exchanging data in memory, this protocol eliminates the overhead associated with serialization and network transmission.  This is particularly beneficial for:
 
 * **Local testing and debugging:** Enables rapid iteration and simplified debugging during development.
-* **Simulation environments:** Facilitates efficient simulation of large federated networks on a single machine using tools like Ray.  See [Simulations](tutorials/simulation.md) for more information.
+* **Simulation environments:** Facilitates efficient simulation of large federated networks on a single machine using tools like Ray.  See [Simulations](../tutorials/simulation.md) for more information.
 
 **Usage in the framework:**
 

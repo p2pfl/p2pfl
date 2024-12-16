@@ -6,7 +6,7 @@ The `Node` class is the core component of the P2PFL library, representing a part
 
 ### Initialization
 
-The `Node` class instantiates all the necessary modules: [`State`](state.md), [`CommunicationProtocol`](communication.md), [`Commands`](commands.md), [`Learning`](learning-index.md) and [`Workflow`](workflows.md). The user only needs to focus on selecting the specific modules they require, as shown below:
+The `Node` class instantiates all the necessary modules: [`State`](state.md), [`CommunicationProtocol`](communication.md), [`Commands`](commands.md), [`Learning`](learner/learner-index.md) and [`Workflow`](workflows.md). The user only needs to focus on selecting the specific modules they require, as shown below:
 
 > By default, `GrpcCommunicationProtocol` and `FedAvg` are used. The `Learner` will be inferred from the `P2PFLModel` if not specified.
 
@@ -31,7 +31,7 @@ node = Node(
 
 ```
 
-It's important to note that the node follows the workflow defined in [`LearningWorkflow`](docs-workflows.md).
+It's important to note that the node follows the workflow defined in [`LearningWorkflow`](#LearningWorkflow).
 
 Once the node is instantiated, it simply needs to be started:
 

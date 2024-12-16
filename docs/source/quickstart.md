@@ -1,6 +1,6 @@
 # 🚀 Quickstart
 
-**P2P Federated Learning (p2pfl)** is a library focused on the easy creation of federated learning systems. It offers flexibility in terms of **communication protocols**, **aggregation algorithms**, and **machine learning frameworks**, allowing you to tailor your federated learning setup to your specific needs.
+**P2PFL** is a library focused on the easy creation of federated learning systems. It offers flexibility in terms of **communication protocols**, **aggregation algorithms**, and **machine learning frameworks**, allowing you to tailor your federated learning setup to your specific needs.
 
 We strongly recommend using [**p2pfl web services**](https://p2pfl.com) for simplified orchestration and management of your federated learning experiments. This web-based dashboard provides an intuitive interface for controlling nodes, monitoring progress, and visualizing results, making everything more visual and user-friendly.
 
@@ -16,7 +16,7 @@ The library provides a command-line interface to simplify running experiments an
 - **Launch nodes** with minimal setup.
 - **Monitor experiments** directly on the terminal.
 
-You can refer to [CLI Usage](docs/docs-cli.md) to see more.
+You can refer to [CLI Usage](tutorials/cli.md) to see more.
 
 ## 💡 Manual Usage
 

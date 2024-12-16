@@ -1,53 +1,71 @@
-# 💳 Certificates
+# 🛡️ Communication Encryption with Mutual TLS (mTLS)
 
-P2PFL offers simple configuration files for certificate generation used in our CI pipeline to enable mutual TLS (mTLS) for the gRPC communications between pairs.
+P2PFL prioritizes secure communication between nodes in the decentralized federated learning network. To achieve this, it leverages **mutual TLS (mTLS)**, a robust security protocol that ensures both confidentiality and authentication.
 
-## 1. Overview
+## Why Mutual TLS (mTLS)?
 
-P2PFL utilizes a two-tiered certificate structure:
+In traditional TLS, only the server authenticates itself to the client. However, in a true peer-to-peer (P2P) environment like P2PFL, there's no fixed server-client relationship. Each node acts as both a client and a server, initiating and receiving connections. Requiring only one side to present a certificate would leave the network vulnerable to unauthorized participants and impersonation attacks.
 
-1. **Root Certificate Authority (CA):** The root CA acts as the trust anchor for the entire network.
+mTLS addresses this by requiring **both** peers to present digital certificates, verifying each other's identities before establishing a connection. This bi-directional authentication is crucial for:
 
-2. **Node Certificates:** Each node in the P2PFL network receives two certificates (both server and client) signed by the Root CA. These certificates identify the nodes and allow them to authenticate themselves to their peers.
+*   **Security:** Prevents unauthorized nodes from joining the network and mitigates impersonation attacks.
+*   **Trust:** Builds trust between nodes by ensuring they are communicating with verified participants.
+*   **Privacy:** Encrypts communication, protecting sensitive data like model updates during transmission.
 
-## 2. Root Certificate
+## mTLS in P2PFL with gRPC
 
-The root certificate is the foundation of trust. It comprises two crucial files:
+P2PFL uses **gRPC**, a high-performance RPC framework, for communication between nodes. gRPC seamlessly integrates with mTLS, handling the certificate exchange and verification process transparently.
 
-* The public certificate of the Root CA. It's distributed to all nodes in the network so they can verify the authenticity of other nodes' certificates.
+In P2PFL, each node possesses two certificates signed by a trusted **Root Certificate Authority (CA)**:
 
-* The private key of the Root CA.  **It must be kept secure and confidential.**  This key is used to sign the node certificates and should *never* be shared. The loss or theft of this key compromises the entire network's security.
+*   **Server Certificate:** Presented when the node acts as a gRPC server, receiving connections.
+*   **Client Certificate:** Presented when the node acts as a gRPC client, initiating connections.
 
-## 3. Node Certificates
+When two nodes establish a connection, the following steps occur:
 
-Each node requires two certificates, one for acting as a server and another for acting as a client when communicating with peers. These certificates, both signed by the root CA, enable mutual authentication, ensuring that each node can verify the identity of its peers and establish trust within the network.
+1. **Handshake:** The gRPC server presents its server certificate to the client.
+2. **Client Verification:** The client verifies the server's certificate against its trusted root CA. If the certificate is invalid or not trusted, the connection is refused.
+3. **Client Authentication:** The gRPC client presents its client certificate to the server.
+4. **Server Verification:** The server verifies the client's certificate against the trusted root CA. If the certificate is invalid or not trusted, the connection is refused.
+5. **Secure Connection:** If both certificates are valid and trusted, a secure, encrypted connection is established.
 
-Analogous to the previous example, each node possesses two public key certificates, one designated for the server role and the other for the client role, utilized for authentication by peer nodes. Correspondingly, each node also maintains two private keys, associated with their respective certificates, employed for digitally signing and decrypting communications of both client and server roles.
+## Certificate Structure and Generation
 
-## 4. Certificate Generation
+P2PFL employs a two-tiered certificate structure:
 
-The certificate generation procedure comprises the following steps:
+*   **Root Certificate Authority (CA):** The foundation of trust. The CA's public certificate is distributed to all nodes, enabling them to verify other nodes' certificates. The CA's private key **must be kept secure** as it's used to sign node certificates.
+*   **Node Certificates:** Each node has a server certificate and a client certificate, both signed by the root CA.
 
-1. **Root CA Generation**: The first step in the process is the generation of the public certificate (`CA.crt`) and private key (`CA.key`) files, constituting the root CA.
+> **Warning:** The example configuration files provided with P2PFL are for testing purposes only and **should not be used in production environments**. System administrators should manage certificate generation and distribution using appropriate security measures.
 
-2. **Node Certificate Generation**: For each node within the network, the following certificates and keys must be generated and appropriately signed by the aforementioned Root CA:
+### Certificate Generation Procedure
 
-    * `server.crt`: The node's public key certificate for server functionality.
-    * `server.key`: The corresponding private key for the server certificate.
-    * `client.crt`: The node's public key certificate for client functionality.
-    * `client.key`: The corresponding private key for the client certificate.
+1. **Root CA Generation:** Generate the root CA's public certificate (`CA.crt`) and private key (`CA.key`).
+2. **Node Certificate Generation:** For each node, generate the following, ensuring they are signed by the root CA:
+    *   `server.crt`: The node's public key certificate for server functionality.
+    *   `server.key`: The corresponding private key for the server certificate.
+    *   `client.crt`: The node's public key certificate for client functionality.
+    *   `client.key`: The corresponding private key for the client certificate.
 
-    It is imperative to ensure that the Subject Alternative Names (SANs) within these certificates accurately reflect the respective IP addresses or domain names associated with each node.
+    > **Important:** Ensure that the Subject Alternative Names (SANs) in these certificates accurately reflect the IP addresses or domain names of each node.
 
-3. **Certificate Distribution**: Following generation, the generated certificates must be securely disseminated to each node. Each node requires its corresponding private keys (`server.key` and `client.key`) and the root CA's public certificate (`CA.crt`).
+3. **Certificate Distribution:** Securely distribute the generated certificates to each node. Each node needs its `server.key`, `client.key`, and the root CA's public certificate (`CA.crt`).
 
-4. **Node Configuration**: The generated certificates and keys must be securely deployed and configured within each node's application settings. This typically involves specifying the file paths to the respective certificate and key files. Ensure appropriate access controls are in place to protect the private keys.
+4. **Node Configuration:** Configure each node to use the appropriate certificates and keys by specifying their file paths in the node's settings.
 
----
+## Enabling mTLS in P2PFL
 
-**WARNING**: Using the example configuration files in a production environment is strongly discouraged and could compromise the security of the enviroment. System administrators should manage the certificate generation and distribution process using appropriate security measures for the specific scenario.
+To enable mTLS in your P2PFL setup, you need to set the `USE_SSL` flag to `True` in your `Settings` and provide the paths to your generated certificates:
 
----
+```python
+from p2pfl.settings import Settings
 
+Settings.USE_SSL = True
+Settings.CA_CRT = "path/to/your/ca.crt"
+Settings.SERVER_CRT = "path/to/your/server.crt"
+Settings.SERVER_KEY = "path/to/your/server.key"
+Settings.CLIENT_CRT = "path/to/your/client.crt"
+Settings.CLIENT_KEY = "path/to/your/client.key"
+```
 
-🌟 Ready? **You can view next**: > [mTLS](docs-tls.md)
+By following these steps, you can secure your P2PFL network with mTLS, ensuring that only authenticated nodes can participate in the federated learning process.
