@@ -112,6 +112,7 @@ class KerasModel(P2PFLModel):
         """
         return Framework.TENSORFLOW.value
 
+
 ####
 # Example MLP
 ####

@@ -23,8 +23,8 @@ from os.path import isfile
 from typing import List, Optional, Union
 
 import google.protobuf.empty_pb2
-
 import grpc
+
 from p2pfl.communication.commands.command import Command
 from p2pfl.communication.protocols.gossiper import Gossiper
 from p2pfl.communication.protocols.grpc.grpc_neighbors import GrpcNeighbors

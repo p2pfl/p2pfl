@@ -23,6 +23,7 @@ from os.path import isfile
 from typing import List, Optional
 
 import grpc
+
 from p2pfl.communication.protocols.client import Client
 from p2pfl.communication.protocols.exceptions import CommunicationError, NeighborNotConnectedError
 from p2pfl.communication.protocols.grpc.grpc_neighbors import GrpcNeighbors

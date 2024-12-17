@@ -106,7 +106,7 @@ class Node:
         self.aggregator = FedAvg() if aggregator is None else aggregator
 
         # Learning
-        if learner is None: # if no learner, use factory default
+        if learner is None:  # if no learner, use factory default
             learner = LearnerFactory.create_learner(model)
         self.learner = try_init_learner_with_ray(learner, model, data, self.addr, self.aggregator)
 

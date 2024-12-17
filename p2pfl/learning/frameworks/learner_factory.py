@@ -41,12 +41,15 @@ class LearnerFactory:
         framework = model.get_framework()
         if framework == Framework.PYTORCH.value:
             from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
+
             return LightningLearner
         elif framework == Framework.TENSORFLOW.value:
             from p2pfl.learning.frameworks.tensorflow.keras_learner import KerasLearner
+
             return KerasLearner
         elif framework == Framework.FLAX.value:
             from p2pfl.learning.frameworks.flax.flax_learner import FlaxLearner
+
             return FlaxLearner
         else:
             logger.error("LearnerFactory", f"Unsupported framework: {framework}")
