@@ -22,12 +22,13 @@ jobs:
         run: |
           pip install poetry
           python -m poetry lock --no-update
-          python -m poetry install -E torch
+          python -m poetry install --all-extras
 
       - name: Generate documentation
         run: |
           cd docs
           python -m poetry run make clean
+          rm -fr source/modules
           python -m poetry run sphinx-apidoc -M -e -f -o source/modules ../p2pfl
           python -m poetry run make html
           touch ./build/html/.nojekyll

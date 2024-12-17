@@ -1,38 +1,41 @@
 # P2P Federated Learning
 
-P2PFL is a general-purpose open-source library for the execution (simulated and in real environments) of Decentralized Federated Learning systems, specifically making use of P2P networks and the Gossisp protocol.
+**P2PFL** is a decentralized federated learning library that enables federated learning on peer-to-peer networks using gossip protocols, making collaborative AI model training possible without reliance on central servers.
 
-## 📥 Installation
+## 🤗 Community
 
-See [Installation](installation.md) for instructions on how to install P2PFL.
+Have questions, need help, or want to contribute? Join our Slack community!
 
-## 🎬 Quickstart
+[![Slack](https://img.shields.io/badge/Chat-Slack-4B0082)](https://join.slack.com/t/p2pfl/shared_invite/zt-2lbqvfeqt-FkutD1LCZ86yK5tP3Duztw)
 
-See [Quickstart](quickstart.md) for a quick introduction to P2PFL.
+## 🏁 Getting Started
 
-## 🌐 P2PFL Web Services
+- **📘 [Introduction](introduction.md):** Learn about the P2PFL ecosystem and its core concepts.
+- **📥 [Installation](installation.md):** Set up P2PFL on your system.
+- **🚀 [Quickstart](quickstart.md):** A hands-on guide to training your first P2P federated learning model.
 
-See [P2PFL Web Services](p2pfl_ws.md) for a guide on how to use the P2PFL Web Services.
+## 🤿 Deep Dive
 
-## 👫 Contributing
+- **🏛️ [Components](components/comp-index.md):** Understand the architecture and main components behind P2PFL.
+- **👨‍🏫 [Tutorials](tutorials/index.md):** Comprehensive tutorials to P2PFL's features, options, and configurations.
+- **📚 [API Reference](api):** 🤓 Detailed documentation of all functions, classes, and modules.
 
-See [Contributing](contributing.md) for instructions on how to contribute to P2PFL.
+## ➕ Additional Resources
 
-## 🏛️ Library Design
-
-Also see the [library design](library_design.md) for more information about the design of the library.
-
-## 📋 Index
+- **🌐 [Web Services](p2pfl_ws.md):** Utilize P2PFL's web services for monitoring and managing your federated learning tasks.
+- **👫 [Contributing](contributing.md):** Join the development effort and contribute to P2PFL.
 
 ```{eval-rst}
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
+   :hidden:
 
+   introduction
    installation
    quickstart
+   components/comp-index
    p2pfl_ws
+   tutorials/index
    contributing
-   library_design
    api
-
 ```

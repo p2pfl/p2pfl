@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2024 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -102,11 +102,12 @@ def launch() -> None:
 exp_app = typer.Typer(help="Run experiments on the p2pfl platform.")
 app.add_typer(exp_app, name="experiment")
 
-EXAMPLES_DIR = pkg_resources.resource_filename('p2pfl', 'examples')
+EXAMPLES_DIR = pkg_resources.resource_filename("p2pfl", "examples")
+
 
 def __get_available_examples() -> Dict[str, str]:
     # Load the available examples
-    files = [filename[:-3] for filename in os.listdir(EXAMPLES_DIR) if filename.endswith(".py")]
+    files = [filename[:-3] for filename in os.listdir(EXAMPLES_DIR) if filename.endswith(".py") and not filename.startswith("__")]
 
     # Read the docstrings of the examples
     return {file: __read_docstring(os.path.join(EXAMPLES_DIR, file + ".py")) for file in files}
@@ -117,6 +118,20 @@ def __read_docstring(file) -> str:
         content = f.read().split('"""')
         docstring = content[1] if len(content) > 1 else ""
         return docstring.strip()
+
+
+def check_example_exists(example: str) -> None:
+    """Check if the example exists."""
+    examples = __get_available_examples()
+    if example not in examples:
+        console.print(
+            Panel(
+                f":x: [bold red]Error:[/bold red] Example [bold yellow]{example}[/bold yellow] not found. \n\n"
+                f"Use [bold green]experiment list[/bold green] to see available examples.",
+                title="[bold red]Example Not Found[/bold red]",
+            )
+        )
+        raise typer.Exit(code=1)
 
 
 @exp_app.command()
@@ -158,16 +173,7 @@ def run(
 
     """
     # Check if the example exists
-    examples = __get_available_examples()
-    if example not in examples:
-        console.print(
-            Panel(
-                f":x: [bold red]Error:[/bold red] Example [bold yellow]{example}[/bold yellow] not found. \n\n"
-                f"Use [bold green]experiment list[/bold green] to see available examples.",
-                title="[bold red]Example Not Found[/bold red]",
-            )
-        )
-        raise typer.Exit(code=1)
+    check_example_exists(example)
 
     # Run the example
     console.print(logo)
@@ -200,6 +206,36 @@ def run(
 
     except Exception:
         console.print(f"\n\n:x: [bold red]Error running {example}[/bold red]")
+
+
+@exp_app.command()
+def help(example: str) -> None:
+    """
+    Show a help message for the specified example.
+
+    Args:
+        example: The name of the example
+
+    """
+    # Check if the example exists
+    check_example_exists(example)
+
+    console.print(f"\n[bold blue]Displaying help for experiment '{example}':[/bold blue]\n")
+    try:
+        env = os.environ.copy()
+        env["TF_CPP_MIN_LOG_LEVEL"] = "3"  # Suppress TensorFlow warnings
+        result = subprocess.run(
+            [sys.executable, os.path.join(EXAMPLES_DIR, f"{example}.py"), "--help"],
+            check=True,
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+        help_output = result.stdout
+        console.print(Panel(help_output, title=f"[bold green]{example} Help[/bold green]"))
+    except subprocess.CalledProcessError as e:
+        console.print(f"\n\n:x: [bold red]Error running {example} --help[/bold red]")
+        console.print(e.output)
 
 
 if __name__ == "__main__":

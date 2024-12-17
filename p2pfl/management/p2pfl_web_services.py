@@ -1,6 +1,6 @@
 #
 # This file is part of the federated_learning_p2p (p2pfl) distribution
-# (see https://github.com/pguijas/federated_learning_p2p).
+# (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2024 Pedro Guijas Bravo.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -73,6 +73,7 @@ class P2pflWebServices:
             print("P2pflWebServices Warning: Connection must be over https, traffic will not be encrypted")
         self.__key = key
         self.node_id: Dict[str, int] = {}
+        # TODO: Check connection
 
     def __build_headers(self) -> Dict[str, str]:
         headers = {"Content-Type": "application/json"}

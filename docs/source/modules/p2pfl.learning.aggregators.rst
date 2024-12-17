@@ -14,3 +14,5 @@ Submodules
 
    p2pfl.learning.aggregators.aggregator
    p2pfl.learning.aggregators.fedavg
+   p2pfl.learning.aggregators.fedmedian
+   p2pfl.learning.aggregators.scaffold

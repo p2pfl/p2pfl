@@ -13,13 +13,5 @@ Subpackages
    :maxdepth: 4
 
    p2pfl.learning.aggregators
-   p2pfl.learning.pytorch
-
-Submodules
-----------
-
-.. toctree::
-   :maxdepth: 4
-
-   p2pfl.learning.exceptions
-   p2pfl.learning.learner
+   p2pfl.learning.dataset
+   p2pfl.learning.frameworks

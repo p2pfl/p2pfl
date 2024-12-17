@@ -3,16 +3,33 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Fast tests
+Untitled-1.ipynb
+test.py
+
 # C extensions
 *.so
+
+# Profiling
+profile/
 
 # Mnist
 MNIST/
 
 # Logs
 *.log
+lightning_logs/
 training_logs/
 logs
+
+# SSL
+*.key
+*.crt
+*.csr
+*.pem
+*.p12
+*.pfx
+*.srl
 
 # Distribution / packaging
 .Python

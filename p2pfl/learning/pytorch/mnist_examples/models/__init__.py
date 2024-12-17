@@ -1,1 +1,0 @@
-"""Pytorch MNIST models."""
