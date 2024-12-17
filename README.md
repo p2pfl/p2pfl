@@ -15,7 +15,7 @@
 | p2pfl/communication/commands/message/metrics\_command.py                |       15 |        0 |    100% |           |
 | p2pfl/communication/commands/message/model\_initialized\_command.py     |       11 |        0 |    100% |           |
 | p2pfl/communication/commands/message/models\_agregated\_command.py      |       13 |        1 |     92% |        53 |
-| p2pfl/communication/commands/message/models\_ready\_command.py          |       15 |        1 |     93% |        57 |
+| p2pfl/communication/commands/message/models\_ready\_command.py          |       15 |        2 |     87% |     57-62 |
 | p2pfl/communication/commands/message/start\_learning\_command.py        |       13 |        1 |     92% |        59 |
 | p2pfl/communication/commands/message/stop\_learning\_command.py         |       22 |        7 |     68% |     54-64 |
 | p2pfl/communication/commands/message/vote\_train\_set\_command.py       |       24 |        2 |     92% |     69-74 |
@@ -33,7 +33,7 @@
 | p2pfl/communication/protocols/grpc/grpc\_client.py                      |       61 |        4 |     93% |70, 108, 165, 173 |
 | p2pfl/communication/protocols/grpc/grpc\_communication\_protocol.py     |       79 |        1 |     99% |       230 |
 | p2pfl/communication/protocols/grpc/grpc\_neighbors.py                   |       56 |        5 |     91% |97, 101, 110-112 |
-| p2pfl/communication/protocols/grpc/grpc\_server.py                      |       85 |       13 |     85% |106-108, 119, 147, 198-204, 237 |
+| p2pfl/communication/protocols/grpc/grpc\_server.py                      |       85 |        9 |     89% |106-108, 119, 147, 198-200, 237 |
 | p2pfl/communication/protocols/grpc/proto/\_\_init\_\_.py                |        0 |        0 |    100% |           |
 | p2pfl/communication/protocols/grpc/proto/generate\_proto.py             |       23 |       23 |      0% |     23-70 |
 | p2pfl/communication/protocols/grpc/proto/node\_pb2.py                   |       24 |       13 |     46% |     24-36 |
@@ -47,14 +47,14 @@
 | p2pfl/communication/protocols/memory/server\_singleton.py               |       16 |        1 |     94% |        43 |
 | p2pfl/communication/protocols/neighbors.py                              |       49 |        8 |     84% |50, 60, 71, 85-86, 93-95 |
 | p2pfl/examples/\_\_init\_\_.py                                          |        0 |        0 |    100% |           |
-| p2pfl/examples/mnist.py                                                 |      147 |      147 |      0% |    24-314 |
+| p2pfl/examples/mnist.py                                                 |      145 |      145 |      0% |    24-298 |
 | p2pfl/examples/node1.py                                                 |       19 |       19 |      0% |     25-60 |
 | p2pfl/examples/node2.py                                                 |       27 |       27 |      0% |     25-75 |
 | p2pfl/exceptions.py                                                     |        6 |        0 |    100% |           |
 | p2pfl/experiment.py                                                     |       15 |        5 |     67% |51, 67-70, 74 |
 | p2pfl/learning/\_\_init\_\_.py                                          |        0 |        0 |    100% |           |
 | p2pfl/learning/aggregators/\_\_init\_\_.py                              |        0 |        0 |    100% |           |
-| p2pfl/learning/aggregators/aggregator.py                                |       88 |       14 |     84% |64, 126-128, 166-171, 197, 200, 253-257, 270 |
+| p2pfl/learning/aggregators/aggregator.py                                |       88 |       13 |     85% |64, 126-128, 166, 197, 200, 253-257, 270 |
 | p2pfl/learning/aggregators/fedavg.py                                    |       22 |        0 |    100% |           |
 | p2pfl/learning/aggregators/fedmedian.py                                 |        7 |        7 |      0% |     21-47 |
 | p2pfl/learning/aggregators/scaffold.py                                  |       55 |        4 |     93% |88, 96, 109, 127 |
@@ -98,7 +98,7 @@
 | p2pfl/management/logger/decorators/ray\_logger.py                       |       50 |        7 |     86% |63, 67, 140, 196, 227, 237, 250 |
 | p2pfl/management/logger/decorators/singleton\_logger.py                 |        4 |        0 |    100% |           |
 | p2pfl/management/logger/decorators/web\_logger.py                       |       61 |       39 |     36% |48-56, 70-72, 83-85, 110-113, 127-140, 153-155, 166-175, 185-196 |
-| p2pfl/management/logger/logger.py                                       |      121 |       63 |     48% |71-79, 108-109, 131, 136-141, 155-158, 168, 181, 236, 249-260, 286-307, 321, 335, 351-355, 366-371, 386-387, 397, 408-409, 420, 430, 453 |
+| p2pfl/management/logger/logger.py                                       |      121 |       64 |     47% |71-79, 108-109, 131, 136-141, 155-158, 168, 181, 214, 236, 249-260, 286-307, 321, 335, 351-355, 366-371, 386-387, 397, 408-409, 420, 430, 453 |
 | p2pfl/management/metric\_storage.py                                     |       56 |       32 |     43% |77-100, 110, 123, 137, 152, 193-214, 224, 237, 251 |
 | p2pfl/management/node\_monitor.py                                       |       38 |       26 |     32% |43-52, 56, 60-65, 69-82, 86 |
 | p2pfl/management/p2pfl\_web\_services.py                                |       75 |       60 |     20% |53-55, 70-75, 79-81, 93-105, 115, 129-152, 168-193, 208-232, 246-266, 270 |
@@ -120,7 +120,7 @@
 | p2pfl/utils/singleton.py                                                |        7 |        0 |    100% |           |
 | p2pfl/utils/topologies.py                                               |       43 |        2 |     95% |     92-93 |
 | p2pfl/utils/utils.py                                                    |       58 |        5 |     91% |84, 96-97, 116, 139 |
-|                                                               **TOTAL** | **4094** | **1114** | **73%** |           |
+|                                                               **TOTAL** | **4092** | **1109** | **73%** |           |
 
 
 ## Setup coverage badge
