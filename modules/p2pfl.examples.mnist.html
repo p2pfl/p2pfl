@@ -451,24 +451,6 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="p2pfl.examples.mnist.get_neighbour_graph">
-<span class="sig-prename descclassname"><span class="pre">p2pfl.examples.mnist.</span></span><span class="sig-name descname"><span class="pre">get_neighbour_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/examples/mnist.html#get_neighbour_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.examples.mnist.get_neighbour_graph" title="Link to this definition">¶</a></dt>
-<dd><p>Get the neighbour graph for the given number of nodes.</p>
-<p>Simetric matrix!!</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>n</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – The number of nodes.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The neighbour graph.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="p2pfl.examples.mnist.mnist">
 <span class="sig-prename descclassname"><span class="pre">p2pfl.examples.mnist.</span></span><span class="sig-name descname"><span class="pre">mnist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measure_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">protocol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'grpc'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pytorch'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fedavg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduced_dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">TopologyType.LINE</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/examples/mnist.html#mnist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.examples.mnist.mnist" title="Link to this definition">¶</a></dt>
 <dd><p>P2PFL MNIST experiment.</p>
@@ -568,7 +550,6 @@
 <li><a class="reference internal" href="#">p2pfl.examples.mnist module</a><ul>
 <li><a class="reference internal" href="#p2pfl.examples.mnist.create_pytorch_model"><code class="docutils literal notranslate"><span class="pre">create_pytorch_model()</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.examples.mnist.create_tensorflow_model"><code class="docutils literal notranslate"><span class="pre">create_tensorflow_model()</span></code></a></li>
-<li><a class="reference internal" href="#p2pfl.examples.mnist.get_neighbour_graph"><code class="docutils literal notranslate"><span class="pre">get_neighbour_graph()</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.examples.mnist.mnist"><code class="docutils literal notranslate"><span class="pre">mnist()</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.examples.mnist.set_standalone_settings"><code class="docutils literal notranslate"><span class="pre">set_standalone_settings()</span></code></a></li>
 </ul>
