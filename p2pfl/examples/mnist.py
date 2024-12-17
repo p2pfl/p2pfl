@@ -71,27 +71,11 @@ def set_standalone_settings(disable_ray: bool = False) -> None:
     logger.set_level(Settings.LOG_LEVEL)  # Refresh (maybe already initialized)
 
 
-def get_neighbour_graph(n: int) -> np.ndarray:
-    """
-    Get the neighbour graph for the given number of nodes.
-
-    Simetric matrix!!
-
-    Args:
-        n: The number of nodes.
-
-    Returns:
-        The neighbour graph.
-
-    """
-    raise NotImplementedError("This function is not implemented yet.")
-
-
 def __parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="P2PFL MNIST experiment using the Web Logger.")
     parser.add_argument("--nodes", type=int, help="The number of nodes.", default=2)
     parser.add_argument("--rounds", type=int, help="The number of rounds.", default=2)
-    parser.add_argument("--epochs", type=int, help="The number of epochs.", default=2)
+    parser.add_argument("--epochs", type=int, help="The number of epochs.", default=1)
     parser.add_argument("--show_metrics", action="store_true", help="Show metrics.", default=True)
     parser.add_argument("--measure_time", action="store_true", help="Measure time.", default=False)
     parser.add_argument("--token", type=str, help="The API token for the Web Logger.", default="")
