@@ -4,8 +4,4 @@
 
 > 🚧 **Under Construction!**  This feature is on its way, but not quite ready yet. Stay tuned for updates and its official launch!
 
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=m_hR0WdEGZ0">
-    <img src="https://img.youtube.com/vi/m_hR0WdEGZ0/hqdefault.jpg" alt="P2PFL Web Services - Demo Video" width="560" height="315">
-  </a>
-</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/m_hR0WdEGZ0?si=JzbYjn_AsIBJn7js" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="display: block; margin: 0 auto;"></iframe>

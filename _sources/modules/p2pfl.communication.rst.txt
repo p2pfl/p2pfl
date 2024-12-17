@@ -12,18 +12,5 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   p2pfl.communication.grpc
-   p2pfl.communication.memory
-
-Submodules
-----------
-
-.. toctree::
-   :maxdepth: 4
-
-   p2pfl.communication.client
-   p2pfl.communication.communication_protocol
-   p2pfl.communication.exceptions
-   p2pfl.communication.gossiper
-   p2pfl.communication.heartbeater
-   p2pfl.communication.neighbors
+   p2pfl.communication.commands
+   p2pfl.communication.protocols

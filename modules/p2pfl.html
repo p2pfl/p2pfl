@@ -3,12 +3,13 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="p2pfl.commands package" href="p2pfl.commands.html" /><link rel="prev" title="📚 API" href="../api.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="p2pfl.communication package" href="p2pfl.communication.html" /><link rel="prev" title="📚 API" href="../api.html" />
 
     <link rel="shortcut icon" href="../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>p2pfl package - p2pfl 0.3.0 documentation</title>
+        <title>p2pfl package - p2pfl 0.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
     
     
@@ -166,7 +167,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">p2pfl 0.3.0 documentation</div></a>
+      <a href="../index.html"><div class="brand">p2pfl 0.4.0 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -201,97 +202,166 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">📘 Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">📥 Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">🎬 Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">🚀 Quickstart</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../components/comp-index.html">🏛️ Components</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of 🏛️ Components</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../components/node.html">🌐 Node</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../components/learner/learner-index.html">💡 Learning</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of 💡 Learning</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../components/learner/learners.html">🧠 Learners</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../components/learner/datasets.html">🗂️ Datasets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../components/learner/aggregators.html">🧩 Aggregators</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../components/workflows.html">🔄 Workflows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../components/state.html">🚦 Node State</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../components/logger.html">📝 Logger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../components/communication.html">📡 Communication Protocols</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../components/commands.html">⌨️ Commands</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../p2pfl_ws.html">🌐 P2PFL Web Services</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../tutorials/index.html">👨‍🏫 Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of 👨‍🏫 Tutorials</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/cli.html">💻 Using the CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/simulation.html">🕹️ Simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/certificates.html">🛡️ Communication Encryption with Mutual TLS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/topologies.html">🔀 Network Topologies</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../contributing.html">👫 Contributing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../library_design.html">🏛️ Library Design</a></li>
-<li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">📚 API</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of 📚 API</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
-<li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">p2pfl package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of p2pfl package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.commands.html">p2pfl.commands package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of p2pfl.commands package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.add_model_command.html">p2pfl.commands.add_model_command module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.command.html">p2pfl.commands.command module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.heartbeat_command.html">p2pfl.commands.heartbeat_command module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.init_model_command.html">p2pfl.commands.init_model_command module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.metrics_command.html">p2pfl.commands.metrics_command module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.model_initialized_command.html">p2pfl.commands.model_initialized_command module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.models_agregated_command.html">p2pfl.commands.models_agregated_command module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.models_ready_command.html">p2pfl.commands.models_ready_command module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.start_learning_command.html">p2pfl.commands.start_learning_command module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.stop_learning_command.html">p2pfl.commands.stop_learning_command module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.vote_train_set_command.html">p2pfl.commands.vote_train_set_command module</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">📚 API</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of 📚 API</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">p2pfl package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of p2pfl package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.communication.html">p2pfl.communication package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of p2pfl.communication package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.communication.commands.html">p2pfl.communication.commands package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of p2pfl.communication.commands package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5 has-children"><a class="reference internal" href="p2pfl.communication.commands.message.html">p2pfl.communication.commands.message package</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of p2pfl.communication.commands.message package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.commands.message.heartbeat_command.html">p2pfl.communication.commands.message.heartbeat_command module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.commands.message.metrics_command.html">p2pfl.communication.commands.message.metrics_command module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.commands.message.model_initialized_command.html">p2pfl.communication.commands.message.model_initialized_command module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.commands.message.models_agregated_command.html">p2pfl.communication.commands.message.models_agregated_command module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.commands.message.models_ready_command.html">p2pfl.communication.commands.message.models_ready_command module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.commands.message.start_learning_command.html">p2pfl.communication.commands.message.start_learning_command module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.commands.message.stop_learning_command.html">p2pfl.communication.commands.message.stop_learning_command module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.commands.message.vote_train_set_command.html">p2pfl.communication.commands.message.vote_train_set_command module</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.communication.html">p2pfl.communication package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of p2pfl.communication package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.communication.grpc.html">p2pfl.communication.grpc package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of p2pfl.communication.grpc package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l5 has-children"><a class="reference internal" href="p2pfl.communication.grpc.proto.html">p2pfl.communication.grpc.proto package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of p2pfl.communication.grpc.proto package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.grpc.proto.generate_proto.html">p2pfl.communication.grpc.proto.generate_proto module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.grpc.proto.node_pb2.html">p2pfl.communication.grpc.proto.node_pb2 module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.grpc.proto.node_pb2_grpc.html">p2pfl.communication.grpc.proto.node_pb2_grpc module</a></li>
+<li class="toctree-l5 has-children"><a class="reference internal" href="p2pfl.communication.commands.weights.html">p2pfl.communication.commands.weights package</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of p2pfl.communication.commands.weights package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.commands.weights.full_model_command.html">p2pfl.communication.commands.weights.full_model_command module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.commands.weights.init_model_command.html">p2pfl.communication.commands.weights.init_model_command module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.commands.weights.partial_model_command.html">p2pfl.communication.commands.weights.partial_model_command module</a></li>
 </ul>
 </li>
-<li class="toctree-l5"><a class="reference internal" href="p2pfl.communication.grpc.address.html">p2pfl.communication.grpc.address module</a></li>
-<li class="toctree-l5"><a class="reference internal" href="p2pfl.communication.grpc.grpc_client.html">p2pfl.communication.grpc.grpc_client module</a></li>
-<li class="toctree-l5"><a class="reference internal" href="p2pfl.communication.grpc.grpc_communication_protocol.html">p2pfl.communication.grpc.grpc_communication_protocol module</a></li>
-<li class="toctree-l5"><a class="reference internal" href="p2pfl.communication.grpc.grpc_neighbors.html">p2pfl.communication.grpc.grpc_neighbors module</a></li>
-<li class="toctree-l5"><a class="reference internal" href="p2pfl.communication.grpc.grpc_server.html">p2pfl.communication.grpc.grpc_server module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.communication.commands.command.html">p2pfl.communication.commands.command module</a></li>
 </ul>
 </li>
-<li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.communication.memory.html">p2pfl.communication.memory package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of p2pfl.communication.memory package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l5"><a class="reference internal" href="p2pfl.communication.memory.memory_client.html">p2pfl.communication.memory.memory_client module</a></li>
-<li class="toctree-l5"><a class="reference internal" href="p2pfl.communication.memory.memory_communication_protocol.html">p2pfl.communication.memory.memory_communication_protocol module</a></li>
-<li class="toctree-l5"><a class="reference internal" href="p2pfl.communication.memory.memory_neighbors.html">p2pfl.communication.memory.memory_neighbors module</a></li>
-<li class="toctree-l5"><a class="reference internal" href="p2pfl.communication.memory.memory_server.html">p2pfl.communication.memory.memory_server module</a></li>
-<li class="toctree-l5"><a class="reference internal" href="p2pfl.communication.memory.server_singleton.html">p2pfl.communication.memory.server_singleton module</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.communication.protocols.html">p2pfl.communication.protocols package</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle navigation of p2pfl.communication.protocols package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5 has-children"><a class="reference internal" href="p2pfl.communication.protocols.grpc.html">p2pfl.communication.protocols.grpc package</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle navigation of p2pfl.communication.protocols.grpc package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6 has-children"><a class="reference internal" href="p2pfl.communication.protocols.grpc.proto.html">p2pfl.communication.protocols.grpc.proto package</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle navigation of p2pfl.communication.protocols.grpc.proto package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l7"><a class="reference internal" href="p2pfl.communication.protocols.grpc.proto.generate_proto.html">p2pfl.communication.protocols.grpc.proto.generate_proto module</a></li>
+<li class="toctree-l7"><a class="reference internal" href="p2pfl.communication.protocols.grpc.proto.node_pb2.html">p2pfl.communication.protocols.grpc.proto.node_pb2 module</a></li>
+<li class="toctree-l7"><a class="reference internal" href="p2pfl.communication.protocols.grpc.proto.node_pb2_grpc.html">p2pfl.communication.protocols.grpc.proto.node_pb2_grpc module</a></li>
 </ul>
 </li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.client.html">p2pfl.communication.client module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.communication_protocol.html">p2pfl.communication.communication_protocol module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.exceptions.html">p2pfl.communication.exceptions module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.gossiper.html">p2pfl.communication.gossiper module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.heartbeater.html">p2pfl.communication.heartbeater module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.neighbors.html">p2pfl.communication.neighbors module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.protocols.grpc.address.html">p2pfl.communication.protocols.grpc.address module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.protocols.grpc.grpc_client.html">p2pfl.communication.protocols.grpc.grpc_client module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.protocols.grpc.grpc_communication_protocol.html">p2pfl.communication.protocols.grpc.grpc_communication_protocol module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.protocols.grpc.grpc_neighbors.html">p2pfl.communication.protocols.grpc.grpc_neighbors module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.protocols.grpc.grpc_server.html">p2pfl.communication.protocols.grpc.grpc_server module</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.examples.html">p2pfl.examples package</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of p2pfl.examples package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5 has-children"><a class="reference internal" href="p2pfl.communication.protocols.memory.html">p2pfl.communication.protocols.memory package</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><div class="visually-hidden">Toggle navigation of p2pfl.communication.protocols.memory package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.protocols.memory.memory_client.html">p2pfl.communication.protocols.memory.memory_client module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.protocols.memory.memory_communication_protocol.html">p2pfl.communication.protocols.memory.memory_communication_protocol module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.protocols.memory.memory_neighbors.html">p2pfl.communication.protocols.memory.memory_neighbors module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.protocols.memory.memory_server.html">p2pfl.communication.protocols.memory.memory_server module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.communication.protocols.memory.server_singleton.html">p2pfl.communication.protocols.memory.server_singleton module</a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.communication.protocols.client.html">p2pfl.communication.protocols.client module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.communication.protocols.communication_protocol.html">p2pfl.communication.protocols.communication_protocol module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.communication.protocols.exceptions.html">p2pfl.communication.protocols.exceptions module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.communication.protocols.gossiper.html">p2pfl.communication.protocols.gossiper module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.communication.protocols.heartbeater.html">p2pfl.communication.protocols.heartbeater module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.communication.protocols.neighbors.html">p2pfl.communication.protocols.neighbors module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.examples.html">p2pfl.examples package</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><div class="visually-hidden">Toggle navigation of p2pfl.examples package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.examples.mnist.html">p2pfl.examples.mnist module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.examples.node1.html">p2pfl.examples.node1 module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.examples.node2.html">p2pfl.examples.node2 module</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of p2pfl.learning package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.learning.aggregators.html">p2pfl.learning.aggregators package</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle navigation of p2pfl.learning.aggregators package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle navigation of p2pfl.learning package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.learning.aggregators.html">p2pfl.learning.aggregators package</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><div class="visually-hidden">Toggle navigation of p2pfl.learning.aggregators package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.aggregators.aggregator.html">p2pfl.learning.aggregators.aggregator module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.aggregators.fedavg.html">p2pfl.learning.aggregators.fedavg module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.aggregators.fedmedian.html">p2pfl.learning.aggregators.fedmedian module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.aggregators.scaffold.html">p2pfl.learning.aggregators.scaffold module</a></li>
 </ul>
 </li>
-<li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle navigation of p2pfl.learning.pytorch package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l5 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.html">p2pfl.learning.pytorch.mnist_examples package</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle navigation of p2pfl.learning.pytorch.mnist_examples package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l6 has-children"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.models.html">p2pfl.learning.pytorch.mnist_examples.models package</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><div class="visually-hidden">Toggle navigation of p2pfl.learning.pytorch.mnist_examples.models package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l7"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.models.cnn.html">p2pfl.learning.pytorch.mnist_examples.models.cnn module</a></li>
-<li class="toctree-l7"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.models.mlp.html">p2pfl.learning.pytorch.mnist_examples.models.mlp module</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.learning.dataset.html">p2pfl.learning.dataset package</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><div class="visually-hidden">Toggle navigation of p2pfl.learning.dataset package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.dataset.p2pfl_dataset.html">p2pfl.learning.dataset.p2pfl_dataset module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.dataset.partition_strategies.html">p2pfl.learning.dataset.partition_strategies module</a></li>
 </ul>
 </li>
-<li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm.html">p2pfl.learning.pytorch.mnist_examples.mnistfederated_dm module</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.learning.frameworks.html">p2pfl.learning.frameworks package</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><div class="visually-hidden">Toggle navigation of p2pfl.learning.frameworks package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5 has-children"><a class="reference internal" href="p2pfl.learning.frameworks.flax.html">p2pfl.learning.frameworks.flax package</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><div class="visually-hidden">Toggle navigation of p2pfl.learning.frameworks.flax package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.frameworks.flax.flax_dataset.html">p2pfl.learning.frameworks.flax.flax_dataset module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.frameworks.flax.flax_learner.html">p2pfl.learning.frameworks.flax.flax_learner module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.frameworks.flax.flax_model.html">p2pfl.learning.frameworks.flax.flax_model module</a></li>
 </ul>
 </li>
-<li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.pytorch.lightning_learner.html">p2pfl.learning.pytorch.lightning_learner module</a></li>
-<li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.pytorch.lightning_logger.html">p2pfl.learning.pytorch.lightning_logger module</a></li>
+<li class="toctree-l5 has-children"><a class="reference internal" href="p2pfl.learning.frameworks.pytorch.html">p2pfl.learning.frameworks.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><div class="visually-hidden">Toggle navigation of p2pfl.learning.frameworks.pytorch package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6 has-children"><a class="reference internal" href="p2pfl.learning.frameworks.pytorch.callbacks.html">p2pfl.learning.frameworks.pytorch.callbacks package</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><div class="visually-hidden">Toggle navigation of p2pfl.learning.frameworks.pytorch.callbacks package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l7"><a class="reference internal" href="p2pfl.learning.frameworks.pytorch.callbacks.scaffold_callback.html">p2pfl.learning.frameworks.pytorch.callbacks.scaffold_callback module</a></li>
 </ul>
 </li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.exceptions.html">p2pfl.learning.exceptions module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.learner.html">p2pfl.learning.learner module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.frameworks.pytorch.lightning_dataset.html">p2pfl.learning.frameworks.pytorch.lightning_dataset module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.frameworks.pytorch.lightning_learner.html">p2pfl.learning.frameworks.pytorch.lightning_learner module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.frameworks.pytorch.lightning_logger.html">p2pfl.learning.frameworks.pytorch.lightning_logger module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.frameworks.pytorch.lightning_model.html">p2pfl.learning.frameworks.pytorch.lightning_model module</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.management.html">p2pfl.management package</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><div class="visually-hidden">Toggle navigation of p2pfl.management package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.management.logger.html">p2pfl.management.logger module</a></li>
+<li class="toctree-l5 has-children"><a class="reference internal" href="p2pfl.learning.frameworks.simulation.html">p2pfl.learning.frameworks.simulation package</a><input class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><div class="visually-hidden">Toggle navigation of p2pfl.learning.frameworks.simulation package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.frameworks.simulation.actor_pool.html">p2pfl.learning.frameworks.simulation.actor_pool module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.frameworks.simulation.utils.html">p2pfl.learning.frameworks.simulation.utils module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.frameworks.simulation.virtual_learner.html">p2pfl.learning.frameworks.simulation.virtual_learner module</a></li>
+</ul>
+</li>
+<li class="toctree-l5 has-children"><a class="reference internal" href="p2pfl.learning.frameworks.tensorflow.html">p2pfl.learning.frameworks.tensorflow package</a><input class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" role="switch" type="checkbox"/><label for="toctree-checkbox-23"><div class="visually-hidden">Toggle navigation of p2pfl.learning.frameworks.tensorflow package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l6 has-children"><a class="reference internal" href="p2pfl.learning.frameworks.tensorflow.callbacks.html">p2pfl.learning.frameworks.tensorflow.callbacks package</a><input class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><div class="visually-hidden">Toggle navigation of p2pfl.learning.frameworks.tensorflow.callbacks package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l7"><a class="reference internal" href="p2pfl.learning.frameworks.tensorflow.callbacks.keras_logger.html">p2pfl.learning.frameworks.tensorflow.callbacks.keras_logger module</a></li>
+<li class="toctree-l7"><a class="reference internal" href="p2pfl.learning.frameworks.tensorflow.callbacks.scaffold_callback.html">p2pfl.learning.frameworks.tensorflow.callbacks.scaffold_callback module</a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.frameworks.tensorflow.keras_dataset.html">p2pfl.learning.frameworks.tensorflow.keras_dataset module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.frameworks.tensorflow.keras_learner.html">p2pfl.learning.frameworks.tensorflow.keras_learner module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="p2pfl.learning.frameworks.tensorflow.keras_model.html">p2pfl.learning.frameworks.tensorflow.keras_model module</a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.frameworks.callback.html">p2pfl.learning.frameworks.callback module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.frameworks.callback_factory.html">p2pfl.learning.frameworks.callback_factory module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.frameworks.exceptions.html">p2pfl.learning.frameworks.exceptions module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.frameworks.learner.html">p2pfl.learning.frameworks.learner module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.frameworks.learner_factory.html">p2pfl.learning.frameworks.learner_factory module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.frameworks.p2pfl_model.html">p2pfl.learning.frameworks.p2pfl_model module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.management.html">p2pfl.management package</a><input class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" role="switch" type="checkbox"/><label for="toctree-checkbox-25"><div class="visually-hidden">Toggle navigation of p2pfl.management package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.management.logger.html">p2pfl.management.logger package</a><input class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" role="switch" type="checkbox"/><label for="toctree-checkbox-26"><div class="visually-hidden">Toggle navigation of p2pfl.management.logger package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.management.logger.logger.html">p2pfl.management.logger.logger module</a></li>
+</ul>
+</li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.node_monitor.html">p2pfl.management.node_monitor module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.p2pfl_web_services.html">p2pfl.management.p2pfl_web_services module</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.stages.html">p2pfl.stages package</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle navigation of p2pfl.stages package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.stages.base_node.html">p2pfl.stages.base_node package</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><div class="visually-hidden">Toggle navigation of p2pfl.stages.base_node package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.stages.html">p2pfl.stages package</a><input class="toctree-checkbox" id="toctree-checkbox-27" name="toctree-checkbox-27" role="switch" type="checkbox"/><label for="toctree-checkbox-27"><div class="visually-hidden">Toggle navigation of p2pfl.stages package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.stages.base_node.html">p2pfl.stages.base_node package</a><input class="toctree-checkbox" id="toctree-checkbox-28" name="toctree-checkbox-28" role="switch" type="checkbox"/><label for="toctree-checkbox-28"><div class="visually-hidden">Toggle navigation of p2pfl.stages.base_node package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5"><a class="reference internal" href="p2pfl.stages.base_node.gossip_model_stage.html">p2pfl.stages.base_node.gossip_model_stage module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="p2pfl.stages.base_node.round_finished_stage.html">p2pfl.stages.base_node.round_finished_stage module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="p2pfl.stages.base_node.start_learning_stage.html">p2pfl.stages.base_node.start_learning_stage module</a></li>
@@ -307,10 +377,10 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.cli.html">p2pfl.cli module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.exceptions.html">p2pfl.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.experiment.html">p2pfl.experiment module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node.html">p2pfl.node module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html">p2pfl.node_state module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html">p2pfl.settings module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.utils.html">p2pfl.utils module</a></li>
 </ul>
 </li>
 </ul>
@@ -364,92 +434,16 @@
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="p2pfl.commands.html">p2pfl.commands package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.commands.html#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.commands.add_model_command.html">p2pfl.commands.add_model_command module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.add_model_command.html#p2pfl.commands.add_model_command.AddModelCommand"><code class="docutils literal notranslate"><span class="pre">AddModelCommand</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.commands.command.html">p2pfl.commands.command module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.command.html#p2pfl.commands.command.Command"><code class="docutils literal notranslate"><span class="pre">Command</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.commands.heartbeat_command.html">p2pfl.commands.heartbeat_command module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.heartbeat_command.html#p2pfl.commands.heartbeat_command.HeartbeatCommand"><code class="docutils literal notranslate"><span class="pre">HeartbeatCommand</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.commands.init_model_command.html">p2pfl.commands.init_model_command module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.init_model_command.html#p2pfl.commands.init_model_command.InitModelCommand"><code class="docutils literal notranslate"><span class="pre">InitModelCommand</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.commands.metrics_command.html">p2pfl.commands.metrics_command module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.metrics_command.html#p2pfl.commands.metrics_command.MetricsCommand"><code class="docutils literal notranslate"><span class="pre">MetricsCommand</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.commands.model_initialized_command.html">p2pfl.commands.model_initialized_command module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.model_initialized_command.html#p2pfl.commands.model_initialized_command.ModelInitializedCommand"><code class="docutils literal notranslate"><span class="pre">ModelInitializedCommand</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.commands.models_agregated_command.html">p2pfl.commands.models_agregated_command module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.models_agregated_command.html#p2pfl.commands.models_agregated_command.ModelsAggregatedCommand"><code class="docutils literal notranslate"><span class="pre">ModelsAggregatedCommand</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.commands.models_ready_command.html">p2pfl.commands.models_ready_command module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.models_ready_command.html#p2pfl.commands.models_ready_command.ModelsReadyCommand"><code class="docutils literal notranslate"><span class="pre">ModelsReadyCommand</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.commands.start_learning_command.html">p2pfl.commands.start_learning_command module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.start_learning_command.html#p2pfl.commands.start_learning_command.StartLearningCommand"><code class="docutils literal notranslate"><span class="pre">StartLearningCommand</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.commands.stop_learning_command.html">p2pfl.commands.stop_learning_command module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.stop_learning_command.html#p2pfl.commands.stop_learning_command.StopLearningCommand"><code class="docutils literal notranslate"><span class="pre">StopLearningCommand</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.commands.vote_train_set_command.html">p2pfl.commands.vote_train_set_command module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.commands.vote_train_set_command.html#p2pfl.commands.vote_train_set_command.VoteTrainSetCommand"><code class="docutils literal notranslate"><span class="pre">VoteTrainSetCommand</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="p2pfl.communication.html">p2pfl.communication package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.communication.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.communication.grpc.html">p2pfl.communication.grpc package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.grpc.html#subpackages">Subpackages</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.grpc.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.communication.commands.html">p2pfl.communication.commands package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.commands.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.commands.html#submodules">Submodules</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.communication.memory.html">p2pfl.communication.memory package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.memory.html#submodules">Submodules</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.communication.html#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.communication.client.html">p2pfl.communication.client module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.client.html#p2pfl.communication.client.Client"><code class="docutils literal notranslate"><span class="pre">Client</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.communication.communication_protocol.html">p2pfl.communication.communication_protocol module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.communication_protocol.html#p2pfl.communication.communication_protocol.CommunicationProtocol"><code class="docutils literal notranslate"><span class="pre">CommunicationProtocol</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.communication.exceptions.html">p2pfl.communication.exceptions module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.exceptions.html#p2pfl.communication.exceptions.NeighborNotConnectedError"><code class="docutils literal notranslate"><span class="pre">NeighborNotConnectedError</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.communication.gossiper.html">p2pfl.communication.gossiper module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.gossiper.html#p2pfl.communication.gossiper.Gossiper"><code class="docutils literal notranslate"><span class="pre">Gossiper</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.communication.heartbeater.html">p2pfl.communication.heartbeater module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.heartbeater.html#p2pfl.communication.heartbeater.Heartbeater"><code class="docutils literal notranslate"><span class="pre">Heartbeater</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.communication.neighbors.html">p2pfl.communication.neighbors module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.neighbors.html#p2pfl.communication.neighbors.Neighbors"><code class="docutils literal notranslate"><span class="pre">Neighbors</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.communication.protocols.html">p2pfl.communication.protocols package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.protocols.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.communication.protocols.html#submodules">Submodules</a></li>
 </ul>
 </li>
 </ul>
@@ -459,7 +453,11 @@
 <li class="toctree-l1"><a class="reference internal" href="p2pfl.examples.html">p2pfl.examples package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.examples.html#submodules">Submodules</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.examples.mnist.html">p2pfl.examples.mnist module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.examples.mnist.html#p2pfl.examples.mnist.create_pytorch_model"><code class="docutils literal notranslate"><span class="pre">create_pytorch_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.examples.mnist.html#p2pfl.examples.mnist.create_tensorflow_model"><code class="docutils literal notranslate"><span class="pre">create_tensorflow_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.examples.mnist.html#p2pfl.examples.mnist.get_neighbour_graph"><code class="docutils literal notranslate"><span class="pre">get_neighbour_graph()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.examples.mnist.html#p2pfl.examples.mnist.mnist"><code class="docutils literal notranslate"><span class="pre">mnist()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.examples.mnist.html#p2pfl.examples.mnist.set_standalone_settings"><code class="docutils literal notranslate"><span class="pre">set_standalone_settings()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.examples.node1.html">p2pfl.examples.node1 module</a><ul>
@@ -480,21 +478,14 @@
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.aggregators.html#submodules">Submodules</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.pytorch.html">p2pfl.learning.pytorch package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#subpackages">Subpackages</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.pytorch.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.dataset.html">p2pfl.learning.dataset package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.dataset.html#submodules">Submodules</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.learning.html#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.exceptions.html">p2pfl.learning.exceptions module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.exceptions.html#p2pfl.learning.exceptions.DecodingParamsError"><code class="docutils literal notranslate"><span class="pre">DecodingParamsError</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.exceptions.html#p2pfl.learning.exceptions.ModelNotMatchingError"><code class="docutils literal notranslate"><span class="pre">ModelNotMatchingError</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.learner.html">p2pfl.learning.learner module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.learner.html#p2pfl.learning.learner.NodeLearner"><code class="docutils literal notranslate"><span class="pre">NodeLearner</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.learning.frameworks.html">p2pfl.learning.frameworks package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.frameworks.html#p2pfl.learning.frameworks.Framework"><code class="docutils literal notranslate"><span class="pre">Framework</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.frameworks.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.learning.frameworks.html#submodules">Submodules</a></li>
 </ul>
 </li>
 </ul>
@@ -502,16 +493,14 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="p2pfl.management.html">p2pfl.management package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.management.html#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.management.logger.html">p2pfl.management.logger module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.management.logger.html#p2pfl.management.logger.ColoredFormatter"><code class="docutils literal notranslate"><span class="pre">ColoredFormatter</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.management.logger.html#p2pfl.management.logger.DictFormatter"><code class="docutils literal notranslate"><span class="pre">DictFormatter</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.management.logger.html#p2pfl.management.logger.Logger"><code class="docutils literal notranslate"><span class="pre">Logger</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.management.logger.html#p2pfl.management.logger.NodeNotRegistered"><code class="docutils literal notranslate"><span class="pre">NodeNotRegistered</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.management.logger.html#p2pfl.management.logger.P2pflWebLogHandler"><code class="docutils literal notranslate"><span class="pre">P2pflWebLogHandler</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.management.logger.html#p2pfl.management.logger.logger"><code class="docutils literal notranslate"><span class="pre">logger</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="p2pfl.management.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.management.logger.html">p2pfl.management.logger package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.management.logger.html#submodules">Submodules</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="p2pfl.management.html#submodules">Submodules</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.metric_storage.html#p2pfl.management.metric_storage.GlobalMetricStorage"><code class="docutils literal notranslate"><span class="pre">GlobalMetricStorage</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.metric_storage.html#p2pfl.management.metric_storage.LocalMetricStorage"><code class="docutils literal notranslate"><span class="pre">LocalMetricStorage</span></code></a></li>
@@ -540,7 +529,9 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.stages.html#submodules">Submodules</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.stages.stage.html">p2pfl.stages.stage module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.stages.stage.html#p2pfl.stages.stage.EarlyStopException"><code class="docutils literal notranslate"><span class="pre">EarlyStopException</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.stages.stage.html#p2pfl.stages.stage.Stage"><code class="docutils literal notranslate"><span class="pre">Stage</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.stages.stage.html#p2pfl.stages.stage.check_early_stop"><code class="docutils literal notranslate"><span class="pre">check_early_stop()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.stages.stage_factory.html">p2pfl.stages.stage_factory module</a><ul>
@@ -564,6 +555,8 @@
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="p2pfl.cli.html">p2pfl.cli module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="p2pfl.cli.html#p2pfl.cli.check_example_exists"><code class="docutils literal notranslate"><span class="pre">check_example_exists()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="p2pfl.cli.html#p2pfl.cli.help"><code class="docutils literal notranslate"><span class="pre">help()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.cli.html#p2pfl.cli.launch"><code class="docutils literal notranslate"><span class="pre">launch()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.cli.html#p2pfl.cli.list"><code class="docutils literal notranslate"><span class="pre">list()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.cli.html#p2pfl.cli.login"><code class="docutils literal notranslate"><span class="pre">login()</span></code></a></li>
@@ -572,9 +565,20 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="p2pfl.exceptions.html">p2pfl.exceptions module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.exceptions.html#p2pfl.exceptions.LearnerNotSetException"><code class="docutils literal notranslate"><span class="pre">LearnerNotSetException</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="p2pfl.exceptions.html#p2pfl.exceptions.LearnerRunningException"><code class="docutils literal notranslate"><span class="pre">LearnerRunningException</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.exceptions.html#p2pfl.exceptions.NodeRunningException"><code class="docutils literal notranslate"><span class="pre">NodeRunningException</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.exceptions.html#p2pfl.exceptions.ZeroRoundsException"><code class="docutils literal notranslate"><span class="pre">ZeroRoundsException</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="p2pfl.experiment.html">p2pfl.experiment module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="p2pfl.experiment.html#p2pfl.experiment.Experiment"><code class="docutils literal notranslate"><span class="pre">Experiment</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.experiment.html#p2pfl.experiment.Experiment.exp_name"><code class="docutils literal notranslate"><span class="pre">Experiment.exp_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.experiment.html#p2pfl.experiment.Experiment.total_rounds"><code class="docutils literal notranslate"><span class="pre">Experiment.total_rounds</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.experiment.html#p2pfl.experiment.Experiment.round"><code class="docutils literal notranslate"><span class="pre">Experiment.round</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.experiment.html#p2pfl.experiment.Experiment.increase_round"><code class="docutils literal notranslate"><span class="pre">Experiment.increase_round()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.experiment.html#p2pfl.experiment.Experiment.self"><code class="docutils literal notranslate"><span class="pre">Experiment.self()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="p2pfl.node.html">p2pfl.node module</a><ul>
@@ -582,8 +586,11 @@
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node.html#p2pfl.node.Node.assert_running"><code class="docutils literal notranslate"><span class="pre">Node.assert_running()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node.html#p2pfl.node.Node.connect"><code class="docutils literal notranslate"><span class="pre">Node.connect()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node.html#p2pfl.node.Node.disconnect"><code class="docutils literal notranslate"><span class="pre">Node.disconnect()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.node.html#p2pfl.node.Node.get_data"><code class="docutils literal notranslate"><span class="pre">Node.get_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.node.html#p2pfl.node.Node.get_model"><code class="docutils literal notranslate"><span class="pre">Node.get_model()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node.html#p2pfl.node.Node.get_neighbors"><code class="docutils literal notranslate"><span class="pre">Node.get_neighbors()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node.html#p2pfl.node.Node.set_data"><code class="docutils literal notranslate"><span class="pre">Node.set_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.node.html#p2pfl.node.Node.set_learner"><code class="docutils literal notranslate"><span class="pre">Node.set_learner()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node.html#p2pfl.node.Node.set_model"><code class="docutils literal notranslate"><span class="pre">Node.set_model()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node.html#p2pfl.node.Node.set_start_learning"><code class="docutils literal notranslate"><span class="pre">Node.set_start_learning()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node.html#p2pfl.node.Node.set_stop_learning"><code class="docutils literal notranslate"><span class="pre">Node.set_stop_learning()</span></code></a></li>
@@ -597,9 +604,6 @@
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState"><code class="docutils literal notranslate"><span class="pre">NodeState</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState.addr"><code class="docutils literal notranslate"><span class="pre">NodeState.addr</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState.status"><code class="docutils literal notranslate"><span class="pre">NodeState.status</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState.actual_exp_name"><code class="docutils literal notranslate"><span class="pre">NodeState.actual_exp_name</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState.round"><code class="docutils literal notranslate"><span class="pre">NodeState.round</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState.total_rounds"><code class="docutils literal notranslate"><span class="pre">NodeState.total_rounds</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState.simulation"><code class="docutils literal notranslate"><span class="pre">NodeState.simulation</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState.learner"><code class="docutils literal notranslate"><span class="pre">NodeState.learner</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState.models_aggregated"><code class="docutils literal notranslate"><span class="pre">NodeState.models_aggregated</span></code></a></li>
@@ -611,8 +615,15 @@
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState.wait_votes_ready_lock"><code class="docutils literal notranslate"><span class="pre">NodeState.wait_votes_ready_lock</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState.model_initialized_lock"><code class="docutils literal notranslate"><span class="pre">NodeState.model_initialized_lock</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState.clear"><code class="docutils literal notranslate"><span class="pre">NodeState.clear()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState.exp_name"><code class="docutils literal notranslate"><span class="pre">NodeState.exp_name</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState.increase_round"><code class="docutils literal notranslate"><span class="pre">NodeState.increase_round()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState.set_experiment"><code class="docutils literal notranslate"><span class="pre">NodeState.set_experiment()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState.round"><code class="docutils literal notranslate"><span class="pre">NodeState.round</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState.set_experiment"><code class="docutils literal notranslate"><span class="pre">NodeState.set_experiment()</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.node_state.html#id0"><code class="docutils literal notranslate"><span class="pre">NodeState.exp_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.node_state.html#p2pfl.node_state.NodeState.total_rounds"><code class="docutils literal notranslate"><span class="pre">NodeState.total_rounds</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.node_state.html#id1"><code class="docutils literal notranslate"><span class="pre">NodeState.total_rounds</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -621,6 +632,11 @@
 <li class="toctree-l2"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings"><code class="docutils literal notranslate"><span class="pre">Settings</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.AGGREGATION_TIMEOUT"><code class="docutils literal notranslate"><span class="pre">Settings.AGGREGATION_TIMEOUT</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.AMOUNT_LAST_MESSAGES_SAVED"><code class="docutils literal notranslate"><span class="pre">Settings.AMOUNT_LAST_MESSAGES_SAVED</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.CA_CRT"><code class="docutils literal notranslate"><span class="pre">Settings.CA_CRT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.CLIENT_CRT"><code class="docutils literal notranslate"><span class="pre">Settings.CLIENT_CRT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.CLIENT_KEY"><code class="docutils literal notranslate"><span class="pre">Settings.CLIENT_KEY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.DISABLE_RAY"><code class="docutils literal notranslate"><span class="pre">Settings.DISABLE_RAY</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.EXCLUDE_BEAT_LOGS"><code class="docutils literal notranslate"><span class="pre">Settings.EXCLUDE_BEAT_LOGS</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS"><code class="docutils literal notranslate"><span class="pre">Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.GOSSIP_MESSAGES_PER_PERIOD"><code class="docutils literal notranslate"><span class="pre">Settings.GOSSIP_MESSAGES_PER_PERIOD</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.GOSSIP_MODELS_PERIOD"><code class="docutils literal notranslate"><span class="pre">Settings.GOSSIP_MODELS_PERIOD</span></code></a></li>
@@ -632,20 +648,15 @@
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.LOG_DIR"><code class="docutils literal notranslate"><span class="pre">Settings.LOG_DIR</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.LOG_LEVEL"><code class="docutils literal notranslate"><span class="pre">Settings.LOG_LEVEL</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.RESOURCE_MONITOR_PERIOD"><code class="docutils literal notranslate"><span class="pre">Settings.RESOURCE_MONITOR_PERIOD</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.SERVER_CRT"><code class="docutils literal notranslate"><span class="pre">Settings.SERVER_CRT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.SERVER_KEY"><code class="docutils literal notranslate"><span class="pre">Settings.SERVER_KEY</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.TRAIN_SET_SIZE"><code class="docutils literal notranslate"><span class="pre">Settings.TRAIN_SET_SIZE</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.TTL"><code class="docutils literal notranslate"><span class="pre">Settings.TTL</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.USE_SSL"><code class="docutils literal notranslate"><span class="pre">Settings.USE_SSL</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.VOTE_TIMEOUT"><code class="docutils literal notranslate"><span class="pre">Settings.VOTE_TIMEOUT</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.settings.html#p2pfl.settings.Settings.WAIT_HEARTBEATS_CONVERGENCE"><code class="docutils literal notranslate"><span class="pre">Settings.WAIT_HEARTBEATS_CONVERGENCE</span></code></a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="p2pfl.utils.html">p2pfl.utils module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.check_equal_models"><code class="docutils literal notranslate"><span class="pre">check_equal_models()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.full_connection"><code class="docutils literal notranslate"><span class="pre">full_connection()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.set_test_settings"><code class="docutils literal notranslate"><span class="pre">set_test_settings()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.wait_4_results"><code class="docutils literal notranslate"><span class="pre">wait_4_results()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="p2pfl.utils.html#p2pfl.utils.wait_convergence"><code class="docutils literal notranslate"><span class="pre">wait_convergence()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -658,12 +669,12 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="p2pfl.commands.html">
+          <a class="next-page" href="p2pfl.communication.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">p2pfl.commands package</div>
+                <div class="title">p2pfl.communication package</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -722,9 +733,10 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=e259d695"></script>
+</div><script src="../_static/documentation_options.js?v=6c02275b"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
     </body>
 </html>
