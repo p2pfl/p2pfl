@@ -2,6 +2,8 @@
 
 **P2PFL** is a decentralized federated learning library that enables federated learning on peer-to-peer networks using gossip protocols, making collaborative AI model training possible without reliance on central servers.
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/9aObi6uQcaQ?si=QU5dmkQ9xkxbON3i" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="display: block; margin: 0 auto;"></iframe>
+
 ## 🤗 Community
 
 Have questions, need help, or want to contribute? Join our Slack community!
