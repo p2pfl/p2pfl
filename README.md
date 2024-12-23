@@ -33,7 +33,7 @@
 | p2pfl/communication/protocols/grpc/grpc\_client.py                      |       61 |        4 |     93% |70, 108, 165, 173 |
 | p2pfl/communication/protocols/grpc/grpc\_communication\_protocol.py     |       79 |        1 |     99% |       230 |
 | p2pfl/communication/protocols/grpc/grpc\_neighbors.py                   |       56 |        5 |     91% |97, 101, 110-112 |
-| p2pfl/communication/protocols/grpc/grpc\_server.py                      |       85 |        9 |     89% |106-108, 119, 147, 198-200, 237 |
+| p2pfl/communication/protocols/grpc/grpc\_server.py                      |       85 |       13 |     85% |106-108, 119, 147, 198-204, 237 |
 | p2pfl/communication/protocols/grpc/proto/\_\_init\_\_.py                |        0 |        0 |    100% |           |
 | p2pfl/communication/protocols/grpc/proto/generate\_proto.py             |       23 |       23 |      0% |     23-70 |
 | p2pfl/communication/protocols/grpc/proto/node\_pb2.py                   |       24 |       13 |     46% |     24-36 |
@@ -120,7 +120,7 @@
 | p2pfl/utils/singleton.py                                                |        7 |        0 |    100% |           |
 | p2pfl/utils/topologies.py                                               |       43 |        2 |     95% |     92-93 |
 | p2pfl/utils/utils.py                                                    |       58 |        5 |     91% |84, 96-97, 116, 139 |
-|                                                               **TOTAL** | **4092** | **1109** | **73%** |           |
+|                                                               **TOTAL** | **4092** | **1113** | **73%** |           |
 
 
 ## Setup coverage badge
