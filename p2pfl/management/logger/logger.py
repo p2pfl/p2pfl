@@ -286,6 +286,7 @@ class P2PFLogger:
         try:
             experiment = self._nodes[addr]["Experiment"]
         except KeyError:
+            return
             raise NodeNotRegistered(f"Node {addr} not registered.") from None
 
         # Get Round
