@@ -54,7 +54,7 @@
 | p2pfl/experiment.py                                                     |       15 |        5 |     67% |51, 67-70, 74 |
 | p2pfl/learning/\_\_init\_\_.py                                          |        0 |        0 |    100% |           |
 | p2pfl/learning/aggregators/\_\_init\_\_.py                              |        0 |        0 |    100% |           |
-| p2pfl/learning/aggregators/aggregator.py                                |       88 |       14 |     84% |64, 126-128, 166-171, 197, 200, 253-257, 270 |
+| p2pfl/learning/aggregators/aggregator.py                                |       88 |       13 |     85% |64, 126-128, 166, 197, 200, 253-257, 270 |
 | p2pfl/learning/aggregators/fedavg.py                                    |       22 |        0 |    100% |           |
 | p2pfl/learning/aggregators/fedmedian.py                                 |        7 |        7 |      0% |     21-47 |
 | p2pfl/learning/aggregators/scaffold.py                                  |       55 |        4 |     93% |88, 96, 109, 127 |
@@ -120,7 +120,7 @@
 | p2pfl/utils/singleton.py                                                |        7 |        0 |    100% |           |
 | p2pfl/utils/topologies.py                                               |       43 |        2 |     95% |     92-93 |
 | p2pfl/utils/utils.py                                                    |       58 |        5 |     91% |84, 96-97, 116, 139 |
-|                                                               **TOTAL** | **4092** | **1112** | **73%** |           |
+|                                                               **TOTAL** | **4092** | **1111** | **73%** |           |
 
 
 ## Setup coverage badge
