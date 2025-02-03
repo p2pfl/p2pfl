@@ -18,7 +18,7 @@
 
 """Callback for SCAFFOLD operations."""
 
-from typing import Any, Dict, List
+from typing import Any
 
 import numpy as np
 
@@ -36,7 +36,7 @@ class Scaffold(Aggregator):
     Due to the complete decentralization of the enviroment, a global model is also maintained in the aggregator.
     This consumes additional bandwidth.
 
-    ::todo:: Improve efficiency by estimating the global model.
+    ::todo:: Improve efficiency by sharing the global model only each n rounds.
     """
 
     REQUIRED_INFO_KEYS = ["delta_y_i", "delta_c_i"]
@@ -52,11 +52,11 @@ class Scaffold(Aggregator):
         """
         super().__init__(node_name)
         self.global_lr = global_lr
-        self.c: List[np.ndarray] = []  # global control variates
-        self.global_model_params: List[np.ndarray] = []  # simulate global model
+        self.c: list[np.ndarray] = []  # global control variates
+        self.global_model_params: list[np.ndarray] = []  # simulate global model
         self.partial_aggregation = False
 
-    def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
+    def aggregate(self, models: list[P2PFLModel]) -> P2PFLModel:
         """
         Aggregate the models and control variates from clients.
 
@@ -79,9 +79,8 @@ class Scaffold(Aggregator):
             for i, layer in enumerate(delta_y_i):
                 accum_delta_y[i] += layer * num_samples
 
-        # Normalize the accumulated model updates
-        accum_delta_y = [layer / total_samples for layer in accum_delta_y]
-        accum_delta_y = [layer * self.global_lr for layer in accum_delta_y]  # apply global learning rate
+        # Normalize the accumulated model updates and apply global learning rate
+        accum_delta_y = [(layer / total_samples) * self.global_lr for layer in accum_delta_y]
 
         # Update global model
         if not self.global_model_params:
@@ -89,7 +88,7 @@ class Scaffold(Aggregator):
         self.global_model_params = [param + delta for param, delta in zip(self.global_model_params, accum_delta_y)]
 
         # Accumulate control variates
-        delta_c_i_first = self._get_and_validate_model_info(models[0])["delta_c_i"]
+        delta_c_i_first = self._get_and_validate_model_info(models[0])["delta_c_i"] # take first model as reference
         accum_c = [np.zeros_like(layer) for layer in delta_c_i_first]
 
         if delta_c_i_first is None:
@@ -118,15 +117,15 @@ class Scaffold(Aggregator):
 
         # Return the aggregated model with the global model parameters and the control variates
         aggregated_model = models[0].build_copy(params=self.global_model_params, num_samples=total_samples, contributors=contributors)
-        aggregated_model.add_info("scaffold", {"global_c": self.c, "global_model_params": self.global_model_params})
+        aggregated_model.add_info("scaffold", {"global_c": self.c})
 
         return aggregated_model
 
-    def get_required_callbacks(self) -> List[str]:
+    def get_required_callbacks(self) -> list[str]:
         """Retrieve the list of required callback keys for this aggregator."""
         return ["scaffold"]
 
-    def _get_and_validate_model_info(self, model: P2PFLModel) -> Dict[str, Any]:
+    def _get_and_validate_model_info(self, model: P2PFLModel) -> dict[str, Any]:
         """
         Validate the model.
 

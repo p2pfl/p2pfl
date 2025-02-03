@@ -26,7 +26,6 @@ import time
 import uuid
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 from p2pfl.communication.protocols.grpc.grpc_communication_protocol import GrpcCommunicationProtocol
 from p2pfl.communication.protocols.memory.memory_communication_protocol import InMemoryCommunicationProtocol

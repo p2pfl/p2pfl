@@ -18,7 +18,7 @@
 
 """Callback for SCAFFOLD operations (Keras)."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import tensorflow as tf  # type: ignore
 from keras import callbacks  # type: ignore
@@ -76,19 +76,19 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
     def __init__(self) -> None:
         """Initialize the callback."""
         super().__init__()
-        self.c_i: List[tf.Variable] = []
-        self.c: List[tf.Variable] = []
-        self.initial_model_params: List[tf.Variable] = []
+        self.c_i: list[tf.Variable] = []
+        self.c: list[tf.Variable] = []
+        self.initial_model_params: list[tf.Variable] = []
         self.saved_lr: Optional[float] = None
         self.K: int = 0
-        self.additional_info: Dict[str, Any] = {}
+        self.additional_info: dict[str, Any] = {}
 
     @staticmethod
     def get_name() -> str:
         """Return the name of the callback."""
         return "scaffold"
 
-    def on_train_begin(self, logs: Optional[Dict[str, Any]] = None) -> None:
+    def on_train_begin(self, logs: Optional[dict[str, Any]] = None) -> None:
         """Initialize control variates and replace the optimizer with custom one."""
         optimizer = self.model.optimizer
         if hasattr(optimizer, "learning_rate"):
@@ -120,7 +120,7 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
             eta_l=self.saved_lr,
         )  # type: ignore
 
-    def on_train_batch_end(self, batch: Any, logs: Optional[Dict[str, Any]] = None) -> None:
+    def on_train_batch_end(self, batch: Any, logs: Optional[dict[str, Any]] = None) -> None:
         """
         Increment the local step counter after each batch.
 
@@ -131,7 +131,7 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
         """
         self.K += 1
 
-    def on_train_end(self, logs: Optional[Dict[str, Any]] = None) -> None:
+    def on_train_end(self, logs: Optional[dict[str, Any]] = None) -> None:
         """
         Update local control variate (c_i) and compute deltas.
 
@@ -158,6 +158,6 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
         self.additional_info["delta_y_i"] = delta_y_i
         self.additional_info["delta_c_i"] = delta_c_i
 
-    def set_additional_info(self, info: Dict[str, Any]) -> None:
+    def set_additional_info(self, info: dict[str, Any]) -> None:
         """Set additional information required for SCAFFOLD."""
         self.additional_info = info
