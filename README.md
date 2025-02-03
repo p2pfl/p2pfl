@@ -15,7 +15,7 @@
 | p2pfl/communication/commands/message/metrics\_command.py                |       15 |        0 |    100% |           |
 | p2pfl/communication/commands/message/model\_initialized\_command.py     |       11 |        0 |    100% |           |
 | p2pfl/communication/commands/message/models\_agregated\_command.py      |       13 |        1 |     92% |        53 |
-| p2pfl/communication/commands/message/models\_ready\_command.py          |       15 |        1 |     93% |        57 |
+| p2pfl/communication/commands/message/models\_ready\_command.py          |       15 |        2 |     87% |     57-62 |
 | p2pfl/communication/commands/message/start\_learning\_command.py        |       13 |        1 |     92% |        59 |
 | p2pfl/communication/commands/message/stop\_learning\_command.py         |       22 |        7 |     68% |     54-64 |
 | p2pfl/communication/commands/message/vote\_train\_set\_command.py       |       24 |        2 |     92% |     69-74 |
@@ -47,7 +47,7 @@
 | p2pfl/communication/protocols/memory/server\_singleton.py               |       16 |        1 |     94% |        43 |
 | p2pfl/communication/protocols/neighbors.py                              |       49 |        8 |     84% |50, 60, 71, 85-86, 93-95 |
 | p2pfl/examples/\_\_init\_\_.py                                          |        0 |        0 |    100% |           |
-| p2pfl/examples/mnist.py                                                 |      145 |      145 |      0% |    24-298 |
+| p2pfl/examples/mnist.py                                                 |      144 |      144 |      0% |    24-297 |
 | p2pfl/examples/node1.py                                                 |       19 |       19 |      0% |     25-60 |
 | p2pfl/examples/node2.py                                                 |       27 |       27 |      0% |     25-75 |
 | p2pfl/exceptions.py                                                     |        6 |        0 |    100% |           |
@@ -57,7 +57,7 @@
 | p2pfl/learning/aggregators/aggregator.py                                |       88 |       13 |     85% |64, 126-128, 166, 197, 200, 253-257, 270 |
 | p2pfl/learning/aggregators/fedavg.py                                    |       22 |        0 |    100% |           |
 | p2pfl/learning/aggregators/fedmedian.py                                 |        7 |        7 |      0% |     21-47 |
-| p2pfl/learning/aggregators/scaffold.py                                  |       55 |        4 |     93% |88, 96, 109, 127 |
+| p2pfl/learning/aggregators/scaffold.py                                  |       54 |        4 |     93% |87, 95, 108, 126 |
 | p2pfl/learning/dataset/\_\_init\_\_.py                                  |        0 |        0 |    100% |           |
 | p2pfl/learning/dataset/p2pfl\_dataset.py                                |       71 |       16 |     77% |52, 136, 150, 166, 180, 185, 263-264, 279-280, 295-296, 310-311, 341-342 |
 | p2pfl/learning/dataset/partition\_strategies.py                         |      104 |       14 |     87% |57, 142, 193-200, 202, 273, 426, 428, 430 |
@@ -74,7 +74,7 @@
 | p2pfl/learning/frameworks/p2pfl\_model.py                               |       59 |        9 |     85% |63, 100-101, 111, 124, 148, 165, 171, 195 |
 | p2pfl/learning/frameworks/pytorch/\_\_init\_\_.py                       |        0 |        0 |    100% |           |
 | p2pfl/learning/frameworks/pytorch/callbacks/\_\_init\_\_.py             |        0 |        0 |    100% |           |
-| p2pfl/learning/frameworks/pytorch/callbacks/scaffold\_callback.py       |       65 |       48 |     26% |41-47, 52, 64-79, 92-93, 108-115, 126-145, 148, 152-155 |
+| p2pfl/learning/frameworks/pytorch/callbacks/scaffold\_callback.py       |       62 |       45 |     27% |41-47, 52, 63-74, 87-88, 103-110, 121-140, 143, 147-150 |
 | p2pfl/learning/frameworks/pytorch/lightning\_dataset.py                 |       23 |        1 |     96% |       100 |
 | p2pfl/learning/frameworks/pytorch/lightning\_learner.py                 |       66 |       13 |     80% |71, 75, 102-108, 112-114, 136-142 |
 | p2pfl/learning/frameworks/pytorch/lightning\_logger.py                  |       21 |        2 |     90% |    43, 52 |
@@ -98,7 +98,7 @@
 | p2pfl/management/logger/decorators/ray\_logger.py                       |       50 |        7 |     86% |63, 67, 140, 196, 227, 237, 250 |
 | p2pfl/management/logger/decorators/singleton\_logger.py                 |        4 |        0 |    100% |           |
 | p2pfl/management/logger/decorators/web\_logger.py                       |       61 |       39 |     36% |48-56, 70-72, 83-85, 110-113, 127-140, 153-155, 166-175, 185-196 |
-| p2pfl/management/logger/logger.py                                       |      121 |       63 |     48% |71-79, 108-109, 131, 136-141, 155-158, 168, 181, 236, 249-260, 286-308, 322, 336, 352-356, 367-372, 387-388, 398, 409-410, 421, 431, 454 |
+| p2pfl/management/logger/logger.py                                       |      121 |       64 |     47% |71-79, 108-109, 131, 136-141, 155-158, 168, 181, 214, 236, 249-260, 286-308, 322, 336, 352-356, 367-372, 387-388, 398, 409-410, 421, 431, 454 |
 | p2pfl/management/metric\_storage.py                                     |       56 |       32 |     43% |77-100, 110, 123, 137, 152, 193-214, 224, 237, 251 |
 | p2pfl/management/node\_monitor.py                                       |       38 |       26 |     32% |43-52, 56, 60-65, 69-82, 86 |
 | p2pfl/management/p2pfl\_web\_services.py                                |       75 |       60 |     20% |53-55, 70-75, 79-81, 93-105, 115, 129-152, 168-193, 208-232, 246-266, 270 |
@@ -120,7 +120,7 @@
 | p2pfl/utils/singleton.py                                                |        7 |        0 |    100% |           |
 | p2pfl/utils/topologies.py                                               |       43 |        2 |     95% |     92-93 |
 | p2pfl/utils/utils.py                                                    |       58 |        5 |     91% |84, 96-97, 116, 139 |
-|                                                               **TOTAL** | **4092** | **1111** | **73%** |           |
+|                                                               **TOTAL** | **4087** | **1109** | **73%** |           |
 
 
 ## Setup coverage badge
