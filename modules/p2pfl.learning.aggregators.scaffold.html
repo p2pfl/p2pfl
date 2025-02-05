@@ -437,7 +437,7 @@
 The aggregator acts like the server in centralized learning, handling both model and control variate updates.</p>
 <p>Due to the complete decentralization of the enviroment, a global model is also maintained in the aggregator.
 This consumes additional bandwidth.</p>
-<p>::todo:: Improve efficiency by estimating the global model.</p>
+<p>::todo:: Improve efficiency by sharing the global model only each n rounds.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="p2pfl.learning.aggregators.scaffold.Scaffold.REQUIRED_INFO_KEYS">
 <span class="sig-name descname"><span class="pre">REQUIRED_INFO_KEYS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['delta_y_i',</span> <span class="pre">'delta_c_i']</span></em><a class="headerlink" href="#p2pfl.learning.aggregators.scaffold.Scaffold.REQUIRED_INFO_KEYS" title="Link to this definition">¶</a></dt>
@@ -449,7 +449,7 @@ This consumes additional bandwidth.</p>
 <dd><p>Aggregate the models and control variates from clients.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>models</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="p2pfl.learning.frameworks.p2pfl_model.html#p2pfl.learning.frameworks.p2pfl_model.P2PFLModel" title="p2pfl.learning.frameworks.p2pfl_model.P2PFLModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">P2PFLModel</span></code></a>]</span>) – List of models to aggregate.</p>
+<dd class="field-odd"><p><strong>models</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="p2pfl.learning.frameworks.p2pfl_model.html#p2pfl.learning.frameworks.p2pfl_model.P2PFLModel" title="p2pfl.learning.frameworks.p2pfl_model.P2PFLModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">P2PFLModel</span></code></a>]</span>) – List of models to aggregate.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="p2pfl.learning.frameworks.p2pfl_model.html#p2pfl.learning.frameworks.p2pfl_model.P2PFLModel" title="p2pfl.learning.frameworks.p2pfl_model.P2PFLModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">P2PFLModel</span></code></a></span></p>
@@ -463,7 +463,7 @@ This consumes additional bandwidth.</p>
 <dd><p>Retrieve the list of required callback keys for this aggregator.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span></p>
 </dd>
 </dl>
 </dd></dl>
