@@ -174,7 +174,7 @@ class Aggregator:
         self.__agg_lock.release()
         return []
 
-    def wait_and_get_aggregation(self, timeout: int = Settings.AGGREGATION_TIMEOUT) -> P2PFLModel:
+    def wait_and_get_aggregation(self, timeout: int = Settings.training.AGGREGATION_TIMEOUT) -> P2PFLModel:
         """
         Wait for aggregation to finish.
 

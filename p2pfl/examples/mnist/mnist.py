@@ -32,42 +32,11 @@ from p2pfl.communication.protocols.memory.memory_communication_protocol import I
 from p2pfl.learning.aggregators.scaffold import Scaffold
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
-from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.settings import Settings
 from p2pfl.utils.topologies import TopologyFactory, TopologyType
-from p2pfl.utils.utils import wait_convergence, wait_to_finish
-
-
-def set_standalone_settings(disable_ray: bool = False) -> None:
-    """
-    Set settings for testing.
-
-    Important:
-        - HEARTBEAT_PERIOD: Too high values can cause late node discovery/fault detection. Too low values can cause high CPU usage.
-        - GOSSIP_PERIOD: Too low values can cause high CPU usage.
-        - TTL: Low TTLs can cause that some messages are not delivered.
-
-    """
-    Settings.GRPC_TIMEOUT = 0.5
-    Settings.HEARTBEAT_PERIOD = 5
-    Settings.HEARTBEAT_TIMEOUT = 40
-    Settings.GOSSIP_PERIOD = 1
-    Settings.TTL = 40
-    Settings.GOSSIP_MESSAGES_PER_PERIOD = 9999999999
-    Settings.AMOUNT_LAST_MESSAGES_SAVED = 10000
-    Settings.GOSSIP_MODELS_PERIOD = 1
-    Settings.GOSSIP_MODELS_PER_ROUND = 4
-    Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS = 10
-    Settings.TRAIN_SET_SIZE = 4
-    Settings.VOTE_TIMEOUT = 60
-    Settings.AGGREGATION_TIMEOUT = 60
-    Settings.WAIT_HEARTBEATS_CONVERGENCE = 0.2 * Settings.HEARTBEAT_TIMEOUT
-    Settings.LOG_LEVEL = "INFO"
-    Settings.EXCLUDE_BEAT_LOGS = True
-    Settings.DISABLE_RAY = disable_ray
-    logger.set_level(Settings.LOG_LEVEL)  # Refresh (maybe already initialized)
+from p2pfl.utils.utils import set_standalone_settings, wait_convergence, wait_to_finish
 
 
 def __parse_args() -> argparse.Namespace:
@@ -84,7 +53,6 @@ def __parse_args() -> argparse.Namespace:
     parser.add_argument("--profiling", action="store_true", help="Enable profiling.", default=False)
     parser.add_argument("--reduced_dataset", action="store_true", help="Use a reduced dataset just for testing.", default=False)
     parser.add_argument("--use_scaffold", action="store_true", help="Use the Scaffold aggregator.", default=False)
-    parser.add_argument("--disable_ray", action="store_true", help="Disable Ray.", default=False)
     parser.add_argument(
         "--topology",
         type=str,
@@ -97,25 +65,6 @@ def __parse_args() -> argparse.Namespace:
     args.topology = TopologyType(args.topology)
 
     return args
-
-
-def create_tensorflow_model() -> P2PFLModel:
-    """Create a TensorFlow model."""
-    import tensorflow as tf  # type: ignore
-
-    from p2pfl.learning.frameworks.tensorflow.keras_model import MLP as MLP_KERAS
-    from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel
-
-    model = MLP_KERAS()  # type: ignore[no-untyped-call]
-    model(tf.zeros((1, 28, 28, 1)))
-    return KerasModel(model)
-
-
-def create_pytorch_model() -> P2PFLModel:
-    """Create a PyTorch model."""
-    from p2pfl.learning.frameworks.pytorch.lightning_model import MLP, LightningModel
-
-    return LightningModel(MLP())  # type: ignore[no-untyped-call]
 
 
 def mnist(
@@ -150,22 +99,20 @@ def mnist(
         start_time = time.time()
 
     # Check settings
-    if n > Settings.TTL:
+    if n > Settings.gossip.TTL:
         raise ValueError(
             "For in-line topology TTL must be greater than the number of nodes." "Otherwise, some messages will not be delivered."
         )
 
     # Imports
     if framework == "tensorflow":
-        from p2pfl.learning.frameworks.tensorflow.keras_learner import KerasLearner
+        from p2pfl.examples.mnist.model.mlp_pytorch import model_build_fn  # type: ignore
 
-        model_fn = create_tensorflow_model
-        learner = KerasLearner
+        model_fn = model_build_fn  # type: ignore
     elif framework == "pytorch":
-        from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
+        from p2pfl.examples.mnist.model.mlp_tensorflow import model_build_fn  # type: ignore
 
-        model_fn = create_pytorch_model
-        learner = LightningLearner  # type: ignore
+        model_fn = model_build_fn  # type: ignore
     else:
         raise ValueError(f"Framework {args.framework} not added on this example.")
 
@@ -185,7 +132,6 @@ def mnist(
         node = Node(
             model_fn(),
             partitions[i],
-            learner=learner,  # type: ignore
             protocol=InMemoryCommunicationProtocol if protocol == "memory" else GrpcCommunicationProtocol,  # type: ignore
             address=address,
             simulation=True,
@@ -259,7 +205,7 @@ if __name__ == "__main__":
     # Parse args
     args = __parse_args()
 
-    set_standalone_settings(disable_ray=args.disable_ray)  # todo: not working on the logger because it is imported at the top of the file
+    set_standalone_settings()
 
     if args.profiling:
         import os  # noqa: I001

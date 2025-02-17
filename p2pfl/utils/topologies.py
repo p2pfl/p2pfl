@@ -40,7 +40,7 @@ class TopologyFactory:
     """Factory class for generating network topologies."""
 
     @staticmethod
-    def generate_matrix(topology_type: TopologyType, num_nodes: int) -> np.ndarray:
+    def generate_matrix(topology_type: TopologyType | str, num_nodes: int) -> np.ndarray:
         """
         Generate the adjacency matrix for the specified topology.
 
@@ -49,8 +49,8 @@ class TopologyFactory:
             num_nodes: The number of nodes in the network.
 
         """
-        if not isinstance(topology_type, TopologyType):
-            raise TypeError("topology_type must be a TopologyType enum member")
+        if isinstance(topology_type, str):
+            topology_type = TopologyType(topology_type)
 
         matrix = np.zeros((num_nodes, num_nodes), dtype=int)  # Initialize as NumPy array
 
@@ -68,6 +68,8 @@ class TopologyFactory:
             for i in range(num_nodes):
                 matrix[i, (i + 1) % num_nodes] = 1
                 matrix[(i + 1) % num_nodes, i] = 1
+        else:
+            raise ValueError(f"Unsupported topology type: {topology_type}")
 
         return matrix
 

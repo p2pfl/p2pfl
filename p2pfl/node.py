@@ -330,22 +330,23 @@ class Node:
     #         Network Learning Management         #
     ###############################################
 
-    def __start_learning_thread(self, rounds: int, epochs: int) -> None:
+    def __start_learning_thread(self, rounds: int, epochs: int, trainset_size: int) -> None:
         learning_thread = threading.Thread(
             target=self.__start_learning,
-            args=(rounds, epochs),
+            args=(rounds, epochs, trainset_size),
             name="learning_thread-" + self.addr,
         )
         learning_thread.daemon = True
         learning_thread.start()
 
-    def set_start_learning(self, rounds: int = 1, epochs: int = 1) -> None:
+    def set_start_learning(self, rounds: int = 1, epochs: int = 1, trainset_size: int = 4) -> None:
         """
         Start the learning process in the entire network.
 
         Args:
             rounds: Number of rounds of the learning process.
             epochs: Number of epochs of the learning process.
+            trainset_size: Size of the trainset.
 
         Raises:
             ZeroRoundsException: If rounds is less than 1.
@@ -360,14 +361,14 @@ class Node:
             # Broadcast start Learning
             logger.info(self.addr, "🚀 Broadcasting start learning...")
             self._communication_protocol.broadcast(
-                self._communication_protocol.build_msg(StartLearningCommand.get_name(), [str(rounds), str(epochs)])
+                self._communication_protocol.build_msg(StartLearningCommand.get_name(), [str(rounds), str(epochs), str(trainset_size)])
             )
             # Set model initialized
             self.state.model_initialized_lock.release()
             # Broadcast initialize model
             self._communication_protocol.broadcast(self._communication_protocol.build_msg(ModelInitializedCommand.get_name()))
             # Learning Thread
-            self.__start_learning_thread(rounds, epochs)
+            self.__start_learning_thread(rounds, epochs, trainset_size)
         else:
             logger.info(self.addr, "Learning already started")
 
@@ -385,11 +386,12 @@ class Node:
     #         Local Learning         #
     ##################################
 
-    def __start_learning(self, rounds: int, epochs: int) -> None:
+    def __start_learning(self, rounds: int, epochs: int, trainset_size) -> None:
         try:
             self.learning_workflow.run(
                 rounds=rounds,
                 epochs=epochs,
+                trainset_size=trainset_size,
                 state=self.state,
                 learner=self.learner,
                 communication_protocol=self._communication_protocol,

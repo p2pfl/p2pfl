@@ -39,11 +39,11 @@ class FileLogger(LoggerDecorator):
 
     def setup_file_handler(self) -> None:
         """Set up the file handler for logging."""
-        if not os.path.exists(Settings.LOG_DIR):
-            os.makedirs(Settings.LOG_DIR)
+        if not os.path.exists(Settings.general.LOG_DIR):
+            os.makedirs(Settings.general.LOG_DIR)
 
         file_handler = RotatingFileHandler(
-            f"{Settings.LOG_DIR}/p2pfl.log", maxBytes=1000000, backupCount=3
+            f"{Settings.general.LOG_DIR}/p2pfl.log", maxBytes=1000000, backupCount=3
         )  # TODO: ADD DIFFERENT LOG FILES FOR DIFFERENT NODES / EXPERIMENTS
         file_formatter = logging.Formatter(
             "[ %(asctime)s | %(node)s | %(levelname)s ]: %(message)s",

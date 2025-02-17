@@ -87,6 +87,5 @@ def test_connect_nodes(adjacency_matrix, expected_calls):
 
 def test_invalid_topology_type():
     """Test that an exception is raised when an invalid topology type is passed."""
-    with pytest.raises(TypeError) as excinfo:
-        TopologyFactory.generate_matrix("invalid_type", 4)  # Pass a string, not enum
-    assert str(excinfo.value) == "topology_type must be a TopologyType enum member"
+    with pytest.raises(ValueError):
+        TopologyFactory.generate_matrix("invalid_type", 4)

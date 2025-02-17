@@ -83,9 +83,9 @@ class Heartbeater(threading.Thread):
         timeout: Optional[float] = None,
     ) -> None:
         if period is None:
-            period = Settings.HEARTBEAT_PERIOD
+            period = Settings.heartbeat.PERIOD
         if timeout is None:
-            timeout = Settings.HEARTBEAT_TIMEOUT
+            timeout = Settings.heartbeat.TIMEOUT
         toggle = False
         while not self.__heartbeat_terminate_flag.is_set():
             t = time.time()

@@ -22,9 +22,6 @@ from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import tensorflow as tf  # type: ignore
-from tensorflow.keras.layers import Dense, Flatten  # type: ignore
-from tensorflow.keras.losses import SparseCategoricalCrossentropy  # type: ignore
-from tensorflow.keras.optimizers import Adam  # type: ignore
 
 from p2pfl.learning.frameworks import Framework
 from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
@@ -108,61 +105,6 @@ class KerasModel(P2PFLModel):
 
         Returns:
             The name of the model framework.
-
-        """
-        return Framework.TENSORFLOW.value
-
-
-####
-# Example MLP
-####
-
-
-class MLP(tf.keras.Model):
-    """Multilayer Perceptron (MLP) for MNIST classification using Keras."""
-
-    def __init__(self, hidden_sizes=None, out_channels=10, lr_rate=0.001, seed=None, **kwargs):
-        """
-        Initialize the MLP.
-
-        Args:
-            hidden_sizes (list): List of integers representing the number of neurons in each hidden layer.
-            out_channels (int): Number of output classes (10 for MNIST).
-            lr_rate (float): Learning rate for the Adam optimizer.
-            seed (int, optional): Random seed for reproducibility.
-            kwargs: Additional arguments.
-
-        """
-        if hidden_sizes is None:
-            hidden_sizes = [256, 128]
-        super().__init__()
-
-        if seed is not None:
-            tf.random.set_seed(seed)
-
-        # Define layers
-        self.flatten = Flatten()
-        self.hidden_layers = [Dense(size, activation="relu") for size in hidden_sizes]
-        self.output_layer = Dense(out_channels)
-
-        # Define loss, optimizer, and metrics
-        self.loss = SparseCategoricalCrossentropy(from_logits=True)
-        self.optimizer = Adam(learning_rate=lr_rate)
-
-    def call(self, inputs):
-        """Forward pass of the MLP."""
-        x = self.flatten(inputs)
-        for layer in self.hidden_layers:
-            x = layer(x)
-        x = self.output_layer(x)
-        return x
-
-    def get_framework(self) -> str:
-        """
-        Retrieve the model name.
-
-        Returns:
-            The name of the model class.
 
         """
         return Framework.TENSORFLOW.value

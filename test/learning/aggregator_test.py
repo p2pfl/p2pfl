@@ -29,7 +29,8 @@ from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 
 # Import PyTorch models if available
 with contextlib.suppress(ImportError):
-    from p2pfl.learning.frameworks.pytorch.lightning_model import MLP, LightningModel
+    from p2pfl.examples.mnist.model.mlp_pytorch import MLP
+    from p2pfl.learning.frameworks.pytorch.lightning_model import LightningModel
 
 
 class P2PFLModelMock(P2PFLModel):

@@ -49,9 +49,9 @@ class Gossiper(threading.Thread):
     ) -> None:
         """Initialize the gossiper."""
         if period is None:
-            period = Settings.GOSSIP_PERIOD
+            period = Settings.gossip.PERIOD
         if messages_per_period is None:
-            messages_per_period = Settings.GOSSIP_MESSAGES_PER_PERIOD
+            messages_per_period = Settings.gossip.MESSAGES_PER_PERIOD
         # Thread
         super().__init__()
         self.__self_addr = self_addr
@@ -114,7 +114,7 @@ class Gossiper(threading.Thread):
             self.__processed_messages_lock.release()
             return False
         # If there are more than X messages, remove the oldest one
-        if len(self.__processed_messages) > Settings.AMOUNT_LAST_MESSAGES_SAVED:
+        if len(self.__processed_messages) > Settings.gossip.AMOUNT_LAST_MESSAGES_SAVED:
             self.__processed_messages.pop(0)
         # Add message
         self.__processed_messages.append(msg_hash)
@@ -204,11 +204,11 @@ class Gossiper(threading.Thread):
 
             # Save state of neighbors. If nodes are not responding gossip will stop
             logger.debug(self.__self_addr, f"👥 Gossip remaining nodes: {neis}")
-            if len(last_x_status) != Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS:
+            if len(last_x_status) != Settings.gossip.EXIT_ON_X_EQUAL_ROUNDS:
                 last_x_status.append(status_fn())
             else:
                 last_x_status[j] = str(status_fn())
-                j = (j + 1) % Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS
+                j = (j + 1) % Settings.gossip.EXIT_ON_X_EQUAL_ROUNDS
 
                 # Check if las messages are the same
                 for i in range(len(last_x_status) - 1):
@@ -216,13 +216,13 @@ class Gossiper(threading.Thread):
                         break
                     logger.info(
                         self.__self_addr,
-                        f"⏹️  Gossiping exited for {Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS} equal rounds.",
+                        f"⏹️  Gossiping exited for {Settings.gossip.EXIT_ON_X_EQUAL_ROUNDS} equal rounds.",
                     )
                     logger.debug(self.__self_addr, f"Gossip last status: {last_x_status[-1]}")
                     return
 
             # Select a random subset of neighbors
-            samples = min(Settings.GOSSIP_MODELS_PER_ROUND, len(neis))
+            samples = min(Settings.gossip.MODELS_PER_ROUND, len(neis))
             neis = random.sample(neis, samples)
 
             # Generate and Send Model Partial Aggregations (model, node_contributors)

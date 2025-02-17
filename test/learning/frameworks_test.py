@@ -32,27 +32,28 @@ from p2pfl.management.logger import logger
 with contextlib.suppress(ImportError):
     import tensorflow as tf
 
+    from p2pfl.examples.mnist.model.mlp_tensorflow import model_build_fn as model_build_fn_tensorflow
     from p2pfl.learning.frameworks.tensorflow.keras_dataset import KerasExportStrategy
     from p2pfl.learning.frameworks.tensorflow.keras_learner import KerasLearner
-    from p2pfl.learning.frameworks.tensorflow.keras_model import MLP as MLP_KERAS
     from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel
+
 
 with contextlib.suppress(ImportError):
     import jax
     import jax.numpy as jnp
 
+    from p2pfl.examples.mnist.model.mlp_flax import MLP as MLP_FLASK
     from p2pfl.learning.frameworks.flax.flax_dataset import FlaxExportStrategy
     from p2pfl.learning.frameworks.flax.flax_learner import FlaxLearner
-    from p2pfl.learning.frameworks.flax.flax_model import MLP as MLP_FLASK
     from p2pfl.learning.frameworks.flax.flax_model import FlaxModel
 
 with contextlib.suppress(ImportError):
     import torch
     from torch.utils.data import DataLoader
 
+    from p2pfl.examples.mnist.model.mlp_pytorch import model_build_fn as model_build_fn_torch
     from p2pfl.learning.frameworks.pytorch.lightning_dataset import PyTorchExportStrategy, TorchvisionDatasetFactory
     from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
-    from p2pfl.learning.frameworks.pytorch.lightning_model import MLP as MLP_PT
     from p2pfl.learning.frameworks.pytorch.lightning_model import LightningModel
 
 ####
@@ -63,7 +64,7 @@ with contextlib.suppress(ImportError):
 def test_get_set_params_torch():
     """Test setting and getting parameters."""
     # Create the model
-    p2pfl_model = LightningModel(MLP_PT())
+    p2pfl_model = model_build_fn_torch()
     # Modify parameters
     params = p2pfl_model.get_parameters()
     params_og = [layer.copy() for layer in p2pfl_model.get_parameters()]
@@ -79,9 +80,7 @@ def test_get_set_params_torch():
 def test_get_set_params_tensorflow():
     """Test setting and getting parameters."""
     # Create the model
-    model = MLP_KERAS()
-    model(tf.zeros((1, 28, 28, 1)))
-    p2pfl_model = KerasModel(model)
+    p2pfl_model = model_build_fn_tensorflow()
     # Modify parameters
     params = p2pfl_model.get_parameters()
     params_og = [layer.copy() for layer in p2pfl_model.get_parameters()]
@@ -128,10 +127,10 @@ def test_get_set_params_flax():
 
 def test_encoding_torch():
     """Test encoding and decoding of parameters."""
-    p2pfl_model1 = LightningModel(MLP_PT())
+    p2pfl_model1 = model_build_fn_torch()
     encoded_params = p2pfl_model1.encode_parameters()
 
-    p2pfl_model2 = LightningModel(MLP_PT())
+    p2pfl_model2 = model_build_fn_torch()
     decoded_params, additional_info = p2pfl_model2.decode_parameters(encoded_params)
     p2pfl_model2.set_parameters(decoded_params)
     p2pfl_model2.additional_info = additional_info
@@ -142,14 +141,9 @@ def test_encoding_torch():
 
 def test_encoding_tensorflow():
     """Test encoding and decoding of parameters."""
-    model = MLP_KERAS()
-    model(tf.zeros((1, 28, 28, 1)))
-    p2pfl_model1 = KerasModel(model)
+    p2pfl_model1 = model_build_fn_tensorflow()
     encoded_params = p2pfl_model1.encode_parameters()
-
-    model = MLP_KERAS()
-    model(tf.zeros((1, 28, 28, 1)))
-    p2pfl_model2 = KerasModel(model)
+    p2pfl_model2 = model_build_fn_tensorflow()
     decoded_params, additional_info = p2pfl_model2.decode_parameters(encoded_params)
     p2pfl_model2.set_parameters(decoded_params)
 
@@ -179,7 +173,7 @@ def test_encoding_flax():
 
 def test_wrong_encoding_torch():
     """Test wrong encoding of parameters."""
-    p2pfl_model1 = LightningModel(MLP_PT())
+    p2pfl_model1 = model_build_fn_torch()
     encoded_params = p2pfl_model1.encode_parameters()
     mobile_net = torch.hub.load("pytorch/vision:v0.10.0", "mobilenet_v2", pretrained=False)
     p2pfl_model2 = LightningModel(mobile_net)
@@ -191,11 +185,9 @@ def test_wrong_encoding_torch():
 
 def test_wrong_encoding_tensorflow():
     """Test wrong encoding of parameters."""
-    model = MLP_KERAS()
-    model(tf.zeros((1, 28, 28, 1)))
-    p2pfl_model1 = KerasModel(model)
+    p2pfl_model1 = model_build_fn_tensorflow()
     encoded_params = p2pfl_model1.encode_parameters()
-    mobile_net = model = tf.keras.applications.MobileNetV2((32, 32, 3), classes=10, weights=None)
+    mobile_net = tf.keras.applications.MobileNetV2((32, 32, 3), classes=10, weights=None)
     p2pfl_model2 = KerasModel(mobile_net)
     decoded_params = p2pfl_model2.decode_parameters(encoded_params)
     # Check that raises
@@ -332,7 +324,7 @@ def test_learner_train_torch():
     )
 
     # Create the model
-    p2pfl_model = LightningModel(MLP_PT())
+    p2pfl_model = model_build_fn_torch()
 
     node_name = "unknown-node"
     logger.register_node(node_name, simulation=True)
@@ -367,9 +359,7 @@ def test_learner_train_tensorflow():
     )
 
     # Create the model
-    model = MLP_KERAS()
-    model(tf.zeros((1, 28, 28, 1)))
-    p2pfl_model = KerasModel(model)
+    p2pfl_model = model_build_fn_tensorflow()
 
     # Learner
     learner = KerasLearner(p2pfl_model, dataset)

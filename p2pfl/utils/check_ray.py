@@ -19,13 +19,12 @@
 """Check if ray is installed."""
 
 import importlib
-
-from p2pfl.settings import Settings
+import os
 
 
 def ray_installed() -> bool:
     """Check if ray is installed."""
-    if Settings.DISABLE_RAY:
+    if os.environ.get("DISABLE_RAY", "0") == "1":
         return False
 
     if importlib.util.find_spec("ray") is not None:

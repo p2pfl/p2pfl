@@ -144,7 +144,7 @@ class InMemoryServer:
         """
         # If not processed
         if self.__gossiper.check_and_set_processed(request["hash"]):
-            if request["cmd"] != "beat" or (not Settings.EXCLUDE_BEAT_LOGS and request["cmd"] == "beat"):
+            if request["cmd"] != "beat" or (not Settings.general.EXCLUDE_BEAT_LOGS and request["cmd"] == "beat"):
                 source = request["source"]
                 cmd = request["cmd"].upper()
                 ttl = request["ttl"]

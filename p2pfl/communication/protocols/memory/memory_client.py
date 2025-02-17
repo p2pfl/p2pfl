@@ -67,7 +67,7 @@ class InMemoryClient(Client):
         args = [str(a) for a in args]
         return {
             "source": self.__self_addr,
-            "ttl": Settings.TTL,
+            "ttl": Settings.gossip.TTL,
             "hash": hs,
             "cmd": cmd,
             "args": args,

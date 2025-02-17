@@ -88,7 +88,7 @@ class Scaffold(Aggregator):
         self.global_model_params = [param + delta for param, delta in zip(self.global_model_params, accum_delta_y)]
 
         # Accumulate control variates
-        delta_c_i_first = self._get_and_validate_model_info(models[0])["delta_c_i"] # take first model as reference
+        delta_c_i_first = self._get_and_validate_model_info(models[0])["delta_c_i"]  # take first model as reference
         accum_c = [np.zeros_like(layer) for layer in delta_c_i_first]
 
         if delta_c_i_first is None:

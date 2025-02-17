@@ -32,9 +32,9 @@ from p2pfl.communication.protocols.exceptions import (
 from p2pfl.communication.protocols.grpc.grpc_communication_protocol import GrpcCommunicationProtocol
 from p2pfl.communication.protocols.memory.memory_communication_protocol import InMemoryCommunicationProtocol
 from p2pfl.settings import Settings
-from p2pfl.utils.utils import set_test_settings, wait_convergence
+from p2pfl.utils.utils import set_standalone_settings, wait_convergence
 
-set_test_settings()
+set_standalone_settings()
 
 
 class MockCommand(Command):
@@ -159,8 +159,8 @@ def test_neightboor_management_and_gossip(protocol_class: Type[CommunicationProt
     protocol2.disconnect(protocol3.get_address())
 
     # Wait for convergence
-    wait_convergence([protocol1, protocol2], 1, wait=Settings.HEARTBEAT_TIMEOUT * 2, only_direct=False)
-    wait_convergence([protocol3, protocol4, protocol5], 2, wait=Settings.HEARTBEAT_TIMEOUT * 2, only_direct=False)
+    wait_convergence([protocol1, protocol2], 1, wait=Settings.heartbeat.TIMEOUT * 2, only_direct=False)
+    wait_convergence([protocol3, protocol4, protocol5], 2, wait=Settings.heartbeat.TIMEOUT * 2, only_direct=False)
 
     # Check neighbors (only direct)
     assert len(protocol1.get_neighbors(only_direct=True)) == 1
@@ -173,9 +173,9 @@ def test_neightboor_management_and_gossip(protocol_class: Type[CommunicationProt
     protocol4.disconnect(protocol3.get_address())
 
     # Wait for convergence
-    wait_convergence([protocol4, protocol5], 1, wait=Settings.HEARTBEAT_TIMEOUT * 2, only_direct=False)
-    wait_convergence([protocol1, protocol2], 1, wait=Settings.HEARTBEAT_TIMEOUT * 2, only_direct=False)
-    wait_convergence([protocol3], 0, wait=Settings.HEARTBEAT_TIMEOUT * 2, only_direct=False)
+    wait_convergence([protocol4, protocol5], 1, wait=Settings.heartbeat.TIMEOUT * 2, only_direct=False)
+    wait_convergence([protocol1, protocol2], 1, wait=Settings.heartbeat.TIMEOUT * 2, only_direct=False)
+    wait_convergence([protocol3], 0, wait=Settings.heartbeat.TIMEOUT * 2, only_direct=False)
 
     # Check neighbors (only direct)
     assert len(protocol1.get_neighbors(only_direct=True)) == 1

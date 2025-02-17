@@ -108,7 +108,7 @@ class P2PFLogger:
             print(self._logger.handlers)
             raise Exception("Logger already initialized.")
         self._logger.propagate = False
-        self._logger.setLevel(logging.getLevelName(Settings.LOG_LEVEL))
+        self._logger.setLevel(logging.getLevelName(Settings.general.LOG_LEVEL))
 
         # STDOUT - Handler
         stream_handler = logging.StreamHandler()

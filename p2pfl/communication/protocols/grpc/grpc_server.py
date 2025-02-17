@@ -93,8 +93,10 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
         # Server
         node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.__server)
         try:
-            if Settings.USE_SSL and isfile(Settings.SERVER_KEY) and isfile(Settings.SERVER_CRT):
-                with open(Settings.SERVER_KEY) as key_file, open(Settings.SERVER_CRT) as crt_file, open(Settings.CA_CRT) as ca_file:
+            if Settings.ssl.USE_SSL and isfile(Settings.ssl.SERVER_KEY) and isfile(Settings.ssl.SERVER_CRT):
+                with open(Settings.ssl.SERVER_KEY) as key_file, open(Settings.ssl.SERVER_CRT) as crt_file, open(
+                    Settings.ssl.CA_CRT
+                ) as ca_file:
                     private_key = key_file.read().encode()
                     certificate_chain = crt_file.read().encode()
                     root_certificates = ca_file.read().encode()
@@ -171,13 +173,13 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
         # ssed, return
         if request.HasField("message") and not self.__gossiper.check_and_set_processed(request.message.hash):
             """
-            if request.cmd != "beat" or (not Settings.EXCLUDE_BEAT_LOGS and request.source == "beat"):
+            if request.cmd != "beat" or (not Settings.general.EXCLUDE_BEAT_LOGS and request.source == "beat"):
                 logger.debug(self.addr, f"🙅 Message already processed: {request.cmd} (id {request.message.hash})")
             """
             return node_pb2.ResponseMessage()
 
         # Process message/model
-        if request.cmd != "beat" or (not Settings.EXCLUDE_BEAT_LOGS and request.cmd == "beat"):
+        if request.cmd != "beat" or (not Settings.general.EXCLUDE_BEAT_LOGS and request.cmd == "beat"):
             logger.debug(
                 self.addr,
                 f"📫 {request.cmd.upper()} received from {request.source}",

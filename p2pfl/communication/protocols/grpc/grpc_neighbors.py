@@ -84,8 +84,10 @@ class GrpcNeighbors(Neighbors):
         """
         try:
             # Create channel and stub
-            if Settings.USE_SSL and isfile(Settings.SERVER_CRT):
-                with open(Settings.CLIENT_KEY) as key_file, open(Settings.CLIENT_CRT) as crt_file, open(Settings.CA_CRT) as ca_file:
+            if Settings.ssl.USE_SSL and isfile(Settings.ssl.SERVER_CRT):
+                with open(Settings.ssl.CLIENT_KEY) as key_file, open(Settings.ssl.CLIENT_CRT) as crt_file, open(
+                    Settings.ssl.CA_CRT
+                ) as ca_file:
                     private_key = key_file.read().encode()
                     certificate_chain = crt_file.read().encode()
                     root_certificates = ca_file.read().encode()
@@ -104,7 +106,7 @@ class GrpcNeighbors(Neighbors):
             if handshake_msg:
                 res = stub.handshake(
                     node_pb2.HandShakeRequest(addr=self.self_addr),
-                    timeout=Settings.GRPC_TIMEOUT,
+                    timeout=Settings.general.GRPC_TIMEOUT,
                 )
                 if res.error:
                     logger.info(self.self_addr, f"Cannot add a neighbor: {res.error}")

@@ -76,7 +76,7 @@ class GrpcClient(Client):
             round=round,
             cmd=cmd,
             message=node_pb2.Message(
-                ttl=Settings.TTL,
+                ttl=Settings.gossip.TTL,
                 hash=hs,
                 args=args,
             ),
@@ -150,8 +150,10 @@ class GrpcClient(Client):
 
             # Check if direct connection
             if node_stub is None and create_connection:
-                if Settings.USE_SSL and isfile(Settings.SERVER_CRT):
-                    with open(Settings.CLIENT_KEY) as key_file, open(Settings.CLIENT_CRT) as crt_file, open(Settings.CA_CRT) as ca_file:
+                if Settings.ssl.USE_SSL and isfile(Settings.ssl.SERVER_CRT):
+                    with open(Settings.ssl.CLIENT_KEY) as key_file, open(Settings.ssl.CLIENT_CRT) as crt_file, open(
+                        Settings.ssl.CA_CRT
+                    ) as ca_file:
                         private_key = key_file.read().encode()
                         certificate_chain = crt_file.read().encode()
                         root_certificates = ca_file.read().encode()
@@ -168,7 +170,7 @@ class GrpcClient(Client):
             # Send
             if node_stub is not None:
                 # Send message
-                res = node_stub.send(msg, timeout=Settings.GRPC_TIMEOUT)
+                res = node_stub.send(msg, timeout=Settings.general.GRPC_TIMEOUT)
             else:
                 raise NeighborNotConnectedError("Neighbor not directly connected (Stub not defined and create_connection is false).")
             if res.error:

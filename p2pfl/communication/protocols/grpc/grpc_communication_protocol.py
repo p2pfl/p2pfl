@@ -252,7 +252,7 @@ class GrpcCommunicationProtocol(CommunicationProtocol):
 
         """
         if period is None:
-            period = Settings.GOSSIP_MODELS_PERIOD
+            period = Settings.gossip.MODELS_PERIOD
         self._gossiper.gossip_weights(
             early_stopping_fn,
             get_candidates_fn,

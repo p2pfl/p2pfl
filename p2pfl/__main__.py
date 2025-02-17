@@ -18,7 +18,7 @@
 
 """Main entry point for the p2pfl CLI."""
 
-from p2pfl.cli import app
+from p2pfl.management.cli import app
 
 if __name__ == "__main__":
     app()

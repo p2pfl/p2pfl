@@ -185,7 +185,7 @@ class P2PFLDataset:
             raise TypeError("Unsupported data type.")
 
     def generate_partitions(
-        self, num_partitions: int, strategy: DataPartitionStrategy, seed: int = 666, label_tag: str = "label"
+        self, num_partitions: int, strategy: DataPartitionStrategy, seed: int = 666, label_tag: str = "label", **kwargs
     ) -> List["P2PFLDataset"]:
         """
         Generate partitions of the dataset.
@@ -195,6 +195,7 @@ class P2PFLDataset:
             strategy: The partition strategy to use.
             seed: The random seed to use for reproducibility.
             label_tag: The tag to use for the label.
+            **kwargs: Additional keyword arguments for the partition strategy.
 
         Returns:
             An iterable of P2PFLDataset objects.
@@ -208,6 +209,7 @@ class P2PFLDataset:
             num_partitions,
             seed=seed,
             label_tag=label_tag,
+            **kwargs,
         )
         return [
             P2PFLDataset(

@@ -28,39 +28,35 @@ from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.utils.utils import (
     check_equal_models,
-    set_test_settings,
+    set_standalone_settings,
     wait_convergence,
     wait_to_finish,
 )
 
 with contextlib.suppress(ImportError):
-    import tensorflow as tf
 
-    from p2pfl.learning.frameworks.tensorflow.keras_learner import KerasLearner
-    from p2pfl.learning.frameworks.tensorflow.keras_model import MLP as MLP_KERAS
-    from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel
+    from p2pfl.examples.mnist.model.mlp_tensorflow import model_build_fn as model_build_fn_tensorflow
+
 
 with contextlib.suppress(ImportError):
     import jax
     import jax.numpy as jnp
 
-    from p2pfl.learning.frameworks.flax.flax_learner import FlaxLearner
-    from p2pfl.learning.frameworks.flax.flax_model import MLP as MLP_FLAX
+    from p2pfl.examples.mnist.model.mlp_flax import MLP as MLP_FLAX
     from p2pfl.learning.frameworks.flax.flax_model import FlaxModel
 
 with contextlib.suppress(ImportError):
-    from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
-    from p2pfl.learning.frameworks.pytorch.lightning_model import MLP, LightningModel
+    from p2pfl.examples.mnist.model.mlp_pytorch import model_build_fn as model_build_fn_pytorch
 
-set_test_settings()
+set_standalone_settings()
 
 
 @pytest.fixture
 def two_nodes():
     """Create two nodes and start them. Yield the nodes. After the test, stop the nodes."""
     data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
-    n1 = Node(LightningModel(MLP()), data)
-    n2 = Node(LightningModel(MLP()), data)
+    n1 = Node(model_build_fn_pytorch(), data)
+    n2 = Node(model_build_fn_pytorch(), data)
     n1.start()
     n2.start()
 
@@ -88,7 +84,7 @@ def test_convergence(x):
     # Node Creation
     nodes = []
     for i in range(n):
-        node = Node(LightningModel(MLP()), partitions[i])
+        node = Node(model_build_fn_pytorch(), partitions[i])
         node.start()
         nodes.append(node)
 
@@ -171,7 +167,7 @@ def _test_node_down_on_learning(n):
     nodes = []
     data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
     for _ in range(n):
-        node = Node(LightningModel(MLP()), data)
+        node = Node(model_build_fn_pytorch(), data)
         node.start()
         nodes.append(node)
 
@@ -211,13 +207,11 @@ def test_tensorflow_node():
     partitions = data.generate_partitions(400, RandomIIDPartitionStrategy)
 
     # Create the model
-    model = MLP_KERAS()
-    model(tf.zeros((1, 28, 28, 1)))
-    p2pfl_model = KerasModel(model)
+    p2pfl_model = model_build_fn_tensorflow()
 
     # Nodes
-    n1 = Node(p2pfl_model, partitions[0], learner=KerasLearner)
-    n2 = Node(p2pfl_model.build_copy(), partitions[1], learner=KerasLearner)
+    n1 = Node(p2pfl_model, partitions[0])
+    n2 = Node(p2pfl_model.build_copy(), partitions[1])
 
     # Start
     n1.start()
@@ -251,11 +245,11 @@ def test_torch_node():
     partitions = data.generate_partitions(400, RandomIIDPartitionStrategy)
 
     # Create the model
-    p2pfl_model = LightningModel(MLP())
+    p2pfl_model = model_build_fn_pytorch()
 
     # Nodes
-    n1 = Node(p2pfl_model, partitions[0], learner=LightningLearner)
-    n2 = Node(p2pfl_model.build_copy(), partitions[1], learner=LightningLearner)
+    n1 = Node(p2pfl_model, partitions[0])
+    n2 = Node(p2pfl_model.build_copy(), partitions[1])
 
     # Start
     n1.start()
@@ -292,8 +286,8 @@ def test_flax_node():
     model_params = model.init(seed, jnp.ones((1, 28, 28)))["params"]
     p2pfl_model = FlaxModel(model, model_params)
     # Nodes
-    n1 = Node(p2pfl_model, partitions[0], learner=FlaxLearner)
-    n2 = Node(p2pfl_model.build_copy(), partitions[1], learner=FlaxLearner)
+    n1 = Node(p2pfl_model, partitions[0])
+    n2 = Node(p2pfl_model.build_copy(), partitions[1])
     # Start
     n1.start()
     n2.start()

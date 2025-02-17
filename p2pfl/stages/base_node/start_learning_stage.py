@@ -71,7 +71,7 @@ class StartLearningStage(Stage):
         StartLearningStage.__gossip_model(state, communication_protocol, learner)
 
         # Wait to guarantee new connection heartbeats convergence
-        wait_time = Settings.WAIT_HEARTBEATS_CONVERGENCE - (time.time() - begin)
+        wait_time = Settings.heartbeat.WAIT_CONVERGENCE - (time.time() - begin)
         if wait_time > 0:
             time.sleep(wait_time)
 

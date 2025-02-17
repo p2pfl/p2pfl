@@ -1,0 +1,83 @@
+description: "Example of using P2PFL with the MNIST dataset, a collection of handwritten digits commonly used for training image processing systems."
+
+# Defines network setup
+network:
+  package: "p2pfl.communication.protocols.grpc.grpc_communication_protocol"
+  protocol: "GrpcCommunicationProtocol"
+  nodes: 4
+  topology: "line"   # Network topology: "line", "ring", "star", "full", null for custom
+  additional_connections:
+    - [0, 2]              # Connect node 0 to Node 2 (indices)
+    - [1, 3]              # Connect node 1 to Node 3 (indices)
+
+# Defines experiment settings
+experiment:
+  name: "my_experiment"
+  rounds: 10
+  epochs: 2
+  train_set_size: 4
+  seed: 42
+
+  # Dataset settings
+  dataset:
+    source: "huggingface" # Dataset source: "huggingface", "csv", etc.
+    name: "p2pfl/MNIST"
+    partitioning:
+      package: "p2pfl.learning.dataset.partition_strategies"
+      strategy: "DirichletPartitionStrategy"
+      params: # Partitioning parameters (strategy-specific)
+        # Dirichlet example
+        alpha: 0.1 
+        min_partition_size: 5
+        self_balancing: false
+
+  # Learning algorithm configuration
+  model:
+    package: "p2pfl.examples.mnist.model.mlp_pytorch"
+    model_build_fn: "model_build_fn"
+    params: {}  # Learning algorithm parameters (algorithm-specific)
+
+  # Aggregation algorithm configuration
+  aggregator:
+    package: "p2pfl.learning.aggregators.fedavg"
+    aggregator: "FedAvg"
+    params: {}  # Aggregator parameters (algorithm-specific)
+
+
+    #
+    #transforms:
+    #  - type: "Normalize"
+    #    mean: 0.1307
+    #    std: 0.3081
+
+
+# General experiment settings
+settings:
+  general:
+    log_level: "DEBUG" # Logging verbosity: "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
+    exclude_beat_logs: true
+    grpc_timeout: 0.5
+  SSL:
+    use_ssl: false
+    CA_CRT: None
+    SERVER_CRT: None
+    CLIENT_CRT: None
+    SERVER_KEY: None
+    CLIENT_KEY: None
+  heartbeat:
+    period: 2
+    timeout: 10
+    wait_convergence: 4
+  gossip:
+    period: 1
+    ttl: 10
+    messages_per_period: 200
+    amount_last_messages_saved: 1000
+    models_period: 1
+    models_per_round: 4
+    exit_on_x_equal_rounds: 10
+  training:
+    vote_timeout: 60
+    aggregation_timeout: 300
+  web:
+    resource_monitor_period: 1
