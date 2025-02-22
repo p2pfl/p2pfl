@@ -23,7 +23,7 @@ from typing import Any
 
 import numpy as np
 
-from p2pfl.learning.compressors import COMPRESSION_BITMASK, COMPRESSION_REGISTRY
+from p2pfl.learning.compressors import COMPRESSION_REGISTRY
 
 
 class CompressionManager():
@@ -32,29 +32,25 @@ class CompressionManager():
     @staticmethod
     def compress(data_to_serialize: dict[str, Any], techniques: dict[str, dict[str, Any]]) -> bytes:
         """Apply compression techniques in sequence."""
-        bitmask = 0b00000000
+        applied_techniques = []
         params, additional_info, metadata = data_to_serialize.items()
         for technique_name, technique_params in techniques.items():
             if technique_name not in COMPRESSION_REGISTRY:
                 raise ValueError(f"Unknown compression technique: {technique_name}")
-            if technique_name in COMPRESSION_BITMASK:
-                bitmask |= COMPRESSION_BITMASK[technique_name]
+            applied_techniques.append(technique_name)
             technique_instance = COMPRESSION_REGISTRY[technique_name](**technique_params)
             params = technique_instance.compress(params)
 
-        metadata["bitmask"] = bitmask
+        metadata["applied_techniques"] = applied_techniques
         data_to_serialize["metadata"] = metadata
         return pickle.dumps(data_to_serialize)
 
     @staticmethod
     def decompress(data_deserialized: bytes) -> list[np.ndarray]:
         """Apply decompression techniques in sequence."""
-        bitmask = data_deserialized["metadata"]["bitmask"] # COMPROBAR EN DECODE si existe para entrar aquí ya
+        applied_techniques = data_deserialized["metadata"]["applied_techniques"]
         params = data_deserialized["params"]
-        decompression_pipeline = [
-            name for name, mask in COMPRESSION_BITMASK.items() if bitmask & mask
-        ]
-        for strategy_name in reversed(decompression_pipeline):
+        for strategy_name in reversed(applied_techniques):
             strategy = COMPRESSION_REGISTRY[strategy_name]()
             params = strategy.decompress(params)
         return params

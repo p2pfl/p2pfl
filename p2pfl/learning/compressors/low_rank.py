@@ -3,7 +3,7 @@ import numpy as np
 from p2pfl.learning.compressors.compression_interface import CompressionStrategy
 
 
-class LowRank(CompressionStrategy):
+class LowRankApproximation(CompressionStrategy):
     """Low Rank compression strategy."""
 
     def apply_strategy(self, data: dict, target_rank: int):
