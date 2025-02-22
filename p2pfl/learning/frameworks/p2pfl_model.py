@@ -24,6 +24,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
+from p2pfl.learning.compressors.manager import CompressionManager
 from p2pfl.learning.frameworks.exceptions import DecodingParamsError
 
 
@@ -49,6 +50,7 @@ class P2PFLModel:
         num_samples: Optional[int] = None,
         contributors: Optional[List[str]] = None,
         additional_info: Optional[Dict[str, Any]] = None,
+        compression: Optional[Dict[str, Dict[str, Any]]] = None,
     ) -> None:
         """Initialize the model."""
         self.model = model
@@ -63,6 +65,8 @@ class P2PFLModel:
             self.additional_info = additional_info
         if params is not None:
             self.set_parameters(params)
+        self.compression = compression
+
 
     def get_model(self) -> Any:
         """Get the model."""
@@ -78,10 +82,15 @@ class P2PFLModel:
         """
         if params is None:
             params = self.get_parameters()
+
         data_to_serialize = {
             "params": params,
             "additional_info": self.additional_info,
+            "metadata": {},
         }
+
+        if self.compression:
+            return CompressionManager.compress(data_to_serialize, self.compression)
         return pickle.dumps(data_to_serialize)
 
     def decode_parameters(self, data: bytes) -> Tuple[List[np.ndarray], Dict[str, Any]]:
@@ -94,9 +103,14 @@ class P2PFLModel:
         """
         try:
             loaded_data = pickle.loads(data)
-            params = loaded_data["params"]
-            additional_info = loaded_data["additional_info"]
-            return params, additional_info
+            if loaded_data["metadata"]["bitmask"] == 0b00000000:
+                # Normal handling
+                params = loaded_data["params"]
+                additional_info = loaded_data["additional_info"]
+                return params, additional_info
+            # descomprimir si bitmask valido
+            return CompressionManager.decompress(loaded_data, self.compression)
+
         except Exception as e:
             raise DecodingParamsError("Error decoding parameters") from e
 

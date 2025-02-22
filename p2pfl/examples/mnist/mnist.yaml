@@ -27,7 +27,7 @@ experiment:
       strategy: "DirichletPartitionStrategy"
       params: # Partitioning parameters (strategy-specific)
         # Dirichlet example
-        alpha: 0.1 
+        alpha: 0.1
         min_partition_size: 5
         self_balancing: false
 
@@ -36,6 +36,14 @@ experiment:
     package: "p2pfl.examples.mnist.model.mlp_pytorch"
     model_build_fn: "model_build_fn"
     params: {}  # Learning algorithm parameters (algorithm-specific)
+    compression:
+      ptq:
+        # dtype: "np.int8" # TODO:  como hago para pasarle el tipo de dato ??
+      topk:
+        k: 0.1
+      zlib:
+        level: 6
+
 
   # Aggregation algorithm configuration
   aggregator:
