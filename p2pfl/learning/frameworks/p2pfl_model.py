@@ -105,13 +105,13 @@ class P2PFLModel:
         """
         try:
             loaded_data = pickle.loads(data)
-            if not loaded_data["header"]["applied_techniques"]:
+            if not loaded_data["header"].get("applied_techniques", {}):
                 # Normal handling
                 params = loaded_data["payload"]["params"]
                 additional_info = loaded_data["payload"]["additional_info"]
                 return params, additional_info
-            return CompressionManager.decompress(loaded_data, self.compression)
-
+            payload= CompressionManager.decompress(loaded_data)
+            return payload["params"], payload["additional_info"]
         except Exception as e:
             raise DecodingParamsError("Error decoding parameters") from e
 

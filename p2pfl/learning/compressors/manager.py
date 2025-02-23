@@ -21,8 +21,6 @@
 import pickle
 from typing import Any
 
-import numpy as np
-
 from p2pfl.learning.compressors import COMPRESSION_REGISTRY
 
 
@@ -44,33 +42,33 @@ class CompressionManager():
                 encoder_instance = instance
                 encoder_key = name
             else:
-
                 payload = instance.apply_strategy(payload, **fn_params)
-            applied_techniques.append(name)
+                applied_techniques.append(name)
+
 
         data["header"]["applied_techniques"] = applied_techniques
         # apply encoder
-        payload = pickle.dumps(payload)
+        payload_serialized = pickle.dumps(payload)
         if encoder_instance is not None:
-            payload = encoder_instance.apply_strategy(payload)
+            payload_serialized = encoder_instance.apply_strategy(payload_serialized)
             data["header"]["encoder"] = encoder_key
 
-        data["params"] = payload
-        return data
+        data["payload"] = payload_serialized
+        return pickle.dumps(data) # reserialize after encoder
 
 
     @staticmethod
-    def decompress(data: dict) -> list[np.ndarray]:
+    def decompress(data: dict) -> dict:
         """Apply decompression techniques in sequence."""
         applied_techniques = data["header"]["applied_techniques"]
-        encoder_key = data["header"]["encoder"]
+        encoder_key = data["header"].get("encoder", None)
         payload = data["payload"]
 
         if encoder_key is not None:
             encoder_instance = COMPRESSION_REGISTRY[encoder_key]()
             payload = encoder_instance.reverse_strategy(payload)
+            payload = pickle.loads(payload) # deserialize after decoder
 
-        payload = pickle.loads(payload)
         for name in reversed(applied_techniques):
             instance = COMPRESSION_REGISTRY[name]()
             payload = instance.reverse_strategy(payload)
