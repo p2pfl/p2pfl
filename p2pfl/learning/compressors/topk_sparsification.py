@@ -6,38 +6,50 @@ from p2pfl.learning.compressors.compression_interface import CompressionStrategy
 class TopKSparsification(CompressionStrategy):
     """Top-K sparsification."""
 
-    def apply_strategy(self, params: list[np.ndarray], k=0.1) -> bytes:
+    def apply_strategy(self, data:dict, k:int = 0.1) -> dict:
         """Compress the parameters."""
-        compressed_data = []
+        new_params = []
+        sparse_metadata = {}
 
-        for param in params:
+        for pos, param in enumerate(data["params"]):
             k_elements = max(1, int(k * param.size))
             flattened = param.flatten()
             indices = np.argsort(flattened)[-k_elements:]
             values = flattened[indices]
 
-            compressed_data.append({
+            sparse_metadata[pos] = {
                 "indices": indices.astype(np.uint32),
-                "values": values,
                 "shape": param.shape
-            })
-        return compressed_data
+            }
 
-    def reverse_strategy(self, compressed_params: bytes) -> list[np.ndarray]:
-        """Decompress the parameters."""
-        params = []
+            new_params.append(values)
+        data["params"] = new_params
+        data["additional_info"]["sparse_metadata"] = sparse_metadata
+        return data
 
-        for data in compressed_params:
-            indices = data["indices"]
-            values = data["values"]
-            shape = data["shape"]
+    def reverse_strategy(self, data:dict) -> dict:
+        """Decompress params."""
+        reconstructed_params = []
+        sparse_metadata = data["additional_info"].get("sparse_metadata", {})
 
-            param = np.zeros(np.prod(shape))
-            param[indices] = values
-            param = param.reshape(shape)
+        for pos, values in enumerate(data["params"]):
+            if pos in sparse_metadata:
+                # this layer was compressed, reconstruct it
+                # storing 0s where the values were not present
+                meta = sparse_metadata[pos]
+                indices = meta["indices"]
+                shape = meta["shape"]
 
-            params.append(param)
-        return params
+                full_array = np.zeros(np.prod(shape), dtype=values.dtype)
+                full_array[indices] = values
+                full_array = full_array.reshape(shape)
+                reconstructed_params.append(full_array)
+            else:
+                # if not in sparse_metadata, it was not compressed
+                reconstructed_params.append(values)
+
+        data["params"] = reconstructed_params
+        return data
 
     def get_category(self) -> str:
         """Get the category of the compression strategy."""

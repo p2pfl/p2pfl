@@ -4,17 +4,17 @@ import numpy as np
 
 from p2pfl.learning.compressors.compression import CompressionStrategy
 
-
+# TODO: NEEDS TO BE APPLIED AT END, SINCE NEEDS SERIALIZED DATA...
 class ZlibCompressor(CompressionStrategy):
     """Lossless compression using zlib."""
 
-    def apply_strategy(self, params: list[np.ndarray], level=6) -> bytes:
+    def apply_strategy(self, payload: dict, level=6) -> bytes:
         """Compress the parameters."""
-        return zlib.compress(params, level=level)
+        payload["params"] = zlib.compress(payload["params"], level=level)
+        return payload
 
-    def reverse_strategy(self, compressed_params: bytes) -> list[np.ndarray]:
+    def reverse_strategy(self, payload: dict) -> list[np.ndarray]:
         """Decompress the parameters."""
-        return zlib.decompress(compressed_params)
+        payload["params"] = zlib.decompress(payload["params"])
+        return payload
 
-    def get_category(self) -> str:
-        return "lossless_compression"

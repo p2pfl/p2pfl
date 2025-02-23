@@ -83,15 +83,17 @@ class P2PFLModel:
         if params is None:
             params = self.get_parameters()
 
-        data_to_serialize = {
-            "params": params,
-            "additional_info": self.additional_info,
-            "metadata": {},
+        data = {
+            "header" : {},
+            "payload": {
+                "params": params,
+                "additional_info": self.additional_info,
+            },
         }
 
         if self.compression:
-            return CompressionManager.compress(data_to_serialize, self.compression)
-        return pickle.dumps(data_to_serialize)
+            return CompressionManager.compress(data, self.compression)
+        return pickle.dumps(data)
 
     def decode_parameters(self, data: bytes) -> Tuple[List[np.ndarray], Dict[str, Any]]:
         """
@@ -103,12 +105,11 @@ class P2PFLModel:
         """
         try:
             loaded_data = pickle.loads(data)
-            if loaded_data["metadata"]["bitmask"] == 0b00000000:
+            if not loaded_data["header"]["applied_techniques"]:
                 # Normal handling
-                params = loaded_data["params"]
-                additional_info = loaded_data["additional_info"]
+                params = loaded_data["payload"]["params"]
+                additional_info = loaded_data["payload"]["additional_info"]
                 return params, additional_info
-            # descomprimir si bitmask valido
             return CompressionManager.decompress(loaded_data, self.compression)
 
         except Exception as e:

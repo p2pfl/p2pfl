@@ -30,27 +30,50 @@ class CompressionManager():
     """Manager for compression strategies."""
 
     @staticmethod
-    def compress(data_to_serialize: dict[str, Any], techniques: dict[str, dict[str, Any]]) -> bytes:
+    def compress(data: dict[str, Any], techniques: dict[str, dict[str, Any]]) -> bytes:
         """Apply compression techniques in sequence."""
         applied_techniques = []
-        params, additional_info, metadata = data_to_serialize.items()
-        for technique_name, technique_params in techniques.items():
-            if technique_name not in COMPRESSION_REGISTRY:
-                raise ValueError(f"Unknown compression technique: {technique_name}")
-            applied_techniques.append(technique_name)
-            technique_instance = COMPRESSION_REGISTRY[technique_name](**technique_params)
-            params = technique_instance.compress(params)
+        encoder_instance = None
+        payload = data["payload"]
 
-        metadata["applied_techniques"] = applied_techniques
-        data_to_serialize["metadata"] = metadata
-        return pickle.dumps(data_to_serialize)
+        for name, fn_params in techniques.items():
+            if name not in COMPRESSION_REGISTRY:
+                raise ValueError(f"Unknown compression technique: {name}")
+            instance = COMPRESSION_REGISTRY[name](**fn_params)
+            if instance.get_category() == "encoder":
+                encoder_instance = instance
+                encoder_key = name
+            else:
+
+                payload = instance.apply_strategy(payload, **fn_params)
+            applied_techniques.append(name)
+
+        data["header"]["applied_techniques"] = applied_techniques
+        # apply encoder
+        payload = pickle.dumps(payload)
+        if encoder_instance is not None:
+            payload = encoder_instance.apply_strategy(payload)
+            data["header"]["encoder"] = encoder_key
+
+        data["params"] = payload
+        return data
+
 
     @staticmethod
-    def decompress(data_deserialized: bytes) -> list[np.ndarray]:
+    def decompress(data: dict) -> list[np.ndarray]:
         """Apply decompression techniques in sequence."""
-        applied_techniques = data_deserialized["metadata"]["applied_techniques"]
-        params = data_deserialized["params"]
-        for strategy_name in reversed(applied_techniques):
-            strategy = COMPRESSION_REGISTRY[strategy_name]()
-            params = strategy.decompress(params)
-        return params
+        applied_techniques = data["header"]["applied_techniques"]
+        encoder_key = data["header"]["encoder"]
+        payload = data["payload"]
+
+        if encoder_key is not None:
+            encoder_instance = COMPRESSION_REGISTRY[encoder_key]()
+            payload = encoder_instance.reverse_strategy(payload)
+
+        payload = pickle.loads(payload)
+        for name in reversed(applied_techniques):
+            instance = COMPRESSION_REGISTRY[name]()
+            payload = instance.reverse_strategy(payload)
+
+        return payload
+
