@@ -35,7 +35,7 @@ class CommunicationProtocol(ABC):
     """
 
     @abstractmethod
-    def __init__(self, addr: str = "address", commands: Optional[List[Command]] = None) -> None:
+    def __init__(self, addr: str = "address", commands: Optional[List[Command]] = None, *args, **kwargs) -> None:
         """Initialize the communication protocol."""
         pass
 

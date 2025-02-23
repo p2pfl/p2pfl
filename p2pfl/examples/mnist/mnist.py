@@ -27,8 +27,8 @@ import uuid
 
 import matplotlib.pyplot as plt
 
-from p2pfl.communication.protocols.grpc.grpc_communication_protocol import GrpcCommunicationProtocol
-from p2pfl.communication.protocols.memory.memory_communication_protocol import InMemoryCommunicationProtocol
+from p2pfl.communication.protocols.protobuff.grpc import GrpcCommunicationProtocol
+from p2pfl.communication.protocols.protobuff.memory import MemoryCommunicationProtocol
 from p2pfl.learning.aggregators.scaffold import Scaffold
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
@@ -132,7 +132,7 @@ def mnist(
         node = Node(
             model_fn(),
             partitions[i],
-            protocol=InMemoryCommunicationProtocol if protocol == "memory" else GrpcCommunicationProtocol,  # type: ignore
+            protocol=MemoryCommunicationProtocol if protocol == "memory" else GrpcCommunicationProtocol,  # type: ignore
             address=address,
             simulation=True,
             aggregator=Scaffold() if aggregator == "scaffold" else None,

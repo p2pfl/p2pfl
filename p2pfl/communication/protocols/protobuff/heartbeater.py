@@ -20,10 +20,10 @@
 
 import threading
 import time
-from typing import Optional
+from typing import Callable, Optional
 
-from p2pfl.communication.protocols.client import Client
-from p2pfl.communication.protocols.neighbors import Neighbors
+from p2pfl.communication.protocols.protobuff.neighbors import Neighbors
+from p2pfl.communication.protocols.protobuff.proto import node_pb2
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 
@@ -39,17 +39,16 @@ class Heartbeater(threading.Thread):
     Args:
         self_addr: Address of the node.
         neighbors: Neighbors to update.
-        client: Client to send messages.
 
     """
 
-    def __init__(self, self_addr: str, neighbors: Neighbors, client: Client) -> None:
+    def __init__(self, self_addr: str, neighbors: Neighbors, build_msg: Callable[..., node_pb2.RootMessage]) -> None:
         """Initialize the heartbeat thread."""
         super().__init__()
         self.__self_addr = self_addr
         self.__neighbors = neighbors
-        self.__client = client
         self.__heartbeat_terminate_flag = threading.Event()
+        self.__build_beat_message = lambda time: build_msg(heartbeater_cmd_name, args=[str(time)])
         self.daemon = True
         self.name = f"heartbeater-thread-{self.__self_addr}"
 
@@ -95,18 +94,19 @@ class Heartbeater(threading.Thread):
                 # Get Neis
                 neis = self.__neighbors.get_all()
                 for nei in neis:
-                    if t - neis[nei][2] > timeout:
+                    if t - neis[nei][1] > timeout:
                         logger.info(
                             self.__self_addr,
-                            f"Heartbeat timeout for {nei} ({t - neis[nei][2]}). Removing...",
+                            f"Heartbeat timeout for {nei} ({t - neis[nei][1]}). Removing...",
                         )
                         self.__neighbors.remove(nei)
             else:
                 toggle = True
 
             # Send heartbeat
-            beat_msg = self.__client.build_message(heartbeater_cmd_name, args=[str(time.time())])
-            self.__client.broadcast(beat_msg)
+            beat_msg = self.__build_beat_message(time.time())
+            for client, _ in self.__neighbors.get_all(only_direct=True).values():
+                client.send(beat_msg, raise_error=False, disconnect_on_error=True)
 
             # Sleep to allow the periodicity
             sleep_time = max(0, period - (t - time.time()))

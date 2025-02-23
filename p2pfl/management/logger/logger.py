@@ -128,7 +128,7 @@ class P2PFLogger:
             key: The API key.
 
         """
-        pass
+        raise NotImplementedError("Web Services not implemented.")
 
     def cleanup(self) -> None:
         """Cleanup the logger."""

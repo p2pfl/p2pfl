@@ -15,27 +15,26 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""GRPC server."""
+"""Protobuff server."""
 
 import traceback
-from concurrent import futures
-from os.path import isfile
-from typing import List, Optional, Union
+from abc import ABC, abstractmethod
+from typing import Optional, Union
 
 import google.protobuf.empty_pb2
 import grpc
 
 from p2pfl.communication.commands.command import Command
-from p2pfl.communication.protocols.gossiper import Gossiper
-from p2pfl.communication.protocols.grpc.grpc_neighbors import GrpcNeighbors
-from p2pfl.communication.protocols.grpc.proto import node_pb2, node_pb2_grpc
+from p2pfl.communication.protocols.protobuff.gossiper import Gossiper
+from p2pfl.communication.protocols.protobuff.neighbors import Neighbors
+from p2pfl.communication.protocols.protobuff.proto import node_pb2, node_pb2_grpc
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 
 
-class GrpcServer(node_pb2_grpc.NodeServicesServicer):
+class ProtobuffServer(ABC, node_pb2_grpc.NodeServicesServicer):
     """
-    Implementation of the server side of a GRPC communication protocol.
+    Implementation of the server side logic of PROTOBUFF communication protocol.
 
     Args:
         addr: Address of the server.
@@ -49,8 +48,8 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
         self,
         addr: str,
         gossiper: Gossiper,
-        neighbors: GrpcNeighbors,
-        commands: Optional[List[Command]] = None,
+        neighbors: Neighbors,
+        commands: Optional[list[Command]] = None,
     ) -> None:
         """Initialize the GRPC server."""
         # Message handlers
@@ -61,65 +60,38 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
         # Address
         self.addr = addr
 
-        # Server
-        maxMsgLength = 1024 * 1024 * 1024
-        self.__server = grpc.server(
-            futures.ThreadPoolExecutor(max_workers=2),
-            options=[
-                ("grpc.max_send_message_length", maxMsgLength),
-                ("grpc.max_receive_message_length", maxMsgLength),
-            ],
-        )
-        self.__server_started = False
-
         # Gossiper
-        self.__gossiper = gossiper
+        self._gossiper = gossiper
 
         # Neighbors
-        self.__neighbors = neighbors
+        self._neighbors = neighbors
 
     ####
     # Management
     ####
 
+    @abstractmethod
     def start(self, wait: bool = False) -> None:
         """
-        Start the GRPC server.
+        Start the server.
 
         Args:
             wait: If True, wait for termination.
 
         """
-        # Server
-        node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.__server)
-        try:
-            if Settings.ssl.USE_SSL and isfile(Settings.ssl.SERVER_KEY) and isfile(Settings.ssl.SERVER_CRT):
-                with open(Settings.ssl.SERVER_KEY) as key_file, open(Settings.ssl.SERVER_CRT) as crt_file, open(
-                    Settings.ssl.CA_CRT
-                ) as ca_file:
-                    private_key = key_file.read().encode()
-                    certificate_chain = crt_file.read().encode()
-                    root_certificates = ca_file.read().encode()
-                server_credentials = grpc.ssl_server_credentials(
-                    [(private_key, certificate_chain)], root_certificates=root_certificates, require_client_auth=True
-                )
-                self.__server.add_secure_port(self.addr, server_credentials)
-            else:
-                self.__server.add_insecure_port(self.addr)
-        except Exception as e:
-            raise Exception(f"Cannot bind the address ({self.addr}): {e}") from e
-        self.__server.start()
-        self.__server_started = True
+        pass
 
+    @abstractmethod
     def stop(self) -> None:
-        """Stop the GRPC server."""
-        self.__server.stop(0)
-        self.__server_started = False
+        """Stop the server."""
+        pass
 
+    @abstractmethod
     def wait_for_termination(self) -> None:
         """Wait for termination."""
-        self.__server.wait_for_termination()
+        pass
 
+    @abstractmethod
     def is_running(self) -> bool:
         """
         Check if the server is running.
@@ -128,50 +100,49 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
             True if the server is running, False otherwise.
 
         """
-        return self.__server_started
+        pass
 
     ####
-    # GRPC Services
+    # Service Implementation (server logic on protobuff)
     ####
 
     def handshake(self, request: node_pb2.HandShakeRequest, _: grpc.ServicerContext) -> node_pb2.ResponseMessage:
         """
-        GRPC service. It is called when a node connects to another.
+        Service. It is called when a node connects to another.
 
         Args:
             request: Request message.
             _: Context.
 
         """
-        if self.__neighbors.add(request.addr, non_direct=False, handshake_msg=False):
+        if self._neighbors.add(request.addr, non_direct=False, handshake=False):
             return node_pb2.ResponseMessage()
         else:
             return node_pb2.ResponseMessage(error="Cannot add the node (duplicated or wrong direction)")
 
     def disconnect(self, request: node_pb2.HandShakeRequest, _: grpc.ServicerContext) -> google.protobuf.empty_pb2.Empty:
         """
-        GRPC service. It is called when a node disconnects from another.
+        Service. It is called when a node disconnects from another.
 
         Args:
             request: Request message.
             _: Context.
 
         """
-        self.__neighbors.remove(request.addr, disconnect_msg=False)
+        self._neighbors.remove(request.addr, disconnect_msg=False)
         return google.protobuf.empty_pb2.Empty()
 
     def send(self, request: node_pb2.RootMessage, _: grpc.ServicerContext) -> node_pb2.ResponseMessage:
         """
-        GRPC service. Handles both regular messages and model weights.
+        Service. Handles both regular messages and model weights.
 
         Args:
             request: The RootMessage containing either a Message or Weights payload.
             _: Context.
 
         """
-        # If message already proce
-        # ssed, return
-        if request.HasField("message") and not self.__gossiper.check_and_set_processed(request.message.hash):
+        # If message already processed, return
+        if request.HasField("message") and not self._gossiper.check_and_set_processed(request):
             """
             if request.cmd != "beat" or (not Settings.general.EXCLUDE_BEAT_LOGS and request.source == "beat"):
                 logger.debug(self.addr, f"🙅 Message already processed: {request.cmd} (id {request.message.hash})")
@@ -213,8 +184,7 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
         if request.HasField("message") and request.message.ttl > 0:
             # Update ttl and gossip
             request.message.ttl -= 1
-            pending_neis = [n for n in self.__neighbors.get_all(only_direct=True) if n != request.source]
-            self.__gossiper.add_message(request, pending_neis)
+            self._gossiper.add_message(request)
 
         return node_pb2.ResponseMessage()
 
@@ -222,7 +192,7 @@ class GrpcServer(node_pb2_grpc.NodeServicesServicer):
     # Commands
     ####
 
-    def add_command(self, cmds: Union[Command, List[Command]]) -> None:
+    def add_command(self, cmds: Union[Command, list[Command]]) -> None:
         """
         Add a command.
 

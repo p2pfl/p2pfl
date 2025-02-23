@@ -19,8 +19,11 @@
 """Protocol agnostic neighbor management."""
 
 import threading
-from typing import Any, Dict
+import time
+from typing import Callable
 
+from p2pfl.communication.protocols.exceptions import NeighborNotConnectedError
+from p2pfl.communication.protocols.protobuff.client import ProtobuffClient
 from p2pfl.management.logger import logger
 
 
@@ -33,31 +36,12 @@ class Neighbors:
 
     """
 
-    def __init__(self, self_addr) -> None:
+    def __init__(self, self_addr: str, build_client_fn: Callable[..., ProtobuffClient]) -> None:
         """Initialize the neighbor management class."""
         self.self_addr = self_addr
-        self.neis: Dict[str, Any] = {}
+        self.neis: dict[str, tuple[ProtobuffClient, float]] = {}
         self.neis_lock = threading.Lock()
-
-    def connect(self, addr: str) -> Any:
-        """
-        Connect to a neighbor.
-
-        Args:
-            addr: Address of the neighbor to connect.
-
-        """
-        raise NotImplementedError
-
-    def disconnect(self, addr: str) -> None:
-        """
-        Disconnect from a neighbor.
-
-        Args:
-            addr: Address of the neighbor to disconnect.
-
-        """
-        raise NotImplementedError
+        self.build_client_fn = build_client_fn
 
     def refresh_or_add(self, addr: str, time: float) -> None:
         """
@@ -68,16 +52,29 @@ class Neighbors:
             time: Time of the last heartbeat.
 
         """
-        raise NotImplementedError
+        # Update if exists
+        if addr in self.neis:
+            with self.neis_lock:
+                # Update time
+                self.neis[addr] = (
+                    self.neis[addr][0],
+                    time,
+                )
+        else:
+            # Add
+            self.add(addr, non_direct=True)
 
-    def add(self, addr: str, *args, **kargs) -> bool:
+    def add(self, addr: str, non_direct: bool = False, handshake: bool = True) -> bool:
         """
         Add a neighbor to the neighbors list.
 
         Args:
             addr: Address of the neighbor to add.
-            args: Additional arguments for the connect method (focused reimplementation).
-            kargs: Additional keyword arguments for the connect method (focused reimplementation).
+            non_direct: Flag to add a non-direct neighbor.
+            handshake: Flag to perform a handshake.
+
+        Returns:
+            True if the neighbor was added, False otherwise.
 
         """
         # Cannot add itself
@@ -86,27 +83,26 @@ class Neighbors:
             return False
 
         # Lock
-        self.neis_lock.acquire()
+        with self.neis_lock:
+            # Cannot add duplicates
+            if self.exists(addr):
+                logger.info(self.self_addr, f"❌ Cannot add duplicates. {addr} already exists.")
+                return False
 
-        # Cannot add duplicates
-        if self.exists(addr):
-            logger.info(self.self_addr, f"❌ Cannot add duplicates. {addr} already exists.")
-            self.neis_lock.release()
-            return False
+            # Add
+            try:
+                client = self.build_client_fn(self.self_addr, addr)
+                if not non_direct:
+                    client.connect(handshake_msg=handshake)
+                self.neis[addr] = (client, time.time())
+            except Exception as e:
+                logger.error(self.self_addr, f"❌ Cannot add {addr}: {e}")
+                return False
 
-        # Add
-        try:
-            self.neis[addr] = self.connect(addr, *args, **kargs)
-        except Exception as e:
-            logger.error(self.self_addr, f"❌ Cannot add {addr}: {e}")
-            self.neis_lock.release()
-            return False
+            # Release
+            return True
 
-        # Release
-        self.neis_lock.release()
-        return True
-
-    def remove(self, addr: str, *args, **kargs) -> None:
+    def remove(self, addr: str, disconnect_msg: bool = True) -> None:
         """
         Remove a neighbor from the neighbors list.
 
@@ -114,29 +110,34 @@ class Neighbors:
 
         Args:
             addr: Address of the neighbor to remove.
-            args: Additional arguments for the disconnect method (focused reimplementation).
-            kargs: Additional keyword arguments for the disconnect method (focused reimplementation).
+            disconnect_msg: If a disconnect message is needed.
 
         """
         self.neis_lock.acquire()
-        # Disconnect
-        self.disconnect(addr, *args, **kargs)
-        # Remove neighbor
         if addr in self.neis:
+            # Disconnect
+            self.neis[addr][0].disconnect(disconnect_msg=disconnect_msg)
+            # Remove neighbor
             del self.neis[addr]
         self.neis_lock.release()
 
-    def get(self, addr: str) -> Any:
+    def get(self, addr: str) -> ProtobuffClient:
         """
         Get a neighbor from the neighbors list.
 
         Args:
             addr: Address of the neighbor to get.
 
-        """
-        return self.neis[addr]
+        Returns:
+            The neighbor.
 
-    def get_all(self, only_direct: bool = False) -> Dict[str, Any]:
+        """
+        try:
+            return self.neis[addr][0]
+        except KeyError:
+            raise NeighborNotConnectedError(f"Neighbor {addr} not connected") from None
+
+    def get_all(self, only_direct: bool = False) -> dict[str, tuple[ProtobuffClient, float]]:
         """
         Get all neighbors from the neighbors list.
 
@@ -148,7 +149,7 @@ class Neighbors:
         neis = self.neis.copy()
         # Filter
         if only_direct:
-            return {k: v for k, v in neis.items() if v[1]}
+            return {k: v for k, v in neis.items() if v[0].is_connected()}
         return neis
 
     def exists(self, addr: str) -> bool:

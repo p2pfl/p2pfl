@@ -25,7 +25,7 @@ from grpc_tools import protoc
 
 if __name__ == "__main__":
     GRPC_PATH = grpc_tools.__path__[0]  # type: ignore
-    PROTO_PATH = "p2pfl/communication/protocols/grpc/proto"
+    PROTO_PATH = "p2pfl/communication/protocols/protobuff/proto"
     PROTO_FILE = "node.proto"
 
     command = [

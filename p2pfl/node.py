@@ -34,9 +34,7 @@ from p2pfl.communication.commands.weights.full_model_command import FullModelCom
 from p2pfl.communication.commands.weights.init_model_command import InitModelCommand
 from p2pfl.communication.commands.weights.partial_model_command import PartialModelCommand
 from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
-from p2pfl.communication.protocols.grpc.grpc_communication_protocol import (
-    GrpcCommunicationProtocol,
-)
+from p2pfl.communication.protocols.protobuff.grpc import GrpcCommunicationProtocol
 from p2pfl.exceptions import LearnerRunningException, NodeRunningException, ZeroRoundsException
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.aggregators.fedavg import FedAvg

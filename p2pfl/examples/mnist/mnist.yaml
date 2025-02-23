@@ -1,8 +1,14 @@
 description: "Example of using P2PFL with the MNIST dataset, a collection of handwritten digits commonly used for training image processing systems."
 
+# Web logger configuration
+web_logger:
+  enabled: false
+  url: ""
+  token: ""
+
 # Defines network setup
 network:
-  package: "p2pfl.communication.protocols.grpc.grpc_communication_protocol"
+  package: "p2pfl.communication.protocols.protobuff.grpc"
   protocol: "GrpcCommunicationProtocol"
   nodes: 4
   topology: "line"   # Network topology: "line", "ring", "star", "full", null for custom
@@ -13,9 +19,9 @@ network:
 # Defines experiment settings
 experiment:
   name: "my_experiment"
-  rounds: 10
-  epochs: 2
-  train_set_size: 4
+  rounds: 4
+  epochs: 1
+  trainset_size: 4
   seed: 42
 
   # Dataset settings
@@ -24,7 +30,9 @@ experiment:
     name: "p2pfl/MNIST"
     partitioning:
       package: "p2pfl.learning.dataset.partition_strategies"
-      strategy: "DirichletPartitionStrategy"
+      strategy: "RandomIIDPartitionStrategy" # DirichletPartitionStrategy
+      reduced_dataset: true  # For testing purposes
+      reduction_factor: 50   # Dataset size will be n*50
       params: # Partitioning parameters (strategy-specific)
         # Dirichlet example
         alpha: 0.1 
@@ -42,7 +50,6 @@ experiment:
     package: "p2pfl.learning.aggregators.fedavg"
     aggregator: "FedAvg"
     params: {}  # Aggregator parameters (algorithm-specific)
-
 
     #
     #transforms:
@@ -81,3 +88,9 @@ settings:
     aggregation_timeout: 300
   web:
     resource_monitor_period: 1
+
+# Profiling configuration
+profiling:
+  enabled: false
+  measure_time: true
+  output_dir: "profile/mnist"

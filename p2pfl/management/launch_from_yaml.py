@@ -18,6 +18,9 @@
 """Launch from YAMLs."""
 
 import importlib
+import os
+import time
+import uuid
 from typing import Any
 
 import yaml
@@ -72,6 +75,31 @@ def run_from_yaml(yaml_path: str):
     if not n:
         raise ValueError("Missing 'n' under 'network' configuration in YAML file.")
 
+    #############
+    # Profiling #
+    #############
+
+    profiling = config.get("profiling", {})
+    profiling_enabled = profiling.get("enabled", False)
+    profiling_output_dir = profiling.get("output_dir", "profile")
+    if profiling_enabled:
+        import yappi  # type: ignore
+
+        # Start profiler
+        yappi.start()
+
+    start_time = None
+    if profiling.get("measure_time", False):
+        start_time = time.time()
+
+    ######################
+    # P2PFL Web Services #
+    ######################
+
+    web_logger = config.get("web_logger", {})
+    if web_logger.get("enabled", False):
+        logger.connect_web(web_logger.get("url"), web_logger.get("token"))
+
     ###########
     # Dataset #
     ###########
@@ -100,11 +128,15 @@ def run_from_yaml(yaml_path: str):
     elif data_source == "pandas":
         dataset = P2PFLDataset.from_pandas(dataset_name)
     elif data_source == "custom":
-        # TODO: Just do the same as with the model
-        # TODO: Just do the same as with the model
-        # TODO: Just do the same as with the model
-        # TODO: Just do the same as with the model
-        raise NotImplementedError("Custom datasets are not supported to be loaded from YAML.")
+        # Get custom dataset configuration
+        package = dataset_config.get("package")
+        dataset_class = dataset_config.get("class")
+        if not package or not dataset_class:
+            raise ValueError("Missing package or class for custom dataset")
+
+        # Load custom dataset class
+        dataset_class = load_by_package_and_name(package, dataset_class)
+        dataset = dataset_class(**dataset_config.get("params", {}))
 
     if not dataset:
         print("P2PFLDataset loading process completed without creating a dataset object (check for errors above).")
@@ -118,8 +150,10 @@ def run_from_yaml(yaml_path: str):
     partition_class_name = partitioning_config.get("strategy")
     if not partition_package or not partition_class_name:
         raise ValueError("Missing 'partition_strategy' configuration in YAML file.")
+    reduced_dataset = partitioning_config.get("reduced_dataset", False)
+    reduction_factor = partitioning_config.get("reduction_factor", 1)
     partitions = dataset.generate_partitions(
-        n,
+        n * reduction_factor if reduced_dataset else n,
         load_by_package_and_name(
             partition_package,
             partition_class_name,
@@ -165,6 +199,15 @@ def run_from_yaml(yaml_path: str):
     def aggregator_fn() -> Aggregator:
         return aggregator_class(**aggregator.get("params", {}))
 
+    ########
+    # Seed #
+    ########
+
+    seed = experiment_config.get("seed")
+    if seed:
+        # Not implemented yet
+        print(":( - Setting seed not implemented yet.")
+
     ###########
     # Network #
     ###########
@@ -196,7 +239,7 @@ def run_from_yaml(yaml_path: str):
         if not topology:
             raise ValueError("Missing 'topology' configuration in YAML file.")
         if n > Settings.gossip.TTL:
-            raise ValueError("TTL less than the number of nodes. Some messages will not be delivered depending on the topology.")
+            print(f"TTL less than the number of nodes ({Settings.gossip.TTL} < {n}). Some messages will not be delivered depending on the topology.")
         adjacency_matrix = TopologyFactory.generate_matrix(topology, len(nodes))
         TopologyFactory.connect_nodes(adjacency_matrix, nodes)
         wait_convergence(nodes, n - 1, only_direct=False, wait=60, debug=False)  # type: ignore
@@ -210,11 +253,12 @@ def run_from_yaml(yaml_path: str):
         # Start Learning
         r = experiment_config.get("rounds")
         e = experiment_config.get("epochs")
+        trainset_size = experiment_config.get("trainset_size")
         if r < 1:
             raise ValueError("Skipping training, amount of round is less than 1")
 
         # Start Learning
-        nodes[0].set_start_learning(rounds=r, epochs=e)
+        nodes[0].set_start_learning(rounds=r, epochs=e, trainset_size=trainset_size)
 
         # Wait and check
         wait_to_finish(nodes, timeout=60 * 60)  # 1 hour | TODO: Make this configurable
@@ -225,3 +269,16 @@ def run_from_yaml(yaml_path: str):
         # Stop Nodes
         for node in nodes:
             node.stop()
+        # Profiling
+        if start_time:
+            print(f"Execution time: {time.time() - start_time} seconds")
+        if profiling_enabled:
+            # Stop profiler
+            yappi.stop()
+            # Save stats
+            profile_dir = os.path.join(profiling_output_dir, str(uuid.uuid4()))
+            os.makedirs(profile_dir, exist_ok=True)
+            for thread in yappi.get_thread_stats():
+                yappi.get_func_stats(ctx_id=thread.id).save(f"{profile_dir}/{thread.name}-{thread.id}.pstat", type="pstat")
+            # Print where the stats were saved
+            print(f"Profile stats saved in {profile_dir}")

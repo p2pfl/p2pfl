@@ -15,26 +15,25 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""In-memory communication protocol."""
+"""GRPC communication protocol."""
 
 import random
+from abc import abstractmethod
+from datetime import datetime
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 from p2pfl.communication.commands.command import Command
 from p2pfl.communication.commands.message.heartbeat_command import HeartbeatCommand
 from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
-from p2pfl.communication.protocols.exceptions import ProtocolNotStartedError
-from p2pfl.communication.protocols.gossiper import Gossiper
-from p2pfl.communication.protocols.heartbeater import Heartbeater
-from p2pfl.communication.protocols.memory.memory_client import InMemoryClient
-from p2pfl.communication.protocols.memory.memory_neighbors import InMemoryNeighbors
-from p2pfl.communication.protocols.memory.memory_server import InMemoryServer
+from p2pfl.communication.protocols.exceptions import CommunicationError, ProtocolNotStartedError
+from p2pfl.communication.protocols.protobuff.client import ProtobuffClient
+from p2pfl.communication.protocols.protobuff.gossiper import Gossiper
+from p2pfl.communication.protocols.protobuff.heartbeater import Heartbeater
+from p2pfl.communication.protocols.protobuff.neighbors import Neighbors
+from p2pfl.communication.protocols.protobuff.proto import node_pb2
+from p2pfl.communication.protocols.protobuff.server import ProtobuffServer
 from p2pfl.settings import Settings
-
-#
-# Need to simplify this protocol, just wrapp the grpc one to avoid modifying InMemoryCommunicationProtocol every time
-#
 
 
 def running(func):
@@ -49,40 +48,50 @@ def running(func):
     return wrapper
 
 
-class InMemoryCommunicationProtocol(CommunicationProtocol):
+class ProtobuffCommunicationProtocol(CommunicationProtocol):
     """
-    In-memory communication protocol.
+    Protobuff communication protocol.
 
     Args:
         addr: Address of the node.
         commands: Commands to add to the communication protocol.
 
-    .. todo:: Remove this copy-paste code and use a in-memory wrapper for the grpc communication protocol.
+    .. todo:: https://grpc.github.io/grpc/python/grpc_asyncio.html
+    .. todo:: Decouple the heeartbeat command.
 
     """
 
-    def __init__(self, addr: Optional[str] = None, commands: Optional[List[Command]] = None) -> None:
-        """Initialize the in-memory communication protocol."""
+    def __init__(
+        self,
+        addr: str = "127.0.0.1",
+        commands: Optional[list[Command]] = None,
+    ) -> None:
+        """Initialize the GRPC communication protocol."""
         # Address
-        if addr:
-            self.addr = addr
-        else:
-            self.addr = f"node-{random.randint(0,99999999)}"
+        self.addr = addr
         # Neighbors
-        self._neighbors = InMemoryNeighbors(self.addr)
-        # Client
-        self._client = InMemoryClient(self.addr, self._neighbors)
+        self._neighbors = Neighbors(self.addr, self.bluid_client)
         # Gossip
-        self._gossiper = Gossiper(self.addr, self._client)
-        # Server
-        self._server = InMemoryServer(self.addr, self._gossiper, self._neighbors, commands)
+        self._gossiper = Gossiper(self.addr, self._neighbors)
+        # GRPC
+        self._server = self.build_server(self.addr, self._gossiper, self._neighbors, commands)
         # Hearbeat
-        self._heartbeater = Heartbeater(self.addr, self._neighbors, self._client)
+        self._heartbeater = Heartbeater(self.addr, self._neighbors, self.build_msg)
         # Commands
-        self._server.add_command(HeartbeatCommand(self._heartbeater))
+        self.add_command(HeartbeatCommand(self._heartbeater))
         if commands is None:
             commands = []
-        self._server.add_command(commands)
+        self.add_command(commands)
+
+    @abstractmethod
+    def bluid_client(self, *args, **kwargs) -> ProtobuffClient:
+        """Build client function."""
+        pass
+
+    @abstractmethod
+    def build_server(self, *args, **kwargs) -> ProtobuffServer:
+        """Build server function."""
+        pass
 
     def get_address(self) -> str:
         """
@@ -95,20 +104,20 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
         return self.addr
 
     def start(self) -> None:
-        """Start the communication protocol."""
+        """Start the GRPC communication protocol."""
         self._server.start()
         self._heartbeater.start()
         self._gossiper.start()
 
     @running
     def stop(self) -> None:
-        """Stop the communication protocol."""
-        self._server.stop()
+        """Stop the GRPC communication protocol."""
         self._heartbeater.stop()
         self._gossiper.stop()
         self._neighbors.clear_neighbors()
+        self._server.stop()
 
-    def add_command(self, cmds: Union[Command, List[Command]]) -> None:
+    def add_command(self, cmds: Union[Command, list[Command]]) -> None:
         """
         Add a command to the communication protocol.
 
@@ -142,51 +151,77 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
         """
         self._neighbors.remove(nei, disconnect_msg=disconnect_msg)
 
-    def build_msg(self, cmd: str, args: Optional[List[str]] = None, round: Optional[int] = None) -> Any:
+    def build_msg(self, cmd: str, args: Optional[list[str]] = None, round: Optional[int] = None) -> node_pb2.RootMessage:
         """
-        Build a message.
+        Build a RootMessage to send to the neighbors.
 
         Args:
-            cmd: The message.
-            args: The arguments.
-            round: The round.
+            cmd: Command of the message.
+            args: Arguments of the message.
+            round: Round of the message.
+
+        Returns:
+            RootMessage to send.
 
         """
+        if round is None:
+            round = -1
         if args is None:
             args = []
-        return self._client.build_message(cmd, args, round)
+        hs = hash(str(cmd) + str(args) + str(datetime.now()) + str(random.randint(0, 100000)))
+        args = [str(a) for a in args]
+
+        return node_pb2.RootMessage(
+            source=self.addr,
+            round=round,
+            cmd=cmd,
+            message=node_pb2.Message(
+                ttl=Settings.gossip.TTL,
+                hash=hs,
+                args=args,
+            ),
+        )
 
     def build_weights(
         self,
         cmd: str,
         round: int,
         serialized_model: bytes,
-        contributors: Optional[List[str]] = None,
+        contributors: Optional[list[str]] = None,
         weight: int = 1,
-    ) -> Any:
+    ) -> node_pb2.RootMessage:
         """
-        Build weights.
+        Build a RootMessage with a Weights payload to send to the neighbors.
 
         Args:
-            cmd: The command.
-            round: The round.
-            serialized_model: The serialized model.
-            contributors: The model contributors.
-            weight: The weight of the model (amount of samples used).
+            cmd: Command of the message.
+            round: Round of the message.
+            serialized_model: Serialized model to send.
+            contributors: List of contributors.
+            weight: Weight of the message (number of samples).
+
+        Returns:
+            RootMessage to send.
 
         """
         if contributors is None:
             contributors = []
-        return self._client.build_weights(cmd, round, serialized_model, contributors, weight)
+        return node_pb2.RootMessage(
+            source=self.addr,
+            round=round,
+            cmd=cmd,
+            weights=node_pb2.Weights(
+                weights=serialized_model,
+                contributors=contributors,
+                num_samples=weight,
+            ),
+        )
 
     @running
     def send(
         self,
         nei: str,
-        msg: Union[
-            Dict[str, Union[str, int, List[str], bytes]],
-            Dict[str, Union[str, int, bytes, List[str]]],
-        ],
+        msg: Union[node_pb2.RootMessage],
         raise_error: bool = False,
         remove_on_error: bool = True,
     ) -> None:
@@ -195,19 +230,21 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
 
         Args:
             nei: The neighbor to send the message.
-            msg: The message to sen
+            msg: The message to send.
             raise_error: If raise error.
-            remove_on_error: If remove on error.d.
+            remove_on_error: If remove on error.
 
         """
-        self._client.send(nei, msg, raise_error=raise_error, remove_on_error=remove_on_error)
+        try:
+            self._neighbors.get(nei).send(msg, raise_error=raise_error, disconnect_on_error=remove_on_error)
+        except CommunicationError as e:
+            if remove_on_error:
+                self._neighbors.remove(nei)
+            if raise_error:
+                raise e
 
     @running
-    def broadcast(
-        self,
-        msg: Dict[str, Union[str, int, List[str], bytes]],
-        node_list: Optional[List[str]] = None,
-    ) -> None:
+    def broadcast(self, msg: node_pb2.RootMessage, node_list: Optional[list[str]] = None) -> None:
         """
         Broadcast a message to all neighbors.
 
@@ -216,10 +253,13 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
             node_list: Optional node list.
 
         """
-        self._client.broadcast(msg, node_list)
+        neis = self._neighbors.get_all(only_direct=True)
+        neis_clients = [nei[0] for nei in neis.values()]
+        for nei in neis_clients:
+            nei.send(msg)
 
     @running
-    def get_neighbors(self, only_direct: bool = False) -> Dict[str, Any]:
+    def get_neighbors(self, only_direct: bool = False) -> dict[str, Any]:
         """
         Get the neighbors.
 
@@ -231,14 +271,20 @@ class InMemoryCommunicationProtocol(CommunicationProtocol):
 
     @running
     def wait_for_termination(self) -> None:
-        """Wait for termination."""
+        """
+        Get the neighbors.
+
+        Args:
+            only_direct: The only direct flag.
+
+        """
         self._server.wait_for_termination()
 
     @running
     def gossip_weights(
         self,
         early_stopping_fn: Callable[[], bool],
-        get_candidates_fn: Callable[[], List[str]],
+        get_candidates_fn: Callable[[], list[str]],
         status_fn: Callable[[], Any],
         model_fn: Callable[[str], Any],
         period: Optional[float] = None,
