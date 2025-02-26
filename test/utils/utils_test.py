@@ -16,28 +16,23 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""Check if ray is installed."""
+"""Utility functions testing."""
 
-import importlib
-import os
+import pytest
 
-from p2pfl.settings import Settings
+from p2pfl.learning.dataset.p2pfl_dataset import DatasetEmptyException, P2PFLEmptyDataset
+from p2pfl.learning.frameworks.p2pfl_model import ModelEmptyException, P2PFLEmptyModel
 
 
-def ray_installed() -> bool:
-    """Check if ray is installed."""
-    if os.environ.get("DISABLE_RAY", "0") == "1" or Settings.general.DISABLE_RAY:
-        return False
+def test_raise_on_model_access():
+    """Test that accessing an attribute raises ModelEmptyException."""
+    empty_model = P2PFLEmptyModel()
+    with pytest.raises(ModelEmptyException):
+        print(empty_model.model)
 
-    if importlib.util.find_spec("ray") is not None:
-        # Try to initialize ray
-        import ray
 
-        # If ray not initialized, initialize it
-        if not ray.is_initialized():
-            ray.init(
-                namespace="p2pfl",
-                # include_dashboard=False
-            )
-        return True
-    return False
+def test_method_call_raises_modelemptyexception():
+    """Test that calling a method raises ModelEmptyException."""
+    empty_dataset = P2PFLEmptyDataset()
+    with pytest.raises(DatasetEmptyException):
+        print(empty_dataset._data)

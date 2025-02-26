@@ -21,23 +21,25 @@
 from typing import Optional
 
 from p2pfl.communication.commands.command import Command
-from p2pfl.communication.protocols.protobuff.grpc.address import AddressParser
 from p2pfl.communication.protocols.protobuff.grpc.client import GrpcClient
 from p2pfl.communication.protocols.protobuff.grpc.server import GrpcServer
 from p2pfl.communication.protocols.protobuff.protobuff_communication_protocol import ProtobuffCommunicationProtocol
+from p2pfl.utils.node_component import allow_no_addr_check
 
 
 class GrpcCommunicationProtocol(ProtobuffCommunicationProtocol):
     """GRPC communication protocol."""
 
-    def __init__(self, addr: str = "127.0.0.1", commands: Optional[list[Command]] = None) -> None:
+    def __init__(self, commands: Optional[list[Command]] = None) -> None:
         """Initialize the GRPC communication protocol."""
-        super().__init__(AddressParser(addr).get_parsed_address(), commands)
+        super().__init__(commands)
 
+    @allow_no_addr_check
     def bluid_client(self, *args, **kwargs) -> GrpcClient:
         """Build client function."""
         return GrpcClient(*args, **kwargs)
 
+    @allow_no_addr_check
     def build_server(self, *args, **kwargs) -> GrpcServer:
         """Build server function."""
         return GrpcServer(*args, **kwargs)

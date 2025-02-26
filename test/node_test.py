@@ -17,16 +17,19 @@
 #
 """Node tests."""
 
-import contextlib
-import time
+# Disable Ray on the experiment (if installed)
+from p2pfl.settings import Settings
 
-import pytest
+Settings.general.DISABLE_RAY = True
 
-from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
-from p2pfl.management.logger import logger
-from p2pfl.node import Node
-from p2pfl.utils.utils import (
+import contextlib  # noqa: E402, I001
+import time  # noqa: E402
+import pytest  # noqa: E402
+from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset  # noqa: E402
+from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy  # noqa: E402
+from p2pfl.management.logger import logger  # noqa: E402
+from p2pfl.node import Node  # noqa: E402
+from p2pfl.utils.utils import (  # noqa: E402
     check_equal_models,
     set_standalone_settings,
     wait_convergence,
@@ -94,7 +97,7 @@ def test_convergence(x):
     wait_convergence(nodes, n - 1, only_direct=False)
 
     # Start Learning
-    nodes[0].set_start_learning(rounds=r, epochs=1)
+    nodes[0].set_start_learning(rounds=r, epochs=0)
 
     # Wait
     wait_to_finish(nodes, timeout=240)

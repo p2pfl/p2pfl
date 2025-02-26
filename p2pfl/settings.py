@@ -41,6 +41,8 @@ class General:
     """Directory to save logs."""
     EXCLUDE_BEAT_LOGS: bool = True
     """Exclude heartbeat logs."""
+    DISABLE_RAY: bool = False
+    """Disable Ray for local testing."""
 
 
 @dataclass

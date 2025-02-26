@@ -23,9 +23,9 @@ from typing import Optional
 
 import grpc
 
-import p2pfl.communication.protocols.protobuff.grpc.server as server
 from p2pfl.communication.commands.command import Command
 from p2pfl.communication.protocols.protobuff.gossiper import Gossiper
+from p2pfl.communication.protocols.protobuff.grpc.address import AddressParser
 from p2pfl.communication.protocols.protobuff.neighbors import Neighbors
 from p2pfl.communication.protocols.protobuff.proto import node_pb2_grpc
 from p2pfl.communication.protocols.protobuff.server import ProtobuffServer
@@ -46,14 +46,13 @@ class GrpcServer(ProtobuffServer):
 
     def __init__(
         self,
-        addr: str,
         gossiper: Gossiper,
         neighbors: Neighbors,
         commands: Optional[list[Command]] = None,
     ) -> None:
         """Initialize the GRPC server."""
         # Super
-        super().__init__(addr, gossiper, neighbors, commands)
+        super().__init__(gossiper, neighbors, commands)
 
         # Server
         maxMsgLength = 1024 * 1024 * 1024
@@ -65,6 +64,10 @@ class GrpcServer(ProtobuffServer):
             ],
         )
         self.__server_started = False
+
+    def set_addr(self, addr: str) -> str:
+        """Parse and set the addr of the node."""
+        return super().set_addr(AddressParser(addr).get_parsed_address())
 
     ####
     # Management
@@ -88,7 +91,7 @@ class GrpcServer(ProtobuffServer):
                     private_key = key_file.read().encode()
                     certificate_chain = crt_file.read().encode()
                     root_certificates = ca_file.read().encode()
-                server_credentials = server.ssl_server_credentials(
+                server_credentials = grpc.ssl_server_credentials(
                     [(private_key, certificate_chain)], root_certificates=root_certificates, require_client_auth=True
                 )
                 self.__server.add_secure_port(self.addr, server_credentials)

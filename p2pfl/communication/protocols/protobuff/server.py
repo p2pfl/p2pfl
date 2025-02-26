@@ -30,9 +30,10 @@ from p2pfl.communication.protocols.protobuff.neighbors import Neighbors
 from p2pfl.communication.protocols.protobuff.proto import node_pb2, node_pb2_grpc
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
+from p2pfl.utils.node_component import NodeComponent, allow_no_addr_check
 
 
-class ProtobuffServer(ABC, node_pb2_grpc.NodeServicesServicer):
+class ProtobuffServer(ABC, node_pb2_grpc.NodeServicesServicer, NodeComponent):
     """
     Implementation of the server side logic of PROTOBUFF communication protocol.
 
@@ -46,7 +47,6 @@ class ProtobuffServer(ABC, node_pb2_grpc.NodeServicesServicer):
 
     def __init__(
         self,
-        addr: str,
         gossiper: Gossiper,
         neighbors: Neighbors,
         commands: Optional[list[Command]] = None,
@@ -57,8 +57,8 @@ class ProtobuffServer(ABC, node_pb2_grpc.NodeServicesServicer):
             commands = []
         self.__commands = {c.get_name(): c for c in commands}
 
-        # Address
-        self.addr = addr
+        # (addr) Super
+        NodeComponent.__init__(self)
 
         # Gossiper
         self._gossiper = gossiper
@@ -192,6 +192,7 @@ class ProtobuffServer(ABC, node_pb2_grpc.NodeServicesServicer):
     # Commands
     ####
 
+    @allow_no_addr_check
     def add_command(self, cmds: Union[Command, list[Command]]) -> None:
         """
         Add a command.

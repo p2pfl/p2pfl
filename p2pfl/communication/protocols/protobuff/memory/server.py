@@ -26,6 +26,21 @@ from p2pfl.communication.protocols.protobuff.memory.singleton_dict import Single
 from p2pfl.communication.protocols.protobuff.neighbors import Neighbors
 from p2pfl.communication.protocols.protobuff.server import ProtobuffServer
 from p2pfl.management.logger import logger
+from p2pfl.utils.singleton import SingletonMeta
+
+
+# Singleton Address counter
+class AddressCounter(metaclass=SingletonMeta):
+    """Singleton address counter."""
+
+    def __init__(self) -> None:
+        """Initialize the address counter."""
+        self.__counter = 0
+
+    def get(self) -> str:
+        """Get the address."""
+        self.__counter += 1
+        return f"node-{self.__counter}"
 
 
 class MemoryServer(ProtobuffServer):
@@ -42,18 +57,37 @@ class MemoryServer(ProtobuffServer):
 
     def __init__(
         self,
-        addr: str,
         gossiper: Gossiper,
         neighbors: Neighbors,
         commands: Optional[list[Command]] = None,
     ) -> None:
         """Initialize the in-memory server."""
         # Super
-        super().__init__(addr, gossiper, neighbors, commands)
+        super().__init__(gossiper, neighbors, commands)
+
+        # raise Exception("REVISAR INSTANCIACION DE")
+        # raise Exception("REVISAR INSTANCIACION DE")
+        # raise Exception("REVISAR INSTANCIACION DE")
+        # raise Exception("REVISAR INSTANCIACION DE")
+        # raise Exception("REVISAR INSTANCIACION DE")
+        # raise Exception("REVISAR INSTANCIACION DE")
+        # raise Exception("REVISAR INSTANCIACION DE")
+        # raise Exception("REVISAR INSTANCIACION DE")
+        # raise Exception("REVISAR INSTANCIACION DE")
+        # raise Exception("REVISAR INSTANCIACION DE")
+        # raise Exception("REVISAR INSTANCIACION DE")
+        # raise Exception("REVISAR INSTANCIACION DE")
+        # raise Exception("REVISAR INSTANCIACION DE")
 
         # Server
         self.__singleton_dict = SingletonDict()
         self.__terminated = threading.Event()
+
+    def set_addr(self, addr: str) -> str:
+        """Set the addr of the node."""
+        if addr == "":
+            addr = AddressCounter().get()
+        return super().set_addr(addr)
 
     ####
     # Management

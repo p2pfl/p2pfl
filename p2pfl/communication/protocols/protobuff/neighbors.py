@@ -25,20 +25,14 @@ from typing import Callable
 from p2pfl.communication.protocols.exceptions import NeighborNotConnectedError
 from p2pfl.communication.protocols.protobuff.client import ProtobuffClient
 from p2pfl.management.logger import logger
+from p2pfl.utils.node_component import NodeComponent
 
 
-class Neighbors:
-    """
-    Neighbor management class for agnostic communication protocol.
+class Neighbors(NodeComponent):
+    """Neighbor management class for agnostic communication protocol."""
 
-    Args:
-        self_addr: Address of the node.
-
-    """
-
-    def __init__(self, self_addr: str, build_client_fn: Callable[..., ProtobuffClient]) -> None:
+    def __init__(self, build_client_fn: Callable[..., ProtobuffClient]) -> None:
         """Initialize the neighbor management class."""
-        self.self_addr = self_addr
         self.neis: dict[str, tuple[ProtobuffClient, float]] = {}
         self.neis_lock = threading.Lock()
         self.build_client_fn = build_client_fn
@@ -78,25 +72,25 @@ class Neighbors:
 
         """
         # Cannot add itself
-        if addr == self.self_addr:
-            logger.info(self.self_addr, "❌ Cannot add itself")
+        if addr == self.addr:
+            logger.info(self.addr, "❌ Cannot add itself")
             return False
 
         # Lock
         with self.neis_lock:
             # Cannot add duplicates
             if self.exists(addr):
-                logger.info(self.self_addr, f"❌ Cannot add duplicates. {addr} already exists.")
+                logger.info(self.addr, f"❌ Cannot add duplicates. {addr} already exists.")
                 return False
 
             # Add
             try:
-                client = self.build_client_fn(self.self_addr, addr)
+                client = self.build_client_fn(self.addr, addr)
                 if not non_direct:
                     client.connect(handshake_msg=handshake)
                 self.neis[addr] = (client, time.time())
             except Exception as e:
-                logger.error(self.self_addr, f"❌ Cannot add {addr}: {e}")
+                logger.error(self.addr, f"❌ Cannot add {addr}: {e}")
                 return False
 
             # Release

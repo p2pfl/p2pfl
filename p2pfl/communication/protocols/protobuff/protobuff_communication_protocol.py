@@ -34,6 +34,7 @@ from p2pfl.communication.protocols.protobuff.neighbors import Neighbors
 from p2pfl.communication.protocols.protobuff.proto import node_pb2
 from p2pfl.communication.protocols.protobuff.server import ProtobuffServer
 from p2pfl.settings import Settings
+from p2pfl.utils.node_component import allow_no_addr_check
 
 
 def running(func):
@@ -63,45 +64,43 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
 
     def __init__(
         self,
-        addr: str = "127.0.0.1",
         commands: Optional[list[Command]] = None,
     ) -> None:
         """Initialize the GRPC communication protocol."""
-        # Address
-        self.addr = addr
+        # (addr) Super
+        CommunicationProtocol.__init__(self)
         # Neighbors
-        self._neighbors = Neighbors(self.addr, self.bluid_client)
+        self._neighbors = Neighbors(self.bluid_client)
         # Gossip
-        self._gossiper = Gossiper(self.addr, self._neighbors)
+        self._gossiper = Gossiper(self._neighbors)
         # GRPC
-        self._server = self.build_server(self.addr, self._gossiper, self._neighbors, commands)
+        self._server = self.build_server(self._gossiper, self._neighbors, commands)
         # Hearbeat
-        self._heartbeater = Heartbeater(self.addr, self._neighbors, self.build_msg)
+        self._heartbeater = Heartbeater(self._neighbors, self.build_msg)
         # Commands
         self.add_command(HeartbeatCommand(self._heartbeater))
         if commands is None:
             commands = []
         self.add_command(commands)
 
+    @allow_no_addr_check
     @abstractmethod
     def bluid_client(self, *args, **kwargs) -> ProtobuffClient:
         """Build client function."""
         pass
 
+    @allow_no_addr_check
     @abstractmethod
     def build_server(self, *args, **kwargs) -> ProtobuffServer:
         """Build server function."""
         pass
 
-    def get_address(self) -> str:
-        """
-        Get the address.
-
-        Returns:
-            The address.
-
-        """
-        return self.addr
+    def set_addr(self, addr: str) -> str:
+        """Set the addr of the node."""
+        # Delegate on server
+        addr = self._server.set_addr(addr)
+        # Set on super
+        return super().set_addr(addr)
 
     def start(self) -> None:
         """Start the GRPC communication protocol."""
@@ -117,6 +116,7 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
         self._neighbors.clear_neighbors()
         self._server.stop()
 
+    @allow_no_addr_check
     def add_command(self, cmds: Union[Command, list[Command]]) -> None:
         """
         Add a command to the communication protocol.

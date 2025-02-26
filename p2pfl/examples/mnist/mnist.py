@@ -132,7 +132,7 @@ def mnist(
         node = Node(
             model_fn(),
             partitions[i],
-            protocol=MemoryCommunicationProtocol if protocol == "memory" else GrpcCommunicationProtocol,  # type: ignore
+            protocol=MemoryCommunicationProtocol() if protocol == "memory" else GrpcCommunicationProtocol(),
             address=address,
             simulation=True,
             aggregator=Scaffold() if aggregator == "scaffold" else None,

@@ -28,18 +28,18 @@ class NodeState:
     Class to store the main state of a learning node.
 
     Attributes:
-        addr(str): The address of the node.
-        status(str): The status of the node.
-        simulation(bool): If the node is a simulation.
-        learner(Learner): The learner of the node.
-        models_aggregated(Dict[str, List[str]]): The models aggregated by the node.
-        nei_status(Dict[str, int]): The status of the neighbors.
-        train_set(List[str]): The train set of the node.
-        train_set_votes(Dict[str, Dict[str, int]]): The votes of the train set.
-        train_set_votes_lock(threading.Lock): The lock for the train set votes.
-        start_thread_lock(threading.Lock): The lock for the start thread.
-        wait_votes_ready_lock(threading.Lock): The lock for the wait votes ready.
-        model_initialized_lock(threading.Lock): The lock for the model initialized.
+        addr: The address of the node.
+        status: The status of the node.
+        simulation: If the node is a simulation.
+        learner: The learner of the node.
+        models_aggregated: The models aggregated by the node.
+        nei_status: The status of the neighbors.
+        train_set: The train set of the node.
+        train_set_votes: The votes of the train set.
+        train_set_votes_lock: The lock for the train set votes.
+        start_thread_lock: The lock for the start thread.
+        wait_votes_ready_lock: The lock for the wait votes ready.
+        model_initialized_lock: The lock for the model initialized.
 
     Args:
         addr: The address of the node.

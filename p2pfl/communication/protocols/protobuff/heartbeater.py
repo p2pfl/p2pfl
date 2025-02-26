@@ -26,31 +26,36 @@ from p2pfl.communication.protocols.protobuff.neighbors import Neighbors
 from p2pfl.communication.protocols.protobuff.proto import node_pb2
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
+from p2pfl.utils.node_component import NodeComponent
 
 heartbeater_cmd_name = "beat"
 
 
-class Heartbeater(threading.Thread):
+class Heartbeater(threading.Thread, NodeComponent):
     """
     Heartbeater for agnostic communication protocol. Send and update fresh heartbeats.
 
     TODO: Merge heartbeats to increase efficiency.
 
     Args:
-        self_addr: Address of the node.
         neighbors: Neighbors to update.
 
     """
 
-    def __init__(self, self_addr: str, neighbors: Neighbors, build_msg: Callable[..., node_pb2.RootMessage]) -> None:
+    def __init__(self, neighbors: Neighbors, build_msg: Callable[..., node_pb2.RootMessage]) -> None:
         """Initialize the heartbeat thread."""
         super().__init__()
-        self.__self_addr = self_addr
         self.__neighbors = neighbors
         self.__heartbeat_terminate_flag = threading.Event()
-        self.__build_beat_message = lambda time: build_msg(heartbeater_cmd_name, args=[str(time)])
+        self.__build_beat_message: Callable[[float], node_pb2.RootMessage] = lambda time: build_msg(heartbeater_cmd_name, args=[str(time)])
         self.daemon = True
-        self.name = f"heartbeater-thread-{self.__self_addr}"
+        self.name = "heartbeater-thread-unknown"
+
+    def set_addr(self, addr):
+        """Set the address."""
+        addr = super().set_addr(addr)
+        self.name = f"heartbeater-thread-{addr}"
+        return addr
 
     def run(self) -> None:
         """Run the heartbeat thread."""
@@ -70,7 +75,7 @@ class Heartbeater(threading.Thread):
 
         """
         # Check if it is itself
-        if nei == self.__self_addr:
+        if nei == self.addr:
             return
 
         # Check if exists
@@ -96,7 +101,7 @@ class Heartbeater(threading.Thread):
                 for nei in neis:
                     if t - neis[nei][1] > timeout:
                         logger.info(
-                            self.__self_addr,
+                            self.addr,
                             f"Heartbeat timeout for {nei} ({t - neis[nei][1]}). Removing...",
                         )
                         self.__neighbors.remove(nei)

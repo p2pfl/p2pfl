@@ -31,22 +31,15 @@ from p2pfl.management.logger import logger
 class VirtualNodeLearner(Learner):
     """Decorator for the learner to be used in the simulation."""
 
-    def __init__(self, learner: Learner, addr: str) -> None:
+    def __init__(self, learner: Learner) -> None:
         """Initialize the learner."""
         self.learner = learner
         self.actor_pool = SuperActorPool()
-        self.addr = addr
 
-    def set_addr(self, addr: str) -> None:
-        """
-        Set the address of the learner.
-
-        Args:
-            addr: The address of the learner.
-
-        """
+    def set_addr(self, addr: str) -> str:
+        """Set the addr of the node."""
         self.learner.set_addr(addr)
-        self.addr = addr
+        return super().set_addr(addr)
 
     def set_model(self, model: Union[P2PFLModel, List[np.ndarray], bytes]) -> None:
         """

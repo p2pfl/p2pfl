@@ -24,38 +24,23 @@ from p2pfl.communication.commands.command import Command
 from p2pfl.communication.protocols.protobuff.memory.client import MemoryClient
 from p2pfl.communication.protocols.protobuff.memory.server import MemoryServer
 from p2pfl.communication.protocols.protobuff.protobuff_communication_protocol import ProtobuffCommunicationProtocol
-from p2pfl.utils.singleton import SingletonMeta
-
-
-# Singleton Address counter
-class AddressCounter(metaclass=SingletonMeta):
-    """Singleton address counter."""
-
-    def __init__(self) -> None:
-        """Initialize the address counter."""
-        self.__counter = 0
-
-    def get(self) -> str:
-        """Get the address."""
-        self.__counter += 1
-        return f"node-{self.__counter}"
+from p2pfl.utils.node_component import allow_no_addr_check
 
 
 class MemoryCommunicationProtocol(ProtobuffCommunicationProtocol):
     """GRPC communication protocol."""
 
-    def __init__(self, addr: str = "", commands: Optional[list[Command]] = None) -> None:
+    def __init__(self, commands: Optional[list[Command]] = None) -> None:
         """Initialize the GRPC communication protocol."""
-        # Address
-        if addr == "":
-            addr = AddressCounter().get()
         # Super
-        super().__init__(addr, commands)
+        super().__init__(commands)
 
+    @allow_no_addr_check
     def bluid_client(self, *args, **kwargs) -> MemoryClient:
         """Build client function."""
         return MemoryClient(*args, **kwargs)
 
+    @allow_no_addr_check
     def build_server(self, *args, **kwargs) -> MemoryServer:
         """Build server function."""
         return MemoryServer(*args, **kwargs)

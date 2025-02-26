@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "p2pfl"
-version = "0.4.1"
+version = "0.5.0"
 description = "A p2p federated learning framework"
 authors = ["Pedro Guijas <pguijas@gmail.com>"]
 license = "GPL-3.0-only"

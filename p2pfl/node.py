@@ -21,7 +21,7 @@ import contextlib
 import os
 import threading
 import traceback
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Optional
 
 from p2pfl.communication.commands.message.metrics_command import MetricsCommand
 from p2pfl.communication.commands.message.model_initialized_command import ModelInitializedCommand
@@ -89,24 +89,29 @@ class Node:
         model: P2PFLModel,
         data: P2PFLDataset,
         address: str = "127.0.0.1",
-        learner: Optional[Type[Learner]] = None,
+        learner: Optional[Learner] = None,
         aggregator: Optional[Aggregator] = None,
-        protocol: Type[CommunicationProtocol] = GrpcCommunicationProtocol,
+        protocol: Optional[CommunicationProtocol] = None,
         simulation: bool = False,
         **kwargs,
     ) -> None:
         """Initialize a node."""
-        # Communication protol
-        self._communication_protocol = protocol(address)
-        self.addr = self._communication_protocol.get_address()
+        # Communication protol (and get addr)
+        self._communication_protocol = GrpcCommunicationProtocol() if protocol is None else protocol
+        self.addr = self._communication_protocol.set_addr(address)
 
-        # Callbacks
+        # Aggregator
         self.aggregator = FedAvg() if aggregator is None else aggregator
+        self.aggregator.set_addr(self.addr)
 
-        # Learning
+        # Learner
         if learner is None:  # if no learner, use factory default
-            learner = LearnerFactory.create_learner(model)
-        self.learner = try_init_learner_with_ray(learner, model, data, self.addr, self.aggregator)
+            learner = LearnerFactory.create_learner(model)()
+        self.learner = try_init_learner_with_ray(learner)
+        self.learner.set_addr(self.addr)
+        self.learner.set_model(model)
+        self.learner.set_data(data)
+        self.learner.indicate_aggregator(self.aggregator)
 
         # State
         self.__running = False

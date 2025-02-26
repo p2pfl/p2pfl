@@ -34,15 +34,11 @@ from p2pfl.utils.utils import (
 )
 
 with contextlib.suppress(ImportError):
-    from p2pfl.examples.mnist.model.mlp_tensorflow import model_build_fn as model_build_fn_tensorflow
+    pass
 
 
 with contextlib.suppress(ImportError):
-    import jax
-    import jax.numpy as jnp
-
-    from p2pfl.examples.mnist.model.mlp_flax import MLP as MLP_FLAX
-    from p2pfl.learning.frameworks.flax.flax_model import FlaxModel
+    pass
 
 with contextlib.suppress(ImportError):
     from p2pfl.examples.mnist.model.mlp_pytorch import model_build_fn as model_build_fn_pytorch
@@ -147,5 +143,6 @@ def _test_interrupt_train(two_nodes):
     # Check if execution is incorrect
     assert "RoundFinishedStage" not in n1.learning_workflow.history
     assert "RoundFinishedStage" not in n2.learning_workflow.history
+
 
 test_convergence((2, 2))
