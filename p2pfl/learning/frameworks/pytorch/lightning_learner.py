@@ -51,7 +51,9 @@ class LightningLearner(Learner):
 
     """
 
-    def __init__(self, model: Optional[P2PFLModel] = None, data: Optional[P2PFLDataset] = None, aggregator: Optional[Aggregator] = None) -> None:
+    def __init__(
+        self, model: Optional[P2PFLModel] = None, data: Optional[P2PFLDataset] = None, aggregator: Optional[Aggregator] = None
+    ) -> None:
         """Initialize the learner."""
         super().__init__(model, data, aggregator)
         self.__trainer: Optional[Trainer] = None

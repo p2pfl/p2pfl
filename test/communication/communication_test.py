@@ -43,11 +43,15 @@ ProtocolBuilder = Callable[..., CommunicationProtocol]
 
 
 def __build_grpc_protocol(*args, **kwargs) -> CommunicationProtocol:
-    return GrpcCommunicationProtocol(*args, **kwargs)
+    comm_proto = GrpcCommunicationProtocol(*args, **kwargs)
+    comm_proto.set_addr("localhost")
+    return comm_proto
 
 
 def __build_memory_protocol(*args, **kwargs) -> CommunicationProtocol:
-    return MemoryCommunicationProtocol(*args, **kwargs)
+    comm_proto = MemoryCommunicationProtocol(*args, **kwargs)
+    comm_proto.set_addr("node")
+    return comm_proto
 
 
 build_protocols_fns = [__build_grpc_protocol, __build_memory_protocol]

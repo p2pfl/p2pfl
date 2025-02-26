@@ -79,7 +79,8 @@ class MockP2PFLModel(P2PFLModel):
 
 def test_scaffold_correct_aggregation():
     """Test if scaffold aggregates delta_y_i and delta_c_i correctly."""
-    aggr = Scaffold(node_name="node1", global_lr=0.1)
+    aggr = Scaffold(global_lr=0.1)
+    aggr.set_addr("test")
 
     # Initial params and mock models
     initial_global_model_params = [np.array([0.0, 0.0]), np.array([0.0, 0.0])]
@@ -143,14 +144,16 @@ def test_scaffold_correct_aggregation():
 
 def test_scaffold_no_models():
     """Test that aggregating with no models raising proper exception."""
-    aggr = Scaffold(node_name="node1")
+    aggr = Scaffold()
+    aggr.set_addr("test")
     with pytest.raises(NoModelsToAggregateError):
         aggr.aggregate([])
 
 
 def test_scaffold_missing_info():
     """Test that aggregating with missing information raises proper exceptions."""
-    aggr = Scaffold(node_name="node1")
+    aggr = Scaffold()
+    aggr.set_addr("test")
 
     # mock models with missing delta_y and delta_c
     model_missing_delta_y = MockP2PFLModel(

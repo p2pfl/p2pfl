@@ -46,9 +46,6 @@ class Learner(ABC, NodeComponent):
         self, model: Optional[P2PFLModel] = None, data: Optional[P2PFLDataset] = None, aggregator: Optional[Aggregator] = None
     ) -> None:
         """Initialize the learner."""
-        # Model and data init (dummy if not)
-        self.__model = model
-        self.__data = data
         # (addr) Super
         NodeComponent.__init__(self)
         # Indicate aggregator (init callbacks)
@@ -56,6 +53,13 @@ class Learner(ABC, NodeComponent):
         if aggregator:
             self.indicate_aggregator(aggregator)
         self.epochs: int = 1  # Default epochs
+        # Model and data init (dummy if not)
+        self.__model: Optional[P2PFLModel] = None
+        if model:
+            self.set_model(model)
+        self.__data: Optional[P2PFLDataset] = None
+        if data:
+            self.set_data(data)
 
     @allow_no_addr_check
     def set_model(self, model: Union[P2PFLModel, list[np.ndarray], bytes]) -> None:
@@ -134,6 +138,7 @@ class Learner(ABC, NodeComponent):
         """
         self.epochs = epochs
 
+    @allow_no_addr_check
     def update_callbacks_with_model_info(self) -> None:
         """Update the callbacks with the model additional information."""
         new_info = self.get_model().get_info()
@@ -144,6 +149,7 @@ class Learner(ABC, NodeComponent):
             except KeyError:
                 pass
 
+    @allow_no_addr_check
     def add_callback_info_to_model(self) -> None:
         """Add the additional information from the callbacks to the model."""
         for c in self.callbacks:

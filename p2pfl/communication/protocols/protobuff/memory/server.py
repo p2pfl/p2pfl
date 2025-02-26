@@ -31,16 +31,34 @@ from p2pfl.utils.singleton import SingletonMeta
 
 # Singleton Address counter
 class AddressCounter(metaclass=SingletonMeta):
-    """Singleton address counter."""
+    """Singleton address counter with efficient address tracking."""
 
     def __init__(self) -> None:
         """Initialize the address counter."""
-        self.__counter = 0
+        self.__address_registry: dict[str, int] = {}
 
-    def get(self) -> str:
-        """Get the address."""
-        self.__counter += 1
-        return f"node-{self.__counter}"
+    def get(self, base_name: str) -> str:
+        """
+        Get a unique address based on the given base name.
+
+        Args:
+            base_name: The base name for the address. If empty, "node" will be used.
+
+        Returns:
+            A unique address string
+
+        """
+        # Use "node" as default if base_name is empty
+        if not base_name:
+            base_name = "node"
+
+        # Initialize registry for this base_name if it doesn't exist
+        if base_name not in self.__address_registry:
+            self.__address_registry[base_name] = 0
+        else:
+            self.__address_registry[base_name] += 1
+
+        return f"{base_name}-{self.__address_registry[base_name]}"
 
 
 class MemoryServer(ProtobuffServer):
@@ -65,29 +83,13 @@ class MemoryServer(ProtobuffServer):
         # Super
         super().__init__(gossiper, neighbors, commands)
 
-        # raise Exception("REVISAR INSTANCIACION DE")
-        # raise Exception("REVISAR INSTANCIACION DE")
-        # raise Exception("REVISAR INSTANCIACION DE")
-        # raise Exception("REVISAR INSTANCIACION DE")
-        # raise Exception("REVISAR INSTANCIACION DE")
-        # raise Exception("REVISAR INSTANCIACION DE")
-        # raise Exception("REVISAR INSTANCIACION DE")
-        # raise Exception("REVISAR INSTANCIACION DE")
-        # raise Exception("REVISAR INSTANCIACION DE")
-        # raise Exception("REVISAR INSTANCIACION DE")
-        # raise Exception("REVISAR INSTANCIACION DE")
-        # raise Exception("REVISAR INSTANCIACION DE")
-        # raise Exception("REVISAR INSTANCIACION DE")
-
         # Server
         self.__singleton_dict = SingletonDict()
         self.__terminated = threading.Event()
 
     def set_addr(self, addr: str) -> str:
         """Set the addr of the node."""
-        if addr == "":
-            addr = AddressCounter().get()
-        return super().set_addr(addr)
+        return super().set_addr(AddressCounter().get(addr))
 
     ####
     # Management

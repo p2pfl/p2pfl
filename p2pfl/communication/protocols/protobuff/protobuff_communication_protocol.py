@@ -99,6 +99,10 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
         """Set the addr of the node."""
         # Delegate on server
         addr = self._server.set_addr(addr)
+        # Update components
+        self._neighbors.set_addr(addr)
+        self._gossiper.set_addr(addr)
+        self._heartbeater.set_addr(addr)
         # Set on super
         return super().set_addr(addr)
 

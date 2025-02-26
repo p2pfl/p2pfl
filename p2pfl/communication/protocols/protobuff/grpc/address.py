@@ -55,7 +55,7 @@ class AddressParser:
                         raise ValueError("Port number is invalid.")
 
                 else:
-                    raw_host = raw_port
+                    raw_host = socket.gethostbyname(raw_port)
 
                     # Random port
                     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:

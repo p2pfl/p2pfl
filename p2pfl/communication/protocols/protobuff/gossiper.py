@@ -61,7 +61,7 @@ class Gossiper(threading.Thread, NodeComponent):
         self.period = period
         self.messages_per_period = messages_per_period
 
-    def set_addr(self, addr):
+    def set_addr(self, addr: str) -> str:
         """Set the address."""
         addr = super().set_addr(addr)
         self.name = f"gossiper-thread-{addr}"

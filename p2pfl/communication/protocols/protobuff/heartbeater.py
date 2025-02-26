@@ -51,7 +51,7 @@ class Heartbeater(threading.Thread, NodeComponent):
         self.daemon = True
         self.name = "heartbeater-thread-unknown"
 
-    def set_addr(self, addr):
+    def set_addr(self, addr: str) -> str:
         """Set the address."""
         addr = super().set_addr(addr)
         self.name = f"heartbeater-thread-{addr}"

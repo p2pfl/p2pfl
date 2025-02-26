@@ -156,7 +156,21 @@ class GrpcClient(ProtobuffClient):
             else:
                 raise NeighborNotConnectedError(f"Neighbor {self.nei_addr} not connected.")
         # Send
-        res = self.stub.send(msg, timeout=Settings.general.GRPC_TIMEOUT)  # type: ignore
+        try:
+            res = self.stub.send(msg, timeout=Settings.general.GRPC_TIMEOUT)  # type: ignore
+        except Exception as e:
+            # Unexpected error
+            logger.info(
+                self.self_addr,
+                f"Cannot send message {msg.cmd} to {self.nei_addr}. Error: {e}",
+            )
+            if disconnect:
+                self.disconnect(disconnect_msg=False)
+            if raise_error:
+                raise e
+            else:
+                return
+
         if res.error:
             logger.info(
                 self.self_addr,

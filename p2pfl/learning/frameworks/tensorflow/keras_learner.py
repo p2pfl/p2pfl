@@ -30,7 +30,6 @@ from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.learning.frameworks.tensorflow.callbacks.keras_logger import FederatedLogger
 from p2pfl.learning.frameworks.tensorflow.keras_dataset import KerasExportStrategy
-from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel
 from p2pfl.management.logger import logger
 from p2pfl.utils.node_component import allow_no_addr_check
 
@@ -46,7 +45,9 @@ class KerasLearner(Learner):
 
     """
 
-    def __init__(self, model: Optional[P2PFLModel] = None, data: Optional[P2PFLDataset] = None, aggregator: Optional[Aggregator] = None) -> None:
+    def __init__(
+        self, model: Optional[P2PFLModel] = None, data: Optional[P2PFLDataset] = None, aggregator: Optional[Aggregator] = None
+    ) -> None:
         """Initialize the KerasLearner."""
         super().__init__(model, data, aggregator)
 
@@ -65,7 +66,6 @@ class KerasLearner(Learner):
             loss=self.get_model().model.loss,
             metrics=["sparse_categorical_accuracy"],
         )
-
 
     def set_addr(self, addr: str) -> str:
         """Set the addr of the node."""

@@ -6,7 +6,7 @@ from typing import Any, Callable
 
 def allow_no_addr_check(method: Callable[..., Any]) -> Callable[..., Any]:
     """Decorate to mark a method as exempt from the addr check."""
-    setattr(method, "__no_addr_check__", True)
+    method.__no_addr_check__ = True  # type: ignore
     return method
 
 
@@ -43,6 +43,7 @@ class AddrRequiredMeta(ABCMeta):
     def set_addr(cls, instance: Any, addr: str) -> None:
         """Set the addr of the instance."""
         instance.addr = addr
+
 
 class NodeComponent(metaclass=AddrRequiredMeta):
     """

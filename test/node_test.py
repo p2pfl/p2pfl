@@ -97,7 +97,7 @@ def test_convergence(x):
     wait_convergence(nodes, n - 1, only_direct=False)
 
     # Start Learning
-    nodes[0].set_start_learning(rounds=r, epochs=0)
+    nodes[0].set_start_learning(rounds=r, epochs=1)
 
     # Wait
     wait_to_finish(nodes, timeout=240)

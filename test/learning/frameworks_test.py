@@ -332,6 +332,7 @@ def test_learner_train_torch():
     logger.experiment_started(node_name, experiment)
     # Learner
     learner = LightningLearner(p2pfl_model, dataset)
+    learner.set_addr(node_name)
 
     # Train
     learner.set_epochs(1)
@@ -363,6 +364,9 @@ def test_learner_train_tensorflow():
 
     # Learner
     learner = KerasLearner(p2pfl_model, dataset)
+    learner.set_addr(node_name)
+
+    print(learner.get_model().model.summary())
 
     # Train
     learner.set_epochs(1)
@@ -397,6 +401,7 @@ def test_learner_train_flax():
     p2pfl_model = FlaxModel(model=model, init_params=model_params)
     # Learner
     learner = FlaxLearner(p2pfl_model, dataset)
+    learner.set_addr(node_name)
 
     # Train
     learner.set_epochs(1)

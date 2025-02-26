@@ -75,6 +75,7 @@ def test_avg_simple():
     ]
     # New aggregator test
     aggregator = FedAvg()
+    aggregator.set_addr("prueba")
     res = aggregator.aggregate(models)
 
     assert np.array_equal(res.get_parameters()[0], np.array([4, 5, 6]))
@@ -100,6 +101,7 @@ def test_avg_complex():
 
     # New aggregator test
     aggregator = FedAvg()
+    aggregator.set_addr("prueba")
     res = aggregator.aggregate(
         [
             model,
@@ -117,6 +119,7 @@ def test_avg_complex():
 def test_aggregator_lifecycle():
     """Test the aggregator lock."""
     aggregator = FedAvg()
+    aggregator.set_addr("prueba")
     aggregator.set_nodes_to_aggregate(["node1", "node2", "node3"])
 
     # Try to set nodes again (should raise an exception)
