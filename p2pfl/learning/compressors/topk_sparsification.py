@@ -6,15 +6,22 @@ from p2pfl.learning.compressors.compression_interface import CompressionStrategy
 class TopKSparsification(CompressionStrategy):
     """Top-K sparsification."""
 
-    def apply_strategy(self, data:dict, k:int = 0.1) -> dict:
-        """Compress the parameters."""
+    def apply_strategy(self, payload:dict, k:float = 0.1) -> dict:
+        """
+        Keep only the top k largest values in model parameters.
+
+        Args:
+            payload: Model parameters.
+            k: Percentage of parameters to keep between 0 and 1.
+
+        """
         new_params = []
         sparse_metadata = {}
 
-        for pos, param in enumerate(data["params"]):
+        for pos, param in enumerate(payload["params"]):
             k_elements = max(1, int(k * param.size))
             flattened = param.flatten()
-            indices = np.argsort(flattened)[-k_elements:]
+            indices = np.argpartition(flattened, -k_elements)[-k_elements:]
             values = flattened[indices]
 
             sparse_metadata[pos] = {
@@ -23,14 +30,14 @@ class TopKSparsification(CompressionStrategy):
             }
 
             new_params.append(values)
-        data["params"] = new_params
-        data["additional_info"]["sparse_metadata"] = sparse_metadata
-        return data
+        payload["params"] = new_params
+        payload["additional_info"]["topk_sparse_metadata"] = sparse_metadata
+        return payload
 
     def reverse_strategy(self, data:dict) -> dict:
         """Decompress params."""
         reconstructed_params = []
-        sparse_metadata = data["additional_info"].get("sparse_metadata", {})
+        sparse_metadata = data["additional_info"].get("topk_sparse_metadata", {})
 
         for pos, values in enumerate(data["params"]):
             if pos in sparse_metadata:
@@ -49,8 +56,9 @@ class TopKSparsification(CompressionStrategy):
                 reconstructed_params.append(values)
 
         data["params"] = reconstructed_params
+        data["additional_info"].pop("topk_sparse_metadata", None)
         return data
 
     def get_category(self) -> str:
-        """Get the category of the compression strategy."""
-        return "sparsification"
+        """Return the category of the strategy."""
+        return "compressor"

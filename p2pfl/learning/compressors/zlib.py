@@ -20,7 +20,7 @@ import zlib
 
 import numpy as np
 
-from p2pfl.learning.compressors.compression import CompressionStrategy
+from p2pfl.learning.compressors.compression_interface import CompressionStrategy
 
 
 # TODO: NEEDS TO BE APPLIED AT END, SINCE NEEDS SERIALIZED DATA...
@@ -37,3 +37,5 @@ class ZlibCompressor(CompressionStrategy):
         payload["params"] = zlib.decompress(payload["params"])
         return payload
 
+    def get_category(self):
+        return "encoder"

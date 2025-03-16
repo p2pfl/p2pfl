@@ -24,41 +24,54 @@ from p2pfl.learning.compressors.compression_interface import CompressionStrategy
 class LowRankApproximation(CompressionStrategy):
     """Low Rank compression strategy."""
 
-    def apply_strategy(self, payload: dict, target_rank: int):
-        """Compress the parameters."""
-        params_to_share = []
-        compressed_states = {}
+    def apply_strategy(self, payload: dict, threshold: float = 0.95):
+        """
+        Approximate the parameters preserving a target rank or energy threshold.
+
+        Args:
+            payload: The payload to compress.
+            threshold: Percentage between 0 and 1 of the energy to preserve.
+
+        """
+        params_to_share = [] # layers without low rank approximation
+        compressed_states = {} # compressed layers
 
         for pos, layer in enumerate(payload["params"]):
-            if layer.ndim != 2 or target_rank < np.min(layer.shape):
-                # TODO: Logger? no puedo acceder a node name desde P2PFLModel
-                # TODO: svd solo se puede aplicar sobre matrices 2D
-                # puedo redimensionar la matriz para que sea 2D,
-                # pero depende de la implementación así que mejor no
+            # if threshold is provided, compute target rank
+
+            if layer.ndim != 2:
                 params_to_share.append(layer) # list(np.ndarray)
             else:
                 u, s, vt = np.linalg.svd(layer, full_matrices=False)
-                u, s, vt = u[:, :target_rank], s[0:target_rank, :], vt[:target_rank, :]
+                # compute number of values to keep so cumulative energy sum is above threshold
+                energy_total = np.sum(s ** 2)
+                cumulative_energies = np.cumsum(s ** 2)
+                target_rank = np.searchsorted(cumulative_energies / energy_total, threshold) + 1
+                u, s, vt = u[:, :target_rank], s[:target_rank], vt[:target_rank, :]
                 # remove layer from data and store compressed layer
                 compressed_states[pos] = u, s, vt
 
+
         payload["params"] = params_to_share
         # si añades más cosas (e.g: PTQ), no se usarían en los compressed params, pero está bien así
-        payload["additional_info"]["compressed_state"] = compressed_states
+        payload["additional_info"]["lowrank_compressed_state"] = compressed_states
         return payload
 
 
-    def reverse_strategy(self, payload: dict):
+    def reverse_strategy(self, payload: dict): # TODO: Revisar esto
         """Decompress the parameters."""
         decompressed_params = []
-        total_length = payload["params"].__len__() + payload["additional_info"]["compressed_state"].__len__()
+        total_length = payload["params"].__len__() + payload["additional_info"]["lowrank_compressed_state"].__len__()
         for pos in range(total_length):
-            if pos in payload["additional_info"]["compressed_state"]:
-                u, s, vt = payload["additional_info"]["compressed_state"][pos]
+            if pos in payload["additional_info"]["lowrank_compressed_state"]:
+                u, s, vt = payload["additional_info"]["lowrank_compressed_state"][pos]
                 decompressed_params.append(u @ np.diag(s) @ vt) # params approximation (np.ndarray)
             else:
                 decompressed_params.append(payload["params"].pop(0))
 
+        decompressed_params["additional_info"].pop("lowrank_compressed_state")
         return decompressed_params
 
-
+    def get_category(self):
+        """Return the category of the strategy."""
+        return "compressor"

@@ -34,8 +34,8 @@ class CompressionStrategy(ABC):
         """Decompress the parameters."""
         pass
 
-    @abstractmethod
     def get_category(self) -> str:
-        """Get the category of the compression strategy."""
-        pass
+        """Return the category of the strategy."""
+        return "compressor"
+
 
