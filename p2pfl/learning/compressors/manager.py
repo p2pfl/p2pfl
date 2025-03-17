@@ -41,14 +41,19 @@ class CompressionManager:
             data: The data to compress.
             techniques: The techniques to apply to the data.
         """
+        registry = CompressionManager.get_registry()
         applied_techniques = []
         encoder_instance = None
         payload = data["payload"]
 
+        # If no payload, skip compressions
+        if not payload:
+            return pickle.dumps(data)
+
         for name, fn_params in techniques.items():
-            if name not in COMPRESSION_REGISTRY:
+            if name not in registry:
                 raise ValueError(f"Unknown compression technique: {name}")
-            instance = COMPRESSION_REGISTRY[name]()
+            instance = registry[name]()
             if instance.get_category() == "encoder":
                 encoder_instance = instance
                 encoder_key = name
@@ -56,17 +61,15 @@ class CompressionManager:
                 payload = instance.apply_strategy(payload, **fn_params)
                 applied_techniques.append(name)
 
-
         data["header"]["applied_techniques"] = applied_techniques
-        # apply encoder
+        # apply encoder if exists
         payload_serialized = pickle.dumps(payload)
         if encoder_instance is not None:
             payload_serialized = encoder_instance.apply_strategy(payload_serialized)
             data["header"]["encoder"] = encoder_key
 
         data["payload"] = payload_serialized
-        return pickle.dumps(data) # reserialize after encoder
-
+        return pickle.dumps(data)  # reserialize after encoder
 
     @staticmethod
     def decompress(data: dict) -> dict:
@@ -77,17 +80,17 @@ class CompressionManager:
             data: The deserialized data to decompress (inner data is serialized).
 
         """
+        registry = CompressionManager.get_registry()
         applied_techniques = data["header"]["applied_techniques"]
         encoder_key = data["header"].get("encoder", None)
         payload = data["payload"]
 
         if encoder_key is not None:
-            encoder_instance = COMPRESSION_REGISTRY[encoder_key]()
+            encoder_instance = registry[encoder_key]()
             payload = encoder_instance.reverse_strategy(payload)
-        payload = pickle.loads(payload) # deserialize after decoder
+        payload = pickle.loads(payload)  # deserialize after decoder
         for name in reversed(applied_techniques):
-            instance = COMPRESSION_REGISTRY[name]()
+            instance = registry[name]()
             payload = instance.reverse_strategy(payload)
 
         return payload
-

@@ -15,7 +15,7 @@ class PTQuantization(CompressionStrategy):
             dtype: The desired precision
 
         """
-        payload["additional_info"]["ptq_original_dtype"] = payload.dtype
+        payload["additional_info"]["ptq_original_dtype"] = payload["params"][0].dtype
         quantized_params = [param.astype(dtype) for param in payload["params"]]
         payload["params"] = quantized_params
 

@@ -60,17 +60,17 @@ class LowRankApproximation(CompressionStrategy):
 
     def reverse_strategy(self, payload: dict): # TODO: Revisar esto
         """Decompress the parameters."""
-        decompressed_params = []
+        resulting_payload = {"params": [], "additional_info": []}
+
         total_length = payload["params"].__len__() + payload["additional_info"]["lowrank_compressed_state"].__len__()
         for pos in range(total_length):
             if pos in payload["additional_info"]["lowrank_compressed_state"]:
                 u, s, vt = payload["additional_info"]["lowrank_compressed_state"][pos]
-                decompressed_params.append(u @ np.diag(s) @ vt) # params approximation (np.ndarray)
+                resulting_payload["params"].append(u @ np.diag(s) @ vt) # params approximation (np.ndarray)
             else:
-                decompressed_params.append(payload["params"].pop(0))
+                resulting_payload["params"].append(payload["params"].pop(0))
 
-        decompressed_params["additional_info"].pop("lowrank_compressed_state")
-        return decompressed_params
+        return resulting_payload
 
     def get_category(self):
         """Return the category of the strategy."""
