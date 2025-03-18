@@ -20,7 +20,7 @@
 
 import numpy as np
 
-from p2pfl.learning.compression.optimization_strategy import CompressionStrategy
+from p2pfl.learning.compression.base_compression_strategy import CompressionStrategy
 
 
 class TopKSparsification(CompressionStrategy):
