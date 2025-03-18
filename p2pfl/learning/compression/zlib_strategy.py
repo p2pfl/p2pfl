@@ -16,26 +16,32 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""Zlib optimization strategy."""
+
 import zlib
 
 import numpy as np
 
-from p2pfl.learning.compressors.compression_interface import CompressionStrategy
+from p2pfl.learning.compression.optimization_strategy import CompressionStrategy
 
 
-# TODO: NEEDS TO BE APPLIED AT END, SINCE NEEDS SERIALIZED DATA...
 class ZlibCompressor(CompressionStrategy):
-    """Lossless compression using zlib."""
+    """
+    Lossless compression strategy using zlib.
+
+    See more at: https://github.com/madler/zlib
+    """
 
     def apply_strategy(self, payload: dict, level=6) -> bytes:
-        """Compress the parameters."""
+        """Apply strategy to the parameters."""
         payload["params"] = zlib.compress(payload["params"], level=level)
         return payload
 
     def reverse_strategy(self, payload: dict) -> list[np.ndarray]:
-        """Decompress the parameters."""
+        """Reverse the strategy."""
         payload["params"] = zlib.decompress(payload["params"])
         return payload
 
     def get_category(self):
+        """Get the category of the strategy."""
         return "encoder"

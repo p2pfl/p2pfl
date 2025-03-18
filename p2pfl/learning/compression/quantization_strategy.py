@@ -1,6 +1,27 @@
+#
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/p2pfl).
+# Copyright (c) 2024 Pedro Guijas Bravo.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with
+# this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+"""Post-Training Quantization (PTQ) compression strategy."""
+
 import numpy as np
 
-from p2pfl.learning.compressors.compression_interface import CompressionStrategy
+from p2pfl.learning.compression.optimization_strategy import CompressionStrategy
 
 
 class PTQuantization(CompressionStrategy):
@@ -11,8 +32,8 @@ class PTQuantization(CompressionStrategy):
         Reduce the precission of model parameters.
 
         Args:
-            payload: Dict with payload to quantize
-            dtype: The desired precision
+            payload: Payload to quantize.
+            dtype: The desired precision.
 
         """
         payload["additional_info"]["ptq_original_dtype"] = payload["params"][0].dtype
@@ -26,7 +47,7 @@ class PTQuantization(CompressionStrategy):
         Return model parameters to saved original precission.
 
         Args:
-            payload: Dict with payload to restore.
+            payload: Payload to restore.
 
         """
         original_dtype = payload["additional_info"]["ptq_original_dtype"]
@@ -37,4 +58,4 @@ class PTQuantization(CompressionStrategy):
 
     def get_category(self) -> str:
         """Return the category of the strategy."""
-        return "compressor"
+        return "loseless_compressor"

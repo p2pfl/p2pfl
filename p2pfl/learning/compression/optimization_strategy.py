@@ -16,22 +16,24 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""Compression strategy interface."""
+
 from abc import ABC, abstractmethod
 
 import numpy as np
 
 
 class CompressionStrategy(ABC):
-    """Abstract class for compression strategies."""
+    """Abstract class for optimization strategies."""
 
     @abstractmethod
     def apply_strategy(self,  payload: dict) -> bytes:
-        """Compress the parameters."""
+        """Apply strategy to the parameters."""
         pass
 
     @abstractmethod
     def reverse_strategy(self,  payload: dict) -> list[np.ndarray]:
-        """Decompress the parameters."""
+        """Reverse the strategy."""
         pass
 
     def get_category(self) -> str:

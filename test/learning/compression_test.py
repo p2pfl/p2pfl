@@ -1,15 +1,34 @@
+#
+# This file is part of the federated_learning_p2p (p2pfl) distribution
+# (see https://github.com/pguijas/p2pfl).
+# Copyright (c) 2024 Pedro Guijas Bravo.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+"""Tests for compression module."""
+
 import copy
 import pickle
 
 import numpy as np
 import pytest
 
-from p2pfl.learning.compressors.compression_interface import CompressionStrategy
-from p2pfl.learning.compressors.low_rank import LowRankApproximation
-from p2pfl.learning.compressors.manager import CompressionManager
-from p2pfl.learning.compressors.quantization import PTQuantization
-from p2pfl.learning.compressors.topk_sparsification import TopKSparsification
-from p2pfl.learning.compressors.zlib import ZlibCompressor
+from p2pfl.learning.compression.lra_strategy import LowRankApproximation
+from p2pfl.learning.compression.manager import CompressionManager
+from p2pfl.learning.compression.quantization_strategy import PTQuantization
+from p2pfl.learning.compression.topk_strategy import TopKSparsification
+from p2pfl.learning.compression.zlib_strategy import ZlibCompressor
 
 
 @pytest.fixture
@@ -61,6 +80,7 @@ def test_quantization(dummy_payload: dict, dtype: np.dtype):
     assert proc_payload["params"][0].dtype == dtype
     reversed_payload = technique.reverse_strategy(proc_payload)
     assert reversed_payload["params"][0].dtype == dummy_payload["params"][0].dtype
+    # TODO: check equal shapes
 
 @pytest.mark.parametrize("sample_k", [0.1, 0.5, 1.0])
 def test_topk_sparsification(dummy_payload: dict, sample_k: float):
@@ -82,9 +102,9 @@ def test_topk_sparsification(dummy_payload: dict, sample_k: float):
     )
     total_compressed_size = sum(layer.size for layer in compressed["params"])
     assert "topk_sparse_metadata" in compressed["additional_info"], "Missing metadata on compressed model"
-    assert total_compressed_size <= total_original_size, "Compression resulted in more parameters than the original model"
+    assert total_compressed_size <= total_original_size, "compression resulted in more parameters than the original model"
     if sample_k != 1.0:
-        assert total_compressed_size < total_original_size, "Compression did not remove any parameters"
+        assert total_compressed_size < total_original_size, "compression did not remove any parameters"
 
     decompressed = technique.reverse_strategy(compressed)
     assert "topk_sparse_metadata" not in decompressed["additional_info"], "Metadata not removed correctly after reversing the strategy"
@@ -105,7 +125,7 @@ def test_zlib(dummy_binary_payload: bytes, level:int):
     """
     technique = ZlibCompressor()
     compressed = technique.apply_strategy(copy.copy(dummy_binary_payload), level)
-    assert len(compressed) <= len(dummy_binary_payload), "Compression resulted in more bytes than the original model"
+    assert len(compressed) <= len(dummy_binary_payload), "compression resulted in more bytes than the original model"
     decompressed = technique.reverse_strategy(compressed)
     assert compressed == decompressed
 
@@ -145,7 +165,7 @@ def test_lowrank(dummy_payload: dict, threshold: float):
 
 # =====
 # Manager test
-# =====
+# =====orig.shape == decomp.shape,
 class DummyStrategy:
     """Dummy compression strategy for testing."""
 
@@ -179,7 +199,7 @@ def test_manager(monkeypatch, dummy_data):
 
     # check with a dummy technique that compressor works
     techniques = {"dummy": {}}
-    compressed_data = manager.compress(
+    compressed_data = manager.apply(
         data= dummy_data.copy(),
         techniques=techniques
         )
@@ -189,7 +209,7 @@ def test_manager(monkeypatch, dummy_data):
     payload_deserialized = pickle.loads(deserialized_data["payload"])
     assert "dummy_applied" in payload_deserialized["additional_info"]
 
-    decompressed_payload = manager.decompress(data=deserialized_data)
+    decompressed_payload = manager.reverse(data=deserialized_data)
     assert "dummy_applied" not in decompressed_payload["additional_info"]
 
     original_params = dummy_data["payload"]["params"]

@@ -24,7 +24,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
-from p2pfl.learning.compressors.manager import CompressionManager
+from p2pfl.learning.compression.manager import CompressionManager
 from p2pfl.learning.frameworks.exceptions import DecodingParamsError
 
 
@@ -92,7 +92,7 @@ class P2PFLModel:
         }
 
         if self.compression:
-            return CompressionManager.compress(data, self.compression)
+            return CompressionManager.apply(data, self.compression)
         return pickle.dumps(data)
 
     def decode_parameters(self, data: bytes) -> Tuple[List[np.ndarray], Dict[str, Any]]:
@@ -110,7 +110,7 @@ class P2PFLModel:
                 params = loaded_data["payload"]["params"]
                 additional_info = loaded_data["payload"]["additional_info"]
                 return params, additional_info
-            payload= CompressionManager.decompress(loaded_data)
+            payload= CompressionManager.reverse(loaded_data)
             return payload["params"], payload["additional_info"]
         except Exception as e:
             raise DecodingParamsError("Error decoding parameters") from e

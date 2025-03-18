@@ -16,13 +16,15 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+"""LRA compression strategy."""
+
 import numpy as np
 
-from p2pfl.learning.compressors.compression_interface import CompressionStrategy
+from p2pfl.learning.compression.optimization_strategy import CompressionStrategy
 
 
 class LowRankApproximation(CompressionStrategy):
-    """Low Rank compression strategy."""
+    """Low Rank optimization strategy."""
 
     def apply_strategy(self, payload: dict, threshold: float = 0.95):
         """
@@ -53,20 +55,26 @@ class LowRankApproximation(CompressionStrategy):
 
 
         payload["params"] = params_to_share
-        # si añades más cosas (e.g: PTQ), no se usarían en los compressed params, pero está bien así
         payload["additional_info"]["lowrank_compressed_state"] = compressed_states
         return payload
 
 
     def reverse_strategy(self, payload: dict): # TODO: Revisar esto
-        """Decompress the parameters."""
+        """
+        Restore the payload by computing dot product of LRA components.
+
+        Args:
+            payload: The payload to compress.
+            threshold: Percentage between 0 and 1 of the energy to preserve.
+
+        """
         resulting_payload = {"params": [], "additional_info": []}
 
         total_length = payload["params"].__len__() + payload["additional_info"]["lowrank_compressed_state"].__len__()
         for pos in range(total_length):
             if pos in payload["additional_info"]["lowrank_compressed_state"]:
                 u, s, vt = payload["additional_info"]["lowrank_compressed_state"][pos]
-                resulting_payload["params"].append(u @ np.diag(s) @ vt) # params approximation (np.ndarray)
+                resulting_payload["params"].append(u @ np.diag(s) @ vt) # params approximation
             else:
                 resulting_payload["params"].append(payload["params"].pop(0))
 
@@ -74,4 +82,4 @@ class LowRankApproximation(CompressionStrategy):
 
     def get_category(self):
         """Return the category of the strategy."""
-        return "compressor"
+        return "lossy_compressor"
