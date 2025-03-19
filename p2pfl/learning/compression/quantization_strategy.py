@@ -21,10 +21,10 @@
 
 import numpy as np
 
-from p2pfl.learning.compression.base_compression_strategy import CompressionStrategy
+from p2pfl.learning.compression.base_compression_strategy import BaseCompressor
 
 
-class PTQuantization(CompressionStrategy):
+class PTQuantization(BaseCompressor):
     """Post-Training Quantization (PTQ)."""
 
     def apply_strategy(self, payload: dict, dtype=np.float16) -> list[np.ndarray]:
@@ -56,6 +56,3 @@ class PTQuantization(CompressionStrategy):
         payload["additional_info"].pop("ptq_original_dtype", None)
         return payload
 
-    def get_category(self) -> str:
-        """Return the category of the strategy."""
-        return "loseless_compressor"

@@ -36,8 +36,12 @@ class CompressionStrategy(ABC):
         """Reverse the strategy."""
         pass
 
-    def get_category(self) -> str:
-        """Return the category of the strategy."""
-        return "compressor"
+class BaseCompressor(CompressionStrategy):
+    """Subclass for compression strategies that use raw data."""
 
+    pass
 
+class EncoderStrategy(CompressionStrategy):
+    """Subclass for compression strategies that need to handle binary data."""
+
+    pass

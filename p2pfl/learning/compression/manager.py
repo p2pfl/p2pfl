@@ -22,6 +22,7 @@ import pickle
 from typing import Any
 
 from p2pfl.learning.compression import COMPRESSION_STRATEGIES_REGISTRY
+from p2pfl.learning.compression.base_compression_strategy import EncoderStrategy
 
 
 class CompressionManager:
@@ -57,7 +58,7 @@ class CompressionManager:
                 raise ValueError(f"Unknown compression technique: {name}")
             instance = registry[name]()
             # encoder gets applied at the end since needs serialized data
-            if instance.get_category() == "encoder":
+            if isinstance(instance, EncoderStrategy):
                 encoder_instance = instance
                 encoder_key = name
             else:

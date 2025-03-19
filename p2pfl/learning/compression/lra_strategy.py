@@ -20,10 +20,10 @@
 
 import numpy as np
 
-from p2pfl.learning.compression.base_compression_strategy import CompressionStrategy
+from p2pfl.learning.compression.base_compression_strategy import BaseCompressor
 
 
-class LowRankApproximation(CompressionStrategy):
+class LowRankApproximation(BaseCompressor):
     """Low Rank optimization strategy."""
 
     def apply_strategy(self, payload: dict, threshold: float = 0.95):
@@ -80,6 +80,3 @@ class LowRankApproximation(CompressionStrategy):
 
         return resulting_payload
 
-    def get_category(self):
-        """Return the category of the strategy."""
-        return "lossy_compressor"

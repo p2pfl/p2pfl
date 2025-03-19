@@ -22,10 +22,10 @@ import zlib
 
 import numpy as np
 
-from p2pfl.learning.compression.base_compression_strategy import CompressionStrategy
+from p2pfl.learning.compression.base_compression_strategy import EncoderStrategy
 
 
-class ZlibCompressor(CompressionStrategy):
+class ZlibCompressor(EncoderStrategy):
     """
     Lossless compression strategy using zlib.
 
@@ -41,7 +41,3 @@ class ZlibCompressor(CompressionStrategy):
         """Reverse the strategy."""
         payload["params"] = zlib.decompress(payload["params"])
         return payload
-
-    def get_category(self):
-        """Get the category of the strategy."""
-        return "encoder"

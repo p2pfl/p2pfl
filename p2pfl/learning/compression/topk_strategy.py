@@ -20,10 +20,10 @@
 
 import numpy as np
 
-from p2pfl.learning.compression.base_compression_strategy import CompressionStrategy
+from p2pfl.learning.compression.base_compression_strategy import BaseCompressor
 
 
-class TopKSparsification(CompressionStrategy):
+class TopKSparsification(BaseCompressor):
     """
     Top-K sparsification.
 
@@ -88,7 +88,3 @@ class TopKSparsification(CompressionStrategy):
         payload["params"] = reconstructed_params
         payload["additional_info"].pop("topk_sparse_metadata", None)
         return payload
-
-    def get_category(self) -> str:
-        """Return the category of the strategy."""
-        return "lossy_compressor"
