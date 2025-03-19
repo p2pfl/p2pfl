@@ -27,7 +27,7 @@ from p2pfl.learning.compression.base_compression_strategy import BaseCompressor
 class PTQuantization(BaseCompressor):
     """Post-Training Quantization (PTQ)."""
 
-    def apply_strategy(self, payload: dict, dtype=np.float16) -> list[np.ndarray]:
+    def apply_strategy(self, payload: dict, dtype:str = "float16") -> list[np.ndarray]:
         """
         Reduce the precission of model parameters.
 
@@ -36,6 +36,7 @@ class PTQuantization(BaseCompressor):
             dtype: The desired precision.
 
         """
+        dtype=np.dtype(dtype)
         payload["additional_info"]["ptq_original_dtype"] = payload["params"][0].dtype
         quantized_params = [param.astype(dtype) for param in payload["params"]]
         payload["params"] = quantized_params

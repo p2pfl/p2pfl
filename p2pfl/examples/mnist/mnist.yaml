@@ -38,7 +38,7 @@ experiment:
     params: {}  # Learning algorithm parameters (algorithm-specific)
     compression:
       ptq:
-        # dtype: "np.int8" # TODO:  como hago para pasarle el tipo de dato ??
+        dtype: "int8"
       topk:
         k: 0.1
       zlib:
