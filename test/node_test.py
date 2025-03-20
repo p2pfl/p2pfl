@@ -25,6 +25,7 @@ from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrate
 from p2pfl.learning.frameworks import Framework
 from p2pfl.management.logger import logger  # noqa: E402
 from p2pfl.node import Node  # noqa: E402
+from p2pfl.communication.protocols.protobuff.memory import MemoryCommunicationProtocol
 from p2pfl.settings import Settings
 from p2pfl.utils.utils import (  # noqa: E402
     check_equal_models,
@@ -87,7 +88,7 @@ def test_convergence(x, model_build_fn):
     # Node Creation
     nodes = []
     for i in range(n):
-        node = Node(model_build_fn(), partitions[i])
+        node = Node(model_build_fn(), partitions[i], protocol=MemoryCommunicationProtocol())
         node.start()
         nodes.append(node)
 
