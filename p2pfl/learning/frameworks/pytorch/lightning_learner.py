@@ -36,6 +36,9 @@ from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.learning.frameworks.pytorch.lightning_dataset import PyTorchExportStrategy
 from p2pfl.learning.frameworks.pytorch.lightning_logger import FederatedLogger
 from p2pfl.management.logger import logger
+from p2pfl.settings import Settings
+from p2pfl.utils.check_ray import ray_installed
+from p2pfl.utils.seed import set_seed
 
 torch.set_num_threads(1)
 
@@ -81,12 +84,15 @@ class LightningLearner(Learner):
 
     def fit(self) -> P2PFLModel:
         """Fit the model."""
+        if Settings.general.SEED is not None and not ray_installed():
+            raise ValueError("You must use Ray to set a seed with PyTorch Lightning. Not working on a same process. | pip install ray")
+        set_seed(Settings.general.SEED, self.get_framework())
         try:
             if self.epochs > 0:
                 self.__trainer = Trainer(
                     max_epochs=self.epochs,
                     accelerator="auto",
-                    logger=self.logger,
+                    logger=self.logger, # type: ignore
                     enable_checkpointing=False,
                     enable_model_summary=False,
                     callbacks=self.callbacks.copy(),  # type: ignore

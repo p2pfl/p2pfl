@@ -26,7 +26,7 @@ from p2pfl.communication.commands.command import Command
 class StartLearningCommand(Command):
     """StartLearning command."""
 
-    def __init__(self, start_learning_fn: Callable[[int, int, int], None]) -> None:
+    def __init__(self, start_learning_fn: Callable[[int, int, int, str], None]) -> None:
         """Initialize the command."""
         super().__init__()
         self.__learning_fn = start_learning_fn
@@ -43,6 +43,7 @@ class StartLearningCommand(Command):
         learning_rounds: Optional[int] = None,
         learning_epochs: Optional[int] = None,
         trainset_size: Optional[int] = None,
+        experiment_name: Optional[str] = None,
         **kwargs,
     ) -> None:
         """
@@ -54,9 +55,10 @@ class StartLearningCommand(Command):
             trainset_size: The size of the trainset.
             learning_rounds: The number of learning rounds.
             learning_epochs: The number of learning epochs.
+            experiment_name: The name of the experiment.
             **kwargs: The command keyword arguments.
 
         """
-        if learning_rounds is None or learning_epochs is None or trainset_size is None:
+        if learning_rounds is None or learning_epochs is None or trainset_size is None or experiment_name is None:
             raise ValueError("Learning rounds and epochs are required")
-        self.__learning_fn(int(learning_rounds), int(learning_epochs), int(trainset_size))
+        self.__learning_fn(int(learning_rounds), int(learning_epochs), int(trainset_size), experiment_name)

@@ -61,9 +61,8 @@ class FlaxLearner(Learner):
         self.state = train_state.TrainState.create(
             apply_fn=self.flax_model.model.apply, params={"params": self.flax_model.model_params}, tx=self.optimizer
         )  # type: ignore
-        raise NotImplementedError(
-            "FlaxLearner is not yet implemented. HAY COSAS QUE ESTAN MAL"
-        )
+        raise NotImplementedError("FlaxLearner is not yet implemented. HAY COSAS QUE ESTAN MAL")
+
     @property
     def flax_model(self) -> FlaxModel:
         """Retrieve the Flax model."""

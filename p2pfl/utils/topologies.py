@@ -89,7 +89,7 @@ class TopologyFactory:
                 if adjacency_matrix[i, j] == 1:
                     try:
                         nodes[i].connect(nodes[j].addr)
-                        print(f"Connected nodes {i} and {j}")
+                        print(f"Connected nodes {nodes[i].addr} and {nodes[j].addr}")
                         time.sleep(0.1)
                     except Exception as e:
-                        print(f"Error connecting nodes {i} and {j}: {e}")
+                        print(f"Error connecting nodes {nodes[i].addr} and {nodes[j].addr}: {e}")

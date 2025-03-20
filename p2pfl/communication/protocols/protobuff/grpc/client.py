@@ -148,13 +148,20 @@ class GrpcClient(ProtobuffClient):
 
         """
         # Check if connected
-        disconnect = False
         if not self.is_connected():
             if temporal_connection:
-                self.connect(handshake_msg=False)
-                disconnect = True
-            else:
+                with self._temporal_connection_lock:
+                    self._temporal_connection_uses += 1
+                    if self._temporal_connection_uses == 1:
+                        logger.debug(
+                            self.self_addr, f"💔 Neighbor {self.nei_addr} not connected. Trying to send message with temporal connection"
+                        )
+                        self.connect(handshake_msg=False)
+            elif raise_error:
                 raise NeighborNotConnectedError(f"Neighbor {self.nei_addr} not connected.")
+            else:
+                return
+
         # Send
         try:
             res = self.stub.send(msg, timeout=Settings.general.GRPC_TIMEOUT)  # type: ignore
@@ -164,8 +171,11 @@ class GrpcClient(ProtobuffClient):
                 self.self_addr,
                 f"Cannot send message {msg.cmd} to {self.nei_addr}. Error: {e}",
             )
-            if disconnect:
-                self.disconnect(disconnect_msg=False)
+            if temporal_connection:
+                with self._temporal_connection_lock:
+                    self._temporal_connection_uses -= 1
+                    if self._temporal_connection_uses == 0:
+                        self.disconnect(disconnect_msg=False)
             if raise_error:
                 raise e
             else:
@@ -178,8 +188,11 @@ class GrpcClient(ProtobuffClient):
             )
 
         # Disconnect
-        if disconnect:
-            self.disconnect(disconnect_msg=False)
+        if temporal_connection:
+            with self._temporal_connection_lock:
+                self._temporal_connection_uses -= 1
+                if self._temporal_connection_uses == 0:
+                    self.disconnect(disconnect_msg=False)
         elif disconnect_on_error and res.error:
             self.disconnect(disconnect_msg=True)
 

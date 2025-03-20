@@ -115,8 +115,8 @@ def run(file_or_example: str) -> None:
     """Run an experiment from a YAML configuration file or a predefined example name."""
     yaml_file = file_or_example
 
-    # If the file doesn't exist and doesn't end with .yaml/.yml, try to find it as an example
-    if not os.path.exists(file_or_example) and not file_or_example.lower().endswith((".yaml", ".yml")):
+    # If the file doesn't end with .yaml/.yml, try to find it as an example
+    if not file_or_example.lower().endswith((".yaml", ".yml")):
         examples = __get_available_examples()
         if file_or_example in examples:
             yaml_file = examples[file_or_example]["path"]
@@ -130,11 +130,11 @@ def run(file_or_example: str) -> None:
                 )
             )
             raise typer.Exit(code=1)
-    elif not os.path.exists(yaml_file):
+    elif not os.path.exists(yaml_file) or os.path.isdir(yaml_file):
         console.print(
             Panel(
-                f":x: [bold red]Error:[/bold red] YAML file [bold yellow]{yaml_file}[/bold yellow] not found.",
-                title="[bold red]File Not Found[/bold red]",
+                f":x: [bold red]Error:[/bold red] Experiment [bold yellow]{yaml_file}[/bold yellow] not found.",
+                title="[bold red]Experiment Not Found[/bold red]",
             )
         )
         raise typer.Exit(code=1)

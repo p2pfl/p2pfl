@@ -23,6 +23,7 @@ P2PFL Logger.
 
 """
 
+import copy
 import datetime
 import logging
 from typing import Any, Dict, Optional, Union
@@ -67,16 +68,19 @@ class ColoredFormatter(logging.Formatter):
             record: The log record.
 
         """
+        # Copy the original record
+        record_copy = copy.copy(record)
+
         # Warn level color
-        if record.levelname == "DEBUG":
-            record.levelname = BLUE + record.levelname + RESET
-        elif record.levelname == "INFO":
-            record.levelname = GREEN + record.levelname + RESET
-        elif record.levelname == "WARNING":
-            record.levelname = YELLOW + record.levelname + RESET
-        elif record.levelname == "ERROR" or record.levelname == "CRITICAL":
-            record.levelname = RED + record.levelname + RESET
-        return super().format(record)
+        if record_copy.levelname == "DEBUG":
+            record_copy.levelname = BLUE + record_copy.levelname + RESET
+        elif record_copy.levelname == "INFO":
+            record_copy.levelname = GREEN + record_copy.levelname + RESET
+        elif record_copy.levelname == "WARNING":
+            record_copy.levelname = YELLOW + record_copy.levelname + RESET
+        elif record_copy.levelname == "ERROR" or record_copy.levelname == "CRITICAL":
+            record_copy.levelname = RED + record_copy.levelname + RESET
+        return super().format(record_copy)
 
 
 ################
@@ -99,6 +103,7 @@ class P2PFLogger:
         self._nodes: Dict[str, Dict[Any, Any]] = nodes if nodes else {}
 
         # Experiment Metrics
+        self.disable_locks = disable_locks
         self.local_metrics = LocalMetricStorage(disable_locks=disable_locks)
         self.global_metrics = GlobalMetricStorage(disable_locks=disable_locks)
 
@@ -113,7 +118,7 @@ class P2PFLogger:
         # STDOUT - Handler
         stream_handler = logging.StreamHandler()
         cmd_formatter = ColoredFormatter(
-            f"{GRAY}[ {YELLOW}%(asctime)s {GRAY}| {CYAN}%(node)s {GRAY}| %(levelname)s{GRAY} ]:{RESET} %(message)s",
+            f"{GRAY}[ {YELLOW}%(asctime)s {GRAY}| {CYAN}%(node)s {GRAY}| %(levelname)s{GRAY} ]{RESET} %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
         stream_handler.setFormatter(cmd_formatter)
@@ -263,14 +268,7 @@ class P2PFLogger:
     # Metrics
     ######
 
-    def log_metric(
-        self,
-        addr: str,
-        metric: str,
-        value: float,
-        round: Optional[int] = None,
-        step: Optional[int] = None,
-    ) -> None:
+    def log_metric(self, addr: str, metric: str, value: float, step: Optional[int] = None, round: Optional[int] = None) -> None:
         """
         Log a metric.
 
@@ -286,13 +284,15 @@ class P2PFLogger:
         try:
             experiment = self._nodes[addr]["Experiment"]
         except KeyError:
+            # print(f"Node {addr} not registered.")
             return
             raise NodeNotRegistered(f"Node {addr} not registered.") from None
 
         # Get Round
-        round = experiment.round
         if round is None:
-            raise Exception("No round provided. Needed for training metrics.")
+            round = experiment.round
+            if round is None:
+                raise Exception("No round provided. Needed for training metrics.")
 
         # Get Experiment Name
         exp = experiment.exp_name
@@ -302,10 +302,10 @@ class P2PFLogger:
         # Local storage
         if step is None:
             # Global Metrics
-            self.global_metrics.add_log(exp, experiment.round, metric, addr, value)
+            self.global_metrics.add_log(exp, round, metric, addr, value)
         else:
             # Local Metrics
-            self.local_metrics.add_log(exp, experiment.round, metric, addr, value, step)
+            self.local_metrics.add_log(exp, round, metric, addr, value, step)
 
     def get_local_logs(self) -> LocalLogsType:
         """
@@ -339,13 +339,12 @@ class P2PFLogger:
     # Node registration
     ######
 
-    def register_node(self, node: str, simulation: bool) -> None:
+    def register_node(self, node: str) -> None:
         """
         Register a node.
 
         Args:
             node: The node address.
-            simulation: If the node is a simulation.
 
         """
         # Node State
@@ -375,7 +374,7 @@ class P2PFLogger:
     # Node Status
     ######
 
-    def experiment_started(self, node: str, experiment: Experiment | None) -> None:
+    def experiment_started(self, node: str, experiment: Experiment) -> None:
         """
         Notify the experiment start.
 
@@ -384,8 +383,22 @@ class P2PFLogger:
             experiment: The experiment.
 
         """
-        self.warning(node, "Uncatched Experiment Started on Logger")
         self._nodes[node]["Experiment"] = experiment
+
+    def experiment_updated(self, node: str, experiment: Experiment) -> None:
+        """
+        Notify the round end.
+
+        Args:
+            node: The node address.
+            experiment: The experiment to update.
+
+        """
+        self.warning(node, "Uncatched Round Finished on Logger")
+        if self._nodes[node]["Experiment"] is not None:
+            self._nodes[node]["Experiment"] = experiment
+        else:
+            raise Exception(f"Node {node} has no experiment.")
 
     def experiment_finished(self, node: str) -> None:
         """
@@ -396,29 +409,7 @@ class P2PFLogger:
 
         """
         self.warning(node, "Uncatched Experiment Ended on Logger")
-
-    def round_started(self, node: str, experiment: Experiment | None) -> None:
-        """
-        Notify the round start.
-
-        Args:
-            node: The node address.
-            experiment: The experiment.
-
-        """
-        self.warning(node, "Uncatched Round Finished on Logger")
-        self._nodes[node]["Experiment"] = experiment
-
-    def round_finished(self, node: str) -> None:
-        """
-        Notify the round end.
-
-        Args:
-            node: The node address.
-
-        """
-        # r = self.nodes[node][1].round
-        self.warning(node, "Uncatched Round Finished on Logger")
+        del self._nodes[node]["Experiment"]
 
     def get_nodes(self) -> Dict[str, Dict[Any, Any]]:
         """

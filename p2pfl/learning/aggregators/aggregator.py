@@ -152,6 +152,7 @@ class Aggregator(NodeComponent):
                         self.addr,
                         f"🧩 Model added ({models_added}/{ str(len(self.__train_set))}) from {str(model.get_contributors())}",
                     )
+                    logger.debug(self.addr, f"Models added: {self.get_aggregated_models()}")
 
                     # Check if all models were added
                     if len(self.get_aggregated_models()) >= len(self.__train_set):

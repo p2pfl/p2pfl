@@ -98,7 +98,7 @@ class MemoryClient(ProtobuffClient):
         try:
             # If the other node still connected, disconnect
             if disconnect_msg:
-                self.stub.disconnect(node_pb2.HandShakeRequest(addr=self.self_addr))  # type: ignore
+                self.stub.disconnect(node_pb2.HandShakeRequest(addr=self.self_addr), None)  # type: ignore
         except Exception:
             pass
         self.stub = None
@@ -123,14 +123,21 @@ class MemoryClient(ProtobuffClient):
             disconnect_on_error: Disconnect if an error occurs.
 
         """
-        # Check if connected
-        disconnect = False
+        # Check if connected (threadsafe)
         if not self.is_connected():
             if temporal_connection:
-                self.connect(handshake_msg=False)
-                disconnect = True
-            else:
+                with self._temporal_connection_lock:
+                    self._temporal_connection_uses += 1
+                    if self._temporal_connection_uses == 1:
+                        logger.debug(
+                            self.self_addr, f"💔 Neighbor {self.nei_addr} not connected. Trying to send message with temporal connection"
+                        )
+                        self.connect(handshake_msg=False)
+            elif raise_error:
                 raise NeighborNotConnectedError(f"Neighbor {self.nei_addr} not connected.")
+            else:
+                return
+
         # Send
         res = self.stub.send(msg, None)  # type: ignore
         if res.error:
@@ -140,8 +147,11 @@ class MemoryClient(ProtobuffClient):
             )
 
         # Disconnect
-        if disconnect:
-            self.disconnect(disconnect_msg=False)
+        if temporal_connection:
+            with self._temporal_connection_lock:
+                self._temporal_connection_uses -= 1
+                if self._temporal_connection_uses == 0:
+                    self.disconnect(disconnect_msg=False)
         elif disconnect_on_error and res.error:
             self.disconnect(disconnect_msg=True)
 

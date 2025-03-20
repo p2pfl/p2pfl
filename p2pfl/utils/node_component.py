@@ -29,7 +29,7 @@ class AddrRequiredMeta(ABCMeta):
                 # Method is marked as exempt, allow execution without addr check
                 return method(self, *args, **kwargs)
             if not hasattr(self, "addr") or self.addr == "":
-                raise ValueError("Addr must be set before calling this method.")
+                raise ValueError("Address must be set before calling this method.")
             return method(self, *args, **kwargs)
 
         return wrapper

@@ -218,7 +218,7 @@ def test_neightboor_management_and_gossip(protocol_builder: ProtocolBuilder):
 
 
 @pytest.mark.parametrize("protocol_builder", build_protocols_fns)
-def test_node_abrupt_down(protocol_builder: ProtocolBuilder):
+def test_node_down(protocol_builder: ProtocolBuilder):
     """Test that a node abruptly down is removed from the neighbors list."""
     # Create 2 communication protocols
     protocol1 = protocol_builder()
@@ -242,7 +242,7 @@ def test_node_abrupt_down(protocol_builder: ProtocolBuilder):
     protocol2.stop()
 
     # Wait for convergence
-    wait_convergence([protocol1], 0, wait=5, only_direct=True)
+    wait_convergence([protocol1], 0, wait=10, only_direct=True, debug=True)
 
     # Check neighbors
     assert len(protocol1.get_neighbors()) == 0

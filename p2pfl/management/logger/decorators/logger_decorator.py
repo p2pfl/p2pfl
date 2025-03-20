@@ -20,7 +20,7 @@
 
 import datetime
 import logging
-from typing import Any, Dict, Union
+from typing import Any, Callable, Dict, Union
 
 from p2pfl.experiment import Experiment
 from p2pfl.management.logger.logger import P2PFLogger
@@ -34,7 +34,7 @@ class LoggerDecorator(P2PFLogger):
     By default, it does nothing, just delegates the calls to the wrapped logger.
     """
 
-    def __init__(self, logger: P2PFLogger) -> None:
+    def __init__(self, logger: P2PFLogger | Callable[[], P2PFLogger]) -> None:
         """
         Initialize the logger.
 
@@ -42,7 +42,7 @@ class LoggerDecorator(P2PFLogger):
             logger: The logger to wrap.
 
         """
-        self._p2pfl_logger = logger
+        self._p2pfl_logger = logger() if callable(logger) else logger
 
     def connect_web(self, url: str, key: str) -> None:
         """
@@ -104,7 +104,7 @@ class LoggerDecorator(P2PFLogger):
         """
         self._p2pfl_logger.log(level, node, message)
 
-    def log_metric(self, addr: str, metric: str, value: float, round: int | None = None, step: int | None = None) -> None:
+    def log_metric(self, addr: str, metric: str, value: float, step: int | None = None, round: int | None = None) -> None:
         """
         Log a metric.
 
@@ -116,7 +116,7 @@ class LoggerDecorator(P2PFLogger):
             round: The round.
 
         """
-        self._p2pfl_logger.log_metric(addr, metric, value, round, step)
+        self._p2pfl_logger.log_metric(addr=addr, metric=metric, value=value, step=step, round=round)
 
     def get_local_logs(self) -> LocalLogsType:
         """
@@ -146,16 +146,15 @@ class LoggerDecorator(P2PFLogger):
         """
         return self._p2pfl_logger.get_global_logs()
 
-    def register_node(self, node: str, simulation: bool) -> None:
+    def register_node(self, node: str) -> None:
         """
         Register a node.
 
         Args:
             node: The node address.
-            simulation: If the node is a simulation.
 
         """
-        self._p2pfl_logger.register_node(node, simulation)
+        self._p2pfl_logger.register_node(node)
 
     def unregister_node(self, node: str) -> None:
         """
@@ -167,7 +166,7 @@ class LoggerDecorator(P2PFLogger):
         """
         self._p2pfl_logger.unregister_node(node)
 
-    def experiment_started(self, node: str, experiment: Experiment | None) -> None:
+    def experiment_started(self, node: str, experiment: Experiment) -> None:
         """
         Notify the experiment start.
 
@@ -178,6 +177,17 @@ class LoggerDecorator(P2PFLogger):
         """
         self._p2pfl_logger.experiment_started(node, experiment)
 
+    def experiment_updated(self, node: str, experiment: Experiment) -> None:
+        """
+        Notify the round end.
+
+        Args:
+            node: The node address.
+            experiment: The experiment to update.
+
+        """
+        self._p2pfl_logger.experiment_updated(node, experiment)
+
     def experiment_finished(self, node: str) -> None:
         """
         Notify the experiment end.
@@ -187,27 +197,6 @@ class LoggerDecorator(P2PFLogger):
 
         """
         self._p2pfl_logger.experiment_finished(node)
-
-    def round_started(self, node: str, experiment: Experiment | None) -> None:
-        """
-        Notify the round start.
-
-        Args:
-            node: The node address.
-            experiment: The experiment.
-
-        """
-        self._p2pfl_logger.round_started(node, experiment)
-
-    def round_finished(self, node: str) -> None:
-        """
-        Notify the round end.
-
-        Args:
-            node: The node address.
-
-        """
-        self._p2pfl_logger.round_finished(node)
 
     def get_nodes(self) -> Dict[str, Dict[Any, Any]]:
         """

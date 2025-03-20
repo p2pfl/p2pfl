@@ -144,16 +144,17 @@ class ProtobuffServer(ABC, node_pb2_grpc.NodeServicesServicer, NodeComponent):
         # If message already processed, return
         if request.HasField("message") and not self._gossiper.check_and_set_processed(request):
             """
-            if request.cmd != "beat" or (not Settings.general.EXCLUDE_BEAT_LOGS and request.source == "beat"):
+            if request.cmd != "beat" or (not Settings.heartbeat.EXCLUDE_BEAT_LOGS and request.source == "beat"):
                 logger.debug(self.addr, f"🙅 Message already processed: {request.cmd} (id {request.message.hash})")
             """
             return node_pb2.ResponseMessage()
 
         # Process message/model
-        if request.cmd != "beat" or (not Settings.general.EXCLUDE_BEAT_LOGS and request.cmd == "beat"):
+        if request.cmd != "beat" or (not Settings.heartbeat.EXCLUDE_BEAT_LOGS and request.cmd == "beat"):
+            emoji = "📫" if request.HasField("message") else "📦"
             logger.debug(
                 self.addr,
-                f"📫 {request.cmd.upper()} received from {request.source}",
+                f"{emoji} {request.cmd.upper()} received from {request.source}",
             )
         if request.cmd in self.__commands:
             try:

@@ -26,6 +26,7 @@ from datasets import Dataset, DatasetDict  # type: ignore
 from torch.utils.data import DataLoader
 
 from p2pfl.learning.dataset.p2pfl_dataset import DataExportStrategy, P2PFLDataset
+from p2pfl.settings import Settings
 
 
 class TorchvisionDatasetFactory:
@@ -78,7 +79,7 @@ class PyTorchExportStrategy(DataExportStrategy):
     def export(
         data: Dataset,
         transforms: Optional[Callable] = None,
-        batch_size: int = 1,
+        batch_size: Optional[int] = None,
         num_workers: int = 0,
         **kwargs,
     ) -> DataLoader:
@@ -98,6 +99,8 @@ class PyTorchExportStrategy(DataExportStrategy):
         """
         if transforms is not None:
             raise NotImplementedError("Transforms are not supported in this export strategy.")
+        if not batch_size:
+            batch_size = Settings.training.DEFAULT_BATCH_SIZE
 
         # Export to a PyTorch dataloader
         return DataLoader(data.with_format(type="torch", output_all_columns=True), batch_size=batch_size, num_workers=num_workers)

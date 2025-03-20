@@ -47,15 +47,16 @@ class Neighbors(NodeComponent):
 
         """
         # Update if exists
-        if addr in self.neis:
-            with self.neis_lock:
+        with self.neis_lock:
+            exist_nei = addr in self.neis
+            if exist_nei:
                 # Update time
                 self.neis[addr] = (
                     self.neis[addr][0],
                     time,
                 )
-        else:
-            # Add
+        # Add
+        if not exist_nei:
             self.add(addr, non_direct=True)
 
     def add(self, addr: str, non_direct: bool = False, handshake: bool = True) -> bool:
@@ -107,13 +108,13 @@ class Neighbors(NodeComponent):
             disconnect_msg: If a disconnect message is needed.
 
         """
-        self.neis_lock.acquire()
-        if addr in self.neis:
-            # Disconnect
-            self.neis[addr][0].disconnect(disconnect_msg=disconnect_msg)
-            # Remove neighbor
-            del self.neis[addr]
-        self.neis_lock.release()
+        with self.neis_lock:
+            if addr in self.neis:
+                # Disconnect
+                if self.neis[addr][0].is_connected() and not self.neis[addr][0].has_temporal_connection():
+                    self.neis[addr][0].disconnect(disconnect_msg=disconnect_msg)
+                # Remove neighbor
+                del self.neis[addr]
 
     def get(self, addr: str) -> ProtobuffClient:
         """
@@ -126,10 +127,11 @@ class Neighbors(NodeComponent):
             The neighbor.
 
         """
-        try:
-            return self.neis[addr][0]
-        except KeyError:
-            raise NeighborNotConnectedError(f"Neighbor {addr} not connected") from None
+        with self.neis_lock:
+            try:
+                return self.neis[addr][0]
+            except KeyError:
+                raise NeighborNotConnectedError(f"Neighbor {addr} not connected") from None
 
     def get_all(self, only_direct: bool = False) -> dict[str, tuple[ProtobuffClient, float]]:
         """
@@ -143,7 +145,7 @@ class Neighbors(NodeComponent):
         neis = self.neis.copy()
         # Filter
         if only_direct:
-            return {k: v for k, v in neis.items() if v[0].is_connected()}
+            return {k: v for k, v in neis.items() if v[0].is_connected() and not v[0].has_temporal_connection()}
         return neis
 
     def exists(self, addr: str) -> bool:

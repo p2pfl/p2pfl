@@ -19,7 +19,9 @@
 
 import contextlib
 import os
+import random
 import threading
+import time
 import traceback
 from typing import Any, Dict, Optional
 
@@ -45,6 +47,7 @@ from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.learning.frameworks.simulation import try_init_learner_with_ray
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
+from p2pfl.settings import Settings
 from p2pfl.stages.workflows import LearningWorkflow
 
 # Disbalbe grpc log (pytorch causes warnings)
@@ -70,7 +73,7 @@ class Node:
     Args:
         model: Model to be used in the learning process.
         data: Dataset to be used in the learning process.
-        address: The address of the node.
+        addr: The address of the node.
         learner: The learner class to be used.
         aggregator: The aggregator class to be used.
         protocol: The communication protocol to be used.
@@ -88,17 +91,16 @@ class Node:
         self,
         model: P2PFLModel,
         data: P2PFLDataset,
-        address: str = "127.0.0.1",
+        addr: str = "",
         learner: Optional[Learner] = None,
         aggregator: Optional[Aggregator] = None,
         protocol: Optional[CommunicationProtocol] = None,
-        simulation: bool = False,
         **kwargs,
     ) -> None:
         """Initialize a node."""
         # Communication protol (and get addr)
         self._communication_protocol = GrpcCommunicationProtocol() if protocol is None else protocol
-        self.addr = self._communication_protocol.set_addr(address)
+        self.addr = self._communication_protocol.set_addr(addr)
 
         # Aggregator
         self.aggregator = FedAvg() if aggregator is None else aggregator
@@ -115,8 +117,7 @@ class Node:
 
         # State
         self.__running = False
-        self.state = NodeState(self.addr, simulation=simulation)
-        self.simulation = simulation  # so far it does not contribute much
+        self.state = NodeState(self.addr)
 
         # Workflow
         self.learning_workflow = LearningWorkflow()
@@ -227,7 +228,7 @@ class Node:
         self.__running = True
 
         # P2PFL Web Services
-        logger.register_node(self.addr, self.simulation)
+        logger.register_node(self.addr)
         # Communication Protocol
         self._communication_protocol.start()
         if wait:
@@ -333,16 +334,16 @@ class Node:
     #         Network Learning Management         #
     ###############################################
 
-    def __start_learning_thread(self, rounds: int, epochs: int, trainset_size: int) -> None:
+    def __start_learning_thread(self, rounds: int, epochs: int, trainset_size: int, experiment_name: str) -> None:
         learning_thread = threading.Thread(
             target=self.__start_learning,
-            args=(rounds, epochs, trainset_size),
+            args=(rounds, epochs, trainset_size, experiment_name),
             name="learning_thread-" + self.addr,
         )
         learning_thread.daemon = True
         learning_thread.start()
 
-    def set_start_learning(self, rounds: int = 1, epochs: int = 1, trainset_size: int = 4) -> None:
+    def set_start_learning(self, rounds: int = 1, epochs: int = 1, trainset_size: int = 4, experiment_name="experiment") -> str:
         """
         Start the learning process in the entire network.
 
@@ -350,6 +351,7 @@ class Node:
             rounds: Number of rounds of the learning process.
             epochs: Number of epochs of the learning process.
             trainset_size: Size of the trainset.
+            experiment_name: The name of the experiment.
 
         Raises:
             ZeroRoundsException: If rounds is less than 1.
@@ -363,17 +365,22 @@ class Node:
         if self.state.round is None:
             # Broadcast start Learning
             logger.info(self.addr, "🚀 Broadcasting start learning...")
+            experiment_name = f"{experiment_name}-{time.time()}"
             self._communication_protocol.broadcast(
-                self._communication_protocol.build_msg(StartLearningCommand.get_name(), [str(rounds), str(epochs), str(trainset_size)])
+                self._communication_protocol.build_msg(
+                    StartLearningCommand.get_name(), [str(rounds), str(epochs), str(trainset_size), experiment_name]
+                )
             )
             # Set model initialized
             self.state.model_initialized_lock.release()
             # Broadcast initialize model
             self._communication_protocol.broadcast(self._communication_protocol.build_msg(ModelInitializedCommand.get_name()))
             # Learning Thread
-            self.__start_learning_thread(rounds, epochs, trainset_size)
+            self.__start_learning_thread(rounds, epochs, trainset_size, experiment_name)
+            return experiment_name
         else:
             logger.info(self.addr, "Learning already started")
+            return ""
 
     def set_stop_learning(self) -> None:
         """Stop the learning process in the entire network."""
@@ -389,16 +396,19 @@ class Node:
     #         Local Learning         #
     ##################################
 
-    def __start_learning(self, rounds: int, epochs: int, trainset_size) -> None:
+    def __start_learning(self, rounds: int, epochs: int, trainset_size: int, experiment_name: str) -> None:
+        # Set seed
         try:
             self.learning_workflow.run(
                 rounds=rounds,
                 epochs=epochs,
                 trainset_size=trainset_size,
+                experiment_name=experiment_name,
                 state=self.state,
                 learner=self.learner,
                 communication_protocol=self._communication_protocol,
                 aggregator=self.aggregator,
+                generator=random.Random(Settings.general.SEED),
             )
         except Exception as e:
             logger.error(self.addr, f"Error {type(e).__name__}: {e}\n{traceback.format_exc()}")

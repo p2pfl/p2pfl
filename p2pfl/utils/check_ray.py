@@ -26,8 +26,11 @@ from p2pfl.settings import Settings
 
 def ray_installed() -> bool:
     """Check if ray is installed."""
-    if os.environ.get("DISABLE_RAY", "0") == "1" or Settings.general.DISABLE_RAY:
+    if Settings.general.DISABLE_RAY:
         return False
+
+    # Deactivate deduplication of logs
+    os.environ["RAY_DEDUP_LOGS"] = "0"
 
     if importlib.util.find_spec("ray") is not None:
         # Try to initialize ray
@@ -37,7 +40,9 @@ def ray_installed() -> bool:
         if not ray.is_initialized():
             ray.init(
                 namespace="p2pfl",
-                # include_dashboard=False
+                include_dashboard=False,
+                logging_level=Settings.general.LOG_LEVEL,
+                logging_config=ray.LoggingConfig(encoding="TEXT", log_level=Settings.general.LOG_LEVEL),
             )
         return True
     return False

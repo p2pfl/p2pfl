@@ -53,6 +53,8 @@ def __parse_args() -> argparse.Namespace:
     parser.add_argument("--profiling", action="store_true", help="Enable profiling.", default=False)
     parser.add_argument("--reduced_dataset", action="store_true", help="Use a reduced dataset just for testing.", default=False)
     parser.add_argument("--use_scaffold", action="store_true", help="Use the Scaffold aggregator.", default=False)
+    parser.add_argument("--seed", type=int, help="The seed to use.", default=666)
+    parser.add_argument("--batch_size", type=int, help="The batch size for training.", default=128)
     parser.add_argument(
         "--topology",
         type=str,
@@ -78,6 +80,7 @@ def mnist(
     aggregator: str = "fedavg",
     reduced_dataset: bool = False,
     topology: TopologyType = TopologyType.LINE,
+    batch_size: int = 128,
 ) -> None:
     """
     P2PFL MNIST experiment.
@@ -93,6 +96,7 @@ def mnist(
         aggregator: The aggregator to use.
         reduced_dataset: Use a reduced dataset just for testing.
         topology: The network topology (star, full, line, ring).
+        batch_size: The batch size for training.
 
     """
     if measure_time:
@@ -118,6 +122,7 @@ def mnist(
 
     # Data
     data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
+    data.set_batch_size(batch_size)
     partitions = data.generate_partitions(
         n * 50 if reduced_dataset else n,
         RandomIIDPartitionStrategy,  # type: ignore
@@ -134,7 +139,6 @@ def mnist(
             partitions[i],
             protocol=MemoryCommunicationProtocol() if protocol == "memory" else GrpcCommunicationProtocol(),
             address=address,
-            simulation=True,
             aggregator=Scaffold() if aggregator == "scaffold" else None,
         )
         node.start()
@@ -218,6 +222,10 @@ if __name__ == "__main__":
     if args.token != "":
         logger.connect_web("http://localhost:3000/api/v1", args.token)
 
+    # Seed
+    if args.seed is not None:
+        Settings.general.SEED = args.seed
+
     # Launch experiment
     try:
         mnist(
@@ -231,6 +239,7 @@ if __name__ == "__main__":
             aggregator=args.aggregator,
             reduced_dataset=args.reduced_dataset,
             topology=args.topology,
+            batch_size=args.batch_size,
         )
     finally:
         if args.profiling:

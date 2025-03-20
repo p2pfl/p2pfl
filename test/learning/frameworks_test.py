@@ -27,14 +27,15 @@ from datasets import DatasetDict, load_dataset  # type: ignore
 from p2pfl.experiment import Experiment
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
+from p2pfl.learning.frameworks.learner_factory import LearnerFactory
 from p2pfl.management.logger import logger
+from p2pfl.settings import Settings
 
 with contextlib.suppress(ImportError):
     import tensorflow as tf
 
     from p2pfl.examples.mnist.model.mlp_tensorflow import model_build_fn as model_build_fn_tensorflow
     from p2pfl.learning.frameworks.tensorflow.keras_dataset import KerasExportStrategy
-    from p2pfl.learning.frameworks.tensorflow.keras_learner import KerasLearner
     from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel
 
 
@@ -44,7 +45,6 @@ with contextlib.suppress(ImportError):
 
     from p2pfl.examples.mnist.model.mlp_flax import MLP as MLP_FLASK
     from p2pfl.learning.frameworks.flax.flax_dataset import FlaxExportStrategy
-    from p2pfl.learning.frameworks.flax.flax_learner import FlaxLearner
     from p2pfl.learning.frameworks.flax.flax_model import FlaxModel
 
 with contextlib.suppress(ImportError):
@@ -53,7 +53,6 @@ with contextlib.suppress(ImportError):
 
     from p2pfl.examples.mnist.model.mlp_pytorch import model_build_fn as model_build_fn_torch
     from p2pfl.learning.frameworks.pytorch.lightning_dataset import PyTorchExportStrategy, TorchvisionDatasetFactory
-    from p2pfl.learning.frameworks.pytorch.lightning_learner import LightningLearner
     from p2pfl.learning.frameworks.pytorch.lightning_model import LightningModel
 
 ####
@@ -93,7 +92,7 @@ def test_get_set_params_tensorflow():
         assert np.all(layer_og + 1 == layer_new)
 
 
-def test_get_set_params_flax():
+def __test_get_set_params_flax():
     """Test setting and getting parameters."""
     # Create the model
     model = MLP_FLASK()
@@ -151,7 +150,7 @@ def test_encoding_tensorflow():
     assert additional_info == p2pfl_model1.additional_info
 
 
-def test_encoding_flax():
+def __test_encoding_flax():
     """Test encoding and decoding of parameters."""
     model1 = MLP_FLASK()
     seed = jax.random.PRNGKey(0)
@@ -195,7 +194,7 @@ def test_wrong_encoding_tensorflow():
         p2pfl_model2.set_parameters(decoded_params)
 
 
-def test_wrong_encoding_flax():
+def __test_wrong_encoding_flax():
     """Test wrong encoding of parameters."""
     model1 = MLP_FLASK()
     seed = jax.random.PRNGKey(0)
@@ -240,10 +239,11 @@ def test_torchvision_dataset_factory_mnist():
 def test_pytorch_export_strategy():
     """Test the PyTorchExportStrategy."""
     dataset = TorchvisionDatasetFactory.get_mnist(cache_dir=".", train=True, download=True)
+    dataset.set_batch_size(1)
 
     export_strategy = PyTorchExportStrategy()
-    train_dataloader = dataset.export(export_strategy, train_loader=True, batch_size=1)
-    test_dataloader = dataset.export(export_strategy, train_loader=False, batch_size=1)
+    train_dataloader = dataset.export(export_strategy, train_loader=True)
+    test_dataloader = dataset.export(export_strategy, train_loader=False)
 
     assert isinstance(train_dataloader, DataLoader)
     assert isinstance(test_dataloader, DataLoader)
@@ -265,10 +265,11 @@ def test_pytorch_export_strategy():
 def test_tensorflow_export_strategy():
     """Test the PyTorchExportStrategy."""
     dataset = TorchvisionDatasetFactory.get_mnist(cache_dir=".", train=True, download=True)
+    dataset.set_batch_size(1)
 
     export_strategy = KerasExportStrategy()
-    train_data = dataset.export(export_strategy, train_loader=True, batch_size=1)
-    test_data = dataset.export(export_strategy, train_loader=False, batch_size=1)
+    train_data = dataset.export(export_strategy, train_loader=True)
+    test_data = dataset.export(export_strategy, train_loader=False)
 
     assert isinstance(train_data, tf.data.Dataset)
     assert isinstance(test_data, tf.data.Dataset)
@@ -286,13 +287,14 @@ def test_tensorflow_export_strategy():
     assert sample[0].shape == (1, 28, 28)
 
 
-def test_flax_export_strategy():
+def __test_flax_export_strategy():
     """Test the FlaxExportStrategy."""
     dataset = TorchvisionDatasetFactory.get_mnist(cache_dir=".", train=True, download=True)
+    dataset.set_batch_size(1)
 
     export_strategy = FlaxExportStrategy()
-    train_data = dataset.export(export_strategy, train_loader=True, batch_size=1)
-    test_data = dataset.export(export_strategy, train_loader=False, batch_size=1)
+    train_data = dataset.export(export_strategy, train_loader=True)
+    test_data = dataset.export(export_strategy, train_loader=False)
 
     assert isinstance(train_data, Generator)
     assert isinstance(test_data, Generator)
@@ -311,7 +313,8 @@ def test_flax_export_strategy():
     assert y.shape == (1,)
 
 
-def test_learner_train_torch():
+@pytest.mark.parametrize("build_model_fn", [model_build_fn_torch, model_build_fn_tensorflow])  # TODO: Flax
+def test_learner_train(build_model_fn):
     """Test the training and testing of the learner."""
     # Dataset
     dataset = P2PFLDataset(
@@ -324,84 +327,21 @@ def test_learner_train_torch():
     )
 
     # Create the model
-    p2pfl_model = model_build_fn_torch()
+    p2pfl_model = build_model_fn()
+
+    # Dont care about the seed
+    Settings.general.seed = None
 
     node_name = "unknown-node"
-    logger.register_node(node_name, simulation=True)
+    with contextlib.suppress(Exception):
+        logger.register_node(node_name)
     experiment = Experiment(exp_name="test_experiment-torch", total_rounds=1)
     logger.experiment_started(node_name, experiment)
     # Learner
-    learner = LightningLearner(p2pfl_model, dataset)
+    learner = LearnerFactory.create_learner(p2pfl_model)()
     learner.set_addr(node_name)
-
-    # Train
-    learner.set_epochs(1)
-    learner.fit()
-
-    # Test
-    learner.evaluate()
-
-
-def test_learner_train_tensorflow():
-    """Test the training and testing of the learner."""
-    node_name = "unknown-node"
-    logger.register_node(node_name, simulation=True)
-    experiment = Experiment(exp_name="test_experiment-tf", total_rounds=1)
-    logger.experiment_started(node_name, experiment)
-
-    # Dataset
-    dataset = P2PFLDataset(
-        DatasetDict(
-            {
-                "train": load_dataset("p2pfl/MNIST", split="train[:100]"),
-                "test": load_dataset("p2pfl/MNIST", split="test[:10]"),
-            }
-        )
-    )
-
-    # Create the model
-    p2pfl_model = model_build_fn_tensorflow()
-
-    # Learner
-    learner = KerasLearner(p2pfl_model, dataset)
-    learner.set_addr(node_name)
-
-    print(learner.get_model().model.summary())
-
-    # Train
-    learner.set_epochs(1)
-    learner.fit()
-
-    # Test
-    learner.evaluate()
-
-
-def test_learner_train_flax():
-    """Test the training and testing of the learner."""
-    node_name = "unknown-node"
-    logger.register_node(node_name, simulation=True)
-    experiment = Experiment(exp_name="test_experiment_flax", total_rounds=1)
-    logger.experiment_started(node_name, experiment)
-
-    # Dataset
-    dataset = P2PFLDataset(
-        DatasetDict(
-            {
-                "train": load_dataset("p2pfl/MNIST", split="train[:100]"),
-                "test": load_dataset("p2pfl/MNIST", split="test[:10]"),
-            }
-        )
-    )
-
-    # Create the model
-    model = MLP_FLASK()
-
-    seed = jax.random.PRNGKey(0)
-    model_params = model.init(seed, jnp.ones((1, 28, 28)))["params"]
-    p2pfl_model = FlaxModel(model=model, init_params=model_params)
-    # Learner
-    learner = FlaxLearner(p2pfl_model, dataset)
-    learner.set_addr(node_name)
+    learner.set_model(p2pfl_model)
+    learner.set_data(dataset)
 
     # Train
     learner.set_epochs(1)

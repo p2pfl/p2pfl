@@ -46,10 +46,11 @@ def set_standalone_settings() -> None:
         - TTL: Low TTLs can cause that some messages are not delivered.
 
     """
-    Settings.general.GRPC_TIMEOUT = 0.5
+    Settings.general.GRPC_TIMEOUT = 10
     Settings.heartbeat.PERIOD = 1
-    Settings.heartbeat.TIMEOUT = 3
+    Settings.heartbeat.TIMEOUT = 10
     Settings.heartbeat.WAIT_CONVERGENCE = 2
+    Settings.heartbeat.EXCLUDE_BEAT_LOGS = True
     Settings.gossip.PERIOD = 0
     Settings.gossip.TTL = 10
     Settings.gossip.MESSAGES_PER_PERIOD = 9999999999
@@ -60,7 +61,6 @@ def set_standalone_settings() -> None:
     Settings.training.VOTE_TIMEOUT = 60
     Settings.training.AGGREGATION_TIMEOUT = 60
     Settings.general.LOG_LEVEL = "INFO"
-    Settings.general.EXCLUDE_BEAT_LOGS = True
     logger.set_level(Settings.general.LOG_LEVEL)  # Refresh (maybe already initialized)
 
 
@@ -91,9 +91,9 @@ def wait_convergence(
         if all(len(n.get_neighbors(only_direct=only_direct)) == n_neis for n in nodes):
             break
         if debug:
-            logger.debug(
+            logger.info(
                 "Waiting for convergence",
-                str([len(n.get_neighbors(only_direct=only_direct)) for n in nodes]),
+                str([list(n.get_neighbors(only_direct=only_direct).keys()) for n in nodes]),
             )
         time.sleep(0.1)
         acum += time.time() - begin

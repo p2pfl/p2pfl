@@ -55,10 +55,10 @@ class AddressCounter(metaclass=SingletonMeta):
         # Initialize registry for this base_name if it doesn't exist
         if base_name not in self.__address_registry:
             self.__address_registry[base_name] = 0
+            return f"{base_name}"
         else:
             self.__address_registry[base_name] += 1
-
-        return f"{base_name}-{self.__address_registry[base_name]}"
+            return f"{base_name}_{self.__address_registry[base_name]}"
 
 
 class MemoryServer(ProtobuffServer):

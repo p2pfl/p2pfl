@@ -17,18 +17,15 @@
 #
 """Node tests."""
 
-# Disable Ray on the experiment (if installed)
-from p2pfl.settings import Settings
-
-Settings.general.DISABLE_RAY = True
-
 import contextlib  # noqa: E402, I001
 import time  # noqa: E402
 import pytest  # noqa: E402
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset  # noqa: E402
 from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy  # noqa: E402
+from p2pfl.learning.frameworks import Framework
 from p2pfl.management.logger import logger  # noqa: E402
 from p2pfl.node import Node  # noqa: E402
+from p2pfl.settings import Settings
 from p2pfl.utils.utils import (  # noqa: E402
     check_equal_models,
     set_standalone_settings,
@@ -41,11 +38,7 @@ with contextlib.suppress(ImportError):
 
 
 with contextlib.suppress(ImportError):
-    import jax
-    import jax.numpy as jnp
-
-    from p2pfl.examples.mnist.model.mlp_flax import MLP as MLP_FLAX
-    from p2pfl.learning.frameworks.flax.flax_model import FlaxModel
+    pass
 
 with contextlib.suppress(ImportError):
     from p2pfl.examples.mnist.model.mlp_pytorch import model_build_fn as model_build_fn_pytorch
@@ -74,10 +67,18 @@ def two_nodes():
 
 
 # TODO: Add more frameworks and aggregators
+#
+#   Really important note: When training (pytorch) with a fixed seed and the process is shared, different training speeds affect to the
+#   stochastic process, so is not fully deterministic!.
+#
 @pytest.mark.parametrize("x", [(2, 2), (6, 3)])
-def test_convergence(x):
+@pytest.mark.parametrize("model_build_fn", [model_build_fn_pytorch, model_build_fn_tensorflow])
+def test_convergence(x, model_build_fn):
     """Test convergence (on learning) of two nodes."""
     n, r = x
+
+    Settings.general.SEED = 777
+    Settings.heartbeat.TIMEOUT = 20
 
     # Data
     data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
@@ -86,7 +87,7 @@ def test_convergence(x):
     # Node Creation
     nodes = []
     for i in range(n):
-        node = Node(model_build_fn_pytorch(), partitions[i])
+        node = Node(model_build_fn(), partitions[i])
         node.start()
         nodes.append(node)
 
@@ -123,9 +124,17 @@ def test_convergence(x):
     check_equal_models(nodes)
 
     # Get accuracies
-    accuracies = [metrics["test_metric"] for metrics in list(logger.get_global_logs().values())[0].values()]
+    framework = nodes[0].get_model().get_framework()
+    if framework == Framework.PYTORCH.value:
+        accuracy_name = "test_metric"
+    elif framework == Framework.TENSORFLOW.value:
+        accuracy_name = "compile_metrics"
+    else:
+        raise ValueError(f"Framwork {framework} not known")
+    logger.get_global_logs().values()
+    accuracies = [metrics[accuracy_name] for metrics in list(logger.get_global_logs().values())[0].values()]
     # Get last round accuracies
-    last_round_accuracies = [acc for node_acc in accuracies for r, acc in node_acc if r == 1]
+    last_round_accuracies = [acc for node_acc in accuracies for r, acc in node_acc if r == 2]  # 2 bc of the validation before the round 1
     # Assert that the accuracies are higher than 0.5
     assert all(acc > 0.5 for acc in last_round_accuracies)
 
@@ -202,14 +211,15 @@ def _test_node_down_on_learning(n):
 #####
 
 
-def test_tensorflow_node():
+@pytest.mark.parametrize("build_model_fn", [model_build_fn_pytorch, model_build_fn_tensorflow])
+def test_framework_node(build_model_fn):
     """Test a TensorFlow node."""
     # Data
     data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
     partitions = data.generate_partitions(400, RandomIIDPartitionStrategy)
 
     # Create the model
-    p2pfl_model = model_build_fn_tensorflow()
+    p2pfl_model = build_model_fn()
 
     # Nodes
     n1 = Node(p2pfl_model, partitions[0])
@@ -238,76 +248,3 @@ def test_tensorflow_node():
     # Stop
     n1.stop()
     n2.stop()
-
-
-def test_torch_node():
-    """Test a TensorFlow node."""
-    # Data
-    data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
-    partitions = data.generate_partitions(400, RandomIIDPartitionStrategy)
-
-    # Create the model
-    p2pfl_model = model_build_fn_pytorch()
-
-    # Nodes
-    n1 = Node(p2pfl_model, partitions[0])
-    n2 = Node(p2pfl_model.build_copy(), partitions[1])
-
-    # Start
-    n1.start()
-    n2.start()
-
-    # Connect
-    n2.connect(n1.addr)
-    wait_convergence([n1, n2], 1, only_direct=True)
-
-    # Start Learning
-    n1.set_start_learning(rounds=1, epochs=1)
-
-    # Wait
-    wait_to_finish([n1, n2], timeout=120)
-
-    # Check if execution is correct
-    for node in [n1, n2]:
-        assert "RoundFinishedStage" in node.learning_workflow.history
-
-    check_equal_models([n1, n2])
-
-    # Stop
-    n1.stop()
-    n2.stop()
-
-
-def test_flax_node():
-    """Test a Flax node."""
-    # Data
-    data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
-    partitions = data.generate_partitions(400, RandomIIDPartitionStrategy)
-    model = MLP_FLAX()
-    seed = jax.random.PRNGKey(0)
-    model_params = model.init(seed, jnp.ones((1, 28, 28)))["params"]
-    p2pfl_model = FlaxModel(model, model_params)
-    # Nodes
-    n1 = Node(p2pfl_model, partitions[0])
-    n2 = Node(p2pfl_model.build_copy(), partitions[1])
-    # Start
-    n1.start()
-    n2.start()
-    # Connect
-    n2.connect(n1.addr)
-    wait_convergence([n1, n2], 1, only_direct=True)
-    # Start Learning
-    n1.set_start_learning(rounds=1, epochs=1)
-    # Wait
-    wait_to_finish([n1, n2], timeout=120)
-    # Check if execution is correct
-    for node in [n1, n2]:
-        assert "RoundFinishedStage" in node.learning_workflow.history
-    check_equal_models([n1, n2])
-    # Stop
-    n1.stop()
-    n2.stop()
-
-
-def __test_model_is_learning():
-    pass

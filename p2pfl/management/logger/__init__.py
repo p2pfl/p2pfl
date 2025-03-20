@@ -27,9 +27,16 @@ from p2pfl.utils.check_ray import ray_installed
 
 # Check if 'ray' is installed in the Python environment
 if ray_installed():
+    import ray
+
     from p2pfl.management.logger.decorators.ray_logger import RayP2PFLogger
 
-    # Logger actor singleton
-    logger = SingletonLogger(RayP2PFLogger(WebP2PFLogger(FileLogger(P2PFLogger(disable_locks=True)))))
+    # This is executed multiple times on each python process (unique context)
+    try:
+        logger: P2PFLogger = RayP2PFLogger.from_actor(ray.get_actor("p2pfl_ray_logger"))
+    except ValueError:
+        logger = RayP2PFLogger(lambda: WebP2PFLogger(FileLogger(P2PFLogger(disable_locks=True))))
+
 else:
+    # This is only executed once, when the module is first imported
     logger = SingletonLogger(WebP2PFLogger(FileLogger(AsyncLogger(P2PFLogger(disable_locks=False)))))

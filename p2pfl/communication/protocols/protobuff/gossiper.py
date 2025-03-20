@@ -225,7 +225,8 @@ class Gossiper(threading.Thread, NodeComponent):
             # Select a random subset of neighbors
             samples = min(Settings.gossip.MODELS_PER_ROUND, len(neis))
             neis = random.sample(neis, samples)
-            neis_clients = [v[0] for k, v in self.__neighbors.get_all(only_direct=True).items() if k in neis]
+            # Getting all nodes and forcing tmp direct message
+            neis_clients = [v[0] for k, v in self.__neighbors.get_all(only_direct=False).items() if k in neis]
 
             # Generate and Send Model Partial Aggregations (model, node_contributors)
             for client in neis_clients:

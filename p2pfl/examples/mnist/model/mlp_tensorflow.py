@@ -24,6 +24,8 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy  # type: ignor
 from tensorflow.keras.optimizers import Adam  # type: ignore
 
 from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel
+from p2pfl.settings import Settings
+from p2pfl.utils.seed import set_seed
 
 ####
 # Example MLP
@@ -33,7 +35,7 @@ from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel
 class MLP(tf.keras.Model):
     """Multilayer Perceptron (MLP) for MNIST classification using Keras."""
 
-    def __init__(self, hidden_sizes=None, out_channels=10, lr_rate=0.001, seed=None, **kwargs):
+    def __init__(self, hidden_sizes=None, out_channels=10, lr_rate=0.001, **kwargs):
         """
         Initialize the MLP.
 
@@ -41,17 +43,13 @@ class MLP(tf.keras.Model):
             hidden_sizes (list): List of integers representing the number of neurons in each hidden layer.
             out_channels (int): Number of output classes (10 for MNIST).
             lr_rate (float): Learning rate for the Adam optimizer.
-            seed (int, optional): Random seed for reproducibility.
             kwargs: Additional arguments.
 
         """
+        set_seed(Settings.general.SEED, "tensorflow")
         if hidden_sizes is None:
             hidden_sizes = [256, 128]
         super().__init__()
-
-        if seed is not None:
-            tf.random.set_seed(seed)
-
         # Define layers
         self.flatten = Flatten()
         self.hidden_layers = [Dense(size, activation="relu") for size in hidden_sizes]
@@ -74,6 +72,6 @@ class MLP(tf.keras.Model):
 
 
 # Export P2PFL model
-def model_build_fn() -> KerasModel:
+def model_build_fn(*args, **kwargs) -> KerasModel:
     """Export the model build function."""
-    return KerasModel(MLP())  # type: ignore
+    return KerasModel(MLP(*args, **kwargs))  # type: ignore

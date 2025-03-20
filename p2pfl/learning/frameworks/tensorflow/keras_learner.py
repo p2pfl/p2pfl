@@ -31,7 +31,9 @@ from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.learning.frameworks.tensorflow.callbacks.keras_logger import FederatedLogger
 from p2pfl.learning.frameworks.tensorflow.keras_dataset import KerasExportStrategy
 from p2pfl.management.logger import logger
+from p2pfl.settings import Settings
 from p2pfl.utils.node_component import allow_no_addr_check
+from p2pfl.utils.seed import set_seed
 
 
 class KerasLearner(Learner):
@@ -85,6 +87,7 @@ class KerasLearner(Learner):
 
     def fit(self) -> P2PFLModel:
         """Fit the model."""
+        set_seed(Settings.general.SEED, self.get_framework())
         try:
             if self.epochs > 0:
                 model, data = self.__get_tf_model_data(train=True)

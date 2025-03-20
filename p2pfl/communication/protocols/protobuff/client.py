@@ -18,6 +18,7 @@
 
 """Protocol agnostic client."""
 
+import threading
 from abc import ABC, abstractmethod
 
 from p2pfl.communication.protocols.protobuff.proto import node_pb2
@@ -35,6 +36,8 @@ class ProtobuffClient(ABC):
         """Initialize the GRPC client."""
         self.self_addr = self_addr
         self.nei_addr = nei_addr
+        self._temporal_connection_uses = 0
+        self._temporal_connection_lock = threading.Lock()
 
     ####
     # Connection
@@ -60,6 +63,16 @@ class ProtobuffClient(ABC):
     def disconnect(self, disconnect_msg: bool = True) -> None:
         """Disconnect from a neighbor."""
         pass
+
+    def has_temporal_connection(self) -> bool:
+        """
+        Check if the client has a temporal connection.
+
+        Returns:
+            True if the client has a temporal connection, False otherwise.
+
+        """
+        return self._temporal_connection_uses > 0
 
     ####
     # Message Sending

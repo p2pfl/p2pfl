@@ -142,6 +142,9 @@ def run_from_yaml(yaml_path: str):
         print("P2PFLDataset loading process completed without creating a dataset object (check for errors above).")
         return None
 
+    # Batch size
+    dataset.set_batch_size(dataset_config.get("batch_size", 1))
+
     # Partitioning
     partitioning_config = dataset_config.get("partitioning", {})
     if not partitioning_config:
@@ -199,15 +202,6 @@ def run_from_yaml(yaml_path: str):
     def aggregator_fn() -> Aggregator:
         return aggregator_class(**aggregator.get("params", {}))
 
-    ########
-    # Seed #
-    ########
-
-    seed = experiment_config.get("seed")
-    if seed:
-        # Not implemented yet
-        print(":( - Setting seed not implemented yet.")
-
     ###########
     # Network #
     ###########
@@ -226,8 +220,7 @@ def run_from_yaml(yaml_path: str):
         node = Node(
             model_fn(),
             partitions[i],
-            protocol=protocol,
-            simulation=True,
+            protocol=protocol(),
             aggregator=aggregator_fn(),
         )
         node.start()

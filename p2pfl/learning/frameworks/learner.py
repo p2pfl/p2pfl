@@ -125,7 +125,7 @@ class Learner(ABC, NodeComponent):
 
         """
         if aggregator:
-            self.callbacks = CallbackFactory.create_callbacks(framework=self.get_framework(), aggregator=aggregator)
+            self.callbacks = self.callbacks + CallbackFactory.create_callbacks(framework=self.get_framework(), aggregator=aggregator)
 
     @allow_no_addr_check
     def set_epochs(self, epochs: int) -> None:

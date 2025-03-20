@@ -1,5 +1,5 @@
 #
-# This file is part of the federated_learning_p2p (p2pfl) distribution
+# This file is part of the p2pfl distribution
 # (see https://github.com/pguijas/p2pfl).
 # Copyright (c) 2022 Pedro Guijas Bravo.
 #
@@ -20,7 +20,7 @@
 
 import os
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Optional
 
 from p2pfl.utils.singleton import SingletonMeta
 
@@ -33,14 +33,16 @@ from p2pfl.utils.singleton import SingletonMeta
 class General:
     """General system settings."""
 
+    SEED: Optional[int] = None
+    """Seed for random number generation."""
     GRPC_TIMEOUT: float = 10.0
     """Maximum time (seconds) to wait for a gRPC request."""
     LOG_LEVEL: str = "INFO"
     """Log level for the system."""
     LOG_DIR: str = "logs"
     """Directory to save logs."""
-    EXCLUDE_BEAT_LOGS: bool = True
-    """Exclude heartbeat logs."""
+    MAX_LOG_RUNS: int = 10
+    """Maximum number of run log files to keep."""
     DISABLE_RAY: bool = False
     """Disable Ray for local testing."""
 
@@ -55,6 +57,8 @@ class Heartbeat:
     """Timeout (seconds) for a node to be considered dead."""
     WAIT_CONVERGENCE: float = PERIOD
     """Time (seconds) to wait for the heartbeats to converge before a learning round starts."""
+    EXCLUDE_BEAT_LOGS: bool = True
+    """Exclude heartbeat logs."""
 
 
 @dataclass
@@ -104,6 +108,8 @@ class Training:
     """Timeout (seconds) for a node to wait for a vote."""
     AGGREGATION_TIMEOUT: int = 300
     """Timeout (seconds) for a node to wait for other models. Timeout starts when the first model is added."""
+    DEFAULT_BATCH_SIZE: int = 128
+    """Default batch size for training."""
 
 
 @dataclass

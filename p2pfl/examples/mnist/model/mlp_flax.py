@@ -22,6 +22,8 @@ from typing import Tuple
 
 from flax import linen as nn
 
+from p2pfl.learning.frameworks.flax.flax_model import FlaxModel
+
 # from p2pfl.learning.frameworks.flax.flax_model import FlaxModel
 
 ####
@@ -57,6 +59,6 @@ class MLP(nn.Module):
 
 
 # Export P2PFL model
-def model_build_fn():
+def model_build_fn(*args, **kwargs) -> FlaxModel:
     """Export the model build function."""
-    raise NotImplementedError("Flax model not fully available yet")
+    raise NotImplementedError("This function is not implemented yet, FLAX is not enought mature")

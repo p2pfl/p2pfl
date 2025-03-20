@@ -25,6 +25,8 @@ import torch
 from torchmetrics import Accuracy, Metric
 
 from p2pfl.learning.frameworks.pytorch.lightning_model import LightningModel
+from p2pfl.settings import Settings
+from p2pfl.utils.seed import set_seed
 
 ####
 # Example MLP
@@ -42,16 +44,12 @@ class MLP(L.LightningModule):
         activation: str = "relu",
         metric: type[Metric] = Accuracy,
         lr_rate: float = 0.001,
-        seed: Optional[int] = None,
     ) -> None:
         """Initialize the MLP."""
         super().__init__()
+        set_seed(Settings.general.SEED, "pytorch")
         if hidden_sizes is None:
             hidden_sizes = [256, 128]
-        if seed is not None:
-            torch.manual_seed(seed)
-            torch.cuda.manual_seed_all(seed)
-
         self.lr_rate = lr_rate
         if out_channels == 1:
             self.metric = metric(task="binary")
@@ -124,6 +122,6 @@ class MLP(L.LightningModule):
 
 
 # Export P2PFL model
-def model_build_fn() -> LightningModel:
+def model_build_fn(*args, **kwargs) -> LightningModel:
     """Export the model build function."""
-    return LightningModel(MLP())
+    return LightningModel(MLP(*args, **kwargs))

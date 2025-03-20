@@ -53,7 +53,6 @@ class RoundFinishedStage(Stage):
         # Set Next Round
         aggregator.clear()
         state.increase_round()
-        logger.round_finished(state.addr)
 
         # Next Step or Finish
         logger.info(
@@ -76,7 +75,7 @@ class RoundFinishedStage(Stage):
     @staticmethod
     def __evaluate(state: NodeState, learner: Learner, communication_protocol: CommunicationProtocol) -> None:
         logger.info(state.addr, "🔬 Evaluating...")
-        results = learner.evaluate()  # TODO: Implement Experiment stuff
+        results = learner.evaluate()
         logger.info(state.addr, f"📈 Evaluated. Results: {results}")
         # Send metrics
         if len(results) > 0:
