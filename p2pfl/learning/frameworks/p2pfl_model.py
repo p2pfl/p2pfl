@@ -24,6 +24,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
+from p2pfl.learning.compression.manager import CompressionManager
 from p2pfl.learning.frameworks.exceptions import DecodingParamsError
 
 
@@ -49,6 +50,7 @@ class P2PFLModel:
         num_samples: Optional[int] = None,
         contributors: Optional[List[str]] = None,
         additional_info: Optional[Dict[str, Any]] = None,
+        compression: Optional[Dict[str, Dict[str, Any]]] = None,
     ) -> None:
         """Initialize the model."""
         self.model = model
@@ -63,6 +65,8 @@ class P2PFLModel:
             self.additional_info = additional_info
         if params is not None:
             self.set_parameters(params)
+        self.compression = compression
+
 
     def get_model(self) -> Any:
         """Get the model."""
@@ -78,11 +82,18 @@ class P2PFLModel:
         """
         if params is None:
             params = self.get_parameters()
-        data_to_serialize = {
-            "params": params,
-            "additional_info": self.additional_info,
+
+        data = {
+            "header" : {},
+            "payload": {
+                "params": params,
+                "additional_info": self.additional_info,
+            },
         }
-        return pickle.dumps(data_to_serialize)
+
+        if self.compression:
+            return CompressionManager.apply(data, self.compression)
+        return pickle.dumps(data)
 
     def decode_parameters(self, data: bytes) -> Tuple[List[np.ndarray], Dict[str, Any]]:
         """
@@ -94,9 +105,13 @@ class P2PFLModel:
         """
         try:
             loaded_data = pickle.loads(data)
-            params = loaded_data["params"]
-            additional_info = loaded_data["additional_info"]
-            return params, additional_info
+            if not loaded_data["header"].get("applied_techniques", {}):
+                # Normal handling
+                params = loaded_data["payload"]["params"]
+                additional_info = loaded_data["payload"]["additional_info"]
+                return params, additional_info
+            payload= CompressionManager.reverse(loaded_data)
+            return payload["params"], payload["additional_info"]
         except Exception as e:
             raise DecodingParamsError("Error decoding parameters") from e
 
