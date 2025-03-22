@@ -20,9 +20,11 @@
 
 import pickle
 from typing import Any, Optional
+
 import numpy as np
+
 from p2pfl.learning.compression import COMPRESSION_STRATEGIES_REGISTRY
-from p2pfl.learning.compression.base_compression_strategy import TensorCompressor, ByteCompressor
+from p2pfl.learning.compression.base_compression_strategy import ByteCompressor
 
 
 class CompressionManager:
@@ -48,7 +50,7 @@ class CompressionManager:
         registry = CompressionManager.get_registry()
         applied_techniques = []
         byte_compressor: Optional[ByteCompressor] = None
-        encoder_key: Optional[str]= None
+        encoder_key: Optional[str] = None
 
         # apply techniques in sequence
         for name, fn_params in techniques.items():
