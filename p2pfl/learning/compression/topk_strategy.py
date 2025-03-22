@@ -20,56 +20,52 @@
 
 import numpy as np
 
-from p2pfl.learning.compression.base_compression_strategy import BaseCompressor
+from p2pfl.learning.compression.base_compression_strategy import TensorCompressor
 
 
-class TopKSparsification(BaseCompressor):
+class TopKSparsification(TensorCompressor):
     """
     Top-K sparsification.
 
     Keeps only the top k largest values in model parameters.
     """
 
-    def apply_strategy(self, payload:dict, k:float = 0.1) -> dict:
+    def apply_strategy(self, params: list[np.ndarray], k: float = 0.1) -> tuple[list[np.ndarray], dict]:
         """
         Reduces params by taking only the top k ones.
 
         Args:
-            payload: Payload to process.
+            params: The parameters to compress.
             k: Percentage of parameters to keep between 0 and 1.
 
         """
         new_params = []
         sparse_metadata = {}
 
-        for pos, param in enumerate(payload["params"]):
+        for pos, param in enumerate(params):
             k_elements = max(1, int(k * param.size))
             flattened = param.flatten()
             indices = np.argpartition(flattened, -k_elements)[-k_elements:]
             values = flattened[indices]
 
-            sparse_metadata[pos] = {
-                "indices": indices.astype(np.uint32),
-                "shape": param.shape
-            }
+            sparse_metadata[pos] = {"indices": indices.astype(np.uint32), "shape": param.shape}
 
             new_params.append(values)
-        payload["params"] = new_params
-        payload["additional_info"]["topk_sparse_metadata"] = sparse_metadata
-        return payload
+        return new_params, {"topk_sparse_metadata": sparse_metadata}
 
-    def reverse_strategy(self, payload:dict) -> dict:
+    def reverse_strategy(self, params: list[np.ndarray], additional_info: dict) -> list[np.ndarray]:
         """
         Decompress params.
 
         Args:
-            payload: Payload to process.
+            params: The parameters to decompress.
+            additional_info: Additional information to decompress.
 
         """
         reconstructed_params = []
-        sparse_metadata = payload["additional_info"].get("topk_sparse_metadata", {})
+        sparse_metadata = additional_info["topk_sparse_metadata"]
 
-        for pos, values in enumerate(payload["params"]):
+        for pos, values in enumerate(params):
             if pos in sparse_metadata:
                 # this layer was compressed, reconstruct it
                 # storing 0s where the values were not present
@@ -85,6 +81,4 @@ class TopKSparsification(BaseCompressor):
                 # if not in sparse_metadata, it was not compressed
                 reconstructed_params.append(values)
 
-        payload["params"] = reconstructed_params
-        payload["additional_info"].pop("topk_sparse_metadata", None)
-        return payload
+        return reconstructed_params

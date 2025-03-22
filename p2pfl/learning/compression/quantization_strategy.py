@@ -21,39 +21,30 @@
 
 import numpy as np
 
-from p2pfl.learning.compression.base_compression_strategy import BaseCompressor
+from p2pfl.learning.compression.base_compression_strategy import TensorCompressor
 
 
-class PTQuantization(BaseCompressor):
+class PTQuantization(TensorCompressor):
     """Post-Training Quantization (PTQ)."""
 
-    def apply_strategy(self, payload: dict, dtype:str = "float16") -> list[np.ndarray]:
+    def apply_strategy(self, params: list[np.ndarray], dtype: str = "float16") -> tuple[list[np.ndarray], dict]:
         """
         Reduce the precission of model parameters.
 
         Args:
-            payload: Payload to quantize.
+            params: The parameters to compress.
             dtype: The desired precision.
 
         """
-        dtype=np.dtype(dtype)
-        payload["additional_info"]["ptq_original_dtype"] = payload["params"][0].dtype
-        quantized_params = [param.astype(dtype) for param in payload["params"]]
-        payload["params"] = quantized_params
+        return [param.astype(np.dtype(dtype)) for param in params], {"ptq_original_dtype": params[0].dtype}
 
-        return payload
-
-    def reverse_strategy(self, payload:dict) -> list[np.ndarray]:
+    def reverse_strategy(self, params: list[np.ndarray], additional_info: dict) -> list[np.ndarray]:
         """
         Return model parameters to saved original precission.
 
         Args:
-            payload: Payload to restore.
+            params: The parameters to decompress.
+            additional_info: Additional information to decom
 
         """
-        original_dtype = payload["additional_info"]["ptq_original_dtype"]
-        original_params = [param.astype(original_dtype) for param in payload["params"]]
-        payload["params"] = original_params
-        payload["additional_info"].pop("ptq_original_dtype", None)
-        return payload
-
+        return [param.astype(additional_info["ptq_original_dtype"]) for param in params]

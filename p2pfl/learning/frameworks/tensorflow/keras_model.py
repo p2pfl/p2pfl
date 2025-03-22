@@ -48,6 +48,7 @@ class KerasModel(P2PFLModel):
         num_samples: Optional number of samples used for training.
         contributors: Optional list of contributor nodes.
         additional_info: Optional dictionary for extra information.
+        compression: Optional dictionary for compression settings.
 
     """
 
@@ -58,9 +59,10 @@ class KerasModel(P2PFLModel):
         num_samples: Optional[int] = None,
         contributors: Optional[list[str]] = None,
         additional_info: Optional[dict[str, Any]] = None,
+        compression: Optional[dict[str, dict[str, Any]]] = None,
     ) -> None:
         """Initialize the KerasModel."""
-        super().__init__(model, params, num_samples, contributors, additional_info)
+        super().__init__(model, params, num_samples, contributors, additional_info, compression)
 
         # Ensure the model is built
         if len(model.get_weights()) == 0:  # type: ignore

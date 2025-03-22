@@ -20,24 +20,20 @@
 
 import zlib
 
-import numpy as np
-
-from p2pfl.learning.compression.base_compression_strategy import EncoderStrategy
+from p2pfl.learning.compression.base_compression_strategy import ByteCompressor
 
 
-class ZlibCompressor(EncoderStrategy):
+class ZlibCompressor(ByteCompressor):
     """
     Lossless compression strategy using zlib.
 
     See more at: https://github.com/madler/zlib
     """
 
-    def apply_strategy(self, payload: dict, level=6) -> bytes:
+    def apply_strategy(self, data: bytes, level=6) -> bytes:
         """Apply strategy to the parameters."""
-        payload["params"] = zlib.compress(payload["params"], level=level)
-        return payload
+        return zlib.compress(data, level=level)
 
-    def reverse_strategy(self, payload: dict) -> list[np.ndarray]:
+    def reverse_strategy(self, data: bytes) -> bytes:
         """Reverse the strategy."""
-        payload["params"] = zlib.decompress(payload["params"])
-        return payload
+        return zlib.decompress(data)

@@ -92,7 +92,7 @@ class LightningLearner(Learner):
                 self.__trainer = Trainer(
                     max_epochs=self.epochs,
                     accelerator="auto",
-                    logger=self.logger, # type: ignore
+                    logger=self.logger,  # type: ignore
                     enable_checkpointing=False,
                     enable_model_summary=False,
                     callbacks=self.callbacks.copy(),  # type: ignore

@@ -45,11 +45,12 @@ class FlaxModel(P2PFLModel):
         num_samples: Optional[int] = None,
         contributors: Optional[List[str]] = None,
         additional_info: Optional[Dict[str, Any]] = None,
+        compression: Optional[dict[str, dict[str, Any]]] = None,
     ) -> None:
         """Initialize Flax model."""
         # TODO: fix: when using arg params for jax params, fedavg.aggregate fails in models[0].build_copy(params=accum, ...)
         # FlaxModel.__init__() got multiple values for argument 'params'. Fix in __init__ or build_copy.
-        super().__init__(model, None, num_samples, contributors, additional_info)
+        super().__init__(model, None, num_samples, contributors, additional_info, compression)
         self.model_params = init_params
         if params:
             if isinstance(params, bytes):

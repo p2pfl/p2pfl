@@ -181,7 +181,9 @@ def run_from_yaml(yaml_path: str):
     )
 
     def model_fn() -> P2PFLModel:
-        return model_class(**model_config.get("params", {}))
+        params = model_config.get("params", {})
+        params = {**params, "compression": model_config.get("compression", None)}
+        return model_class(**params)
 
     ##############
     # Aggregator #

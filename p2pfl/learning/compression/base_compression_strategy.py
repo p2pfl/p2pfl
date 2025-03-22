@@ -19,6 +19,7 @@
 """Compression strategy interface."""
 
 from abc import ABC, abstractmethod
+from typing import Any
 
 import numpy as np
 
@@ -27,21 +28,39 @@ class CompressionStrategy(ABC):
     """Abstract class for optimization strategies."""
 
     @abstractmethod
-    def apply_strategy(self,  payload: dict) -> bytes:
+    def apply_strategy(self, *args, **kwargs) -> Any:
         """Apply strategy to the parameters."""
         pass
 
     @abstractmethod
-    def reverse_strategy(self,  payload: dict) -> list[np.ndarray]:
+    def reverse_strategy(self, *args, **kwargs) -> Any:
         """Reverse the strategy."""
         pass
 
-class BaseCompressor(CompressionStrategy):
-    """Subclass for compression strategies that use raw data."""
 
-    pass
+class TensorCompressor(CompressionStrategy):
+    """Subclass for tensor compression strategies."""
 
-class EncoderStrategy(CompressionStrategy):
-    """Subclass for compression strategies that need to handle binary data."""
+    @abstractmethod
+    def apply_strategy(self, params: list[np.ndarray]) -> tuple[list[np.ndarray], dict]:
+        """Apply strategy to the parameters."""
+        pass
 
-    pass
+    @abstractmethod
+    def reverse_strategy(self, params: list[np.ndarray], additional_info: dict) -> list[np.ndarray]:
+        """Reverse the strategy."""
+        pass
+
+
+class ByteCompressor(CompressionStrategy):
+    """Subclass for byte compression strategies."""
+
+    @abstractmethod
+    def apply_strategy(self, data: bytes) -> bytes:
+        """Apply strategy to the parameters."""
+        pass
+
+    @abstractmethod
+    def reverse_strategy(self, data: bytes) -> bytes:
+        """Reverse the strategy."""
+        pass

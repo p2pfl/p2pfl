@@ -19,38 +19,36 @@
 """Transmission compression manager."""
 
 import pickle
-from typing import Any
-
+from typing import Any, Optional
+import numpy as np
 from p2pfl.learning.compression import COMPRESSION_STRATEGIES_REGISTRY
-from p2pfl.learning.compression.base_compression_strategy import EncoderStrategy
+from p2pfl.learning.compression.base_compression_strategy import TensorCompressor, ByteCompressor
 
 
 class CompressionManager:
     """Manager for compression strategies."""
 
     @staticmethod
-    def get_registry():
+    def get_registry() -> dict[str, Any]:
         """Return the registry of compression strategies."""
         return COMPRESSION_STRATEGIES_REGISTRY
 
     @staticmethod
-    def apply(data: dict[str, Any], techniques: dict[str, dict[str, Any]]) -> bytes:
+    def apply(params: list[np.ndarray], additional_info: dict, techniques: dict[str, dict[str, Any]]) -> bytes:
         """
         Apply compression techniques in sequence to the data.
 
         Args:
-            data: The data to optimize.
+            params: The parameters to compress.
+            additional_info: Additional information to compress.
             techniques: The techniques to apply.
 
         """
+        # Init
         registry = CompressionManager.get_registry()
         applied_techniques = []
-        encoder_instance = None
-        payload = data["payload"]
-
-        # if no payload, skip compression
-        if not payload:
-            return pickle.dumps(data)
+        byte_compressor: Optional[ByteCompressor] = None
+        encoder_key: Optional[str]= None
 
         # apply techniques in sequence
         for name, fn_params in techniques.items():
@@ -58,27 +56,36 @@ class CompressionManager:
                 raise ValueError(f"Unknown compression technique: {name}")
             instance = registry[name]()
             # encoder gets applied at the end since needs serialized data
-            if isinstance(instance, EncoderStrategy):
-                encoder_instance = instance
+            if isinstance(instance, ByteCompressor):
+                if byte_compressor is not None:
+                    raise ValueError("Only one encoder can be applied at a time")
+                byte_compressor = instance
                 encoder_key = name
             else:
-                payload = instance.apply_strategy(payload, **fn_params)
-                applied_techniques.append(name)
+                params, compression_settings = instance.apply_strategy(params, **fn_params)
+                applied_techniques.append([name, compression_settings])
 
-        # save applied techniques to reverse
-        data["header"]["applied_techniques"] = applied_techniques
+        # Build data transfer dict
+        data = {
+            "params": params,
+            "additional_info": additional_info | {"applied_techniques": applied_techniques},
+        }
+        data_bytes = pickle.dumps(data)
 
-        # apply encoder if exists on serialized payload
-        payload_serialized = pickle.dumps(payload)
-        if encoder_instance is not None:
-            payload_serialized = encoder_instance.apply_strategy(payload_serialized)
-            data["header"]["encoder"] = encoder_key
+        # apply byte_compressor if exists
+        if byte_compressor is not None:
+            data_bytes = byte_compressor.apply_strategy(data_bytes)
 
-        data["payload"] = payload_serialized
-        return pickle.dumps(data)  # reserialize entire payload after encoder
+        # Return data
+        return pickle.dumps(
+            {
+                "byte_compressor": encoder_key,
+                "bytes": data_bytes,
+            }
+        )
 
     @staticmethod
-    def reverse(data: dict) -> dict:
+    def reverse(data: bytes) -> tuple[list[np.ndarray], dict]:
         """
         Reverse compression techniques in sequence.
 
@@ -86,19 +93,28 @@ class CompressionManager:
             data: The deserialized data to reverse (inner data is serialized).
 
         """
+        # Init
         registry = CompressionManager.get_registry()
-        applied_techniques = data["header"]["applied_techniques"]
-        encoder_key = data["header"].get("encoder", None)
-        payload = data["payload"]
+        raw_data = pickle.loads(data)
 
-        # if encoder was applied, inner data needs to be decoded before deserialize
+        # Check if byte compressor was applied
+        encoder_key = raw_data.get("byte_compressor", None)
         if encoder_key is not None:
-            encoder_instance = registry[encoder_key]()
-            payload = encoder_instance.reverse_strategy(payload)
-        payload = pickle.loads(payload)  # deserialize
-        # reverse strategies in reverse order
-        for name in reversed(applied_techniques):
-            instance = registry[name]()
-            payload = instance.reverse_strategy(payload)
+            byte_compressor = registry[encoder_key]()
+            data_bytes = byte_compressor.reverse_strategy(raw_data["bytes"])
+        else:
+            data_bytes = raw_data["bytes"]
+        data = pickle.loads(data_bytes)
+        if not isinstance(data, dict):
+            raise ValueError("Invalid data format")
 
-        return payload
+        # Get applied techniques
+        params = data["params"]
+        if "additional_info" not in data:
+            raise ValueError("No additional info found in data. Impossible to reverse the compression.")
+        applied_techniques = data["additional_info"].pop("applied_techniques")
+        for compressor_name, compressor_info in reversed(applied_techniques):
+            instance = registry[compressor_name]()
+            params = instance.reverse_strategy(params, compressor_info)
+
+        return params, data["additional_info"]

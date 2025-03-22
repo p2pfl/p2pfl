@@ -28,7 +28,6 @@ from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.learning.frameworks.simulation.utils import check_client_resources, pool_size_from_resources
 from p2pfl.management.logger import logger
-from p2pfl.settings import Settings
 
 ###
 # Inspired by the implementation of Flower. Thank you so much for taking FL to another level :)

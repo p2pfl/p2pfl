@@ -20,63 +20,58 @@
 
 import numpy as np
 
-from p2pfl.learning.compression.base_compression_strategy import BaseCompressor
+from p2pfl.learning.compression.base_compression_strategy import TensorCompressor
 
 
-class LowRankApproximation(BaseCompressor):
+class LowRankApproximation(TensorCompressor):
     """Low Rank optimization strategy."""
 
-    def apply_strategy(self, payload: dict, threshold: float = 0.95):
+    def apply_strategy(self, params: list[np.ndarray], threshold: float = 0.95) -> tuple[list[np.ndarray], dict]:
         """
         Approximate the parameters preserving a target rank or energy threshold.
 
         Args:
-            payload: The payload to compress.
+            params: The parameters to compress.
             threshold: Percentage between 0 and 1 of the energy to preserve.
 
         """
-        params_to_share = [] # layers without low rank approximation
-        compressed_states = {} # compressed layers
+        params_to_share = []  # layers without low rank approximation
+        compressed_states = {}  # compressed layers
 
-        for pos, layer in enumerate(payload["params"]):
+        for pos, layer in enumerate(params):
             # if threshold is provided, compute target rank
 
             if layer.ndim != 2:
-                params_to_share.append(layer) # list(np.ndarray)
+                params_to_share.append(layer)  # list(np.ndarray)
             else:
                 u, s, vt = np.linalg.svd(layer, full_matrices=False)
                 # compute number of values to keep so cumulative energy sum is above threshold
-                energy_total = np.sum(s ** 2)
-                cumulative_energies = np.cumsum(s ** 2)
+                energy_total = np.sum(s**2)
+                cumulative_energies = np.cumsum(s**2)
                 target_rank = np.searchsorted(cumulative_energies / energy_total, threshold) + 1
                 u, s, vt = u[:, :target_rank], s[:target_rank], vt[:target_rank, :]
                 # remove layer from data and store compressed layer
                 compressed_states[pos] = u, s, vt
 
+        return params_to_share, {"lowrank_compressed_state": compressed_states}
 
-        payload["params"] = params_to_share
-        payload["additional_info"]["lowrank_compressed_state"] = compressed_states
-        return payload
-
-
-    def reverse_strategy(self, payload: dict): # TODO: Revisar esto
+    def reverse_strategy(self, params: list[np.ndarray], additional_info: dict) -> list[np.ndarray]:
         """
         Restore the payload by computing dot product of LRA components.
 
         Args:
-            payload: The payload to compress.
-            threshold: Percentage between 0 and 1 of the energy to preserve.
+            params: The parameters to compress.
+            additional_info: Additional information to compress.
 
         """
-        resulting_payload = {"params": [], "additional_info": []}
+        final_params = []
 
-        total_length = payload["params"].__len__() + payload["additional_info"]["lowrank_compressed_state"].__len__()
+        total_length = params.__len__() + additional_info["lowrank_compressed_state"].__len__()
         for pos in range(total_length):
-            if pos in payload["additional_info"]["lowrank_compressed_state"]:
-                u, s, vt = payload["additional_info"]["lowrank_compressed_state"][pos]
-                resulting_payload["params"].append(u @ np.diag(s) @ vt) # params approximation
+            if pos in additional_info["lowrank_compressed_state"]:
+                u, s, vt = additional_info["lowrank_compressed_state"][pos]
+                final_params.append(u @ np.diag(s) @ vt)  # params approximation
             else:
-                resulting_payload["params"].append(payload["params"].pop(0))
+                final_params.append(params.pop(0))
 
-        return resulting_payload
-
+        return final_params

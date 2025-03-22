@@ -1,4 +1,5 @@
 """P2PFL compressions."""
+
 from .lra_strategy import LowRankApproximation
 from .quantization_strategy import PTQuantization
 from .topk_strategy import TopKSparsification
@@ -10,5 +11,4 @@ COMPRESSION_STRATEGIES_REGISTRY = {
     "topk": TopKSparsification,
     "low_rank": LowRankApproximation,
     "zlib": ZlibCompressor,
-
 }

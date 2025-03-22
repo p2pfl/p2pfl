@@ -124,4 +124,5 @@ class MLP(L.LightningModule):
 # Export P2PFL model
 def model_build_fn(*args, **kwargs) -> LightningModel:
     """Export the model build function."""
-    return LightningModel(MLP(*args, **kwargs))
+    compression = kwargs.pop("compression", None)
+    return LightningModel(MLP(*args, **kwargs), compression=compression)

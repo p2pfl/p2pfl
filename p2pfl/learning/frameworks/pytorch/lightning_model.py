@@ -18,7 +18,7 @@
 
 """Convolutional Neural Network (for MNIST) with PyTorch Lightning."""
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, List, Optional, Union
 
 import lightning as L
 import numpy as np
@@ -43,19 +43,21 @@ class LightningModel(P2PFLModel):
         num_samples: The number of samples.
         contributors: The contributors of the model.
         additional_info: Additional information.
+        compression: Optional dictionary for compression settings.
 
     """
 
     def __init__(
         self,
         model: L.LightningModule,
-        params: Optional[Union[List[np.ndarray], bytes]] = None,
+        params: Optional[Union[list[np.ndarray], bytes]] = None,
         num_samples: Optional[int] = None,
-        contributors: Optional[List[str]] = None,
-        additional_info: Optional[Dict[str, Any]] = None,
+        contributors: Optional[list[str]] = None,
+        additional_info: Optional[dict[str, Any]] = None,
+        compression: Optional[dict[str, dict[str, Any]]] = None,
     ) -> None:
         """Initialize the model."""
-        super().__init__(model, params, num_samples, contributors, additional_info)
+        super().__init__(model, params, num_samples, contributors, additional_info, compression)
 
     def get_parameters(self) -> List[np.ndarray]:
         """

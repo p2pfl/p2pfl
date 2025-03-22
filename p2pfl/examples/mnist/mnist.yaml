@@ -45,14 +45,15 @@ experiment:
   model:
     package: "p2pfl.examples.mnist.model.mlp_pytorch" # mlp_pytorch | mlp_tensorflow
     model_build_fn: "model_build_fn"
-    params: {}  # Learning algorithm parameters (algorithm-specific)
-    compression:
-      ptq:
-        dtype: "int8"
-      topk:
-        k: 0.1
-      zlib:
-        level: 6
+    params: {}  
+    # Learning algorithm parameters (algorithm-specific)
+    #compression:
+    #  ptq:
+    #    dtype: "int8"
+    #  topk:
+    #    k: 0.1
+    #  zlib:
+    #    level: 6
 
 
   # Aggregation algorithm configuration

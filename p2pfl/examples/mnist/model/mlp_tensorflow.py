@@ -32,6 +32,7 @@ from p2pfl.utils.seed import set_seed
 ####
 
 
+@tf.keras.utils.register_keras_serializable("p2pfl")
 class MLP(tf.keras.Model):
     """Multilayer Perceptron (MLP) for MNIST classification using Keras."""
 
@@ -74,4 +75,5 @@ class MLP(tf.keras.Model):
 # Export P2PFL model
 def model_build_fn(*args, **kwargs) -> KerasModel:
     """Export the model build function."""
-    return KerasModel(MLP(*args, **kwargs))  # type: ignore
+    compression = kwargs.pop("compression", None)
+    return KerasModel(MLP(*args, **kwargs), compression=compression)  # type: ignore
