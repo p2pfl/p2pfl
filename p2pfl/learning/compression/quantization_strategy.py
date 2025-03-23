@@ -37,7 +37,7 @@
 
 """Post-Training Quantization (PTQ) compression strategy."""
 
-from typing import Literal
+from typing import Literal, Union
 
 import numpy as np
 
@@ -120,8 +120,8 @@ class PTQuantization(TensorCompressor):
 
         # For integer quantization, we need to scale properly
         quantized_params = []
-        scales = []
-        zero_points = []
+        scales: list[Union[float, np.ndarray]] = []  # Updated typing to allow both scalar and array
+        zero_points: list[Union[int, np.ndarray]] = []  # Updated typing to allow both scalar and array
 
         for param in params:
             if granularity == "per_tensor":
@@ -192,7 +192,7 @@ class PTQuantization(TensorCompressor):
             raise ValueError(f"Unsupported quantization granularity: {granularity}")
 
         # Get channel_axis for per_channel quantization
-        channel_axis = additional_info.get("ptq_channel_axis")
+        channel_axis = additional_info["ptq_channel_axis"]
         if granularity == "per_channel" and channel_axis is None:
             raise ValueError("Missing 'ptq_channel_axis' for per_channel dequantization")
 
@@ -532,14 +532,15 @@ class PTQuantization(TensorCompressor):
         for c in range(len(scales)):
             channel_tensor = transposed_tensor[c]
             scale = scales[c]
+            scale_value = float(scale)
             zero_point = zero_points[c]
 
             # Validate scale and zero_point
             if not np.isscalar(scale) or not np.isfinite(scale):
-                raise ValueError(f"Invalid scale factor at index {c}: {scale}. Scale must be a finite number.")
+                raise ValueError(f"Invalid scale factor at index {c}: {scale_value}. Scale must be a finite number.")
 
-            if scale <= 0:
-                raise ValueError(f"Invalid scale factor at index {c}: {scale}. Scale must be positive.")
+            if scale_value <= 0:
+                raise ValueError(f"Invalid scale factor at index {c}: {scale_value}. Scale must be positive.")
 
             if not isinstance(zero_point, (int, np.integer)):
                 raise ValueError(f"Invalid zero point at index {c}: {zero_point}. Zero point must be an integer.")

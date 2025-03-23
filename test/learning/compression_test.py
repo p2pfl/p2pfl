@@ -34,6 +34,7 @@ from p2pfl.learning.compression.zlib_strategy import ZlibCompressor
 # PTQuantization
 ####
 
+
 @pytest.fixture
 def ptq_compressor():
     """Return an instance of PTQuantization."""
@@ -251,9 +252,11 @@ def test_ptq_compression_ratio(ptq_compressor):
     # Expected ratio for float32 to int8 should be around 4
     assert 3.5 <= compression_ratio <= 4.5
 
+
 ###
 # TopK
 ###
+
 
 @pytest.mark.parametrize("sample_k", [0.1, 0.5, 1.0])
 def test_topk_sparsification(sample_k: float):
@@ -282,9 +285,11 @@ def test_topk_sparsification(sample_k: float):
     for orig, decomp in zip(original_params, decompressed_parameters):
         assert orig.shape == decomp.shape, "Decompressed shape does not match original"
 
+
 ###
 # ZLIB
 ###
+
 
 @pytest.mark.parametrize("level", [1, 5])
 def test_zlib(level: int):
@@ -303,9 +308,11 @@ def test_zlib(level: int):
     decompressed_bytes = technique.reverse_strategy(compressed_bytes)
     assert decompressed_bytes == original_bytes
 
+
 ###
 # LoRa
 ###
+
 
 @pytest.mark.parametrize("threshold", [0.5, 0.7])
 def test_lowrank(threshold: float):
@@ -340,9 +347,11 @@ def test_lowrank(threshold: float):
         else:
             np.testing.assert_array_equal(orig, decomp, err_msg="Non-compressed layer has changed.")
 
+
 ###
 # Manager test
 ###
+
 
 def test_manager():
     """Test the compression manager."""
