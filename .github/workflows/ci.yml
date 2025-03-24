@@ -61,7 +61,9 @@ jobs:
           name: Coveragenator
           path: python-coverage-comment-action.txt
 
+    post:
       - name: Upload logs
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: logs
