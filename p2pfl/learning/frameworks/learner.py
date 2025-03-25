@@ -42,7 +42,8 @@ class Learner(ABC):
     """
 
     def __init__(
-        self, model: P2PFLModel, data: P2PFLDataset, self_addr: str = "unknown-node", aggregator: Optional[Aggregator] = None
+        self, model: P2PFLModel, data: P2PFLDataset, self_addr: str = "unknown-node", aggregator: Optional[Aggregator] = None,
+        steps_per_epoch: int = None,
     ) -> None:
         """Initialize the learner."""
         self.model: P2PFLModel = model
@@ -52,6 +53,7 @@ class Learner(ABC):
         if aggregator:
             self.callbacks = CallbackFactory.create_callbacks(framework=self.get_framework(), aggregator=aggregator)
         self.epochs: int = 1  # Default epochs
+        self.steps_per_epoch: int = steps_per_epoch
 
     def set_addr(self, addr: str) -> None:
         """

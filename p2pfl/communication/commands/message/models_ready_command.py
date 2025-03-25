@@ -18,17 +18,23 @@
 
 """ModelsReady command."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from p2pfl.communication.commands.command import Command
 from p2pfl.management.logger import logger
-from p2pfl.node_state import NodeState
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from p2pfl.node import Node
 
 
 class ModelsReadyCommand(Command):
     """ModelsReady command."""
 
-    def __init__(self, state: NodeState) -> None:
+    def __init__(self, node: Node) -> None:
         """Initialize the command."""
-        self.state = state
+        self._node = node
 
     @staticmethod
     def get_name() -> str:
@@ -49,14 +55,14 @@ class ModelsReadyCommand(Command):
         ########################################################
         # try to improve clarity in message moment check
         ########################################################
-        if self.state.round is not None:
-            if round in [self.state.round - 1, self.state.round]:
-                self.state.nei_status[source] = self.state.round
+        if self._node.state.round is not None:
+            if round in [self._node.state.round - 1, self._node.state.round]:
+                self._node.state.nei_status[source] = self._node.state.round
             else:
                 # Ignored
                 logger.error(
-                    self.state.addr,
-                    f"Models ready from {source} in a late round. Ignored. {round} " + f"!= {self.state.round} / {self.state.round-1}",
+                    self._node.state.addr,
+                    f"Models ready from {source} in a late round. Ignored. {round} " + f"!= {self._node.state.round} / {self._node.state.round-1}",
                 )
         else:
-            logger.warning(self.state.addr, "Models ready received when learning is not running")
+            logger.warning(self._node.state.addr, "Models ready received when learning is not running")

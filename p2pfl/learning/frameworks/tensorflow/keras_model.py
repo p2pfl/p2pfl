@@ -29,6 +29,9 @@ from tensorflow.keras.optimizers import Adam  # type: ignore
 from p2pfl.learning.frameworks import Framework
 from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
+from p2pfl.learning.frameworks.tensorflow.custom_models.custom_model_factory import KerasCustomModelFactory
+
+from p2pfl.management.logger import logger
 
 #####################
 #    KerasModel     #
@@ -111,6 +114,36 @@ class KerasModel(P2PFLModel):
 
         """
         return Framework.TENSORFLOW.value
+
+    def get_model(self) -> tf.keras.Model:
+        """
+        Retrieve the model.
+
+        Returns:
+            The model.
+
+        """
+        return self.model
+
+    def clone_model(self) -> tf.keras.Model:
+        """
+        Clone the model.
+
+        Returns:
+            The cloned model.
+
+        """
+        return self.model.__class__.from_config(self.model.get_config())
+
+    def set_custom_model(self, type):
+        """
+        Set the custom model.
+
+        Args:
+            type: The type of the custom model.
+
+        """
+        self.model = KerasCustomModelFactory.create_model(type,self.model)
 
 
 ####

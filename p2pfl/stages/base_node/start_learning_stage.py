@@ -28,8 +28,8 @@ from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.settings import Settings
+from p2pfl.stages.base_node.stage_factory import SynDFLStageFactory
 from p2pfl.stages.stage import Stage
-from p2pfl.stages.stage_factory import StageFactory
 
 
 class StartLearningStage(Stage):
@@ -76,7 +76,7 @@ class StartLearningStage(Stage):
             time.sleep(wait_time)
 
         # Vote
-        return StageFactory.get_stage("VoteTrainSetStage")
+        return SynDFLStageFactory.get_stage("VoteTrainSetStage")
 
     @staticmethod
     def __gossip_model(

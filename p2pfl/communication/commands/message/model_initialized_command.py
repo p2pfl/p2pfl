@@ -18,17 +18,23 @@
 
 """ModelInitialized command."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from p2pfl.communication.commands.command import Command
-from p2pfl.node_state import NodeState
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from p2pfl.node import Node
 
 
 class ModelInitializedCommand(Command):
     """ModelInitialized command."""
 
-    def __init__(self, state: NodeState) -> None:
+    def __init__(self, node: Node) -> None:
         """Initialize the command."""
         super().__init__()
-        self.state = state
+        self._node = node
 
     @staticmethod
     def get_name() -> str:
@@ -45,4 +51,4 @@ class ModelInitializedCommand(Command):
             **kwargs: The command keyword arguments.
 
         """
-        self.state.nei_status[source] = -1
+        self._node.state.nei_status[source] = -1

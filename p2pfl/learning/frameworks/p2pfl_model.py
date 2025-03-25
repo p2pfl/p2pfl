@@ -193,3 +193,13 @@ class P2PFLModel:
 
         """
         raise NotImplementedError
+
+    def set_custom_model(self, type: str) -> None:
+        """
+        Set the custom model.
+
+        Args:
+            type: The type of model.
+
+        """
+        pass

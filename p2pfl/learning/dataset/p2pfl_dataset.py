@@ -119,6 +119,7 @@ class P2PFLDataset:
         self._train_split_name = train_split_name
         self._test_split_name = test_split_name
         self._transforms = transforms
+        self._current_minibatch_idx = 0
 
     def get(self, idx, train: bool = True) -> Dict[str, Any]:
         """
@@ -225,6 +226,8 @@ class P2PFLDataset:
         self,
         strategy: Type[DataExportStrategy],
         train: bool = True,
+        num_minibatches: Optional[int] = None,
+        batch_size: int = 32,
         **kwargs,
     ) -> Any:
         """
@@ -233,6 +236,8 @@ class P2PFLDataset:
         Args:
             strategy: The export strategy to use.
             train: If True, export the training data. Otherwise, export the test data.
+            num_minibatches: The number of minibatches to export.
+            batch_size: The batch size for the exported data.
             **kwargs: Additional keyword arguments for the export strategy.
 
         Returns:
@@ -245,7 +250,17 @@ class P2PFLDataset:
 
         # Export
         split = self._train_split_name if train else self._test_split_name
-        return strategy.export(self._data[split], transforms=self._transforms, **kwargs)
+        dataset = self._data[split]
+
+        if num_minibatches is not None:
+            start_idx = self._current_minibatch_idx * batch_size
+            end_idx = start_idx + (num_minibatches * batch_size)
+            minibatch = dataset.select(range(start_idx, min(end_idx, len(dataset))))
+            self._current_minibatch_idx = end_idx // batch_size  # Update pointer
+            return strategy.export(minibatch, transforms=self._transforms, **kwargs)
+
+        return strategy.export(dataset, transforms=self._transforms, **kwargs)
+
 
     @classmethod
     def from_csv(cls, data_files: DataFilesType, **kwargs) -> "P2PFLDataset":

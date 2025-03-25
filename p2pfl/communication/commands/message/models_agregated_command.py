@@ -18,17 +18,23 @@
 
 """ModelsAggregated command."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from p2pfl.communication.commands.command import Command
 from p2pfl.management.logger import logger
-from p2pfl.node_state import NodeState
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from p2pfl.node import Node
 
 
 class ModelsAggregatedCommand(Command):
     """ModelsAggregated command."""
 
-    def __init__(self, state: NodeState) -> None:
+    def __init__(self, node: Node) -> None:
         """Initialize the command."""
-        self.state = state
+        self._node = node
 
     @staticmethod
     def get_name() -> str:
@@ -46,11 +52,11 @@ class ModelsAggregatedCommand(Command):
             **kwargs: The command keyword arguments.
 
         """
-        if round == self.state.round:
+        if round == self._node.state.round:
             # esto meterlo en estado o agg
-            self.state.models_aggregated[source] = list(args)
+            self._node.state.models_aggregated[source] = list(args)
         else:
             logger.debug(
-                self.state.addr,
-                f"Models Aggregated message from {source} in a late round. Ignored. {round} != {self.state.round}",
+                self._node.state.addr,
+                f"Models Aggregated message from {source} in a late round. Ignored. {round} != {self._node.state.round}",
             )

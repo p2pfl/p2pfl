@@ -18,18 +18,23 @@
 
 """StartLearning command."""
 
-from typing import Callable, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
 
 from p2pfl.communication.commands.command import Command
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from p2pfl.node import Node
 
 
 class StartLearningCommand(Command):
     """StartLearning command."""
 
-    def __init__(self, start_learning_fn: Callable[[int, int], None]) -> None:
+    def __init__(self, node: Node) -> None:
         """Initialize the command."""
         super().__init__()
-        self.__learning_fn = start_learning_fn
+        self.__node = node
 
     @staticmethod
     def get_name() -> str:
@@ -57,4 +62,4 @@ class StartLearningCommand(Command):
         """
         if learning_rounds is None or learning_epochs is None:
             raise ValueError("Learning rounds and epochs are required")
-        self.__learning_fn(int(learning_rounds), int(learning_epochs))
+        self.__node.start_learning_thread(int(learning_rounds), int(learning_epochs))

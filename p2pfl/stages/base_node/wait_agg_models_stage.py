@@ -24,8 +24,8 @@ from p2pfl.communication.protocols.communication_protocol import CommunicationPr
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.settings import Settings
+from p2pfl.stages.base_node.stage_factory import SynDFLStageFactory
 from p2pfl.stages.stage import Stage
-from p2pfl.stages.stage_factory import StageFactory
 
 
 class WaitAggregatedModelsStage(Stage):
@@ -64,4 +64,4 @@ class WaitAggregatedModelsStage(Stage):
         # Share that aggregation is done
         communication_protocol.broadcast(communication_protocol.build_msg(ModelsReadyCommand.get_name(), [], round=state.round))
 
-        return StageFactory.get_stage("GossipModelStage")
+        return SynDFLStageFactory.get_stage("GossipModelStage")

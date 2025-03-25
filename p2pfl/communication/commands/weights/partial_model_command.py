@@ -18,16 +18,17 @@
 
 """PartialModelCommand command."""
 
-from typing import Callable, List, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, List, Optional
 
 from p2pfl.communication.commands.command import Command
 from p2pfl.communication.commands.message.models_agregated_command import ModelsAggregatedCommand
-from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
-from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.frameworks.exceptions import DecodingParamsError, ModelNotMatchingError
-from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.management.logger import logger
-from p2pfl.node_state import NodeState
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from p2pfl.node import Node
 
 
 class PartialModelCommand(Command):
@@ -35,18 +36,10 @@ class PartialModelCommand(Command):
 
     def __init__(
         self,
-        state: NodeState,
-        stop: Callable[[], None],
-        aggregator: Aggregator,
-        comm_proto: CommunicationProtocol,
-        learner: Learner,
+        node: Node
     ) -> None:
         """Initialize PartialModelCommand."""
-        self.state = state
-        self.stop = stop
-        self.aggregator = aggregator
-        self.communication_protocol = comm_proto
-        self.laerner = learner
+        self.__node = node
 
     @staticmethod
     def get_name() -> str:
@@ -67,46 +60,46 @@ class PartialModelCommand(Command):
             raise ValueError("Weights, contributors and weight are required")
 
         # Check if Learning is running
-        if self.state.round is not None:
+        if self.__node.state.round is not None:
             # Check source
-            if round != self.state.round:
+            if round != self.__node.state.round:
                 logger.debug(
-                    self.state.addr,
-                    f"Model reception in a late round ({round} != {self.state.round}).",
+                    self.__node.state.addr,
+                    f"Model reception in a late round ({round} != {self.__node.state.round}).",
                 )
                 return
 
             # Check moment (not init and invalid round)
-            if len(self.state.train_set) == 0:
-                logger.error(self.state.addr, "Model Reception when there is no trainset")
+            if len(self.__node.state.train_set) == 0:
+                logger.error(self.__node.state.addr, "Model Reception when there is no trainset")
                 return
 
             try:
                 # Add model to aggregator
-                model = self.laerner.get_model().build_copy(params=weights, num_samples=num_samples, contributors=list(contributors))
-                models_added = self.aggregator.add_model(model)
+                model = self.__node.learner.get_model().build_copy(params=weights, num_samples=num_samples, contributors=list(contributors))
+                models_added = self.__node.aggregator.add_model(model)
                 if models_added != []:
                     # Communicate Aggregation
-                    self.communication_protocol.broadcast(
-                        self.communication_protocol.build_msg(
+                    self.__node._communication_protocol.broadcast(
+                        self.__node._communication_protocol.build_msg(
                             ModelsAggregatedCommand.get_name(),
                             models_added,
-                            round=self.state.round,
+                            round=self.__node.state.round,
                         )
                     )
 
             # Warning: these stops can cause a denegation of service attack
             except DecodingParamsError:
-                logger.error(self.state.addr, "Error decoding parameters.")
-                self.stop()
+                logger.error(self.__node.state.addr, "Error decoding parameters.")
+                self.__node.stop()
 
             except ModelNotMatchingError:
-                logger.error(self.state.addr, "Models not matching.")
-                self.stop()
+                logger.error(self.__node.state.addr, "Models not matching.")
+                self.__node.stop()
 
             except Exception as e:
-                logger.error(self.state.addr, f"Unknown error adding model: {e}")
-                self.stop()
+                logger.error(self.__node.state.addr, f"Unknown error adding model: {e}")
+                self.__node.stop()
 
         else:
-            logger.debug(self.state.addr, "Tried to add a model while learning is not running")
+            logger.debug(self.__node.state.addr, "Tried to add a model while learning is not running")

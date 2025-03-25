@@ -18,25 +18,23 @@
 
 """FullModelCommand."""
 
-from typing import Callable, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
 
 from p2pfl.communication.commands.command import Command
-from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.frameworks.exceptions import DecodingParamsError, ModelNotMatchingError
-from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.management.logger import logger
-from p2pfl.node_state import NodeState
 
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from p2pfl.node import Node
 
 class FullModelCommand(Command):
     """FullModelCommand."""
 
-    def __init__(self, state: NodeState, stop: Callable[[], None], aggregator: Aggregator, learner: Learner) -> None:
+    def __init__(self, node: Node) -> None:
         """Initialize FullModelCommand."""
-        self.state = state
-        self.stop = stop
-        self.aggregator = aggregator
-        self.learner = learner
+        self.__node = node
 
     @staticmethod
     def get_name() -> str:
@@ -55,35 +53,35 @@ class FullModelCommand(Command):
             raise ValueError("Weights, contributors and weight are required")
 
         # Check if Learning is running
-        if self.state.round is not None:
+        if self.__node.state.round is not None:
             # Check source
-            if round != self.state.round:
+            if round != self.__node.state.round:
                 logger.debug(
-                    self.state.addr,
-                    f"Model reception in a late round ({round} != {self.state.round}).",
+                    self.__node.state.addr,
+                    f"Model reception in a late round ({round} != {self.__node.state.round}).",
                 )
                 return
-            if self.state.aggregated_model_event.is_set():
-                logger.debug(self.state.addr, "😲 Aggregated model not expected.")
+            if self.__node.state.aggregated_model_event.is_set():
+                logger.debug(self.__node.state.addr, "😲 Aggregated model not expected.")
                 return
             try:
-                logger.info(self.state.addr, "📦 Aggregated model received.")
+                logger.info(self.__node.state.addr, "📦 Aggregated model received.")
                 # Decode and set model
-                self.learner.set_model(weights)
+                self.__node.learner.set_model(weights)
                 # Release here caused the simulation to crash before
-                self.state.aggregated_model_event.set()
+                self.__node.state.aggregated_model_event.set()
 
             # Warning: these stops can cause a denegation of service attack
             except DecodingParamsError:
-                logger.error(self.state.addr, "❌ Error decoding parameters.")
-                self.stop()
+                logger.error(self.__node.state.addr, "❌ Error decoding parameters.")
+                self.__node.stop()
 
             except ModelNotMatchingError:
-                logger.error(self.state.addr, "❌ Models not matching.")
-                self.stop()
+                logger.error(self.__node.state.addr, "❌ Models not matching.")
+                self.__node.stop()
 
             except Exception as e:
-                logger.error(self.state.addr, f"❌ Unknown error adding model: {e}")
-                self.stop()
+                logger.error(self.__node.state.addr, f"❌ Unknown error adding model: {e}")
+                self.__node.stop()
         else:
-            logger.debug(self.state.addr, "❌ Tried to add a model while learning is not running")
+            logger.debug(self.__node.state.addr, "❌ Tried to add a model while learning is not running")

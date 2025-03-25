@@ -15,16 +15,4 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-
-"""Stage factory."""
-
-from p2pfl.stages.stage import Stage
-
-
-class StageFactory:
-    """Factory class to create stages."""
-
-    @staticmethod
-    def get_stage(stage_name: str) -> type[Stage]:
-        """Return the stage class."""
-        raise NotImplementedError
+"""Tensorflow custom models for federated learning."""

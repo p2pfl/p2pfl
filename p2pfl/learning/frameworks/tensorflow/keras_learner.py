@@ -51,7 +51,7 @@ class KerasLearner(Learner):
         super().__init__(model, data, self_addr, aggregator)
         self.callbacks.append(FederatedLogger(self_addr))
         self.model.model.compile(
-            optimizer=self.model.model.optimizer,
+            optimizer=self.model.get_model().optimizer,
             loss=self.model.model.loss,
             metrics=["sparse_categorical_accuracy"],
         )
@@ -67,6 +67,48 @@ class KerasLearner(Learner):
             raise ValueError("The data must be a TensorFlow Dataset")
         return tf_model, data
 
+    # def __get_tf_model(self) -> tf.keras.Model:
+    #     # Get Model
+    #     tf_model = self.model.get_model()
+    #     if not isinstance(tf_model, tf.keras.Model):
+    #         raise ValueError("The model must be a TensorFlow Keras model")
+    #     return tf_model
+
+    # def __get_tf_data(self, train: bool = True) -> tf.data.Dataset:
+    #     # Get Data
+    #     data = self.data.export(KerasExportStrategy, train=train, num_minibatches=self.num_minibatches,
+    #                             mini_batch_size=self.batch_size)
+    #     if not isinstance(data, tf.data.Dataset):
+    #         raise ValueError("The data must be a TensorFlow Dataset")
+    #     return data
+
+    # def fit(self) -> P2PFLModel:
+    #     """Fit the model using either full epochs or minibatches."""
+    #     try:
+    #         model = self.__get_tf_model()
+    #         data = self.__get_tf_data(train=True)
+
+    #         steps_per_epoch = self.data.get_num_samples(train=True) // self.num_minibatches
+    #         for _ in range(self.epochs):
+    #             for _ in range(steps_per_epoch):
+    #                 data = self.__get_tf_data(train=True)
+    #                 model.fit(
+    #                     data,
+    #                     epochs=1,
+    #                     callbacks=self.callbacks,  # type: ignore
+    #                 )
+
+    #         # Set model contribution
+    #         self.model.set_contribution([self._self_addr], self.data.get_num_samples(train=True))
+
+    #         # Set callback info
+    #         self.add_callback_info_to_model()
+
+    #         return self.model
+    #     except Exception as e:
+    #         logger.error(self._self_addr, f"Error in training with Keras: {e}")
+    #         raise e
+
     def fit(self) -> P2PFLModel:
         """Fit the model."""
         try:
@@ -76,6 +118,7 @@ class KerasLearner(Learner):
                     data,
                     epochs=self.epochs,
                     callbacks=self.callbacks,  # type: ignore
+                    steps_per_epoch=self.steps_per_epoch,
                 )
 
             # Set model contribution
@@ -85,6 +128,56 @@ class KerasLearner(Learner):
             self.add_callback_info_to_model()
 
             return self.model
+        except Exception as e:
+            logger.error(self._self_addr, f"Error in training with Keras: {e}")
+            raise e
+
+    def fit_on_minibatch(self) -> P2PFLModel:
+        """Fit the model on a single minibatch."""
+        try:
+            if self.epochs > 0:
+                # Obtain the model and data
+                model, data = self.__get_tf_model_data(train=True)
+
+                # Initialize the data iterator if not already initialized
+                if self.data_iterator is None:
+                    self.data_iterator = iter(data)
+
+                # Fetch the next minibatch using the iterator
+                try:
+                    minibatch = next(self.data_iterator)  # Get the next batch
+                except StopIteration:
+                    # Reset iterator if the end of the dataset is reached
+                    self.data_iterator = iter(data)
+                    minibatch = next(self.data_iterator)
+
+                x_batch, y_batch = minibatch  # Unpack features and labels
+                with tf.GradientTape() as tape:  # Record operations for gradients
+                    # Perform a forward pass and compute predictions
+                    predictions = model(x_batch, training=True)
+
+                    # Compute the loss for the minibatch
+                    loss = model.compiled_loss(
+                        y_true=y_batch,
+                        y_pred=predictions,
+                        regularization_losses=model.losses,
+                    )
+
+                # Apply gradients to update weights
+                gradients = tape.gradient(loss, model.trainable_variables)
+                model.optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+
+                # Log the loss value
+                #logger.info(f"Minibatch loss: {loss.numpy()}")
+
+            # Set model contribution
+            self.model.set_contribution([self._self_addr], self.data.get_num_samples(train=True))
+
+            # Set callback info
+            self.add_callback_info_to_model()
+
+            return self.model, loss
+
         except Exception as e:
             logger.error(self._self_addr, f"Error in training with Keras: {e}")
             raise e

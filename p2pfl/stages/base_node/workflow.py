@@ -17,14 +17,13 @@
 #
 
 """Stage factory."""
+from p2pfl.stages.base_node.stage_factory import SynDFLStageFactory
+from p2pfl.stages.workflows import StageWorkflow
 
-from p2pfl.stages.stage import Stage
 
+class BasicDFLWorkflow(StageWorkflow):
+    """Class to run a federated learning workflow."""
 
-class StageFactory:
-    """Factory class to create stages."""
-
-    @staticmethod
-    def get_stage(stage_name: str) -> type[Stage]:
-        """Return the stage class."""
-        raise NotImplementedError
+    def __init__(self) -> None:
+        """Initialize the federated learning workflow."""
+        super().__init__(SynDFLStageFactory.get_stage("StartLearningStage"))

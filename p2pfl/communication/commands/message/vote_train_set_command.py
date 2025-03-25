@@ -18,19 +18,24 @@
 
 """VoteTrainSetCommand."""
 
+from __future__ import annotations
+
 import contextlib
+from typing import TYPE_CHECKING
 
 from p2pfl.communication.commands.command import Command
 from p2pfl.management.logger import logger
-from p2pfl.node_state import NodeState
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from p2pfl.node import Node
 
 
 class VoteTrainSetCommand(Command):
     """VoteTrainSetCommand."""
 
-    def __init__(self, state: NodeState) -> None:
+    def __init__(self, node: Node) -> None:
         """Initialize the command."""
-        self.state = state
+        self._node = node
 
     @staticmethod
     def get_name() -> str:
@@ -51,24 +56,24 @@ class VoteTrainSetCommand(Command):
         ########################################################
         # try to improve clarity in message moment check
         ########################################################
-        if self.state.round is not None:
-            if round in [self.state.round, self.state.round + 1]:
+        if self._node.state.round is not None:
+            if round in [self._node.state.round, self._node.state.round + 1]:
                 # build vote dict
                 votes = args
                 tmp_votes = {}
                 for i in range(0, len(votes), 2):
                     tmp_votes[votes[i]] = int(votes[i + 1])
                 # set votes
-                self.state.train_set_votes_lock.acquire()
-                self.state.train_set_votes[source] = tmp_votes
-                self.state.train_set_votes_lock.release()
+                self._node.state.train_set_votes_lock.acquire()
+                self._node.state.train_set_votes[source] = tmp_votes
+                self._node.state.train_set_votes_lock.release()
                 # Communicate to the training process that a vote has been received
                 with contextlib.suppress(Exception):
-                    self.state.wait_votes_ready_lock.release()
+                    self._node.state.wait_votes_ready_lock.release()
             else:
                 logger.error(
-                    self.state.addr,
-                    f"Vote received in a late round. Ignored. {round} != {self.state.round} / {self.state.round+1}",
+                    self._node.state.addr,
+                    f"Vote received in a late round. Ignored. {round} != {self._node.state.round} / {self._node.state.round+1}",
                 )
         else:
-            logger.error(self.state.addr, "Vote received when learning is not running")
+            logger.error(self._node.state.addr, "Vote received when learning is not running")

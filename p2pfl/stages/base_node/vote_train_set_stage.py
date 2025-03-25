@@ -27,8 +27,8 @@ from p2pfl.communication.protocols.communication_protocol import CommunicationPr
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.settings import Settings
+from p2pfl.stages.base_node.stage_factory import SynDFLStageFactory
 from p2pfl.stages.stage import EarlyStopException, Stage, check_early_stop
-from p2pfl.stages.stage_factory import StageFactory
 
 
 class VoteTrainSetStage(Stage):
@@ -69,10 +69,10 @@ class VoteTrainSetStage(Stage):
 
             # Next stage
             if state.addr in state.train_set:
-                return StageFactory.get_stage("TrainStage")
+                return SynDFLStageFactory.get_stage("TrainStage")
             else:
                 logger.debug(state.addr, "Node not in train set. Proceeding to WaitAggregatedModelsStage.")
-                return StageFactory.get_stage("WaitAggregatedModelsStage")
+                return SynDFLStageFactory.get_stage("WaitAggregatedModelsStage")
         except EarlyStopException:
             return None
 

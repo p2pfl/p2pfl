@@ -25,8 +25,8 @@ from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
+from p2pfl.stages.base_node.stage_factory import SynDFLStageFactory
 from p2pfl.stages.stage import Stage, check_early_stop
-from p2pfl.stages.stage_factory import StageFactory
 
 
 class GossipModelStage(Stage):
@@ -50,7 +50,7 @@ class GossipModelStage(Stage):
             raise Exception("Invalid parameters on GossipModelStage.")
 
         GossipModelStage.__gossip_model_difusion(state, communication_protocol, learner)
-        return StageFactory.get_stage("RoundFinishedStage")
+        return SynDFLStageFactory.get_stage("RoundFinishedStage")
 
     @staticmethod
     def __gossip_model_difusion(

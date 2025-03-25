@@ -18,23 +18,24 @@
 
 """StopLearning command."""
 
+from __future__ import annotations
+
 import contextlib
+from typing import TYPE_CHECKING
 
 from p2pfl.communication.commands.command import Command
-from p2pfl.learning.aggregators.aggregator import Aggregator
-from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.management.logger import logger
-from p2pfl.node_state import NodeState
+
+if TYPE_CHECKING:  # Only imports the below statements during type checking
+    from p2pfl.node import Node
 
 
 class StopLearningCommand(Command):
     """StopLearning command."""
 
-    def __init__(self, state: NodeState, aggregator: Aggregator, learner: Learner) -> None:
+    def __init__(self, node: Node) -> None:
         """Initialize the command."""
-        self.state = state
-        self.aggregator = aggregator
-        self.learner = learner
+        self._node = node
 
     @staticmethod
     def get_name() -> str:
@@ -51,14 +52,14 @@ class StopLearningCommand(Command):
             **kwargs: The command keyword arguments.
 
         """
-        logger.info(self.state.addr, "Stopping learning received")
+        logger.info(self._node.state.addr, "Stopping learning received")
         # Leraner
-        self.learner.interrupt_fit()
+        self._node.learner.interrupt_fit()
         # Aggregator
-        self.aggregator.clear()
+        self._node.aggregator.clear()
         # State
-        self.state.clear()
-        logger.experiment_finished(self.state.addr)
+        self._node.state.clear()
+        logger.experiment_finished(self._node.state.addr)
         # Try to free wait locks
         with contextlib.suppress(Exception):
-            self.state.wait_votes_ready_lock.release()
+            self._node.state.wait_votes_ready_lock.release()

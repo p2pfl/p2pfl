@@ -28,8 +28,8 @@ from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregat
 from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
+from p2pfl.stages.base_node.stage_factory import SynDFLStageFactory
 from p2pfl.stages.stage import EarlyStopException, Stage, check_early_stop
-from p2pfl.stages.stage_factory import StageFactory
 
 
 class TrainStage(Stage):
@@ -95,7 +95,7 @@ class TrainStage(Stage):
             communication_protocol.broadcast(communication_protocol.build_msg(ModelsReadyCommand.get_name(), [], round=state.round))
 
             # Next stage
-            return StageFactory.get_stage("GossipModelStage")
+            return SynDFLStageFactory.get_stage("GossipModelStage")
         except EarlyStopException:
             return None
 

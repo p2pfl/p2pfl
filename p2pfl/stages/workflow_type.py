@@ -15,16 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Workflow enum."""
 
-"""Stage factory."""
-
-from p2pfl.stages.stage import Stage
+from enum import Enum
 
 
-class StageFactory:
-    """Factory class to create stages."""
+class WorkflowType(Enum):
+    """Workflow type enum."""
 
-    @staticmethod
-    def get_stage(stage_name: str) -> type[Stage]:
-        """Return the stage class."""
-        raise NotImplementedError
+    BASIC = "basic"
+    ASYNC = "async"

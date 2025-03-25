@@ -37,6 +37,7 @@ from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.settings import Settings
+from p2pfl.stages.workflow_type import WorkflowType
 from p2pfl.utils.topologies import TopologyFactory, TopologyType
 from p2pfl.utils.utils import wait_convergence, wait_to_finish
 
@@ -98,6 +99,7 @@ def __parse_args() -> argparse.Namespace:
     parser.add_argument("--protocol", type=str, help="The protocol to use.", default="grpc", choices=["grpc", "unix", "memory"])
     parser.add_argument("--framework", type=str, help="The framework to use.", default="pytorch", choices=["pytorch", "tensorflow", "flax"])
     parser.add_argument("--aggregator", type=str, help="The aggregator to use.", default="fedavg", choices=["fedavg", "scaffold"])
+    parser.add_argument("--workflow", type=str, help="The workflow to use", default="basic", choices=["basic", "async"])
     parser.add_argument("--profiling", action="store_true", help="Enable profiling.", default=False)
     parser.add_argument("--reduced_dataset", action="store_true", help="Use a reduced dataset just for testing.", default=False)
     parser.add_argument("--use_scaffold", action="store_true", help="Use the Scaffold aggregator.", default=False)
@@ -207,6 +209,7 @@ def mnist(
             address=address,
             simulation=True,
             aggregator=Scaffold() if aggregator == "scaffold" else None,
+            workflow=WorkflowType.ASYNC if args.workflow == "async" else WorkflowType.BASIC,
         )
         node.start()
         nodes.append(node)

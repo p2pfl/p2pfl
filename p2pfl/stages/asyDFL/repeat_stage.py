@@ -15,16 +15,32 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+"""Start learning stage."""
 
-"""Stage factory."""
+from typing import Optional, Type, Union
 
+from p2pfl.node_state import NodeState
+from p2pfl.stages.asyDFL.stage_factory import AsyDFLStageFactory
 from p2pfl.stages.stage import Stage
 
 
-class StageFactory:
-    """Factory class to create stages."""
+class RepeatStage(Stage): # TODO: Implement better graph structure
+    """Repeat stage."""
 
     @staticmethod
-    def get_stage(stage_name: str) -> type[Stage]:
-        """Return the stage class."""
-        raise NotImplementedError
+    def name():
+        """Return the name of the stage."""
+        return "RepeatStage"
+
+    @staticmethod
+    def execute(
+        state: Optional[NodeState] = None,
+        **kwargs,
+    ) -> Union[Type["Stage"], None]:
+        """Execute the stage."""
+        if state.round < state.total_rounds:
+            # Train
+            return AsyDFLStageFactory.get_stage("LocalTrainStage")
+        else:
+            # End
+            return AsyDFLStageFactory.get_stage("EndStage")

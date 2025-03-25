@@ -22,10 +22,9 @@ from typing import List, Optional, Type
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.stage import Stage, check_early_stop
-from p2pfl.stages.stage_factory import StageFactory
 
 
-class StageWokflow:
+class StageWorkflow:
     """Class to run a workflow of stages."""
 
     def __init__(self, first_stage: Type[Stage]) -> None:
@@ -50,11 +49,3 @@ class StageWokflow:
                 self.current_stage = next_stage
         else:
             raise ValueError("State not found in kwargs")
-
-
-class LearningWorkflow(StageWokflow):
-    """Class to run a federated learning workflow."""
-
-    def __init__(self) -> None:
-        """Initialize the federated learning workflow."""
-        super().__init__(StageFactory.get_stage("StartLearningStage"))

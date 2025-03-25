@@ -23,16 +23,9 @@ import threading
 import traceback
 from typing import Any, Dict, Optional, Type
 
-from p2pfl.communication.commands.message.metrics_command import MetricsCommand
 from p2pfl.communication.commands.message.model_initialized_command import ModelInitializedCommand
-from p2pfl.communication.commands.message.models_agregated_command import ModelsAggregatedCommand
-from p2pfl.communication.commands.message.models_ready_command import ModelsReadyCommand
 from p2pfl.communication.commands.message.start_learning_command import StartLearningCommand
 from p2pfl.communication.commands.message.stop_learning_command import StopLearningCommand
-from p2pfl.communication.commands.message.vote_train_set_command import VoteTrainSetCommand
-from p2pfl.communication.commands.weights.full_model_command import FullModelCommand
-from p2pfl.communication.commands.weights.init_model_command import InitModelCommand
-from p2pfl.communication.commands.weights.partial_model_command import PartialModelCommand
 from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
 from p2pfl.communication.protocols.grpc.grpc_communication_protocol import (
     GrpcCommunicationProtocol,
@@ -47,7 +40,8 @@ from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.learning.frameworks.simulation import try_init_learner_with_ray
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
-from p2pfl.stages.workflows import LearningWorkflow
+from p2pfl.stages.workflow_factory import WorkflowFactoryProducer
+from p2pfl.stages.workflow_type import WorkflowType
 
 # Disbalbe grpc log (pytorch causes warnings)
 if logger.get_level_name(logger.get_level()) != "DEBUG":
@@ -95,12 +89,19 @@ class Node:
         aggregator: Optional[Aggregator] = None,
         protocol: Type[CommunicationProtocol] = GrpcCommunicationProtocol,
         simulation: bool = False,
+        workflow: WorkflowType = WorkflowType.BASIC,
         **kwargs,
     ) -> None:
         """Initialize a node."""
-        # Communication protol
+        # Communication protocol
         self._communication_protocol = protocol(address)
         self.addr = self._communication_protocol.get_address()
+
+        # Workflow
+        workflow_factory = WorkflowFactoryProducer.get_factory(workflow)
+        self.learning_workflow = workflow_factory.create_workflow()
+        commands = workflow_factory.create_commands(self)
+        model = workflow_factory.create_model(model)
 
         # Callbacks
         self.aggregator = FedAvg() if aggregator is None else aggregator
@@ -115,22 +116,7 @@ class Node:
         self.state = NodeState(self.addr, simulation=simulation)
         self.simulation = simulation  # so far it does not contribute much
 
-        # Workflow
-        self.learning_workflow = LearningWorkflow()
-
-        # Commands
-        commands = [
-            StartLearningCommand(self.__start_learning_thread),
-            StopLearningCommand(self.state, self.aggregator, self.learner),
-            ModelInitializedCommand(self.state),
-            VoteTrainSetCommand(self.state),
-            ModelsAggregatedCommand(self.state),
-            ModelsReadyCommand(self.state),
-            MetricsCommand(self.state),
-            InitModelCommand(self.state, self.stop, self.aggregator, self.learner),
-            PartialModelCommand(self.state, self.stop, self.aggregator, self._communication_protocol, self.learner),
-            FullModelCommand(self.state, self.stop, self.aggregator, self.learner),
-        ]
+        # Communication Protocol
         self._communication_protocol.add_command(commands)
 
     #############################
@@ -330,7 +316,7 @@ class Node:
     #         Network Learning Management         #
     ###############################################
 
-    def __start_learning_thread(self, rounds: int, epochs: int) -> None:
+    def start_learning_thread(self, rounds: int, epochs: int) -> None:
         learning_thread = threading.Thread(
             target=self.__start_learning,
             args=(rounds, epochs),
@@ -367,7 +353,7 @@ class Node:
             # Broadcast initialize model
             self._communication_protocol.broadcast(self._communication_protocol.build_msg(ModelInitializedCommand.get_name()))
             # Learning Thread
-            self.__start_learning_thread(rounds, epochs)
+            self.start_learning_thread(rounds, epochs)
         else:
             logger.info(self.addr, "Learning already started")
 
