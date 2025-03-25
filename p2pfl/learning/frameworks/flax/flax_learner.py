@@ -50,26 +50,26 @@ class FlaxLearner(Learner):
 
     def __init__(
         self,
-        model: FlaxModel,
-        data: P2PFLDataset,
-        self_addr: str = "unknown-node",
+        model: Optional[P2PFLModel] = None,
+        data: Optional[P2PFLDataset] = None,
         aggregator: Optional[Aggregator] = None,
     ) -> None:
         """Initialize the FlaxLearner."""
-        super().__init__(model, data, self_addr, aggregator)
+        super().__init__(model, data, aggregator)
         # Initialize optimizer
         self.optimizer = optax.adam(learning_rate=1e-3)
         self.state = train_state.TrainState.create(
             apply_fn=self.flax_model.model.apply, params={"params": self.flax_model.model_params}, tx=self.optimizer
         )  # type: ignore
+        raise NotImplementedError("FlaxLearner is not yet implemented. HAY COSAS QUE ESTAN MAL")
 
     @property
     def flax_model(self) -> FlaxModel:
         """Retrieve the Flax model."""
-        return cast(FlaxModel, self.model)
+        return cast(FlaxModel, self.get_model())
 
     def __get_flax_data(self, train: bool = True) -> Tuple:
-        return self.data.export(FlaxExportStrategy, train=train)
+        return self.get_data().export(FlaxExportStrategy, train=train)
 
     @staticmethod
     def __calculate_loss_acc(state: train_state.TrainState, params: Dict, x: jnp.ndarray, y: jnp.ndarray):
@@ -125,17 +125,17 @@ class FlaxLearner(Learner):
                     avg_loss = total_loss / num_batches
                     avg_acc = total_acc / num_batches
                     # End of epoch: Log training progress
-                    logger.log_metric(self._self_addr, "epoch", epoch)
-                    logger.log_metric(self._self_addr, "loss", avg_loss)
-                    logger.log_metric(self._self_addr, "accuracy", avg_acc)
+                    logger.log_metric(self.addr, "epoch", epoch)
+                    logger.log_metric(self.addr, "loss", avg_loss)
+                    logger.log_metric(self.addr, "accuracy", avg_acc)
 
             # Set model contribution
-            self.flax_model.set_contribution([self._self_addr], self.data.get_num_samples(train=True))
+            self.flax_model.set_contribution([self.addr], self.get_data().get_num_samples(train=True))
 
             return self.flax_model
 
         except Exception as e:
-            logger.error(self._self_addr, f"Error in training with Flax: {e}")
+            logger.error(self.addr, f"Error in training with Flax: {e}")
             raise e
 
     def evaluate(self) -> Dict[str, float]:
@@ -156,19 +156,19 @@ class FlaxLearner(Learner):
                     accuracies.append(accuracy)
 
                 avg_accuracy = float(jnp.mean(jnp.array(accuracies)))
-                logger.log_metric(self._self_addr, "accuracy", avg_accuracy)
+                logger.log_metric(self.addr, "accuracy", avg_accuracy)
                 return {"accuracy": avg_accuracy}
             else:
                 return {}
         except Exception as e:
-            logger.error(self._self_addr, f"Evaluation error with Flax: {e}")
+            logger.error(self.addr, f"Evaluation error with Flax: {e}")
             raise e
 
     def interrupt_fit(self) -> None:
         """Interrupt the fit process."""
         # Flax doesn't have a direct way to interrupt fit.
         # Need to implement a custom callback or use a flag to stop training.
-        logger.error(self._self_addr, "Interrupting training (not fully implemented for Flax).")
+        logger.error(self.addr, "Interrupting training (not fully implemented for Flax).")
 
     def get_framework(self) -> str:
         """

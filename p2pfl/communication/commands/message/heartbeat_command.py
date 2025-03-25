@@ -21,7 +21,7 @@
 from typing import Optional
 
 from p2pfl.communication.commands.command import Command
-from p2pfl.communication.protocols.heartbeater import Heartbeater, heartbeater_cmd_name
+from p2pfl.communication.protocols.protobuff.heartbeater import Heartbeater, heartbeater_cmd_name
 
 
 class HeartbeatCommand(Command):

@@ -41,24 +41,23 @@ class VoteTrainSetStage(Stage):
 
     @staticmethod
     def execute(
+        trainset_size: Optional[int] = None,
         state: Optional[NodeState] = None,
         communication_protocol: Optional[CommunicationProtocol] = None,
+        generator: Optional[random.Random] = None,
         **kwargs,
     ) -> Union[Type["Stage"], None]:
         """Execute the stage."""
-        if state is None or communication_protocol is None:
+        if state is None or communication_protocol is None or trainset_size is None or generator is None:
             raise Exception("Invalid parameters on VoteTrainSetStage.")
-
-        # Update experiment
-        logger.round_started(state.addr, state.experiment)
 
         try:
             # Vote
-            VoteTrainSetStage.__vote(state, communication_protocol)
+            VoteTrainSetStage.__vote(trainset_size, state, communication_protocol, generator)
 
             # Aggregate votes
             state.train_set = VoteTrainSetStage.__validate_train_set(
-                VoteTrainSetStage.__aggregate_votes(state, communication_protocol),
+                VoteTrainSetStage.__aggregate_votes(trainset_size, state, communication_protocol),
                 state,
                 communication_protocol,
             )
@@ -77,17 +76,20 @@ class VoteTrainSetStage(Stage):
             return None
 
     @staticmethod
-    def __vote(state: NodeState, communication_protocol: CommunicationProtocol) -> None:
+    def __vote(trainset_size: int, state: NodeState, communication_protocol: CommunicationProtocol, generator: random.Random) -> None:
         # Vote (at least itself)
         candidates = list(communication_protocol.get_neighbors(only_direct=False))
         if state.addr not in candidates:
             candidates.append(state.addr)
         logger.debug(state.addr, f"👨‍🏫 {len(candidates)} candidates to train set")
 
+        # Order candidates to make a deterministic vote (based on the random seed)
+        candidates.sort()
+
         # Send vote
-        samples = min(Settings.TRAIN_SET_SIZE, len(candidates))
-        nodes_voted = random.sample(candidates, samples)
-        weights = [math.floor(random.randint(0, 1000) / (i + 1)) for i in range(samples)]
+        samples = min(trainset_size, len(candidates))
+        nodes_voted = generator.sample(candidates, samples)
+        weights = [math.floor(generator.randint(0, 1000) / (i + 1)) for i in range(samples)]
         votes = list(zip(nodes_voted, weights))
 
         # Adding votes
@@ -107,7 +109,7 @@ class VoteTrainSetStage(Stage):
         )
 
     @staticmethod
-    def __aggregate_votes(state: NodeState, communication_protocol: CommunicationProtocol) -> List[str]:
+    def __aggregate_votes(trainset_size: int, state: NodeState, communication_protocol: CommunicationProtocol) -> List[str]:
         logger.debug(state.addr, "⏳ Waiting other node votes.")
 
         # Get time
@@ -121,7 +123,7 @@ class VoteTrainSetStage(Stage):
             # Update time counters (timeout)
             count = count + (time.time() - begin)
             begin = time.time()
-            timeout = count > Settings.VOTE_TIMEOUT
+            timeout = count > Settings.training.VOTE_TIMEOUT
 
             # Clear non candidate votes
             state.train_set_votes_lock.acquire()
@@ -159,7 +161,7 @@ class VoteTrainSetStage(Stage):
                     results.items(), key=lambda x: x[0], reverse=True
                 )  # to equal solve of draw (node name alphabetical order)
                 results_ordered = sorted(results_ordered, key=lambda x: x[1], reverse=True)
-                top = min(len(results_ordered), Settings.TRAIN_SET_SIZE)
+                top = min(len(results_ordered), trainset_size)
                 results_ordered = results_ordered[0:top]
 
                 # Clear votes

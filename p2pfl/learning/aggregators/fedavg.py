@@ -33,9 +33,9 @@ class FedAvg(Aggregator):
     Paper: https://arxiv.org/abs/1602.05629.
     """
 
-    def __init__(self, node_name: str = "unknown") -> None:
+    def __init__(self) -> None:
         """Initialize the aggregator."""
-        super().__init__(node_name)
+        super().__init__()
         self.partial_aggregation = True
 
     def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
@@ -51,7 +51,7 @@ class FedAvg(Aggregator):
         """
         # Check if there are models to aggregate
         if len(models) == 0:
-            raise NoModelsToAggregateError(f"({self.node_name}) Trying to aggregate models when there is no models")
+            raise NoModelsToAggregateError(f"({self.addr}) Trying to aggregate models when there is no models")
 
         # Total Samples
         total_samples = sum([m.get_num_samples() for m in models])

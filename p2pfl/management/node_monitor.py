@@ -42,7 +42,7 @@ class NodeMonitor(threading.Thread):
         """Initialize the node monitor."""
         self.node_addr = node_addr
         self.metric_report_callback = metric_report_callback
-        self.period = Settings.RESOURCE_MONITOR_PERIOD
+        self.period = Settings.web.RESOURCE_MONITOR_PERIOD
         self.last_net_in = -1
         self.last_net_out = -1
         self.running = True

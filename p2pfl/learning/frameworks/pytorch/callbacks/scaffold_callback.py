@@ -19,7 +19,7 @@
 """Callback for SCAFFOLD operations (PyTorch Lighting)."""
 
 import copy
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import lightning as pl
 import numpy as np
@@ -39,12 +39,12 @@ class SCAFFOLDCallback(Callback, P2PFLCallback):
     def __init__(self) -> None:
         """Initialize the callback."""
         super().__init__()
-        self.c_i: List[torch.Tensor] = []
-        self.c: List[torch.Tensor] = []
-        self.initial_model_params: List[torch.Tensor] = []
+        self.c_i: list[torch.Tensor] = []
+        self.c: list[torch.Tensor] = []
+        self.initial_model_params: list[torch.Tensor] = []
         self.saved_lr: Optional[float] = None
         self.K: int = 0
-        self.additional_info: Dict[str, Any] = {}
+        self.additional_info: dict[str, Any] = {}
 
     @staticmethod
     def get_name() -> str:
@@ -60,11 +60,6 @@ class SCAFFOLDCallback(Callback, P2PFLCallback):
             pl_module: The model.
 
         """
-        # Update local model with global model
-        global_model_params = self.additional_info.get("global_model_params")
-        if global_model_params is not None:
-            self._set_parameters(pl_module, global_model_params)
-
         if not self.c_i:
             self.c_i = [torch.zeros_like(param) for param in self._get_parameters(pl_module)]
 
@@ -120,7 +115,7 @@ class SCAFFOLDCallback(Callback, P2PFLCallback):
 
         Args:
             trainer: The trainer
-            pl_module: The model.
+            pl_module:code The model.
 
         """
         if not self.initial_model_params or self.saved_lr is None:
@@ -144,10 +139,10 @@ class SCAFFOLDCallback(Callback, P2PFLCallback):
         self.additional_info["delta_y_i"] = delta_y_i_np
         self.additional_info["delta_c_i"] = delta_c_i_np
 
-    def _get_parameters(self, pl_module: pl.LightningModule) -> List[torch.Tensor]:
+    def _get_parameters(self, pl_module: pl.LightningModule) -> list[torch.Tensor]:
         return [param.cpu() for _, param in pl_module.state_dict().items()]
 
-    def _set_parameters(self, pl_module: pl.LightningModule, parameters: List[np.ndarray]) -> None:
+    def _set_parameters(self, pl_module: pl.LightningModule, parameters: list[np.ndarray]) -> None:
         """Set model parameters from a list of numpy arrays."""
         state_dict = pl_module.state_dict()
         for (name, _), param in zip(state_dict.items(), parameters):

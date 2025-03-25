@@ -33,26 +33,18 @@ def test_virtual_node_learner_initialization():
     """Test the initialization of the VirtualNodeLearner class."""
     learner = MagicMock(spec=Learner)
     addr = "test_addr"
-    virtual_learner = VirtualNodeLearner(learner, addr)
+    virtual_learner = VirtualNodeLearner(learner)
+    virtual_learner.set_addr(addr)
     assert virtual_learner.learner == learner
     assert isinstance(virtual_learner.actor_pool, SuperActorPool)
     assert virtual_learner.addr == addr
 
 
-def test_set_addr():
-    """Test the set_addr method of the VirtualNodeLearner class."""
-    learner = MagicMock(spec=Learner)
-    virtual_learner = VirtualNodeLearner(learner, "initial_addr")
-    new_addr = "new_addr"
-    virtual_learner.set_addr(new_addr)
-    learner.set_addr.assert_called_once_with(new_addr)
-    assert virtual_learner.addr == new_addr
-
-
 def test_set_model():
     """Test the set_model method of the VirtualNodeLearner class."""
     learner = MagicMock(spec=Learner)
-    virtual_learner = VirtualNodeLearner(learner, "test_addr")
+    virtual_learner = VirtualNodeLearner(learner)
+    virtual_learner.set_addr("test_addr")
     model = MagicMock(spec=P2PFLModel)
     virtual_learner.set_model(model)
     learner.set_model.assert_called_once_with(model)
@@ -61,7 +53,8 @@ def test_set_model():
 def test_get_model():
     """Test the get_model method of the VirtualNodeLearner class."""
     learner = MagicMock(spec=Learner)
-    virtual_learner = VirtualNodeLearner(learner, "test_addr")
+    virtual_learner = VirtualNodeLearner(learner)
+    virtual_learner.set_addr("test_addr")
     model = MagicMock(spec=P2PFLModel)
     learner.get_model.return_value = model
     result = virtual_learner.get_model()
@@ -72,7 +65,8 @@ def test_get_model():
 def test_set_data():
     """Test the set_data method of the VirtualNodeLearner class."""
     learner = MagicMock(spec=Learner)
-    virtual_learner = VirtualNodeLearner(learner, "test_addr")
+    virtual_learner = VirtualNodeLearner(learner)
+    virtual_learner.set_addr("test_addr")
     data = MagicMock(spec=P2PFLDataset)
     virtual_learner.set_data(data)
     learner.set_data.assert_called_once_with(data)
@@ -81,7 +75,8 @@ def test_set_data():
 def test_get_data():
     """Test the get_data method of the VirtualNodeLearner class."""
     learner = MagicMock(spec=Learner)
-    virtual_learner = VirtualNodeLearner(learner, "test_addr")
+    virtual_learner = VirtualNodeLearner(learner)
+    virtual_learner.set_addr("test_addr")
     data = MagicMock(spec=P2PFLDataset)
     learner.get_data.return_value = data
     result = virtual_learner.get_data()
@@ -92,7 +87,8 @@ def test_get_data():
 def test_set_epochs():
     """Test the set_epochs method of the VirtualNodeLearner class."""
     learner = MagicMock(spec=Learner)
-    virtual_learner = VirtualNodeLearner(learner, "test_addr")
+    virtual_learner = VirtualNodeLearner(learner)
+    virtual_learner.set_addr("test_addr")
     epochs = 10
     virtual_learner.set_epochs(epochs)
     learner.set_epochs.assert_called_once_with(epochs)
@@ -101,7 +97,8 @@ def test_set_epochs():
 def test_fit():
     """Test the fit method of the VirtualNodeLearner class."""
     learner = MagicMock(spec=Learner)
-    virtual_learner = VirtualNodeLearner(learner, "test_addr")
+    virtual_learner = VirtualNodeLearner(learner)
+    virtual_learner.set_addr("test_addr")
     model = MagicMock(spec=P2PFLModel)
     with patch.object(SuperActorPool, "submit_learner_job") as mock_submit_learner_job, patch.object(
         SuperActorPool, "get_learner_result", return_value=("test_addr", model)
@@ -117,7 +114,8 @@ def _test_interrupt_fit():
     """Test the interrupt_fit method of the VirtualNodeLearner class."""
     # TODO
     learner = MagicMock(spec=Learner)
-    virtual_learner = VirtualNodeLearner(learner, "test_addr")
+    virtual_learner = VirtualNodeLearner(learner)
+    virtual_learner.set_addr("test_addr")
     with patch.object(SuperActorPool, "submit") as mock_submit:
         virtual_learner.interrupt_fit()
         mock_submit.assert_called_once()
@@ -126,7 +124,8 @@ def _test_interrupt_fit():
 def test_evaluate():
     """Test the evaluate method of the VirtualNodeLearner class."""
     learner = MagicMock(spec=Learner)
-    virtual_learner = VirtualNodeLearner(learner, "test_addr")
+    virtual_learner = VirtualNodeLearner(learner)
+    virtual_learner.set_addr("test_addr")
     evaluation_result = {"accuracy": 0.9}
     with patch.object(SuperActorPool, "submit_learner_job") as mock_submit_learner_job, patch.object(
         SuperActorPool, "get_learner_result", return_value=("test_addr", evaluation_result)

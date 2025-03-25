@@ -25,6 +25,8 @@ import numpy as np
 import pandas as pd
 from datasets import Dataset  # type: ignore
 
+from p2pfl.settings import Settings  # type: ignore
+
 
 class DataPartitionStrategy:
     """
@@ -62,7 +64,7 @@ class RandomIIDPartitionStrategy(DataPartitionStrategy):
 
     @staticmethod
     def generate_partitions(
-        train_data: Dataset, test_data: Dataset, num_partitions: int, seed: int = 666, **kwargs
+        train_data: Dataset, test_data: Dataset, num_partitions: int, **kwargs
     ) -> Tuple[List[List[int]], List[List[int]]]:
         """
         Generate partitions of the dataset using random sampling.
@@ -71,7 +73,6 @@ class RandomIIDPartitionStrategy(DataPartitionStrategy):
             train_data: The training Dataset object to partition.
             test_data: The test Dataset object to partition.
             num_partitions: The number of partitions to create.
-            seed: The random seed to use for reproducibility.
             **kwargs: Additional keyword arguments that may be required by specific strategies.
 
         Returns:
@@ -81,16 +82,15 @@ class RandomIIDPartitionStrategy(DataPartitionStrategy):
 
         """
         return (
-            RandomIIDPartitionStrategy.__partition_data(train_data, seed, num_partitions),
-            RandomIIDPartitionStrategy.__partition_data(test_data, seed, num_partitions),
+            RandomIIDPartitionStrategy.__partition_data(train_data, num_partitions),
+            RandomIIDPartitionStrategy.__partition_data(test_data, num_partitions),
         )
 
     @staticmethod
-    def __partition_data(data: Dataset, seed: int, num_partitions: int) -> List[List[int]]:
+    def __partition_data(data: Dataset, num_partitions: int) -> List[List[int]]:
         # Shuffle the indices
         indices = list(range(len(data)))
-        random.seed(seed)
-        random.shuffle(indices)
+        random.Random(Settings.general.SEED).shuffle(indices)
 
         # Get partition sizes
         samples_per_partition = len(data) // num_partitions
@@ -118,7 +118,6 @@ class LabelSkewedPartitionStrategy(DataPartitionStrategy):
         train_data: Dataset,
         test_data: Dataset,
         num_partitions: int,
-        seed: int = 666,
         label_tag: str = "label",
         **kwargs,
     ) -> Tuple[List[List[int]], List[List[int]]]:
@@ -129,7 +128,6 @@ class LabelSkewedPartitionStrategy(DataPartitionStrategy):
             train_data: The training Dataset object to partition.
             test_data: The test Dataset object to partition.
             num_partitions: The number of partitions to create.
-            seed: The random seed to use for reproducibility.
             label_tag: The name of the column containing the labels.
             **kwargs: Additional keyword arguments that may be required by specific strategies.
 
@@ -145,14 +143,12 @@ class LabelSkewedPartitionStrategy(DataPartitionStrategy):
 
         # Partition the training data
         sorted_train_indices = train_data.sort("label")
-        random.seed(seed)
-        random.shuffle(sorted_train_indices)  # Shuffle within label groups
+        random.Random(Settings.general.SEED).shuffle(sorted_train_indices)  # Shuffle within label groups
         train_partitions = [sorted_train_indices[i::num_partitions].tolist() for i in range(num_partitions)]
 
         # Partition the test data
         sorted_test_indices = test_data.sort("label").indices
-        random.seed(seed)
-        random.shuffle(sorted_test_indices)  # Shuffle within label groups
+        random.Random(Settings.general.SEED).shuffle(sorted_test_indices)  # Shuffle within label groups
         test_partitions = [sorted_test_indices[i::num_partitions].tolist() for i in range(num_partitions)]
 
         return train_partitions, test_partitions
@@ -364,7 +360,6 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
         train_data: Dataset,
         test_data: Dataset,
         num_partitions: int,
-        seed: int = 666,
         label_tag: str = "label",
         alpha: Union[int, float, list[float]] = 1,
         min_partition_size: int = 2,
@@ -381,7 +376,6 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
             train_data: The training Dataset object to partition.
             test_data: The test Dataset object to partition.
             num_partitions: The number of partitions to create.
-            seed: The random seed to use for reproducibility.
             label_tag: The name of the column containing the labels.
             alpha: The alpha parameters of the dirichlet distribution
             min_partition_size: The minimum partition size allowed in train and test.
@@ -400,7 +394,7 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
         alpha = cls._preprocess_alpha(alpha, num_partitions)
         cls._check_num_partitions(num_partitions=num_partitions, len_smallest_dataset=min(len(train_data), len(test_data)))
 
-        random_generator = np.random.default_rng(seed=seed)
+        random_generator = np.random.default_rng(Settings.general.SEED)
         return cls._partition_data(
             data=train_data,
             label_tag=label_tag,

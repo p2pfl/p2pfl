@@ -68,6 +68,7 @@ class TrainStage(Stage):
             # Train
             logger.info(state.addr, "🏋️‍♀️ Training...")
             learner.fit()
+            logger.info(state.addr, "🎓 Training done.")
 
             check_early_stop(state)
 
@@ -154,7 +155,7 @@ class TrainStage(Stage):
             try:
                 model = aggregator.get_model(TrainStage.__get_aggregated_models(node, state))
             except NoModelsToAggregateError:
-                logger.info(state.addr, f"❔ No models to aggregate from {node}.")
+                logger.info(state.addr, f"❔ No models to aggregate for {node}.")
                 return None
             if state.round is None:
                 raise Exception("Round not initialized.")

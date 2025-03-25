@@ -24,6 +24,7 @@ import tensorflow as tf  # type: ignore
 from datasets import Dataset  # type: ignore
 
 from p2pfl.learning.dataset.p2pfl_dataset import DataExportStrategy
+from p2pfl.settings import Settings
 
 
 class KerasExportStrategy(DataExportStrategy):
@@ -33,7 +34,7 @@ class KerasExportStrategy(DataExportStrategy):
     def export(
         data: Dataset,
         transforms: Optional[Callable] = None,
-        batch_size: int = 1,
+        batch_size: Optional[int] = None,
         columns: Optional[List[str]] = None,
         label_cols: Optional[List[str]] = None,
         **kwargs,
@@ -60,6 +61,8 @@ class KerasExportStrategy(DataExportStrategy):
             columns = ["image"]
         if transforms is not None:
             raise NotImplementedError("Transforms are not yet supported for KerasExportStrategy.")
+        if not batch_size:
+            batch_size = Settings.training.DEFAULT_BATCH_SIZE
 
         # Export Keras dataset
         return data.to_tf_dataset(

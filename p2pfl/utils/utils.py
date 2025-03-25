@@ -36,29 +36,40 @@ Module to define constants for the p2pfl system.
 ###################
 
 
-def set_test_settings(disable_ray: bool = False) -> None:
-    """Set settings for testing."""
-    Settings.GRPC_TIMEOUT = 0.5
-    Settings.HEARTBEAT_PERIOD = 0.5
-    Settings.HEARTBEAT_TIMEOUT = 2
-    Settings.GOSSIP_PERIOD = 0
-    Settings.TTL = 10
-    Settings.GOSSIP_MESSAGES_PER_PERIOD = 100
-    Settings.AMOUNT_LAST_MESSAGES_SAVED = 100
-    Settings.GOSSIP_MODELS_PERIOD = 1
-    Settings.GOSSIP_MODELS_PER_ROUND = 4
-    Settings.GOSSIP_EXIT_ON_X_EQUAL_ROUNDS = 4
-    Settings.TRAIN_SET_SIZE = 4
-    Settings.VOTE_TIMEOUT = 60
-    Settings.AGGREGATION_TIMEOUT = 60
-    Settings.WAIT_HEARTBEATS_CONVERGENCE = 0.2 * Settings.HEARTBEAT_TIMEOUT
-    Settings.LOG_LEVEL = "DEBUG"
-    Settings.DISABLE_RAY = disable_ray
-    logger.set_level(Settings.LOG_LEVEL)  # Refresh (maybe already initialized)
+def set_standalone_settings() -> None:
+    """
+    Set settings for testing.
+
+    Important:
+        - HEARTBEAT PERIOD: Too high values can cause late node discovery/fault detection. Too low values can cause high CPU usage.
+        - GOSSIP PERIOD: Too low values can cause high CPU usage.
+        - TTL: Low TTLs can cause that some messages are not delivered.
+
+    """
+    Settings.general.GRPC_TIMEOUT = 10
+    Settings.heartbeat.PERIOD = 1
+    Settings.heartbeat.TIMEOUT = 10
+    Settings.heartbeat.WAIT_CONVERGENCE = 2
+    Settings.heartbeat.EXCLUDE_BEAT_LOGS = True
+    Settings.gossip.PERIOD = 0
+    Settings.gossip.TTL = 10
+    Settings.gossip.MESSAGES_PER_PERIOD = 9999999999
+    Settings.gossip.AMOUNT_LAST_MESSAGES_SAVED = 10000
+    Settings.gossip.MODELS_PERIOD = 2
+    Settings.gossip.MODELS_PER_ROUND = 4
+    Settings.gossip.EXIT_ON_X_EQUAL_ROUNDS = 10
+    Settings.training.VOTE_TIMEOUT = 60
+    Settings.training.AGGREGATION_TIMEOUT = 60
+    Settings.general.LOG_LEVEL = "INFO"
+    logger.set_level(Settings.general.LOG_LEVEL)  # Refresh (maybe already initialized)
 
 
 def wait_convergence(
-    nodes: List[Union[Node, CommunicationProtocol]], n_neis: int, wait: Union[int, float] = 5, only_direct: bool = False
+    nodes: list[Node | CommunicationProtocol],
+    n_neis: int,
+    wait: Union[int, float] = 5,
+    only_direct: bool = False,
+    debug: bool = False,
 ) -> None:
     """
     Wait until all nodes have n_neis neighbors.
@@ -68,6 +79,7 @@ def wait_convergence(
         n_neis: Number of neighbors.
         wait: Time to wait.
         only_direct: Only direct neighbors.
+        debug: Debug mode.
 
     Raises:
         AssertionError: If the condition is not met.
@@ -78,6 +90,11 @@ def wait_convergence(
         begin = time.time()
         if all(len(n.get_neighbors(only_direct=only_direct)) == n_neis for n in nodes):
             break
+        if debug:
+            logger.info(
+                "Waiting for convergence",
+                str([list(n.get_neighbors(only_direct=only_direct).keys()) for n in nodes]),
+            )
         time.sleep(0.1)
         acum += time.time() - begin
         if acum > wait:

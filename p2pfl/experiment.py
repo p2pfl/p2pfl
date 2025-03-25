@@ -49,7 +49,6 @@ class Experiment:
         """
         if self.round is None:
             raise ValueError("Round not initialized")
-
         self.round += 1
 
     def self(self, param_name, param_val=None):

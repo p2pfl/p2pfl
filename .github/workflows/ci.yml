@@ -8,6 +8,7 @@ jobs:
   build:
     name: Build and test
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       pull-requests: write
       contents: write
@@ -22,7 +23,7 @@ jobs:
       - name: Install dependencies (poetry)
         run: |
           pip install poetry
-          python -m poetry lock --no-update
+          python -m poetry lock
           python -m poetry install --all-extras
 
       - name: Format (ruff)
@@ -59,3 +60,10 @@ jobs:
         with:
           name: Coveragenator
           path: python-coverage-comment-action.txt
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: logs

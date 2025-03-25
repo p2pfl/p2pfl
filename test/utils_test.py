@@ -22,6 +22,7 @@ from unittest.mock import MagicMock, call
 import numpy as np
 import pytest
 
+from p2pfl.utils.node_component import NodeComponent, allow_no_addr_check
 from p2pfl.utils.topologies import TopologyFactory, TopologyType
 
 
@@ -87,6 +88,49 @@ def test_connect_nodes(adjacency_matrix, expected_calls):
 
 def test_invalid_topology_type():
     """Test that an exception is raised when an invalid topology type is passed."""
-    with pytest.raises(TypeError) as excinfo:
-        TopologyFactory.generate_matrix("invalid_type", 4)  # Pass a string, not enum
-    assert str(excinfo.value) == "topology_type must be a TopologyType enum member"
+    with pytest.raises(ValueError):
+        TopologyFactory.generate_matrix("invalid_type", 4)
+
+
+class MockNodeComponent(NodeComponent):
+    """Mock class inheriting from NodeComponent for testing."""
+
+    def __init__(self):
+        """Initialize the mock class."""
+        # super init
+        super().__init__()
+
+    def example_method(self) -> str:
+        """Return the address. Example method that requires addr to be set."""
+        return self.addr
+
+    @allow_no_addr_check
+    def get_default_name(self) -> str:
+        """Return "Hola!". A method with no addr check."""
+        return "Hola!"
+
+
+def test_node_component_initialization():
+    """Test initial state and setting of addr."""
+    component = MockNodeComponent()
+    assert component.addr == ""
+
+    addr = "test_address"
+    returned_addr = component.set_addr(addr)
+    assert component.addr == addr
+    assert returned_addr == addr
+
+
+def test_node_component_methods():
+    """Test method calls with and without addr set."""
+    component = MockNodeComponent()
+    assert component.get_default_name() == "Hola!"
+
+    # Method call without addr should raise ValueError
+    with pytest.raises(ValueError):
+        component.example_method()
+
+    # Method call with addr set should succeed
+    addr = "test_address"
+    component.set_addr(addr)
+    assert component.example_method() == addr
