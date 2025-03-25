@@ -45,6 +45,7 @@ with contextlib.suppress(ImportError):
     from p2pfl.examples.mnist.model.mlp_pytorch import model_build_fn as model_build_fn_pytorch
 
 set_standalone_settings()
+logger.set_level("DEBUG")
 
 
 @pytest.fixture
@@ -61,6 +62,15 @@ def two_nodes():
     n1.stop()
     n2.stop()
 
+@pytest.fixture(autouse=True)
+def log_test_start_and_end(request):
+    """Log the start and end of each test."""
+    test_name = request.node.name  # Get the test name
+    logger.info("--PYTEST--", f"Start of test: {test_name}") # use f-string
+
+    yield
+
+    logger.info("--PYTEST--", f"End of test: {test_name}")
 
 ########################
 #    Tests Learning    #
