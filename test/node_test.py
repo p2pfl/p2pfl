@@ -47,6 +47,7 @@ with contextlib.suppress(ImportError):
 set_standalone_settings()
 logger.set_level("DEBUG")
 
+
 @pytest.fixture
 def two_nodes():
     """Create two nodes and start them. Yield the nodes. After the test, stop the nodes."""
@@ -61,15 +62,17 @@ def two_nodes():
     n1.stop()
     n2.stop()
 
+
 @pytest.fixture(autouse=True)
 def log_test_start_and_end(request):
     """Log the start and end of each test."""
     test_name = request.node.name  # Get the test name
-    logger.info("--PYTEST--", f"Start of test: {test_name}") # use f-string
+    logger.info("--PYTEST--", f"Start of test: {test_name}")  # use f-string
 
     yield
 
     logger.info("--PYTEST--", f"End of test: {test_name}")
+
 
 ########################
 #    Tests Learning    #
@@ -232,7 +235,7 @@ def test_framework_node(build_model_fn):
     p2pfl_model = build_model_fn()
 
     # Nodes
-    n1 = Node(p2pfl_model, partitions[0])
+    n1 = Node(p2pfl_model, partitions[0], protocol=MemoryCommunicationProtocol())
     n2 = Node(p2pfl_model.build_copy(), partitions[1])
 
     # Start

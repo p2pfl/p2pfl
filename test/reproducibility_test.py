@@ -30,6 +30,7 @@ import numpy as np
 import pytest  # noqa: E402, I001
 from datasets import DatasetDict, load_dataset  # noqa: E402, I001
 
+from p2pfl.communication.protocols.protobuff.memory import MemoryCommunicationProtocol
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset  # noqa: E402
 from p2pfl.learning.dataset.partition_strategies import DirichletPartitionStrategy, RandomIIDPartitionStrategy
 from p2pfl.learning.frameworks.learner_factory import LearnerFactory
@@ -62,7 +63,10 @@ def __fl_without_training(seed):
     Settings.general.SEED = seed
 
     # Create X nodes (model and data do not matter)
-    nodes = [Node(model_build_fn_pytorch(), P2PFLDataset.from_huggingface("p2pfl/MNIST")) for _ in range(10)]
+    nodes = [
+        Node(model_build_fn_pytorch(), P2PFLDataset.from_huggingface("p2pfl/MNIST"), protocol=MemoryCommunicationProtocol())
+        for _ in range(10)
+    ]
 
     try:
         [node.start() for node in nodes]
