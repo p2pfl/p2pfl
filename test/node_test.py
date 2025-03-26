@@ -245,7 +245,7 @@ def test_framework_node(build_model_fn):
 
     # Nodes
     n1 = Node(p2pfl_model, partitions[0], protocol=MemoryCommunicationProtocol())
-    n2 = Node(p2pfl_model.build_copy(), partitions[1])
+    n2 = Node(p2pfl_model.build_copy(), partitions[1], protocol=MemoryCommunicationProtocol())
 
     # Start
     n1.start()
