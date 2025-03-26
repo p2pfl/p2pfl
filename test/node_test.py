@@ -62,6 +62,15 @@ def two_nodes():
     n1.stop()
     n2.stop()
 
+@pytest.fixture(autouse=True)
+def log_test_start_and_end(request):
+    """Log the start and end of each test."""
+    test_name = request.node.name  # Get the test name
+    logger.info("--PYTEST--", f"Start of test: {test_name}") # use f-string
+
+    yield
+
+    logger.info("--PYTEST--", f"End of test: {test_name}")
 
 @pytest.fixture(autouse=True)
 def log_test_start_and_end(request):
