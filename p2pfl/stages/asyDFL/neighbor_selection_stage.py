@@ -18,15 +18,17 @@
 """Wait aggregated models stage."""
 
 import math
-from typing import Any, List, Optional, Type, Union
+from typing import Optional, Type, Union
 
-import numpy as np
-
-from p2pfl.communication.commands.message.asyDFL.ctx_info_updating_command import ContextInformationUpdatingCommand
-from p2pfl.communication.commands.weights.full_model_command import FullModelCommand
+from p2pfl.communication.commands.message.asyDFL.ctx_info_updating_command import (
+    IndexInformationUpdatingCommand,
+    ModelInformationUpdatingCommand,
+    PushSumWeightInformationUpdatingCommand,
+)
 from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.frameworks.learner import Learner
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.settings import Settings
@@ -66,96 +68,66 @@ class NeighborSelectionStage(Stage):
             execute or None if the process is finished.
 
         """
-        if state.t % state.tau == 0:
+        if state.round % state.tau == 0:
+            # Initialize a list to store neighbors with their computed priority
+            neighbor_priorities = []
+
             # Calculate priority p(b_i,j) (Equation 40)
             for neighbor in list(communication_protocol.get_neighbors(only_direct=True)):
-                neighbor_loss, neighbor_idx_local_iteration = state.losses[neighbor]
+                neighbor_loss, neighbor_idx_local_iteration = state.losses.get(neighbor,(0,0))
                 priority = NeighborSelectionStage.compute_priority(state.round,
-                                state.last_push_times[neighbor],
+                                state.push_times.get(neighbor,0),
                                 neighbor_idx_local_iteration,
-                                state.reception_times[state.addr],
+                                state.reception_times.get(state.addr,0),
                                 state.losses[state.addr][0],
                                 neighbor_loss,
-                                Settings.HEARTBEAT_TIMEOUT)
+                                20) # TODO: dmax parameter
+                # Append the neighbor and their computed priority as a tuple
+                neighbor_priorities.append((neighbor, priority))
+
+            logger.info(state.addr, f"👥 Neighbor priorities: {neighbor_priorities}")
+            # Sort the neighbors by their priority in descending order (highest priority first)
+            neighbor_priorities.sort(key=lambda x: x[1], reverse=True)
 
             # Construct selected neighbor nodes set N*_i,t
-            selected_neighbors = NeighborSelectionStage.select_neighbors(priority)
+            selected_neighbors = []
+            # Greedily select neighbors based on highest priority
+            for neighbor, _ in neighbor_priorities:
+                # Apply a greedy selection strategy
 
+                # TODO: adjust the condition
+                if len(selected_neighbors) < 3:
+                    selected_neighbors.append(neighbor)
+                else:
+                    break  # Stop once you reach the limit
+
+            logger.info(state.addr, f"🧾 Selected neighbors: {selected_neighbors}")
             # Push model to selected neighbors and update push-sum weights
             for neighbor in selected_neighbors:
-                NeighborSelectionStage.__gossip_model_difusion(state, communication_protocol, learner)
-                state.last_push_times[neighbor] = state.round
+                NeighborSelectionStage.__send_model(state, communication_protocol, neighbor, learner.get_model())
+                NeighborSelectionStage.__send_push_sum_weight(state, communication_protocol, neighbor, state.push_sum_weights[state.addr])
+                state.push_times[neighbor] = state.round
 
             # Perform P2P updates with received models ω_j by Equations (5) and (6)
-            for neighbor in list(communication_protocol.get_neighbors(only_direct=True)):
-                # Set aggregated model
+            # Set aggregated model
+            if len(aggregator.get_aggregated_models()) > 0:
                 learner.set_model(aggregator.wait_and_get_aggregation())
+                for neighbor in aggregator.get_aggregated_models():
+                    # Update push-sum weights
+                    state.push_sum_weights[state.addr] += state.mixing_weights[neighbor] * state.push_sum_weights[neighbor]
 
-                # Update push-sum weights
-                state.push_sum_weights[state.addr] += state.mixing_weights[neighbor] * state.push_sum_weights[neighbor]
-
-                # Send local iteration index to neighbors
-                NeighborSelectionStage.__send_local_iteration_index(state, neighbor, state.round)
+                    # Send local iteration index to neighbors
+                    NeighborSelectionStage.__send_local_iteration_index(state, communication_protocol, neighbor, state.round)
 
             # Clear the list of received models (W_i)
             #state.models_aggregated = {}
             aggregator.clear()
 
+        state.increase_round()
         return AsyDFLStageFactory.get_stage("RepeatStage")
 
     @staticmethod
-    def __gossip_model_difusion(
-        state: NodeState,
-        communication_protocol: CommunicationProtocol,
-        learner: Learner,
-    ) -> None:
-        logger.info(state.addr, "🗣️ Gossiping aggregated model.")
-        fixed_round = state.round
-        if fixed_round is None:
-            raise Exception("Learner not initialized")
-
-        def candidate_condition(node: str) -> bool:
-            return True
-
-        def get_candidates_fn() -> List[str]:
-            return [n for n in communication_protocol.get_neighbors(only_direct=True) if candidate_condition(n)]
-
-        def status_fn() -> Any:
-            return get_candidates_fn()
-
-        def model_fn(node: str) -> Any:
-            if state.round is None:
-                raise Exception("Round not initialized")
-            encoded_model = learner.get_model().encode_parameters()
-            return communication_protocol.build_weights(FullModelCommand.get_name(), state.round, encoded_model)
-
-        # Gossip
-        communication_protocol.gossip_weights(
-            lambda: check_early_stop(state, raise_exception=False),
-            get_candidates_fn,
-            status_fn,
-            model_fn,
-        )
-
-    @staticmethod
-    def __evaluate(state: NodeState, learner: Learner, communication_protocol: CommunicationProtocol) -> None:
-        logger.info(state.addr, "🔬 Evaluating...")
-        results = learner.evaluate()
-        logger.info(state.addr, f"📈 Evaluated. Results: {results}")
-        # Send metrics
-        if len(results) > 0:
-            logger.info(state.addr, "📢 Broadcasting loss values.")
-            flattened_loss = str(results["loss"])
-            communication_protocol.broadcast(
-                communication_protocol.build_msg(
-                    ContextInformationUpdatingCommand.get_name(),
-                    flattened_loss,
-                    round=state.round,
-                )
-            )
-
-    @staticmethod
-    def select_neighbors(priority: np.ndarray) -> np.ndarray:
+    def select_neighbors(priority: list) -> list:
         """
         Select the neighbors based on the priority p(b_i,j) of node i selecting neighbor j.
 
@@ -163,10 +135,10 @@ class NeighborSelectionStage(Stage):
             priority: The priority of selecting neighbors.
 
         Returns:
-            numpy.ndarray: The selected neighbors.
+            list: The selected neighbors.
 
         """
-        return np.argsort(priority)[::-1]
+        pass
 
     @staticmethod
     def compute_priority(
@@ -214,8 +186,51 @@ class NeighborSelectionStage(Stage):
         communication_protocol.send(
             nei=neighbor,
             msg=communication_protocol.build_msg(
-                ContextInformationUpdatingCommand.get_name(),
+                IndexInformationUpdatingCommand.get_name(),
+                [str(index)],
                 round=state.round,
-                index=index,
             )
+        )
+
+    @staticmethod
+    def __send_model(state: NodeState, communication_protocol: CommunicationProtocol, neighbor: str, model: P2PFLModel) -> None:
+        """
+        Send the local iteration index to the neighbors.
+
+        Parameters:
+            state: The node state.
+            learner: The learner.
+            communication_protocol: The communication protocol.
+
+        """
+        encoded_model = model.encode_parameters()
+        communication_protocol.send(
+            nei=neighbor,
+            msg=communication_protocol.build_weights(
+                ModelInformationUpdatingCommand.get_name(),
+                state.round,
+                encoded_model,
+                model.get_contributors(),
+                model.get_num_samples(),
+            ),
+        )
+
+    @staticmethod
+    def __send_push_sum_weight(state: NodeState, communication_protocol: CommunicationProtocol, neighbor: str, push_sum_weight: float) -> None:
+        """
+        Send the local iteration index to the neighbors.
+
+        Parameters:
+            state: The node state.
+            learner: The learner.
+            communication_protocol: The communication protocol.
+
+        """
+        communication_protocol.send(
+            nei=neighbor,
+            msg=communication_protocol.build_msg(
+                PushSumWeightInformationUpdatingCommand.get_name(),
+                [str(push_sum_weight)],
+                round=state.round,
+            ),
         )

@@ -196,7 +196,7 @@ class Gossiper(threading.Thread, NodeComponent):
                 return
 
             # Get nodes wich need models
-            neis = neis = get_candidates_fn()
+            neis = get_candidates_fn()
 
             # Determine end of gossip
             if neis == []:

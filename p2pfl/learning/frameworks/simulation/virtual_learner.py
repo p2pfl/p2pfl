@@ -102,6 +102,26 @@ class VirtualNodeLearner(Learner):
         """
         self.learner.set_epochs(epochs)
 
+    def get_steps_per_epoch(self) -> int:
+        """
+        Get the number of steps per epoch of the model.
+
+        Returns:
+            The number of steps per epoch of the model.
+
+        """
+        return self.learner.get_steps_per_epoch()
+
+    def set_steps_per_epoch(self, steps_per_epoch: int) -> None:
+        """
+        Set the number of steps per epoch of the model.
+
+        Args:
+            steps_per_epoch: The number of steps per epoch of the model.
+
+        """
+        self.learner.set_steps_per_epoch(steps_per_epoch)
+
     def update_callbacks_with_model_info(self) -> None:
         """Update the callbacks with the model additional information."""
         self.learner.update_callbacks_with_model_info()

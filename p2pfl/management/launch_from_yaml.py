@@ -31,6 +31,7 @@ from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.settings import Settings
+from p2pfl.stages.workflow_type import WorkflowType
 from p2pfl.utils.topologies import TopologyFactory
 from p2pfl.utils.utils import wait_convergence, wait_to_finish
 
@@ -203,6 +204,17 @@ def run_from_yaml(yaml_path: str):
 
     def aggregator_fn() -> Aggregator:
         return aggregator_class(**aggregator.get("params", {}))
+    
+    ############
+    # Workflow #
+    ############
+    workflow = experiment_config.get("workflow")
+    if not workflow:
+        raise ValueError("Missing 'workflow' configuration in YAML file.")
+    workflow_type = WorkflowType(workflow)
+
+    def workflow_fn() -> WorkflowType:
+        return workflow_type
 
     ###########
     # Network #
@@ -224,6 +236,7 @@ def run_from_yaml(yaml_path: str):
             partitions[i],
             protocol=protocol(),
             aggregator=aggregator_fn(),
+            workflow=workflow_fn(),
         )
         node.start()
         nodes.append(node)

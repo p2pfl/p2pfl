@@ -19,6 +19,7 @@
 
 from typing import Optional, Type, Union
 
+from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.asyDFL.stage_factory import AsyDFLStageFactory
 from p2pfl.stages.stage import Stage
@@ -40,7 +41,9 @@ class RepeatStage(Stage): # TODO: Implement better graph structure
         """Execute the stage."""
         if state.round < state.total_rounds:
             # Train
-            return AsyDFLStageFactory.get_stage("LocalTrainStage")
+            return AsyDFLStageFactory.get_stage("LocalUpdateStage")
         else:
-            # End
-            return AsyDFLStageFactory.get_stage("EndStage")
+            # Finish
+            state.clear()
+            logger.info(state.addr, "😋 Training finished!!")
+            return None

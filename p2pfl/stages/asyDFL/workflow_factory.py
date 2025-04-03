@@ -21,10 +21,11 @@
 from p2pfl.communication.commands.command import Command
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.node import Node
+from p2pfl.stages.workflow_factory import WorkflowFactory
 from p2pfl.stages.workflows import StageWorkflow
 
 
-class AsyDFLFactory:
+class AsyDFLFactory(WorkflowFactory):
     """Factory class to create workflows. Main goal: Avoid cyclic imports."""
 
     @staticmethod
@@ -37,6 +38,12 @@ class AsyDFLFactory:
     @staticmethod
     def create_commands(node: Node) -> list[Command]:
         """Create a workflow."""
+        from p2pfl.communication.commands.message.asyDFL import (
+            IndexInformationUpdatingCommand,
+            LossInformationUpdatingCommand,
+            ModelInformationUpdatingCommand,
+            PushSumWeightInformationUpdatingCommand,
+        )
         from p2pfl.communication.commands.message.metrics_command import MetricsCommand
         from p2pfl.communication.commands.message.model_initialized_command import ModelInitializedCommand
         from p2pfl.communication.commands.message.models_agregated_command import ModelsAggregatedCommand
@@ -59,6 +66,10 @@ class AsyDFLFactory:
             InitModelCommand(node),
             PartialModelCommand(node),
             FullModelCommand(node),
+            LossInformationUpdatingCommand(node),
+            IndexInformationUpdatingCommand(node),
+            ModelInformationUpdatingCommand(node),
+            PushSumWeightInformationUpdatingCommand(node),
         ]
 
     @staticmethod

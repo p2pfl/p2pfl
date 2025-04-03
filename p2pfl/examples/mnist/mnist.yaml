@@ -23,7 +23,7 @@ experiment:
   epochs: 1
   trainset_size: 4
   seed: 666
-  workflow: async
+  workflow: basic
 
   # Dataset settings
   dataset:
@@ -44,7 +44,7 @@ experiment:
 
   # Learning algorithm configuration
   model:
-    package: "p2pfl.examples.mnist.model.mlp_pytorch" # mlp_pytorch | mlp_tensorflow
+    package: "p2pfl.examples.mnist.model.mlp_tensorflow" # mlp_pytorch | mlp_tensorflow
     model_build_fn: "model_build_fn"
     params: {}  
     # Learning algorithm parameters (algorithm-specific)

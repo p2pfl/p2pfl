@@ -55,6 +55,10 @@ class StartLearningStage(Stage):
         learner.set_epochs(epochs)
         logger.experiment_started(state.addr, state.experiment)
 
+        # Set train set
+        state.train_set = communication_protocol.get_neighbors(only_direct=False)
+        aggregator.set_nodes_to_aggregate(state.train_set)
+
         # Initialize asynchronous DFL variables
         logger.info(state.addr, "Initializing local model and parameters...")
         #learner.get_model().get_model().de_biased_model = learner.get_model().clone_model()  # χ(0) = ω(0)
@@ -70,7 +74,7 @@ class StartLearningStage(Stage):
         state.tau = 2  # τ
 
         # Setup learner
-        learner.steps_per_epoch = 1
+        learner.set_steps_per_epoch(1)
         learner.set_epochs(1)
 
         # Vote

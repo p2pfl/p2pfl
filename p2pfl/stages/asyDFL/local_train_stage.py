@@ -19,7 +19,7 @@
 
 from typing import Optional, Type, Union
 
-from p2pfl.communication.commands.message.asyDFL.ctx_info_updating_command import ContextInformationUpdatingCommand
+from p2pfl.communication.commands.message.asyDFL.ctx_info_updating_command import LossInformationUpdatingCommand
 from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
 from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.management.logger import logger
@@ -52,11 +52,13 @@ class LocalUpdateStage(Stage):
             check_early_stop(state)
 
             # De-bias the update model (Equation 3)
-            de_biased_model = learner.get_model()
-            de_biased_model.get_model().de_biased_model = [
-                param / state.push_sum_weights[state.addr] for param in learner.get_model().get_parameters()
-            ]
-            learner.set_model(de_biased_model)
+            learner.get_model().push_sum_weight = state.push_sum_weights[state.addr]
+            # model = learner.get_model()
+            # debiased_params = [
+            #     param / state.push_sum_weights[state.addr] for param in model.get_parameters()
+            # ]
+            # model.get_model().set_de_biased_model_weights(debiased_params)
+            # learner.set_model(model)
 
             logger.info(state.addr, "🏋️‍♀️ Updating local model...")
             learner.fit()
@@ -79,11 +81,15 @@ class LocalUpdateStage(Stage):
         logger.info(state.addr, "🏋️‍♀️ Updating local model...")
         learner.fit()
 
+        training_loss = learner.get_model().get_model().last_training_loss
+
+        state.losses[state.addr] = (training_loss, state.round)
+
         logger.info(state.addr, "📢 Broadcasting loss values.")
-        flattened_loss = str(learner.model.get_model().last_training_loss)
+        flattened_loss = [str(training_loss)]
         communication_protocol.broadcast(
             communication_protocol.build_msg(
-                ContextInformationUpdatingCommand.get_name(),
+                LossInformationUpdatingCommand.get_name(),
                 flattened_loss,
                 round=state.round,
             )

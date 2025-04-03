@@ -178,6 +178,71 @@ class Aggregator(NodeComponent):
         self.__agg_lock.release()
         return []
 
+    # def add_model(self, model: P2PFLModel) -> List[str]:
+    #     """
+    #     Add a model. The first model to be added starts the `run` method (timeout).
+
+    #     Args:
+    #         model: Model to add.
+
+    #     Returns:
+    #         List of contributors.
+
+    #     """
+    #     # Verify that contributors are not empty
+    #     if model.get_contributors() == []:
+    #         logger.debug(self.addr, "Received a model without a list of contributors.")
+    #         self.__agg_lock.release()
+    #         return []
+
+    #     # Lock
+    #     self.__agg_lock.acquire()
+
+    #     #
+    #     # TODO: (optimiazacion) Si llega un modelo completamente agregado, se tiene que saltar todo esto
+    #     # TODO: A veces se agregan repetidos
+    #     #
+
+    #     # Check if aggregation is needed
+    #     if len(self.__train_set) > len(self.get_aggregated_models()):
+    #         # Check if all nodes are in the train_set
+    #         if all(n in self.__train_set for n in model.get_contributors()):
+    #             # Check if any model was added
+    #             any_model_added = any(n in self.get_aggregated_models() for n in model.get_contributors())
+    #             if not any_model_added:
+    #                 # Aggregate model
+    #                 self.__models.append(model)
+    #                 models_added = str(len(self.get_aggregated_models()))
+    #                 logger.info(
+    #                     self.addr,
+    #                     f"🧩 Model added ({models_added}/{ str(len(self.__train_set))}) from {str(model.get_contributors())}",
+    #                 )
+    #                 logger.debug(self.addr, f"Models added: {self.get_aggregated_models()}")
+
+    #                 # Check if all models were added
+    #                 if len(self.get_aggregated_models()) >= len(self.__train_set):
+    #                     self._finish_aggregation_event.set()
+
+    #                 # Unlock and Return
+    #                 self.__agg_lock.release()
+    #                 return self.get_aggregated_models()
+    #             else:
+    #                 logger.debug(
+    #                     self.addr,
+    #                     f"Can't add a model from a node ({model.get_contributors()}) that is already in the training set.",
+    #                 )
+    #         else:
+    #             logger.debug(
+    #                 self.addr,
+    #                 f"Can't add a model from a node ({model.get_contributors()}) that is not in the training set.",
+    #             )
+    #     else:
+    #         logger.debug(self.addr, "🚫 Received a model when is not needed (already aggregated).")
+
+    #     # Release and return
+    #     self.__agg_lock.release()
+    #     return []
+
     def wait_and_get_aggregation(self, timeout: int = Settings.training.AGGREGATION_TIMEOUT) -> P2PFLModel:
         """
         Wait for aggregation to finish.

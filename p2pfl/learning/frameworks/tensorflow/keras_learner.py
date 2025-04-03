@@ -30,6 +30,7 @@ from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.learning.frameworks.tensorflow.callbacks.keras_logger import FederatedLogger
 from p2pfl.learning.frameworks.tensorflow.keras_dataset import KerasExportStrategy
+from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 from p2pfl.utils.node_component import allow_no_addr_check
@@ -48,13 +49,13 @@ class KerasLearner(Learner):
     """
 
     def __init__(
-        self, model: Optional[P2PFLModel] = None, data: Optional[P2PFLDataset] = None, aggregator: Optional[Aggregator] = None
+        self, model: Optional[KerasModel] = None, data: Optional[P2PFLDataset] = None, aggregator: Optional[Aggregator] = None
     ) -> None:
         """Initialize the KerasLearner."""
         super().__init__(model, data, aggregator)
 
     @allow_no_addr_check
-    def set_model(self, model: Union[P2PFLModel, list[np.ndarray], bytes]) -> None:
+    def set_model(self, model: Union[KerasModel, list[np.ndarray], bytes]) -> None:
         """
         Set the model of the learner.
 
@@ -127,18 +128,19 @@ class KerasLearner(Learner):
     #         logger.error(self._self_addr, f"Error in training with Keras: {e}")
     #         raise e
 
-    def fit(self) -> P2PFLModel:
+    def fit(self) -> KerasModel:
         """Fit the model."""
         set_seed(Settings.general.SEED, self.get_framework())
         try:
             if self.epochs > 0:
                 model, data = self.__get_tf_model_data(train=True)
-                model.fit(
+                history = model.fit(
                     data,
                     epochs=self.epochs,
                     callbacks=self.callbacks,  # type: ignore
                     steps_per_epoch=self.steps_per_epoch,
                 )
+                model.last_training_loss = history.history["loss"][-1]
 
             # Set model contribution
             self.get_model().set_contribution([self.addr], self.get_data().get_num_samples(train=True))

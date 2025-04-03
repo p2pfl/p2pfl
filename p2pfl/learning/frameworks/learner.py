@@ -44,7 +44,7 @@ class Learner(ABC, NodeComponent):
 
     def __init__(
         self, model: Optional[P2PFLModel] = None, data: Optional[P2PFLDataset] = None, aggregator: Optional[Aggregator] = None,
-        steps_per_epoch: int = None,
+        steps_per_epoch: Optional[int] = None,
     ) -> None:
         """Initialize the learner."""
         # (addr) Super
@@ -139,6 +139,28 @@ class Learner(ABC, NodeComponent):
 
         """
         self.epochs = epochs
+
+    @allow_no_addr_check
+    def get_steps_per_epoch(self) -> int:
+        """
+        Get the number of steps per epoch of the model.
+
+        Returns:
+            The number of steps per epoch of the model.
+
+        """
+        return self.steps_per_epoch
+
+    @allow_no_addr_check
+    def set_steps_per_epoch(self, steps_per_epoch: int) -> None:
+        """
+        Set the number of steps per epoch of the model.
+
+        Args:
+            steps_per_epoch: The number of steps per epoch of the model.
+
+        """
+        self.steps_per_epoch = steps_per_epoch
 
     @allow_no_addr_check
     def update_callbacks_with_model_info(self) -> None:
