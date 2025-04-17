@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies (poetry)
         run: |
           pip install poetry
-          python -m poetry lock --no-update
+          python -m poetry lock
           python -m poetry install --all-extras
 
       - name: Package project
