@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_fe1bd20b71f7e881_stage_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2025-02-05 17:17 +0000
+            created at 2025-04-17 16:06 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -129,7 +129,7 @@
     <p class="run"><span class="n"><a id="t47" href="#t47">47</a></span><span class="t">        <span class="nam">state</span><span class="op">.</span><span class="nam">aggregated_model_event</span><span class="op">.</span><span class="nam">clear</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t48" href="#t48">48</a></span><span class="t">        <span class="nam">logger</span><span class="op">.</span><span class="nam">info</span><span class="op">(</span><span class="nam">state</span><span class="op">.</span><span class="nam">addr</span><span class="op">,</span> <span class="str">"&#9203; Waiting aggregation."</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t49" href="#t49">49</a></span><span class="t">        <span class="com"># Wait for aggregation to finish, if time over timeout log a warning message</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t50" href="#t50">50</a></span><span class="t">        <span class="nam">event_set</span> <span class="op">=</span> <span class="nam">state</span><span class="op">.</span><span class="nam">aggregated_model_event</span><span class="op">.</span><span class="nam">wait</span><span class="op">(</span><span class="nam">timeout</span><span class="op">=</span><span class="nam">Settings</span><span class="op">.</span><span class="nam">AGGREGATION_TIMEOUT</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t50" href="#t50">50</a></span><span class="t">        <span class="nam">event_set</span> <span class="op">=</span> <span class="nam">state</span><span class="op">.</span><span class="nam">aggregated_model_event</span><span class="op">.</span><span class="nam">wait</span><span class="op">(</span><span class="nam">timeout</span><span class="op">=</span><span class="nam">Settings</span><span class="op">.</span><span class="nam">training</span><span class="op">.</span><span class="nam">AGGREGATION_TIMEOUT</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t51" href="#t51">51</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t52" href="#t52">52</a></span><span class="t">        <span class="key">if</span> <span class="nam">event_set</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t53" href="#t53">53</a></span><span class="t">            <span class="com"># The event was set before the timeout</span>&nbsp;</span><span class="r"></span></p>
@@ -156,7 +156,7 @@
             <a class="nav" href="z_fe1bd20b71f7e881_stage_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2025-02-05 17:17 +0000
+            created at 2025-04-17 16:06 +0000
         </p>
     </div>
 </footer>
