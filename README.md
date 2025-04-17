@@ -19,7 +19,7 @@
 | p2pfl/communication/commands/message/stop\_learning\_command.py               |       22 |        7 |     68% |     54-64 |
 | p2pfl/communication/commands/message/vote\_train\_set\_command.py             |       24 |        2 |     92% |     69-74 |
 | p2pfl/communication/commands/weights/\_\_init\_\_.py                          |        0 |        0 |    100% |           |
-| p2pfl/communication/commands/weights/full\_model\_command.py                  |       40 |       11 |     72% | 55, 77-89 |
+| p2pfl/communication/commands/weights/full\_model\_command.py                  |       40 |       13 |     68% |55, 61-65, 77-89 |
 | p2pfl/communication/commands/weights/init\_model\_command.py                  |       41 |       16 |     61% |55-56, 62-66, 70-74, 84-97 |
 | p2pfl/communication/commands/weights/partial\_model\_command.py               |       44 |       15 |     66% |67, 73-77, 81-82, 99-112 |
 | p2pfl/communication/protocols/\_\_init\_\_.py                                 |        0 |        0 |    100% |           |
@@ -27,7 +27,7 @@
 | p2pfl/communication/protocols/exceptions.py                                   |        6 |        0 |    100% |           |
 | p2pfl/communication/protocols/protobuff/\_\_init\_\_.py                       |        0 |        0 |    100% |           |
 | p2pfl/communication/protocols/protobuff/client.py                             |       23 |        4 |     83% |55, 60, 65, 99 |
-| p2pfl/communication/protocols/protobuff/gossiper.py                           |      103 |       14 |     86% |112, 120, 145-147, 195-196, 211-223 |
+| p2pfl/communication/protocols/protobuff/gossiper.py                           |      103 |        6 |     94% |112, 120, 145-147, 195-196 |
 | p2pfl/communication/protocols/protobuff/grpc/\_\_init\_\_.py                  |       15 |        0 |    100% |           |
 | p2pfl/communication/protocols/protobuff/grpc/address.py                       |       53 |       23 |     57% |45-46, 52-55, 68-71, 80-82, 93-95, 99, 104-114 |
 | p2pfl/communication/protocols/protobuff/grpc/client.py                        |       87 |       35 |     60% |68-69, 85, 90, 99-101, 114-115, 124-125, 152-163, 168-182, 192-195, 197 |
@@ -130,7 +130,7 @@
 | p2pfl/utils/singleton.py                                                      |        7 |        0 |    100% |           |
 | p2pfl/utils/topologies.py                                                     |       44 |        3 |     93% | 72, 94-95 |
 | p2pfl/utils/utils.py                                                          |       59 |        6 |     90% |94, 101, 113-114, 133, 156 |
-|                                                                     **TOTAL** | **4564** | **1348** | **70%** |           |
+|                                                                     **TOTAL** | **4564** | **1342** | **71%** |           |
 
 
 ## Setup coverage badge
