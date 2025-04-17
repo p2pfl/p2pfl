@@ -19,13 +19,11 @@
 """Tests for compression module."""
 
 import pickle
-from typing import Any
 import zlib
 
 import numpy as np
 import pytest
 
-from p2pfl.learning.compression.base_compression_strategy import ByteCompressor
 from p2pfl.learning.compression.lra_strategy import LowRankApproximation
 from p2pfl.learning.compression.lzma_strategy import LZMACompressor
 from p2pfl.learning.compression.manager import CompressionManager
@@ -327,6 +325,7 @@ def test_lowrank(threshold: float):
         else:
             np.testing.assert_array_equal(orig, decomp, err_msg="Non-compressed layer has changed.")
 
+
 ###
 # ZLIB
 ###
@@ -366,32 +365,30 @@ def test_lzma(preset: int):
     assert decompressed_bytes == original_bytes
 
 
-
 ###
 # Manager tests
 ###
+
 
 @pytest.fixture
 def compression_manager() -> CompressionManager:
     """Fixture to create a new compression manager instance."""
     return CompressionManager()
 
+
 def test_manager_multiple_byte_compressors(compression_manager: CompressionManager):
     """Test that only one byte compressor is allowed."""
-    techniques = {
-        "zlib": {"level": 5},
-        "lzma": {"preset": 5}
-    }
+    techniques = {"zlib": {"level": 5}, "lzma": {"preset": 5}}
     with pytest.raises(ValueError):
         _ = compression_manager.apply([np.random.randn(10, 10) for i in range(3)], {"dummy": "info"}, techniques)
 
+
 def test_manager_unknown_strategy(compression_manager: CompressionManager):
     """Test that an unknown strategy raises an error."""
-    techniques = {
-        "unknown": {}
-    }
+    techniques = {"unknown": {}}
     with pytest.raises(ValueError):
         _ = compression_manager.apply([np.random.randn(10, 10) for i in range(3)], {"dummy": "info"}, techniques)
+
 
 def test_manager_no_techniques(compression_manager: CompressionManager):
     """Test that an empty dictionary of techniques raises an error."""
@@ -406,13 +403,12 @@ def test_manager_no_techniques(compression_manager: CompressionManager):
     assert np.array_equal(original_params, decompressed_params)
     assert decompressed_add_info == original_add_info
 
+
 def test_manager_only_compressor(compression_manager: CompressionManager):
     """Test only compressor (loseless)."""
     original_params = [np.random.randn(10, 10) for i in range(3)]
 
-    techniques = {
-        "zlib": {"level : 5"}
-    }
+    techniques = {"zlib": {"level : 5"}}
     compressed_data = compression_manager.apply(original_params, {}, techniques)
     deserialized_data = pickle.loads(compressed_data)
     assert deserialized_data["byte_compressor"] == "zlib"
@@ -424,6 +420,7 @@ def test_manager_only_compressor(compression_manager: CompressionManager):
     assert len(pickle.loads(decompressed_bytes)["additional_info"]["applied_techniques"]) == 0
     decompressed_params, _ = compression_manager.reverse(compressed_data)
     assert np.allclose(original_params[0], decompressed_params[0], atol=1e-2)
+
 
 def test_manager_multiple_techniques(compression_manager: CompressionManager):
     """Test the manager with multiple techniques."""
@@ -451,6 +448,7 @@ def test_manager_multiple_techniques(compression_manager: CompressionManager):
         assert orig.shape == decomp.shape
     assert len(decompressed_params) == len(original_params)
 
+
 def test_additional_info_preservation(compression_manager: CompressionManager):
     """Test that techniques don't remove additional info from other processes."""
     original_params = [np.random.randn(10, 10)]
@@ -462,4 +460,3 @@ def test_additional_info_preservation(compression_manager: CompressionManager):
         compressed_data = compression_manager.apply(original_params, additional_info, {technique_name: {}})
         _, decompressed_info = compression_manager.reverse(compressed_data)
         assert decompressed_info == additional_info, f"Additional info lost for technique '{technique_name}'"
-

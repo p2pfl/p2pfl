@@ -110,11 +110,11 @@ def mnist(
 
     # Imports
     if framework == "tensorflow":
-        from p2pfl.examples.mnist.model.mlp_pytorch import model_build_fn  # type: ignore
+        from p2pfl.examples.mnist.model.mlp_tensorflow import model_build_fn  # type: ignore
 
         model_fn = model_build_fn  # type: ignore
     elif framework == "pytorch":
-        from p2pfl.examples.mnist.model.mlp_tensorflow import model_build_fn  # type: ignore
+        from p2pfl.examples.mnist.model.mlp_pytorch import model_build_fn  # type: ignore
 
         model_fn = model_build_fn  # type: ignore
     else:

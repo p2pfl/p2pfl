@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "p2pfl"
-version = "0.5.0"
+version = "0.4.1"
 description = "A p2p federated learning framework"
 authors = ["Pedro Guijas <pguijas@gmail.com>"]
 license = "GPL-3.0-only"
 readme = "README.md"
-homepage = "https://pguijas.github.io/p2pfl/"
-repository = "https://github.com/pguijas/p2pfl"
-documentation = "https://pguijas.github.io/p2pfl"
+homepage = "https://p2pfl.com"
+repository = "https://github.com/p2pfl/p2pfl"
+documentation = "https://p2pfl.github.io/p2pfl/"
 keywords = ["federated learning", "fl", "peer to peer", "p2p", "decentralized", "data privacy", "data security", "pytorch"]
 
 [tool.poetry.dependencies]
@@ -16,7 +16,7 @@ grpcio = "^1.62.0"
 grpcio-tools = "^1.62.0"
 matplotlib = "^3.8.3"
 psutil = "^5.9.8"
-numpy = ">=1.20,<2.0"
+numpy = "^2.0"
 torch = {version = "^2.2.1", optional = true}
 torchvision = {version = "^0.17.1", optional = true}
 torchmetrics = {version = "^1.3.1", optional = true}
