@@ -19,8 +19,7 @@ The core of P2PFL's simulation capabilities is the `SuperActorPool`. This pool m
 
 ### ⚙️ Setting Up a Ray Cluster
 
-> To disable ray (even if installed), set `Settings.DISABLE_RAY=True`.
-
+> To disable ray (even if installed), export an environment var `export DISABLE_RAY=1`.
 To run P2PFL simulations with Ray, you need to set up a Ray cluster. This can be done on a single machine (for smaller simulations) or across multiple machines (for larger simulations).
 
 #### Single Machine Setup
