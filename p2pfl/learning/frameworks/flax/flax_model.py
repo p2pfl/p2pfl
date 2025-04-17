@@ -45,11 +45,12 @@ class FlaxModel(P2PFLModel):
         num_samples: Optional[int] = None,
         contributors: Optional[List[str]] = None,
         additional_info: Optional[Dict[str, Any]] = None,
+        compression: Optional[dict[str, dict[str, Any]]] = None,
     ) -> None:
         """Initialize Flax model."""
         # TODO: fix: when using arg params for jax params, fedavg.aggregate fails in models[0].build_copy(params=accum, ...)
         # FlaxModel.__init__() got multiple values for argument 'params'. Fix in __init__ or build_copy.
-        super().__init__(model, None, num_samples, contributors, additional_info)
+        super().__init__(model, None, num_samples, contributors, additional_info, compression)
         self.model_params = init_params
         if params:
             if isinstance(params, bytes):
@@ -161,35 +162,3 @@ class FlaxModel(P2PFLModel):
 
         """
         return Framework.FLAX.value
-
-
-####
-# Example MLP in Flax
-####
-
-
-class MLP(nn.Module):
-    """Multilayer Perceptron (MLP) for MNIST classification using Flax."""
-
-    hidden_sizes: Tuple[int, int] = (256, 128)
-    out_channels: int = 10
-
-    @nn.compact
-    def __call__(self, x):
-        """
-        Define the forward pass of the MLP.
-
-        Args:
-            x (jnp.ndarray): Input tensor, expected to be a flattened MNIST image,
-                             or a batch of images with shape (batch_size, image_size).
-
-        Returns:
-            jnp.ndarray: The output logits of the MLP, with shape (batch_size, out_channels).
-                         These represent the unnormalized scores for each class.
-
-        """
-        x = x.reshape((1, -1))
-        for size in self.hidden_sizes:
-            x = nn.relu(nn.Dense(features=size)(x))
-        x = nn.Dense(features=self.out_channels)(x)
-        return x

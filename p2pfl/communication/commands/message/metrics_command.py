@@ -50,4 +50,4 @@ class MetricsCommand(Command):
         for i in range(0, len(args), 2):
             key = args[i]
             value = float(args[i + 1])
-            logger.log_metric(source, key, value, round=round)
+            logger.log_metric(source, metric=key, value=value, round=round)

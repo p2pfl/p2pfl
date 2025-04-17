@@ -2,13 +2,13 @@
 
 # P2PFL - Federated Learning over P2P networks
 
-[![GitHub license](https://img.shields.io/github/license/p2pfl/p2pfl)](https://github.com/p2pfl/p2pfl/blob/main/LICENSE.md)
-[![GitHub issues](https://img.shields.io/github/issues/p2pfl/p2pfl)](https://github.com/p2pfl/p2pfl/issues)
+[![GitHub license](https://img.shields.io/github/license/p2pfl/p2pfl)](/blob/main/LICENSE.md)
+[![GitHub issues](https://img.shields.io/github/issues/p2pfl/p2pfl)](/issues)
 ![GitHub contributors](https://img.shields.io/github/contributors/p2pfl/p2pfl)
 ![GitHub forks](https://img.shields.io/github/forks/p2pfl/p2pfl)
 ![GitHub stars](https://img.shields.io/github/stars/p2pfl/p2pfl)
 ![GitHub activity](https://img.shields.io/github/commit-activity/m/p2pfl/p2pfl)
-[![Coverage badge](https://img.shields.io/badge/dynamic/json?color=brightgreen&label=coverage&query=%24.message&url=https%3A%2F%2Fraw.githubusercontent.com%2Fp2pfl%2Fp2pfl%2Fpython-coverage-comment-action-data%2Fendpoint.json)](https://htmlpreview.github.io/?https://github.com/p2pfl/p2pfl/blob/python-coverage-comment-action-data/htmlcov/index.html)
+[![Coverage badge](https://img.shields.io/badge/dynamic/json?color=brightgreen&label=coverage&query=%24.message&url=https%3A%2F%2Fraw.githubusercontent.com%2Fp2pfl%2Fp2pfl%2Fpython-coverage-comment-action-data%2Fendpoint.json)](https://htmlpreview.github.io/?/blob/python-coverage-comment-action-data/htmlcov/index.html)
 [![Slack](https://img.shields.io/badge/Chat-Slack-red)](https://join.slack.com/t/p2pfl/shared_invite/zt-2lbqvfeqt-FkutD1LCZ86yK5tP3Duztw)
 
 P2PFL is a general-purpose open-source library designed for the execution (simulated and in real environments) of Decentralized Federated Learning systems, specifically making use of P2P networks and the gossip protocols.
@@ -76,7 +76,7 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 Connect with us and stay updated:
 
-* [**GitHub Issues:**](https://github.com/p2pfl/p2pfl/issues) - For reporting bugs and requesting features.
+* [**GitHub Issues:**](/issues) - For reporting bugs and requesting features.
 * [**Google Group:**](https://groups.google.com/g/p2pfl) - For discussions and announcements.
 * [**Slack:**](https://join.slack.com/t/p2pfl/shared_invite/zt-2lbqvfeqt-FkutD1LCZ86yK5tP3Duztw) - For real-time conversations and support.
 

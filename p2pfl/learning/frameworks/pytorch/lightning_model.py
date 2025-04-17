@@ -18,12 +18,11 @@
 
 """Convolutional Neural Network (for MNIST) with PyTorch Lightning."""
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, List, Optional, Union
 
 import lightning as L
 import numpy as np
 import torch
-from torchmetrics import Accuracy, Metric
 
 from p2pfl.learning.frameworks import Framework
 from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
@@ -44,19 +43,21 @@ class LightningModel(P2PFLModel):
         num_samples: The number of samples.
         contributors: The contributors of the model.
         additional_info: Additional information.
+        compression: Optional dictionary for compression settings.
 
     """
 
     def __init__(
         self,
         model: L.LightningModule,
-        params: Optional[Union[List[np.ndarray], bytes]] = None,
+        params: Optional[Union[list[np.ndarray], bytes]] = None,
         num_samples: Optional[int] = None,
-        contributors: Optional[List[str]] = None,
-        additional_info: Optional[Dict[str, Any]] = None,
+        contributors: Optional[list[str]] = None,
+        additional_info: Optional[dict[str, Any]] = None,
+        compression: Optional[dict[str, dict[str, Any]]] = None,
     ) -> None:
         """Initialize the model."""
-        super().__init__(model, params, num_samples, contributors, additional_info)
+        super().__init__(model, params, num_samples, contributors, additional_info, compression)
 
     def get_parameters(self) -> List[np.ndarray]:
         """
@@ -106,102 +107,3 @@ class LightningModel(P2PFLModel):
 
         """
         return Framework.PYTORCH.value
-
-
-####
-# Example MLP
-####
-
-
-with torch.autograd.set_detect_anomaly(True):
-
-    class MLP(L.LightningModule):
-        """Multilayer Perceptron (MLP) with configurable parameters."""
-
-        def __init__(
-            self,
-            input_size: int = 28 * 28,
-            hidden_sizes: Optional[list[int]] = None,
-            out_channels: int = 10,
-            activation: str = "relu",
-            metric: type[Metric] = Accuracy,
-            lr_rate: float = 0.001,
-            seed: Optional[int] = None,
-        ) -> None:
-            """Initialize the MLP."""
-            super().__init__()
-            if hidden_sizes is None:
-                hidden_sizes = [256, 128]
-            if seed is not None:
-                torch.manual_seed(seed)
-                torch.cuda.manual_seed_all(seed)
-
-            self.lr_rate = lr_rate
-            if out_channels == 1:
-                self.metric = metric(task="binary")
-            else:
-                self.metric = metric(task="multiclass", num_classes=out_channels)
-
-            self.layers = torch.nn.ModuleList()
-
-            # Input layer
-            self.layers.append(torch.nn.Linear(input_size, hidden_sizes[0]))
-            self.layers.append(self._get_activation(activation))
-
-            # Hidden layers
-            for i in range(len(hidden_sizes) - 1):
-                self.layers.append(torch.nn.Linear(hidden_sizes[i], hidden_sizes[i + 1]))
-                self.layers.append(self._get_activation(activation))
-
-            # Output layer
-            self.layers.append(torch.nn.Linear(hidden_sizes[-1], out_channels))
-
-        def _get_activation(self, activation_name: str) -> torch.nn.Module:
-            if activation_name == "relu":
-                return torch.nn.ReLU()
-            elif activation_name == "sigmoid":
-                return torch.nn.Sigmoid()
-            elif activation_name == "tanh":
-                return torch.nn.Tanh()
-            else:
-                raise ValueError(f"Unsupported activation function: {activation_name}")
-
-        def forward(self, x: torch.Tensor) -> torch.Tensor:
-            """Forward pass of the MLP."""
-            # Flatten the input
-            batch_size, _, _ = x.size()
-            x = x.view(batch_size, -1)
-
-            for layer in self.layers:
-                x = layer(x)
-
-            x = torch.log_softmax(x, dim=1)
-            return x
-
-        def configure_optimizers(self) -> torch.optim.Optimizer:
-            """Configure the optimizer."""
-            return torch.optim.Adam(self.parameters(), lr=self.lr_rate)
-
-        def training_step(self, batch: Dict[str, torch.Tensor], batch_id: int) -> torch.Tensor:
-            """Training step of the MLP."""
-            x = batch["image"].float()
-            y = batch["label"]
-            loss = torch.nn.functional.cross_entropy(self(x), y)
-            self.log("train_loss", loss, prog_bar=True)
-            return loss
-
-        def validation_step(self, batch: Dict[str, torch.Tensor], batch_id: int) -> torch.Tensor:
-            """Perform validation step for the MLP."""
-            raise NotImplementedError("Validation step not implemented")
-
-        def test_step(self, batch: Dict[str, torch.Tensor], batch_id: int) -> torch.Tensor:
-            """Test step for the MLP."""
-            x = batch["image"].float()
-            y = batch["label"]
-            logits = self(x)
-            loss = torch.nn.functional.cross_entropy(self(x), y)
-            out = torch.argmax(logits, dim=1)
-            metric = self.metric(out, y)
-            self.log("test_loss", loss, prog_bar=True)
-            self.log("test_metric", metric, prog_bar=True)
-            return loss

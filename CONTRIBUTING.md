@@ -62,4 +62,4 @@ By contributing to p2pfl, you agree that your contributions will be licensed und
 
 ## 🤝 Code of Conduct
 
-p2pfl has adopted the [Contributer Covenant](https://www.contributor-covenant.org/) as its Code of Conduct. All community members are expected to adhere to it. Please see [CODE_OF_CONDUCT.md](https://github.com/p2pfl/p2pfl/blob/main/CODE_OF_CONDUCT.md) for details.
+p2pfl has adopted the [Contributer Covenant](https://www.contributor-covenant.org/) as its Code of Conduct. All community members are expected to adhere to it. Please see [CODE_OF_CONDUCT.md](/blob/main/CODE_OF_CONDUCT.md) for details.

@@ -112,7 +112,7 @@ class WebP2PFLogger(LoggerDecorator):
         self._p2pfl_web_services = P2pflWebServices(url, key)
         self.add_handler(P2pflWebLogHandler(self._p2pfl_web_services))
 
-    def log_metric(self, addr: str, metric: str, value: float, round: int | None = None, step: int | None = None) -> None:
+    def log_metric(self, addr: str, metric: str, value: float, step: Optional[int] = None, round: Optional[int] = None) -> None:
         """
         Log a metric.
 
@@ -124,7 +124,7 @@ class WebP2PFLogger(LoggerDecorator):
             round: The round.
 
         """
-        super().log_metric(addr, metric, value, round, step)
+        super().log_metric(addr=addr, metric=metric, value=value, step=step, round=round)
         if self._p2pfl_web_services is not None:
             # Get Experiment
             try:
@@ -154,19 +154,16 @@ class WebP2PFLogger(LoggerDecorator):
         if self._p2pfl_web_services is not None:
             self._p2pfl_web_services.send_system_metric(node, metric, value, time)
 
-    def register_node(self, node: str, simulation: bool) -> None:
+    def register_node(self, node: str) -> None:
         """
         Register a node.
 
         Args:
             node: The node address.
-            simulation: If the node is a simulation.
 
         """
-        super().register_node(node, simulation)
+        super().register_node(node)
         if self._p2pfl_web_services is not None:
-            self._p2pfl_web_services.register_node(node, simulation)
-
             # Start the node status reporter
             node_monitor = NodeMonitor(node, self.log_system_metric)
             node_monitor.run()

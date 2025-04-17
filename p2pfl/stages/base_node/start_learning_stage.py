@@ -44,6 +44,7 @@ class StartLearningStage(Stage):
     def execute(
         rounds: Optional[int] = None,
         epochs: Optional[int] = None,
+        experiment_name: Optional[str] = None,
         state: Optional[NodeState] = None,
         learner: Optional[Learner] = None,
         communication_protocol: Optional[CommunicationProtocol] = None,
@@ -51,15 +52,21 @@ class StartLearningStage(Stage):
         **kwargs,
     ) -> Union[Type["Stage"], None]:
         """Execute the stage."""
-        if rounds is None or epochs is None or state is None or learner is None or communication_protocol is None or aggregator is None:
+        if (
+            rounds is None
+            or epochs is None
+            or experiment_name is None
+            or state is None
+            or learner is None
+            or communication_protocol is None
+            or aggregator is None
+        ):
             raise Exception("Invalid parameters on StartLearningStage.")
 
         # Init
-        state.start_thread_lock.acquire()  # Used to avoid create duplicated training threads
-        state.set_experiment("experiment", rounds)
-        learner.set_epochs(epochs)
-        logger.experiment_started(state.addr, state.experiment)
-        state.start_thread_lock.release()
+        with state.start_thread_lock:
+            state.set_experiment(experiment_name, rounds)
+            learner.set_epochs(epochs)
         begin = time.time()
 
         # Wait and gossip model inicialization
@@ -71,7 +78,7 @@ class StartLearningStage(Stage):
         StartLearningStage.__gossip_model(state, communication_protocol, learner)
 
         # Wait to guarantee new connection heartbeats convergence
-        wait_time = Settings.WAIT_HEARTBEATS_CONVERGENCE - (time.time() - begin)
+        wait_time = Settings.heartbeat.WAIT_CONVERGENCE - (time.time() - begin)
         if wait_time > 0:
             time.sleep(wait_time)
 

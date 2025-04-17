@@ -98,12 +98,12 @@ In this section we will review the steps we consider necessary for the generatio
     ```python
     from p2pfl.settings import Settings
     
-    Settings.USE_SSL = True
-    Settings.CA_CRT = "path/to/your/ca.crt"
-    Settings.SERVER_CRT = "path/to/your/server.crt"
-    Settings.SERVER_KEY = "path/to/your/server.key"
-    Settings.CLIENT_CRT = "path/to/your/client.crt"
-    Settings.CLIENT_KEY = "path/to/your/client.key"
+    Settings.ssl.USE_SSL = True
+    Settings.ssl.CA_CRT = "path/to/your/ca.crt"
+    Settings.ssl.SERVER_CRT = "path/to/your/server.crt"
+    Settings.ssl.SERVER_KEY = "path/to/your/server.key"
+    Settings.ssl.CLIENT_CRT = "path/to/your/client.crt"
+    Settings.ssl.CLIENT_KEY = "path/to/your/client.key"
     ```
     
     By following these steps, you can secure your P2PFL network with mTLS, ensuring that only authenticated nodes can participate in the federated learning process.

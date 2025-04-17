@@ -18,6 +18,8 @@
 
 """Lightning Logger for P2PFL."""
 
+from typing import Any, Optional
+
 from pytorch_lightning.loggers.logger import Logger
 
 from p2pfl.management.logger import logger as P2PLogger
@@ -47,14 +49,14 @@ class FederatedLogger(Logger):
         """Version of the logger."""
         pass
 
-    def log_hyperparams(self, params: dict) -> None:
+    def log_hyperparams(self, *args: Any, **kwargs: Any) -> None:
         """Log hyperparameters."""
         pass
 
-    def log_metrics(self, metrics: dict, step: int) -> None:
+    def log_metrics(self, metrics: dict[str, float], step: Optional[int] = None) -> None:
         """Log metrics (in a pytorch format)."""
         for k, v in metrics.items():
-            P2PLogger.log_metric(self.__addr, k, v, step)
+            P2PLogger.log_metric(self.__addr, k, v, step=step)
 
     def save(self) -> None:
         """Save the logger."""

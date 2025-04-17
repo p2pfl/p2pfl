@@ -36,6 +36,9 @@ from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.learning.frameworks.pytorch.lightning_dataset import PyTorchExportStrategy
 from p2pfl.learning.frameworks.pytorch.lightning_logger import FederatedLogger
 from p2pfl.management.logger import logger
+from p2pfl.settings import Settings
+from p2pfl.utils.check_ray import ray_installed
+from p2pfl.utils.seed import set_seed
 
 torch.set_num_threads(1)
 
@@ -47,42 +50,49 @@ class LightningLearner(Learner):
     Args:
         model: The model of the learner.
         data: The data of the learner.
-        self_addr: The address of the learner.
+        addr: The address of the learner.
 
     """
 
     def __init__(
-        self, model: P2PFLModel, data: P2PFLDataset, self_addr: str = "unknown-node", aggregator: Optional[Aggregator] = None
+        self, model: Optional[P2PFLModel] = None, data: Optional[P2PFLDataset] = None, aggregator: Optional[Aggregator] = None
     ) -> None:
         """Initialize the learner."""
-        super().__init__(model, data, self_addr, aggregator)
+        super().__init__(model, data, aggregator)
         self.__trainer: Optional[Trainer] = None
         self.experiment: Optional[Experiment] = None
 
         # Start logging
-        self.logger = FederatedLogger(self_addr)
         # To avoid GPU/TPU printings
         logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
 
+    def set_addr(self, addr: str) -> str:
+        """Set the addr of the node."""
+        self.logger = FederatedLogger(addr)
+        return super().set_addr(addr)
+
     def __get_pt_model_data(self, train: bool = True) -> Tuple[L.LightningModule, DataLoader]:
         # Get Model
-        pt_model = self.model.get_model()
+        pt_model = self.get_model().get_model()
         if not isinstance(pt_model, L.LightningModule):
             raise ValueError("The model must be a PyTorch Lightning model")
         # Get Data
-        pt_data = self.data.export(PyTorchExportStrategy, train=train)
+        pt_data = self.get_data().export(PyTorchExportStrategy, train=train)
         if not isinstance(pt_data, DataLoader):
             raise ValueError("The data must be a PyTorch DataLoader")
         return pt_model, pt_data
 
     def fit(self) -> P2PFLModel:
         """Fit the model."""
+        if Settings.general.SEED is not None and not ray_installed():
+            raise ValueError("You must use Ray to set a seed with PyTorch Lightning. Not working on a same process. | pip install ray")
+        set_seed(Settings.general.SEED, self.get_framework())
         try:
             if self.epochs > 0:
                 self.__trainer = Trainer(
                     max_epochs=self.epochs,
                     accelerator="auto",
-                    logger=self.logger,
+                    logger=self.logger,  # type: ignore
                     enable_checkpointing=False,
                     enable_model_summary=False,
                     callbacks=self.callbacks.copy(),  # type: ignore
@@ -92,17 +102,17 @@ class LightningLearner(Learner):
                 self.__trainer = None
 
             # Set model contribution
-            self.model.set_contribution([self._self_addr], self.data.get_num_samples())
+            self.get_model().set_contribution([self.addr], self.get_data().get_num_samples())
 
             # Set callback info
             self.add_callback_info_to_model()
 
-            return self.model
+            return self.get_model()
 
         except Exception as e:
             print(traceback.format_exc())
             logger.error(
-                self._self_addr,
+                self.addr,
                 f"Fit error. Something went wrong with pytorch lightning. {e}",
             )
             raise e
@@ -129,14 +139,14 @@ class LightningLearner(Learner):
                 self.__trainer = None
                 # Log metrics
                 for k, v in results.items():
-                    logger.log_metric(self._self_addr, k, v)
+                    logger.log_metric(self.addr, k, v)
                 return dict(results)
 
             else:
                 return {}
         except Exception as e:
             logger.error(
-                self._self_addr,
+                self.addr,
                 f"Evaluation error. Something went wrong with pytorch lightning. {e}",
             )
             raise e

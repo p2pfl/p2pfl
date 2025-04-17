@@ -21,6 +21,7 @@ import threading
 from typing import Dict, List, Optional
 
 from p2pfl.experiment import Experiment
+from p2pfl.management.logger import logger
 
 
 class NodeState:
@@ -28,36 +29,29 @@ class NodeState:
     Class to store the main state of a learning node.
 
     Attributes:
-        addr(str): The address of the node.
-        status(str): The status of the node.
-        simulation(bool): If the node is a simulation.
-        learner(Learner): The learner of the node.
-        models_aggregated(Dict[str, List[str]]): The models aggregated by the node.
-        nei_status(Dict[str, int]): The status of the neighbors.
-        train_set(List[str]): The train set of the node.
-        train_set_votes(Dict[str, Dict[str, int]]): The votes of the train set.
-        train_set_votes_lock(threading.Lock): The lock for the train set votes.
-        start_thread_lock(threading.Lock): The lock for the start thread.
-        wait_votes_ready_lock(threading.Lock): The lock for the wait votes ready.
-        model_initialized_lock(threading.Lock): The lock for the model initialized.
+        addr: The address of the node.
+        status: The status of the node.
+        learner: The learner of the node.
+        models_aggregated: The models aggregated by the node.
+        nei_status: The status of the neighbors.
+        train_set: The train set of the node.
+        train_set_votes: The votes of the train set.
+        train_set_votes_lock: The lock for the train set votes.
+        start_thread_lock: The lock for the start thread.
+        wait_votes_ready_lock: The lock for the wait votes ready.
+        model_initialized_lock: The lock for the model initialized.
 
     Args:
         addr: The address of the node.
 
     """
 
-    def __init__(self, addr: str, simulation: bool = False) -> None:
+    def __init__(self, addr: str) -> None:
         """Initialize the node state."""
         self.addr = addr
         self.status = "Idle"
 
-        # Simulation
-        self.simulation = simulation
-
-        # Learning
-        self.experiment_config = None  # NOT IMPLEMENTED YET
-
-        # Aggregator (TRATAR DE MOVERLO A LA CLASE AGGREGATOR)
+        # Aggregator (move to the aggregator?)
         self.models_aggregated: Dict[str, List[str]] = {}
 
         # Other neis state (only round)
@@ -78,8 +72,6 @@ class NodeState:
         self.model_initialized_lock.acquire()
         self.aggregated_model_event = threading.Event()
         self.aggregated_model_event.set()
-
-        # puede quedar guay el privatizar todos los locks y meter métodos que al mismo tiempo seteen un estado (string)
 
     @property
     def round(self) -> Optional[int]:
@@ -107,6 +99,7 @@ class NodeState:
         """
         self.status = "Learning"
         self.experiment = Experiment(exp_name, total_rounds)
+        logger.experiment_started(self.addr, self.experiment)  # TODO: Improve changes on the experiment
 
     def increase_round(self) -> None:
         """
@@ -121,6 +114,7 @@ class NodeState:
 
         self.experiment.increase_round()
         self.models_aggregated = {}
+        logger.experiment_started(self.addr, self.experiment)  # TODO: Improve changes on the experiment
 
     def clear(self) -> None:
         """Clear the state."""
@@ -130,7 +124,7 @@ class NodeState:
         """Return a String representation of the node state."""
         return (
             f"NodeState(addr={self.addr}, status={self.status}, exp_name={self.exp_name}, "
-            f"round={self.round}, total_rounds={self.total_rounds}, simulation={self.simulation}, "
+            f"round={self.round}, total_rounds={self.total_rounds}, "
             f"models_aggregated={self.models_aggregated}, nei_status={self.nei_status}, "
             f"train_set={self.train_set}, train_set_votes={self.train_set_votes})"
         )

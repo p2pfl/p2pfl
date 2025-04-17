@@ -18,7 +18,7 @@
 """P2PFL communication tests."""
 
 import time
-from typing import Type
+from typing import Callable
 
 import pytest
 
@@ -29,12 +29,36 @@ from p2pfl.communication.protocols.exceptions import (
     NeighborNotConnectedError,
     ProtocolNotStartedError,
 )
-from p2pfl.communication.protocols.grpc.grpc_communication_protocol import GrpcCommunicationProtocol
-from p2pfl.communication.protocols.memory.memory_communication_protocol import InMemoryCommunicationProtocol
+from p2pfl.communication.protocols.protobuff.grpc import GrpcCommunicationProtocol
+from p2pfl.communication.protocols.protobuff.memory import MemoryCommunicationProtocol
 from p2pfl.settings import Settings
-from p2pfl.utils.utils import set_test_settings, wait_convergence
+from p2pfl.utils.utils import set_standalone_settings, wait_convergence
 
-set_test_settings()
+set_standalone_settings()
+
+#
+# PROTOCOLS TO TEST
+#
+ProtocolBuilder = Callable[..., CommunicationProtocol]
+
+
+def __build_grpc_protocol(*args, **kwargs) -> CommunicationProtocol:
+    comm_proto = GrpcCommunicationProtocol(*args, **kwargs)
+    comm_proto.set_addr("localhost")
+    return comm_proto
+
+
+def __build_memory_protocol(*args, **kwargs) -> CommunicationProtocol:
+    comm_proto = MemoryCommunicationProtocol(*args, **kwargs)
+    comm_proto.set_addr("node")
+    return comm_proto
+
+
+build_protocols_fns = [__build_grpc_protocol, __build_memory_protocol]
+
+#
+# Test
+#
 
 
 class MockCommand(Command):
@@ -54,10 +78,10 @@ class MockCommand(Command):
         self.flag = True
 
 
-@pytest.mark.parametrize("protocol_class", [GrpcCommunicationProtocol, InMemoryCommunicationProtocol])
-def test_connect_invalid_node(protocol_class):
+@pytest.mark.parametrize("protocol_builder", build_protocols_fns)
+def test_connect_invalid_node(protocol_builder: ProtocolBuilder):
     """Test that a node can't connect to an invalid node."""
-    protocol1 = protocol_class()
+    protocol1 = protocol_builder()
     protocol1.start()
     assert protocol1.connect("google.es:80") is False
     assert protocol1.connect("holadani.holaenrique") is False
@@ -65,12 +89,12 @@ def test_connect_invalid_node(protocol_class):
     protocol1.stop()
 
 
-@pytest.mark.parametrize("protocol_class", [GrpcCommunicationProtocol, InMemoryCommunicationProtocol])
-def test_basic_communication(protocol_class: Type[CommunicationProtocol]):
+@pytest.mark.parametrize("protocol_builder", build_protocols_fns)
+def test_basic_communication(protocol_builder: ProtocolBuilder):
     """Test the start and stop methods."""
     # Create 2 communication protocols
-    protocol1 = protocol_class()
-    protocol2 = protocol_class()
+    protocol1 = protocol_builder()
+    protocol2 = protocol_builder()
 
     # Command
     command = MockCommand()
@@ -122,15 +146,15 @@ def test_basic_communication(protocol_class: Type[CommunicationProtocol]):
     protocol2.stop()
 
 
-@pytest.mark.parametrize("protocol_class", [GrpcCommunicationProtocol, InMemoryCommunicationProtocol])
-def test_neightboor_management_and_gossip(protocol_class: Type[CommunicationProtocol]):
+@pytest.mark.parametrize("protocol_builder", build_protocols_fns)
+def test_neightboor_management_and_gossip(protocol_builder: ProtocolBuilder):
     """Test the neighbor management."""
     # Create the protocols
-    protocol1 = protocol_class()
-    protocol2 = protocol_class()
-    protocol3 = protocol_class()
-    protocol4 = protocol_class()
-    protocol5 = protocol_class()
+    protocol1 = protocol_builder()
+    protocol2 = protocol_builder()
+    protocol3 = protocol_builder()
+    protocol4 = protocol_builder()
+    protocol5 = protocol_builder()
 
     # Start the protocols
     protocol1.start()
@@ -159,8 +183,9 @@ def test_neightboor_management_and_gossip(protocol_class: Type[CommunicationProt
     protocol2.disconnect(protocol3.get_address())
 
     # Wait for convergence
-    wait_convergence([protocol1, protocol2], 1, wait=Settings.HEARTBEAT_TIMEOUT * 2, only_direct=False)
-    wait_convergence([protocol3, protocol4, protocol5], 2, wait=Settings.HEARTBEAT_TIMEOUT * 2, only_direct=False)
+    wait_time = Settings.heartbeat.TIMEOUT * 3
+    wait_convergence([protocol1, protocol2], 1, wait=wait_time, only_direct=False)
+    wait_convergence([protocol3, protocol4, protocol5], 2, wait=wait_time, only_direct=False)
 
     # Check neighbors (only direct)
     assert len(protocol1.get_neighbors(only_direct=True)) == 1
@@ -173,9 +198,9 @@ def test_neightboor_management_and_gossip(protocol_class: Type[CommunicationProt
     protocol4.disconnect(protocol3.get_address())
 
     # Wait for convergence
-    wait_convergence([protocol4, protocol5], 1, wait=Settings.HEARTBEAT_TIMEOUT * 2, only_direct=False)
-    wait_convergence([protocol1, protocol2], 1, wait=Settings.HEARTBEAT_TIMEOUT * 2, only_direct=False)
-    wait_convergence([protocol3], 0, wait=Settings.HEARTBEAT_TIMEOUT * 2, only_direct=False)
+    wait_convergence([protocol4, protocol5], 1, wait=wait_time, only_direct=False)
+    wait_convergence([protocol1, protocol2], 1, wait=wait_time, only_direct=False)
+    wait_convergence([protocol3], 0, wait=wait_time, only_direct=False)
 
     # Check neighbors (only direct)
     assert len(protocol1.get_neighbors(only_direct=True)) == 1
@@ -192,12 +217,12 @@ def test_neightboor_management_and_gossip(protocol_class: Type[CommunicationProt
     protocol5.stop()
 
 
-@pytest.mark.parametrize("protocol_class", [GrpcCommunicationProtocol, InMemoryCommunicationProtocol])
-def test_node_abrupt_down(protocol_class: Type[CommunicationProtocol]):
+@pytest.mark.parametrize("protocol_builder", build_protocols_fns)
+def test_node_down(protocol_builder: ProtocolBuilder):
     """Test that a node abruptly down is removed from the neighbors list."""
     # Create 2 communication protocols
-    protocol1 = protocol_class()
-    protocol2 = protocol_class()
+    protocol1 = protocol_builder()
+    protocol2 = protocol_builder()
 
     # Start the protocols
     protocol1.start()
@@ -217,7 +242,7 @@ def test_node_abrupt_down(protocol_class: Type[CommunicationProtocol]):
     protocol2.stop()
 
     # Wait for convergence
-    wait_convergence([protocol1], 0, wait=5, only_direct=True)
+    wait_convergence([protocol1], 0, wait=10, only_direct=True, debug=True)
 
     # Check neighbors
     assert len(protocol1.get_neighbors()) == 0

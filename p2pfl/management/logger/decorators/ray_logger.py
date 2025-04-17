@@ -19,7 +19,7 @@
 
 import datetime
 import logging
-from typing import Any, Dict, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 import ray
 
@@ -39,17 +39,34 @@ class RayP2PFLoggerActor(LoggerDecorator):
 class RayP2PFLogger(P2PFLogger):
     """Wrapper to add remote logging capabilities to a logger class."""
 
-    def __init__(self, p2pflogger: P2PFLogger):
+    def __init__(self, logger: P2PFLogger | Callable[[], P2PFLogger]) -> None:
         """
         Initialize the wrapper with a Ray actor instance.
 
         Args:
-            p2pflogger: The logger to be wrapped.
+            logger: The logger to be wrapped.
 
         """
         self.ray_actor = RayP2PFLoggerActor.options(  # type: ignore
-            name="p2pfl_logger", lifetime="detached", get_if_exists=True
-        ).remote(p2pflogger)
+            name="p2pfl_ray_logger", lifetime="detached", get_if_exists=True
+        ).remote(logger)
+
+    @staticmethod
+    def from_actor(actor: RayP2PFLoggerActor) -> "RayP2PFLogger":
+        """
+        Initialize the wrapper with an existing Ray actor instance.
+
+        Args:
+            actor: The RayP2PFLoggerActor instance.
+
+        Returns:
+            A RayP2PFLogger instance wrapping the given actor.
+
+        """
+        # Create instance without calling __init__
+        instance = RayP2PFLogger.__new__(RayP2PFLogger)
+        instance.ray_actor = actor
+        return instance
 
     def connect_web(self, url: str, key: str) -> None:
         """
@@ -60,11 +77,11 @@ class RayP2PFLogger(P2PFLogger):
             key: The API key.
 
         """
-        self.ray_actor.connect_web.remote(url, key)
+        ray.get(self.ray_actor.connect_web.remote(url, key))
 
     def cleanup(self) -> None:
         """Cleanup the logger."""
-        self.ray_actor.cleanup.remote()
+        ray.get(self.ray_actor.cleanup.remote())
 
     def set_level(self, level: Union[int, str]) -> None:
         """
@@ -74,7 +91,8 @@ class RayP2PFLogger(P2PFLogger):
             level: The logger level.
 
         """
-        self.ray_actor.set_level.remote(level)
+        # Set ray log level
+        ray.get(self.ray_actor.set_level.remote(level))
 
     def get_level(self) -> int:
         """
@@ -109,9 +127,9 @@ class RayP2PFLogger(P2PFLogger):
             message: The message to log.
 
         """
-        self.ray_actor.log.remote(level, node, message)
+        ray.get(self.ray_actor.log.remote(level, node, message))
 
-    def log_metric(self, addr: str, metric: str, value: float, round: int | None = None, step: int | None = None) -> None:
+    def log_metric(self, addr: str, metric: str, value: float, step: Optional[int] = None, round: Optional[int] = None) -> None:
         """
         Log a metric.
 
@@ -123,7 +141,7 @@ class RayP2PFLogger(P2PFLogger):
             round: The round.
 
         """
-        self.ray_actor.log_metric.remote(addr, metric, value, round, step)
+        ray.get(self.ray_actor.log_metric.remote(addr=addr, metric=metric, value=value, step=step, round=round))
 
     def get_local_logs(self) -> LocalLogsType:
         """
@@ -153,16 +171,15 @@ class RayP2PFLogger(P2PFLogger):
         """
         return ray.get(self.ray_actor.get_global_logs.remote())
 
-    def register_node(self, node: str, simulation: bool) -> None:
+    def register_node(self, node: str) -> None:
         """
         Register a node.
 
         Args:
             node: The node address.
-            simulation: If the node is a simulation.
 
         """
-        self.ray_actor.register_node.remote(node, simulation)
+        ray.get(self.ray_actor.register_node.remote(node))
 
     def unregister_node(self, node: str) -> None:
         """
@@ -172,7 +189,7 @@ class RayP2PFLogger(P2PFLogger):
             node: The node address.
 
         """
-        self.ray_actor.unregister_node.remote(node)
+        ray.get(self.ray_actor.unregister_node.remote(node))
 
     def experiment_started(self, node: str, experiment: Experiment | None) -> None:
         """
@@ -183,7 +200,7 @@ class RayP2PFLogger(P2PFLogger):
             experiment: The experiment.
 
         """
-        self.ray_actor.experiment_started.remote(node, experiment)
+        ray.get(self.ray_actor.experiment_started.remote(node, experiment))
 
     def experiment_finished(self, node: str) -> None:
         """
@@ -193,28 +210,18 @@ class RayP2PFLogger(P2PFLogger):
             node: The node address.
 
         """
-        self.ray_actor.experiment_finished.remote(node)
+        ray.get(self.ray_actor.experiment_finished.remote(node))
 
-    def round_started(self, node: str, experiment: Experiment | None) -> None:
-        """
-        Notify the round start.
-
-        Args:
-            node: The node address.
-            experiment: The experiment.
-
-        """
-        self.ray_actor.round_started.remote(node, experiment)
-
-    def round_finished(self, node: str) -> None:
+    def experiment_updated(self, node: str, experiment: Experiment) -> None:
         """
         Notify the round end.
 
         Args:
             node: The node address.
+            experiment: The experiment to update.
 
         """
-        self.ray_actor.round_finished.remote(node)
+        ray.get(self.ray_actor.experiment_updated.remote(node, experiment))
 
     def get_nodes(self) -> Dict[str, Dict[Any, Any]]:
         """
@@ -234,7 +241,7 @@ class RayP2PFLogger(P2PFLogger):
             handler: The handler to add.
 
         """
-        self.ray_actor.add_handler.remote(handler)
+        ray.get(self.ray_actor.add_handler.remote(handler))
 
     def log_system_metric(self, node: str, metric: str, value: float, time: datetime.datetime) -> None:
         """
@@ -247,4 +254,4 @@ class RayP2PFLogger(P2PFLogger):
             time: The time.
 
         """
-        self.ray_actor.log_system_metric.remote(node, metric, value, time)
+        ray.get(self.ray_actor.log_system_metric.remote(node, metric, value, time))

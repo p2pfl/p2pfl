@@ -15,5 +15,5 @@ class Framework(Enum):
     """Enum for the different learning frameworks."""
 
     PYTORCH = "pytorch"
-    TENSORFLOW = "tensorflow:="
+    TENSORFLOW = "tensorflow"
     FLAX = "flax"

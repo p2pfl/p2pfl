@@ -39,14 +39,50 @@ class FileLogger(LoggerDecorator):
 
     def setup_file_handler(self) -> None:
         """Set up the file handler for logging."""
-        if not os.path.exists(Settings.LOG_DIR):
-            os.makedirs(Settings.LOG_DIR)
+        if not os.path.exists(Settings.general.LOG_DIR):
+            os.makedirs(Settings.general.LOG_DIR)
 
-        file_handler = RotatingFileHandler(
-            f"{Settings.LOG_DIR}/p2pfl.log", maxBytes=1000000, backupCount=3
-        )  # TODO: ADD DIFFERENT LOG FILES FOR DIFFERENT NODES / EXPERIMENTS
+        # Find existing run log files
+        existing_runs = [
+            f
+            for f in os.listdir(Settings.general.LOG_DIR)
+            if os.path.isfile(os.path.join(Settings.general.LOG_DIR, f)) and f.startswith("run-") and f.endswith(".log")
+        ]
+
+        # Extract run numbers and their corresponding files
+        run_files = []
+        for run_file in existing_runs:
+            try:
+                run_num = int(run_file.split("-")[1].split(".")[0])
+                run_files.append((run_num, run_file))
+            except (IndexError, ValueError):
+                continue
+
+        # Sort by run number (oldest first)
+        run_files.sort()
+
+        # Delete oldest files if we exceed the maximum
+        max_runs = Settings.general.MAX_LOG_RUNS
+        if len(run_files) >= max_runs:
+            # Keep the most recent (max_runs - 1) files to make room for the new one
+            files_to_delete = run_files[: -(max_runs - 1)] if max_runs > 1 else run_files
+            for _, file_to_delete in files_to_delete:
+                try:
+                    os.remove(os.path.join(Settings.general.LOG_DIR, file_to_delete))
+                except OSError:
+                    # Log but continue if we can't delete a file
+                    print(f"Warning: Could not delete old log file {file_to_delete}")
+
+        # Determine the next run ID
+        run_id = 1
+        if run_files:
+            run_id = run_files[-1][0] + 1 if run_files else 1
+
+        log_filename = f"{Settings.general.LOG_DIR}/run-{run_id}.log"
+
+        file_handler = RotatingFileHandler(log_filename, maxBytes=1000000, backupCount=3)
         file_formatter = logging.Formatter(
-            "[ %(asctime)s | %(node)s | %(levelname)s ]: %(message)s",
+            "[ %(asctime)s | %(node)s | %(levelname)s ] %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
         file_handler.setFormatter(file_formatter)

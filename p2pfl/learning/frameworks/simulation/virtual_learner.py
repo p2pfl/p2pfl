@@ -21,6 +21,7 @@ from typing import Dict, List, Union
 
 import numpy as np
 
+from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
@@ -31,22 +32,15 @@ from p2pfl.management.logger import logger
 class VirtualNodeLearner(Learner):
     """Decorator for the learner to be used in the simulation."""
 
-    def __init__(self, learner: Learner, addr: str) -> None:
+    def __init__(self, learner: Learner) -> None:
         """Initialize the learner."""
         self.learner = learner
         self.actor_pool = SuperActorPool()
-        self.addr = addr
 
-    def set_addr(self, addr: str) -> None:
-        """
-        Set the address of the learner.
-
-        Args:
-            addr: The address of the learner.
-
-        """
+    def set_addr(self, addr: str) -> str:
+        """Set the addr of the node."""
         self.learner.set_addr(addr)
-        self.addr = addr
+        return super().set_addr(addr)
 
     def set_model(self, model: Union[P2PFLModel, List[np.ndarray], bytes]) -> None:
         """
@@ -88,6 +82,16 @@ class VirtualNodeLearner(Learner):
         """
         return self.learner.get_data()
 
+    def indicate_aggregator(self, aggregator: Aggregator) -> None:
+        """
+        Indicate to the learner the aggregators that are being used in order to instantiate the callbacks.
+
+        Args:
+            aggregator: The aggregator used in the learning process.
+
+        """
+        return self.learner.indicate_aggregator(aggregator)
+
     def set_epochs(self, epochs: int) -> None:
         """
         Set the number of epochs of the model.
@@ -97,6 +101,14 @@ class VirtualNodeLearner(Learner):
 
         """
         self.learner.set_epochs(epochs)
+
+    def update_callbacks_with_model_info(self) -> None:
+        """Update the callbacks with the model additional information."""
+        self.learner.update_callbacks_with_model_info()
+
+    def add_callback_info_to_model(self) -> None:
+        """Add the additional information from the callbacks to the model."""
+        self.learner.add_callback_info_to_model()
 
     def fit(self) -> P2PFLModel:
         """Fit the model."""

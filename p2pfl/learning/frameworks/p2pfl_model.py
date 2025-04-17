@@ -19,11 +19,11 @@
 """P2PFL model abstraction."""
 
 import copy
-import pickle
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import numpy as np
 
+from p2pfl.learning.compression.manager import CompressionManager
 from p2pfl.learning.frameworks.exceptions import DecodingParamsError
 
 
@@ -45,30 +45,35 @@ class P2PFLModel:
     def __init__(
         self,
         model: Any,
-        params: Optional[Union[List[np.ndarray], bytes]] = None,
+        params: Optional[Union[list[np.ndarray], bytes]] = None,
         num_samples: Optional[int] = None,
-        contributors: Optional[List[str]] = None,
-        additional_info: Optional[Dict[str, Any]] = None,
+        contributors: Optional[list[str]] = None,
+        additional_info: Optional[dict[str, Any]] = None,
+        compression: Optional[dict[str, dict[str, Any]]] = None,
     ) -> None:
         """Initialize the model."""
         self.model = model
-        self.contributors: List[str] = []
+        self.contributors: list[str] = []
         if contributors is not None:
             self.contributors = contributors
         self.num_samples = 0
         if num_samples is not None:
             self.num_samples = num_samples
-        self.additional_info: Dict[str, Any] = {}
+        self.additional_info: dict[str, Any] = {}
         if additional_info is not None:
             self.additional_info = additional_info
         if params is not None:
             self.set_parameters(params)
+        if compression is not None:
+            self.compression = compression
+        else:
+            self.compression = {}
 
     def get_model(self) -> Any:
         """Get the model."""
         return self.model
 
-    def encode_parameters(self, params: Optional[List[np.ndarray]] = None) -> bytes:
+    def encode_parameters(self, params: Optional[list[np.ndarray]] = None) -> bytes:
         """
         Encode the parameters of the model.
 
@@ -78,13 +83,10 @@ class P2PFLModel:
         """
         if params is None:
             params = self.get_parameters()
-        data_to_serialize = {
-            "params": params,
-            "additional_info": self.additional_info,
-        }
-        return pickle.dumps(data_to_serialize)
 
-    def decode_parameters(self, data: bytes) -> Tuple[List[np.ndarray], Dict[str, Any]]:
+        return CompressionManager.apply(params, self.additional_info, self.compression)
+
+    def decode_parameters(self, data: bytes) -> tuple[list[np.ndarray], dict[str, Any]]:
         """
         Decode the parameters of the model.
 
@@ -93,14 +95,11 @@ class P2PFLModel:
 
         """
         try:
-            loaded_data = pickle.loads(data)
-            params = loaded_data["params"]
-            additional_info = loaded_data["additional_info"]
-            return params, additional_info
+            return CompressionManager.reverse(data)
         except Exception as e:
             raise DecodingParamsError("Error decoding parameters") from e
 
-    def get_parameters(self) -> List[np.ndarray]:
+    def get_parameters(self) -> list[np.ndarray]:
         """
         Get the parameters of the model.
 
@@ -110,7 +109,7 @@ class P2PFLModel:
         """
         raise NotImplementedError
 
-    def set_parameters(self, params: Union[List[np.ndarray], bytes]) -> None:
+    def set_parameters(self, params: Union[list[np.ndarray], bytes]) -> None:
         """
         Set the parameters of the model.
 
@@ -147,7 +146,7 @@ class P2PFLModel:
             return self.additional_info
         return self.additional_info[callback]
 
-    def set_contribution(self, contributors: List[str], num_samples: int) -> None:
+    def set_contribution(self, contributors: list[str], num_samples: int) -> None:
         """
         Set the contribution of the model.
 
@@ -159,7 +158,7 @@ class P2PFLModel:
         self.contributors = contributors
         self.num_samples = num_samples
 
-    def get_contributors(self) -> List[str]:
+    def get_contributors(self) -> list[str]:
         """Get the contributors of the model."""
         if self.contributors == []:
             raise ValueError("Contributors are empty")

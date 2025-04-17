@@ -22,9 +22,10 @@ from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from p2pfl.communication.commands.command import Command
+from p2pfl.utils.node_component import NodeComponent, allow_no_addr_check
 
 
-class CommunicationProtocol(ABC):
+class CommunicationProtocol(ABC, NodeComponent):
     """
     Communication protocol interface.
 
@@ -34,10 +35,10 @@ class CommunicationProtocol(ABC):
 
     """
 
-    @abstractmethod
-    def __init__(self, addr: str = "address", commands: Optional[List[Command]] = None) -> None:
+    def __init__(self, commands: Optional[List[Command]] = None, *args, **kwargs) -> None:
         """Initialize the communication protocol."""
-        pass
+        # (addr) Super
+        NodeComponent.__init__(self)
 
     @abstractmethod
     def start(self) -> None:
@@ -49,6 +50,7 @@ class CommunicationProtocol(ABC):
         """Stop the communication protocol."""
         pass
 
+    @allow_no_addr_check
     @abstractmethod
     def add_command(self, cmds: Union[Command, List[Command]]) -> None:
         """
@@ -61,7 +63,7 @@ class CommunicationProtocol(ABC):
         pass
 
     @abstractmethod
-    def build_msg(self, cmd: str, args: Optional[List[str]] = None, round: Optional[int] = None) -> str:
+    def build_msg(self, cmd: str, args: Optional[List[str]] = None, round: Optional[int] = None) -> Any:
         """
         Build a message.
 
@@ -157,7 +159,6 @@ class CommunicationProtocol(ABC):
         """
         pass
 
-    @abstractmethod
     def get_address(self) -> str:
         """
         Get the address.
@@ -166,7 +167,7 @@ class CommunicationProtocol(ABC):
             The address.
 
         """
-        pass
+        return self.addr
 
     @abstractmethod
     def wait_for_termination(self) -> None:

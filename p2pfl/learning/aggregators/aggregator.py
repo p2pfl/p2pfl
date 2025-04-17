@@ -24,6 +24,7 @@ from typing import List
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
+from p2pfl.utils.node_component import NodeComponent
 
 
 class NoModelsToAggregateError(Exception):
@@ -32,21 +33,23 @@ class NoModelsToAggregateError(Exception):
     pass
 
 
-class Aggregator:
+class Aggregator(NodeComponent):
     """
     Class to manage the aggregation of models.
 
     Args:
-        node_name: String with the name of the node.
+        node_addr: Address of the node.
 
     """
 
-    def __init__(self, node_name: str = "unknown") -> None:
+    def __init__(self) -> None:
         """Initialize the aggregator."""
-        self.node_name = node_name
         self.__train_set: List[str] = []  # TODO: Remove the trainset from the state
         self.__models: List[P2PFLModel] = []
         self.partial_aggregation = False
+
+        # (addr) Super
+        NodeComponent.__init__(self)
 
         # Locks
         self.__agg_lock = threading.Lock()
@@ -123,7 +126,7 @@ class Aggregator:
         """
         # Verify that contributors are not empty
         if model.get_contributors() == []:
-            logger.debug(self.node_name, "Received a model without a list of contributors.")
+            logger.debug(self.addr, "Received a model without a list of contributors.")
             self.__agg_lock.release()
             return []
 
@@ -146,9 +149,10 @@ class Aggregator:
                     self.__models.append(model)
                     models_added = str(len(self.get_aggregated_models()))
                     logger.info(
-                        self.node_name,
+                        self.addr,
                         f"🧩 Model added ({models_added}/{ str(len(self.__train_set))}) from {str(model.get_contributors())}",
                     )
+                    logger.debug(self.addr, f"Models added: {self.get_aggregated_models()}")
 
                     # Check if all models were added
                     if len(self.get_aggregated_models()) >= len(self.__train_set):
@@ -159,22 +163,22 @@ class Aggregator:
                     return self.get_aggregated_models()
                 else:
                     logger.debug(
-                        self.node_name,
+                        self.addr,
                         f"Can't add a model from a node ({model.get_contributors()}) that is already in the training set.",
                     )
             else:
                 logger.debug(
-                    self.node_name,
+                    self.addr,
                     f"Can't add a model from a node ({model.get_contributors()}) that is not in the training set.",
                 )
         else:
-            logger.debug(self.node_name, "🚫 Received a model when is not needed (already aggregated).")
+            logger.debug(self.addr, "🚫 Received a model when is not needed (already aggregated).")
 
         # Release and return
         self.__agg_lock.release()
         return []
 
-    def wait_and_get_aggregation(self, timeout: int = Settings.AGGREGATION_TIMEOUT) -> P2PFLModel:
+    def wait_and_get_aggregation(self, timeout: int = Settings.training.AGGREGATION_TIMEOUT) -> P2PFLModel:
         """
         Wait for aggregation to finish.
 
@@ -194,15 +198,15 @@ class Aggregator:
         missing_models = self.get_missing_models()
         # Check if aggregation has timed out or event has been set correctly
         if not event_set:
-            logger.info(self.node_name, f"⏳ Aggregation wait timed out. Missing models: {missing_models}")
+            logger.info(self.addr, f"⏳ Aggregation wait timed out. Missing models: {missing_models}")
         else:
             if len(missing_models) > 0:
                 logger.info(
-                    self.node_name,
+                    self.addr,
                     f"❌ Aggregation event set, but missing models:  {missing_models}",
                 )
             else:
-                logger.info(self.node_name, "🧠 Aggregating models.")
+                logger.info(self.addr, "🧠 Aggregating models.")
 
         # Notify node
         return self.aggregate(self.__models)

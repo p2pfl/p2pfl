@@ -47,7 +47,7 @@ class WaitAggregatedModelsStage(Stage):
         state.aggregated_model_event.clear()
         logger.info(state.addr, "⏳ Waiting aggregation.")
         # Wait for aggregation to finish, if time over timeout log a warning message
-        event_set = state.aggregated_model_event.wait(timeout=Settings.AGGREGATION_TIMEOUT)
+        event_set = state.aggregated_model_event.wait(timeout=Settings.training.AGGREGATION_TIMEOUT)
 
         if event_set:
             # The event was set before the timeout

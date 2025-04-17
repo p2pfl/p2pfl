@@ -18,13 +18,10 @@
 
 """Keras model abstraction for P2PFL."""
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 import numpy as np
 import tensorflow as tf  # type: ignore
-from tensorflow.keras.layers import Dense, Flatten  # type: ignore
-from tensorflow.keras.losses import SparseCategoricalCrossentropy  # type: ignore
-from tensorflow.keras.optimizers import Adam  # type: ignore
 
 from p2pfl.learning.frameworks import Framework
 from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
@@ -51,19 +48,21 @@ class KerasModel(P2PFLModel):
         num_samples: Optional number of samples used for training.
         contributors: Optional list of contributor nodes.
         additional_info: Optional dictionary for extra information.
+        compression: Optional dictionary for compression settings.
 
     """
 
     def __init__(
         self,
         model: tf.keras.Model,
-        params: Optional[Union[List[np.ndarray], bytes]] = None,
+        params: Optional[Union[list[np.ndarray], bytes]] = None,
         num_samples: Optional[int] = None,
-        contributors: Optional[List[str]] = None,
-        additional_info: Optional[Dict[str, Any]] = None,
+        contributors: Optional[list[str]] = None,
+        additional_info: Optional[dict[str, Any]] = None,
+        compression: Optional[dict[str, dict[str, Any]]] = None,
     ) -> None:
         """Initialize the KerasModel."""
-        super().__init__(model, params, num_samples, contributors, additional_info)
+        super().__init__(model, params, num_samples, contributors, additional_info, compression)
 
         # Ensure the model is built
         if len(model.get_weights()) == 0:  # type: ignore
@@ -71,7 +70,7 @@ class KerasModel(P2PFLModel):
                 "Model must be built before creating a P2PFLMODEL! Please be sure that model.get_weights() return a non empty list."
             )
 
-    def get_parameters(self) -> List[np.ndarray]:
+    def get_parameters(self) -> list[np.ndarray]:
         """
         Get the parameters of the model.
 
@@ -81,7 +80,7 @@ class KerasModel(P2PFLModel):
         """
         return self.model.get_weights()
 
-    def set_parameters(self, params: Union[List[np.ndarray], bytes]) -> None:
+    def set_parameters(self, params: Union[list[np.ndarray], bytes]) -> None:
         """
         Set the parameters of the model.
 
@@ -108,61 +107,6 @@ class KerasModel(P2PFLModel):
 
         Returns:
             The name of the model framework.
-
-        """
-        return Framework.TENSORFLOW.value
-
-
-####
-# Example MLP
-####
-
-
-class MLP(tf.keras.Model):
-    """Multilayer Perceptron (MLP) for MNIST classification using Keras."""
-
-    def __init__(self, hidden_sizes=None, out_channels=10, lr_rate=0.001, seed=None, **kwargs):
-        """
-        Initialize the MLP.
-
-        Args:
-            hidden_sizes (list): List of integers representing the number of neurons in each hidden layer.
-            out_channels (int): Number of output classes (10 for MNIST).
-            lr_rate (float): Learning rate for the Adam optimizer.
-            seed (int, optional): Random seed for reproducibility.
-            kwargs: Additional arguments.
-
-        """
-        if hidden_sizes is None:
-            hidden_sizes = [256, 128]
-        super().__init__()
-
-        if seed is not None:
-            tf.random.set_seed(seed)
-
-        # Define layers
-        self.flatten = Flatten()
-        self.hidden_layers = [Dense(size, activation="relu") for size in hidden_sizes]
-        self.output_layer = Dense(out_channels)
-
-        # Define loss, optimizer, and metrics
-        self.loss = SparseCategoricalCrossentropy(from_logits=True)
-        self.optimizer = Adam(learning_rate=lr_rate)
-
-    def call(self, inputs):
-        """Forward pass of the MLP."""
-        x = self.flatten(inputs)
-        for layer in self.hidden_layers:
-            x = layer(x)
-        x = self.output_layer(x)
-        return x
-
-    def get_framework(self) -> str:
-        """
-        Retrieve the model name.
-
-        Returns:
-            The name of the model class.
 
         """
         return Framework.TENSORFLOW.value
