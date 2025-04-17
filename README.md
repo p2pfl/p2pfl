@@ -45,7 +45,7 @@ pip install "p2pfl[torch]"
 #### 🐍 Python (using Poetry)
 
 ```bash
-git clone .git
+git clone https://github.com/p2pfl/p2pfl.git
 cd p2pfl
 poetry install -E torch 
 ```
