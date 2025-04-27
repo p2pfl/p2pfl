@@ -18,7 +18,7 @@
 
 """Keras dataset export strategy."""
 
-from typing import Callable, List, Optional
+from typing import List, Optional
 
 import tensorflow as tf  # type: ignore
 from datasets import Dataset  # type: ignore
@@ -33,7 +33,6 @@ class KerasExportStrategy(DataExportStrategy):
     @staticmethod
     def export(
         data: Dataset,
-        transforms: Optional[Callable] = None,
         batch_size: Optional[int] = None,
         columns: Optional[List[str]] = None,
         label_cols: Optional[List[str]] = None,
@@ -43,8 +42,7 @@ class KerasExportStrategy(DataExportStrategy):
         Export the data as a TensorFlow Dataset.
 
         Args:
-            data: The Hugging Face Dataset to export.
-            transforms: Optional transformations to apply (not implemented yet).
+            data: The Hugging Face Dataset to export. Transforms should already be applied to the dataset via set_transform.
             batch_size: The batch size for the TensorFlow Dataset.
             seed: The seed for the TensorFlow Dataset.
             columns: The columns to include in the TensorFlow Dataset.
@@ -59,8 +57,6 @@ class KerasExportStrategy(DataExportStrategy):
             label_cols = ["label"]
         if columns is None:
             columns = ["image"]
-        if transforms is not None:
-            raise NotImplementedError("Transforms are not yet supported for KerasExportStrategy.")
         if not batch_size:
             batch_size = Settings.training.DEFAULT_BATCH_SIZE
 

@@ -145,6 +145,19 @@ def run_from_yaml(yaml_path: str):
     # Batch size
     dataset.set_batch_size(dataset_config.get("batch_size", 1))
 
+    # Transforms
+    transforms_config = dataset_config.get("transforms", None)
+    transforms_package = transforms_config.get("package")
+    transform_function = transforms_config.get("function")
+    if transforms_config and (not transforms_package or not transform_function):
+        raise ValueError("Missing 'transforms' configuration in YAML file.")
+    if transforms_config:
+        transform_class = load_by_package_and_name(
+            transforms_package,
+            transform_function,
+        )
+        dataset.set_transforms(transform_class(**transforms_config.get("params", {})))
+
     # Partitioning
     partitioning_config = dataset_config.get("partitioning", {})
     if not partitioning_config:
@@ -259,7 +272,9 @@ def run_from_yaml(yaml_path: str):
         nodes[0].set_start_learning(rounds=r, epochs=e, trainset_size=trainset_size)
 
         # Wait and check
-        wait_to_finish(nodes, timeout=60 * 60)  # 1 hour | TODO: Make this configurable
+        # Get wait_timeout from experiment config (in minutes), default to 60 minutes (1 hour)
+        wait_timeout = experiment_config.get("wait_timeout", 60)
+        wait_to_finish(nodes, timeout=wait_timeout * 60)  # Convert minutes to seconds
 
     except Exception as e:
         raise e

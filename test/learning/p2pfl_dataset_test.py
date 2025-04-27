@@ -83,6 +83,30 @@ def test_export_without_split_partition():
         dataset.export(None)
 
 
+def test_set_transforms(mnist_dataset):
+    """Test that transforms are correctly delegated to the Hugging Face dataset."""
+
+    # Define a simple transform that modifies the image
+    def add_one_transform(examples):
+        print(examples)
+        # Batch case
+        examples["image"] = [np.array(img) + 1 for img in examples["image"]]
+        return examples
+
+    # Get a sample before transform
+    original_item = mnist_dataset.get(0, train=True)
+    original_image = original_item["image"].copy()
+
+    # Set the transform
+    mnist_dataset.set_transforms(add_one_transform)
+
+    # Get the same sample after transform
+    transformed_item = mnist_dataset.get(0, train=True)
+
+    # Verify transform was applied (values increased by 1)
+    assert np.all(transformed_item["image"] == np.array(original_image) + 1)
+
+
 @pytest.mark.parametrize(
     "strategy",
     [

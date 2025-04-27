@@ -78,7 +78,6 @@ class PyTorchExportStrategy(DataExportStrategy):
     @staticmethod
     def export(
         data: Dataset,
-        transforms: Optional[Callable] = None,
         batch_size: Optional[int] = None,
         num_workers: int = 0,
         **kwargs,
@@ -87,8 +86,7 @@ class PyTorchExportStrategy(DataExportStrategy):
         Export the data using the PyTorch strategy.
 
         Args:
-            data: The data to export.
-            transforms: The transforms to apply to the data.
+            data: The data to export. Transforms should already be applied to the dataset via set_transform.
             batch_size: The batch size to use for the exported data.
             num_workers: The number of workers to use for the exported
             kwargs: Additional keyword arguments.
@@ -97,8 +95,6 @@ class PyTorchExportStrategy(DataExportStrategy):
             The exported data.
 
         """
-        if transforms is not None:
-            raise NotImplementedError("Transforms are not supported in this export strategy.")
         if not batch_size:
             batch_size = Settings.training.DEFAULT_BATCH_SIZE
 
