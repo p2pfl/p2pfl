@@ -29,7 +29,6 @@ from p2pfl.communication.protocols.protobuff.gossiper import Gossiper
 from p2pfl.communication.protocols.protobuff.neighbors import Neighbors
 from p2pfl.communication.protocols.protobuff.proto import node_pb2, node_pb2_grpc
 from p2pfl.management.logger import logger
-from p2pfl.settings import Settings
 from p2pfl.utils.node_component import NodeComponent, allow_no_addr_check
 
 
@@ -143,19 +142,24 @@ class ProtobuffServer(ABC, node_pb2_grpc.NodeServicesServicer, NodeComponent):
         """
         # If message already processed, return
         if request.HasField("message") and not self._gossiper.check_and_set_processed(request):
-            """
-            if request.cmd != "beat" or (not Settings.heartbeat.EXCLUDE_BEAT_LOGS and request.source == "beat"):
-                logger.debug(self.addr, f"🙅 Message already processed: {request.cmd} (id {request.message.hash})")
-            """
             return node_pb2.ResponseMessage()
 
+        # Log
+        package_type = "message" if request.HasField("message") else "weights"
+        package_size = len(request.SerializeToString())
+        # Pass None for negative rounds, the logger will handle it
+        round_num = request.round if request.round >= 0 else None
+        logger.log_communication(
+            self.addr,
+            "received",
+            request.cmd,
+            request.source,
+            package_type,
+            package_size,
+            round_num,
+        )
+
         # Process message/model
-        if request.cmd != "beat" or (not Settings.heartbeat.EXCLUDE_BEAT_LOGS and request.cmd == "beat"):
-            emoji = "📫" if request.HasField("message") else "📦"
-            logger.debug(
-                self.addr,
-                f"{emoji} {request.cmd.upper()} received from {request.source}",
-            )
         if request.cmd in self.__commands:
             try:
                 if request.HasField("message"):

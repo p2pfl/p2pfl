@@ -26,10 +26,12 @@ P2PFL Logger.
 import copy
 import datetime
 import logging
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from p2pfl.experiment import Experiment
+from p2pfl.management.message_storage import MessageEntryType, MessageStorage
 from p2pfl.management.metric_storage import GlobalLogsType, GlobalMetricStorage, LocalLogsType, LocalMetricStorage
+from p2pfl.management.node_monitor import NodeMonitor
 from p2pfl.settings import Settings
 
 ###################
@@ -102,10 +104,13 @@ class P2PFLogger:
         # Node Information
         self._nodes: Dict[str, Dict[Any, Any]] = nodes if nodes else {}
 
-        # Experiment Metrics
+        # Experiment Metrics and Message Storage
         self.disable_locks = disable_locks
         self.local_metrics = LocalMetricStorage(disable_locks=disable_locks)
         self.global_metrics = GlobalMetricStorage(disable_locks=disable_locks)
+        self.message_storage = MessageStorage(disable_locks=disable_locks)
+        self.node_monitor = NodeMonitor(report_fn=None)
+        self.node_monitor.start()
 
         # Python logging
         self._logger = logging.getLogger("p2pfl")
@@ -349,7 +354,6 @@ class P2PFLogger:
         """
         # Node State
         if self._nodes.get(node) is None:
-            # Dict[str, Dict[str,Any]]
             self._nodes[node] = {}
         else:
             raise Exception(f"Node {node} already registered.")
@@ -363,8 +367,7 @@ class P2PFLogger:
 
         """
         # Node state
-        n = self._nodes[node]
-        if n is not None:
+        if node in self._nodes:
             # Unregister the node
             self._nodes.pop(node)
         else:
@@ -431,15 +434,118 @@ class P2PFLogger:
         """
         self._logger.addHandler(handler)
 
-    def log_system_metric(self, node: str, metric: str, value: float, time: datetime.datetime) -> None:
+    ######
+    # Communication Logs
+    ######
+
+    def log_communication(
+        self,
+        node: str,
+        direction: str,
+        cmd: str,
+        source_dest: str,
+        package_type: str,
+        package_size: int,
+        round_num: Optional[int] = None,
+        additional_info: Optional[Dict[str, Any]] = None,
+    ) -> None:
         """
-        Log a system metric.
+        Log a communication event.
 
         Args:
-            node: The node name.
-            metric: The metric to log.
-            value: The value.
-            time: The time.
+            node: The node address.
+            direction: Direction of communication ("sent" or "received").
+            cmd: The command or message type.
+            source_dest: Source (if receiving) or destination (if sending) node.
+            package_type: Type of package ("message" or "weights").
+            package_size: Size of the package in bytes (if available).
+            round_num: The federated learning round number (if applicable).
+            additional_info: Additional information as a dictionary.
 
         """
-        pass
+        # Determine emoji based on direction and package type
+        emoji = ("📫" if package_type == "message" else "📦") if direction == "received" else ("📤" if package_type == "message" else "📬")
+
+        # If round_num is not specified but we're in an experiment, get the current round
+        if round_num is None or round_num < 0:
+            try:
+                # Look for the node in registered nodes
+                if node in self._nodes and "Experiment" in self._nodes[node]:
+                    experiment = self._nodes[node]["Experiment"]
+                    if experiment is not None and hasattr(experiment, "round") and experiment.round is not None:
+                        round_num = experiment.round
+            except Exception:
+                # If we can't get the round, just continue with default round_num (None)
+                pass
+
+        # Create base message
+        message = f"{emoji} {cmd.upper()} {direction} "
+        if direction == "received":
+            message += f"from {source_dest}"
+        else:
+            message += f"to {source_dest}"
+
+        # Add round information if available
+        if round_num is not None and round_num >= 0:
+            message += f" (round {round_num})"
+
+        # Log the message at debug level
+        if cmd != "beat" or (not Settings.heartbeat.EXCLUDE_BEAT_LOGS and cmd == "beat"):
+            self.debug(node, message)
+
+        # Get actual round number for storage (default to 0 if None)
+        storage_round = 0 if round_num is None or round_num < 0 else round_num
+
+        # Store in message storage
+        self.message_storage.add_message(
+            node=node,
+            direction=direction,
+            cmd=cmd,
+            source_dest=source_dest,
+            package_type=package_type,
+            package_size=package_size,
+            round_num=storage_round,
+            additional_info=additional_info,
+        )
+
+    def get_messages(
+        self,
+        direction: str = "all",  # "all", "sent", or "received"
+        node: Optional[str] = None,
+        cmd: Optional[str] = None,
+        round_num: Optional[int] = None,
+        limit: Optional[int] = None,
+    ) -> List[MessageEntryType]:
+        """
+        Get communication messages with optional filtering.
+
+        Args:
+            direction: Filter by message direction ("all", "sent", or "received").
+            node: Filter by node address (optional).
+            cmd: Filter by command type (optional).
+            round_num: Filter by round number (optional).
+            limit: Limit the number of messages returned per node (optional).
+
+        Returns:
+            A flat list of message dictionaries. Each message includes a 'direction' field
+            indicating whether it was 'sent' or 'received'.
+
+        """
+        # Validate direction
+        if direction not in ["all", "sent", "received"]:
+            raise ValueError(f"Invalid direction: {direction}. Must be 'all', 'sent', or 'received'.")
+
+        # Convert "all" to None as expected by message_storage
+        storage_direction = None if direction == "all" else direction
+
+        return self.message_storage.get_messages(node=node, direction=storage_direction, cmd=cmd, round_num=round_num, limit=limit)
+
+    def get_system_metrics(self) -> Dict[datetime.datetime, Dict[str, float]]:
+        """
+        Get the system metrics.
+
+        Returns:
+            The system metrics.
+
+        """
+        return self.node_monitor.get_logs()

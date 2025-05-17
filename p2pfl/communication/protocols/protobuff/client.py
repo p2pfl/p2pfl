@@ -22,6 +22,7 @@ import threading
 from abc import ABC, abstractmethod
 
 from p2pfl.communication.protocols.protobuff.proto import node_pb2
+from p2pfl.management.logger import logger
 
 
 class ProtobuffClient(ABC):
@@ -77,6 +78,29 @@ class ProtobuffClient(ABC):
     ####
     # Message Sending
     ####
+
+    def log_successful_send(self, msg: node_pb2.RootMessage) -> None:
+        """
+        Log a successful message sending.
+
+        Args:
+            msg: The message that was sent.
+
+        """
+        # Log
+        package_type = "message" if msg.HasField("message") else "weights"
+        package_size = len(msg.SerializeToString())
+        round_num = msg.round if msg.round >= 0 else None  # Pass None for negative rounds, the logger will handle it
+
+        logger.log_communication(
+            self.self_addr,
+            "sent",
+            msg.cmd,
+            self.nei_addr,
+            package_type,
+            package_size,
+            round_num,
+        )
 
     @abstractmethod
     def send(

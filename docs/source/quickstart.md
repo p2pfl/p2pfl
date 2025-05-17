@@ -50,7 +50,7 @@ To run it, we simply need to execute `node1.py` first and then on another termin
             node = Node(
                 model = LightningModel(MLP()), # Wrap your model (a MLP in this example) into a LightningModel
                 data = P2PFLDataset.from_huggingface("p2pfl/MNIST"), # Get dataset from Hugging Face
-                address= f"127.0.0.1:{6666}", # Introduce a port or remove to use a random one
+                addr= f"127.0.0.1:{6666}", # Introduce a port or remove to use a random one
             )
             node.start()
 
@@ -74,7 +74,7 @@ To run it, we simply need to execute `node1.py` first and then on another termin
                 model(tf.zeros((1, 28, 28, 1))) # force initiallization
                 model = KerasModel(model), # Wrap your model (a MLP in this example) into a KerasModel
                 data = P2PFLDataset.from_huggingface("p2pfl/MNIST"), # Get dataset from Hugging Face
-                address= f"127.0.0.1:{6666}", # Introduce a port or remove to use a random one
+                addr= f"127.0.0.1:{6666}", # Introduce a port or remove to use a random one
             )
             node.start()
 
@@ -99,7 +99,7 @@ To run it, we simply need to execute `node1.py` first and then on another termin
                 model_params = model.init(seed, jnp.ones((1, 28, 28)))["params"] # force init
                 model = FlaxModel(model, model_params), # Wrap the Multi Layer Perceptron into a FlaxModel
                 data = P2PFLDataset.from_huggingface("p2pfl/MNIST"), # Get dataset from Hugging Face
-                address= f"127.0.0.1:{6666}", # Introduce a port or remove to use a random one
+                addr= f"127.0.0.1:{6666}", # Introduce a port or remove to use a random one
             )
             node.start()
 
@@ -128,7 +128,7 @@ To run it, we simply need to execute `node1.py` first and then on another termin
             node = Node(
                 model = LightningModel(MLP()), # Wrap your model (a MLP in this example) into a LightningModel
                 data = P2PFLDataset.from_huggingface("p2pfl/MNIST"),
-                address = "127.0.0.1", # Random port
+                addr = "127.0.0.1", # Random port
             )
             node.start()
 
@@ -167,7 +167,7 @@ To run it, we simply need to execute `node1.py` first and then on another termin
                 model(tf.zeros((1, 28, 28, 1))) # force initiallization
                 model = KerasModel(model), # Wrap your model (a MLP in this example) into a KerasModel
                 data = P2PFLDataset.from_huggingface("p2pfl/MNIST"),
-                address = "127.0.0.1", # Random port
+                addr = "127.0.0.1", # Random port
             )
             node.start()
 
@@ -208,7 +208,7 @@ To run it, we simply need to execute `node1.py` first and then on another termin
                 model_params = model.init(seed, jnp.ones((1, 28, 28)))["params"] # force init
                 model = FlaxModel(model, model_params), # Wrap the Multi Layer Perceptron into a FlaxModel
                 data = P2PFLDataset.from_huggingface("p2pfl/MNIST"),
-                address = "127.0.0.1", # Random port
+                addr = "127.0.0.1", # Random port
             )
             node.start()
 

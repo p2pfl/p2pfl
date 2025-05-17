@@ -165,6 +165,10 @@ class GrpcClient(ProtobuffClient):
         # Send
         try:
             res = self.stub.send(msg, timeout=Settings.general.GRPC_TIMEOUT)  # type: ignore
+
+            # Log successful message sending
+            if not res.error:
+                self.log_successful_send(msg)
         except Exception as e:
             # Unexpected error
             logger.info(

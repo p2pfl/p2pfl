@@ -45,6 +45,8 @@ class General:
     """Maximum number of run log files to keep."""
     DISABLE_RAY: bool = False
     """Disable Ray for local testing."""
+    RESOURCE_MONITOR_PERIOD: int = 10
+    """Period (seconds) to send resource monitor information."""
 
 
 @dataclass
@@ -112,14 +114,6 @@ class Training:
     """Default batch size for training."""
 
 
-@dataclass
-class Web:
-    """Web interface and resource monitoring settings."""
-
-    RESOURCE_MONITOR_PERIOD: int = 1
-    """Period (seconds) to send resource monitor information."""
-
-
 ###################
 # Global Settings #
 ###################
@@ -138,8 +132,6 @@ class Settings(metaclass=SingletonMeta):
     """SSL certificate settings."""
     training = Training()
     """Training process settings."""
-    web = Web()
-    """Web interface and resource monitoring settings."""
 
     @classmethod
     def set_from_dict(cls, settings_dict: dict[str, dict[str, Any]]):

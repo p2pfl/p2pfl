@@ -79,6 +79,7 @@ settings:
     log_level: "INFO" # Logging verbosity: "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
     grpc_timeout: 2
     disable_ray: False
+    resource_monitor_period: 1
 
   SSL:
     use_ssl: false
@@ -103,8 +104,6 @@ settings:
   training:
     vote_timeout: 60
     aggregation_timeout: 300
-  web:
-    resource_monitor_period: 1
 
 # Profiling configuration
 profiling:

@@ -80,8 +80,9 @@ class Neighbors(NodeComponent):
         # Lock
         with self.neis_lock:
             # Cannot add duplicates
-            if self.exists(addr):
+            if self.exists(addr, only_direct=True):
                 logger.info(self.addr, f"❌ Cannot add duplicates. {addr} already exists.")
+                logger.debug(self.addr, f"Current neighbors: {self.neis.keys()}")
                 return False
 
             # Add
@@ -148,14 +149,17 @@ class Neighbors(NodeComponent):
             return {k: v for k, v in neis.items() if v[0].is_connected() and not v[0].has_temporal_connection()}
         return neis
 
-    def exists(self, addr: str) -> bool:
+    def exists(self, addr: str, only_direct: bool = False) -> bool:
         """
         Check if a neighbor exists in the neighbors list.
 
         Args:
             addr: Address of the neighbor to check.
+            only_direct: Flag to check only direct neighbors.
 
         """
+        if only_direct:
+            return addr in self.neis and self.neis[addr][0].is_connected() and not self.neis[addr][0].has_temporal_connection()
         return addr in self.neis
 
     def clear_neighbors(self) -> None:

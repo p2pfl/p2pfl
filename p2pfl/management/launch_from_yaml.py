@@ -48,12 +48,13 @@ def load_by_package_and_name(package_name, class_name) -> Any:
     return getattr(module, class_name)
 
 
-def run_from_yaml(yaml_path: str):
+def run_from_yaml(yaml_path: str, debug: bool = False) -> None:
     """
     Run a simulation from a YAML file.
 
     Args:
         yaml_path: The path to the YAML file.
+        debug: If True, enable debug mode.
 
     """
     # Parse YAML configuration
@@ -147,11 +148,11 @@ def run_from_yaml(yaml_path: str):
 
     # Transforms
     transforms_config = dataset_config.get("transforms", None)
-    transforms_package = transforms_config.get("package")
-    transform_function = transforms_config.get("function")
-    if transforms_config and (not transforms_package or not transform_function):
-        raise ValueError("Missing 'transforms' configuration in YAML file.")
     if transforms_config:
+        transforms_package = transforms_config.get("package")
+        transform_function = transforms_config.get("function")
+        if not transforms_package or not transform_function:
+            raise ValueError("Missing 'transforms' configuration in YAML file.")
         transform_class = load_by_package_and_name(
             transforms_package,
             transform_function,
@@ -274,7 +275,7 @@ def run_from_yaml(yaml_path: str):
         # Wait and check
         # Get wait_timeout from experiment config (in minutes), default to 60 minutes (1 hour)
         wait_timeout = experiment_config.get("wait_timeout", 60)
-        wait_to_finish(nodes, timeout=wait_timeout * 60)  # Convert minutes to seconds
+        wait_to_finish(nodes, timeout=wait_timeout * 60, debug=debug)  # Convert minutes to seconds
 
     except Exception as e:
         raise e

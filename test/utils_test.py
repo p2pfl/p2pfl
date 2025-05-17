@@ -92,6 +92,56 @@ def test_invalid_topology_type():
         TopologyFactory.generate_matrix("invalid_type", 4)
 
 
+@pytest.mark.parametrize(
+    "topology_type, num_nodes",
+    [
+        (TopologyType.RANDOM_2, 0),
+        (TopologyType.RANDOM_2, 1),
+        (TopologyType.RANDOM_2, 2),
+        (TopologyType.RANDOM_2, 10),
+        (TopologyType.RANDOM_3, 0),
+        (TopologyType.RANDOM_3, 1),
+        (TopologyType.RANDOM_3, 2),
+        (TopologyType.RANDOM_3, 10),
+        (TopologyType.RANDOM_4, 0),
+        (TopologyType.RANDOM_4, 1),
+        (TopologyType.RANDOM_4, 2),
+        (TopologyType.RANDOM_4, 10),
+    ],
+)
+def test_generate_random_matrix_properties(topology_type, num_nodes):
+    """Test properties of randomly generated adjacency matrices."""
+    matrix = TopologyFactory.generate_matrix(topology_type, num_nodes)
+
+    # Check shape
+    assert matrix.shape == (num_nodes, num_nodes)
+
+    # Check diagonal is zero
+    assert np.all(np.diag(matrix) == 0)
+
+    # Check symmetry
+    assert np.array_equal(matrix, matrix.T)
+
+    # Check number of edges
+    if num_nodes <= 1:
+        expected_num_edges = 0
+    else:
+        if topology_type == TopologyType.RANDOM_2:
+            avg_degree = 2
+        elif topology_type == TopologyType.RANDOM_3:
+            avg_degree = 3
+        else:  # RANDOM_4
+            avg_degree = 4
+
+        # Calculate expected number of edges based on implementation logic
+        num_edges_target = round(num_nodes * avg_degree / 2)
+        max_possible_edges = num_nodes * (num_nodes - 1) // 2
+        expected_num_edges = min(num_edges_target, max_possible_edges)
+
+    actual_num_edges = np.sum(matrix) // 2
+    assert actual_num_edges == expected_num_edges
+
+
 class MockNodeComponent(NodeComponent):
     """Mock class inheriting from NodeComponent for testing."""
 
