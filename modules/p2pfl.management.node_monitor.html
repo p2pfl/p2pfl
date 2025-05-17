@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="p2pfl.management.p2pfl_web_services module" href="p2pfl.management.p2pfl_web_services.html" /><link rel="prev" title="p2pfl.management.metric_storage module" href="p2pfl.management.metric_storage.html" />
 
     <link rel="shortcut icon" href="../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>p2pfl.management.node_monitor module - p2pfl 0.4.1 documentation</title>
+        <title>p2pfl.management.node_monitor module - p2pfl 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -167,7 +167,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">p2pfl 0.4.1 documentation</div></a>
+      <a href="../index.html"><div class="brand">p2pfl 0.4.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -363,6 +363,7 @@
 </li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.cli.html">p2pfl.management.cli module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.launch_from_yaml.html">p2pfl.management.launch_from_yaml module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.management.message_storage.html">p2pfl.management.message_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a></li>
 <li class="toctree-l4 current current-page"><a class="current reference internal" href="#">p2pfl.management.node_monitor module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.p2pfl_web_services.html">p2pfl.management.p2pfl_web_services module</a></li>
@@ -437,7 +438,7 @@
 <p>Node monitor.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="p2pfl.management.node_monitor.NodeMonitor">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.management.node_monitor.</span></span><span class="sig-name descname"><span class="pre">NodeMonitor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_addr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric_report_callback</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/management/node_monitor.html#NodeMonitor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.management.node_monitor.NodeMonitor" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.management.node_monitor.</span></span><span class="sig-name descname"><span class="pre">NodeMonitor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_fn</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/management/node_monitor.html#NodeMonitor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.management.node_monitor.NodeMonitor" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Thread</span></code></p>
 <p>Node monitor thread.</p>
 <dl class="field-list simple">
@@ -449,9 +450,31 @@
 </dd>
 </dl>
 <dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.management.node_monitor.NodeMonitor.get_logs">
+<span class="sig-name descname"><span class="pre">get_logs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/management/node_monitor.html#NodeMonitor.get_logs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.management.node_monitor.NodeMonitor.get_logs" title="Link to this definition">¶</a></dt>
+<dd><p>Get the logs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.management.node_monitor.NodeMonitor.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/management/node_monitor.html#NodeMonitor.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.management.node_monitor.NodeMonitor.run" title="Link to this definition">¶</a></dt>
 <dd><p>Run the node monitor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.management.node_monitor.NodeMonitor.set_report_fn">
+<span class="sig-name descname"><span class="pre">set_report_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_fn</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/management/node_monitor.html#NodeMonitor.set_report_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.management.node_monitor.NodeMonitor.set_report_fn" title="Link to this definition">¶</a></dt>
+<dd><p>Set the report function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
@@ -531,7 +554,9 @@
             <ul>
 <li><a class="reference internal" href="#">p2pfl.management.node_monitor module</a><ul>
 <li><a class="reference internal" href="#p2pfl.management.node_monitor.NodeMonitor"><code class="docutils literal notranslate"><span class="pre">NodeMonitor</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.management.node_monitor.NodeMonitor.get_logs"><code class="docutils literal notranslate"><span class="pre">NodeMonitor.get_logs()</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.management.node_monitor.NodeMonitor.run"><code class="docutils literal notranslate"><span class="pre">NodeMonitor.run()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.management.node_monitor.NodeMonitor.set_report_fn"><code class="docutils literal notranslate"><span class="pre">NodeMonitor.set_report_fn()</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.management.node_monitor.NodeMonitor.stop"><code class="docutils literal notranslate"><span class="pre">NodeMonitor.stop()</span></code></a></li>
 </ul>
 </li>
@@ -546,7 +571,7 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=c87aa342"></script>
+</div><script src="../_static/documentation_options.js?v=ff822928"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=5fa4622c"></script>

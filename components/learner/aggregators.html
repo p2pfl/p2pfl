@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="🔄 Workflows" href="../workflows.html" /><link rel="prev" title="🗂️ Datasets" href="datasets.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>🧩 Aggregators - p2pfl 0.4.1 documentation</title>
+        <title>🧩 Aggregators - p2pfl 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -167,7 +167,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">p2pfl 0.4.1 documentation</div></a>
+      <a href="../../index.html"><div class="brand">p2pfl 0.4.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -363,6 +363,7 @@
 </li>
 <li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.cli.html">p2pfl.management.cli module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.launch_from_yaml.html">p2pfl.management.launch_from_yaml module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.message_storage.html">p2pfl.management.message_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.node_monitor.html">p2pfl.management.node_monitor module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.p2pfl_web_services.html">p2pfl.management.p2pfl_web_services module</a></li>
@@ -451,7 +452,7 @@
 <thead>
 <tr class="row-odd"><th class="head text-left"><p>Aggregator</p></th>
 <th class="head text-left"><p>Description</p></th>
-<th class="head text-center"><p>Partial Aggregation</p></th>
+<th class="head text-center"><p>Supports Partial Aggregation (Class Default)</p></th>
 <th class="head text-left"><p>Paper Link</p></th>
 </tr>
 </thead>
@@ -470,6 +471,11 @@
 <td class="text-left"><p>Uses control variates to reduce variance and correct client drift in non-IID data scenarios.</p></td>
 <td class="text-center"><p>❌</p></td>
 <td class="text-left"><p><a class="reference external" href="https://arxiv.org/abs/1910.06378">SCAFFOLD: Stochastic Controlled Averaging for Federated Learning</a></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><em>An instance’s partial aggregation can be turned off using the <code class="docutils literal notranslate"><span class="pre">disable_partial_aggregation=True</span></code> parameter in its constructor if the class supports it.</em></p></td>
+<td class="text-left"><p></p></td>
+<td class="text-center"><p></p></td>
+<td class="text-left"><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -507,12 +513,36 @@
 <p>Partial aggregations offer a way to combine model updates even when not all nodes have contributed. This is particularly useful when combined with the <strong>gossip protocol</strong>, as it significantly reduces the number of models that need to be transmitted between nodes, improving overall efficiency.</p>
 <p>In a gossip-based system, a node might receive model updates from multiple other nodes. Instead of forwarding each of these updates individually, the aggregator can combine them into a single, <strong>partially aggregated model</strong>. This approach minimizes communication overhead, as fewer models need to be sent. This also makes the aggregation process more robust, allowing it to proceed even if some nodes are slow or unavailable.</p>
 <p>While beneficial, not all aggregation algorithms are suitable for partial aggregation. For instance, while it’s mathematically equivalent to full aggregation for algorithms like <a class="reference internal" href="../../modules/p2pfl.learning.aggregators.fedavg.html#p2pfl.learning.aggregators.fedavg.FedAvg" title="p2pfl.learning.aggregators.fedavg.FedAvg"><span class="xref myst py py-class">FedAvg</span></a>, it might negatively impact the model’s convergence for others.</p>
-<p>Partial aggregation, therefore, provides a more flexible and efficient aggregation process, especially in <strong>dynamic and decentralized environments</strong>. It allows for a balance between communication efficiency and model convergence, depending on the specific aggregation algorithm being used.</p>
 </section>
 <section id="creating-new-aggregators">
 <h2>Creating New Aggregators<a class="headerlink" href="#creating-new-aggregators" title="Link to this heading">¶</a></h2>
-<p>When creating new aggregators, there are a few key aspects to keep in mind. First, consider whether your aggregation algorithm can support <strong>partial aggregation</strong>. If it can, you’ll want to set the <code class="docutils literal notranslate"><span class="pre">partial_aggregation</span></code> attribute of your <code class="docutils literal notranslate"><span class="pre">Aggregator</span></code> class to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
-<p>Another important consideration is how your aggregator might interact with the <strong>optimization process</strong>. Some aggregators require more than just the model weights; they might need specific information about the training process itself, such as gradients or other calculated values. To handle this, P2PFL uses a <strong>callback system</strong>. These callbacks, which are essentially extensions of the framework-specific callbacks like those in PyTorch, allow you to inject custom logic into the training loop. Your aggregator can specify which callbacks it needs using the <code class="docutils literal notranslate"><span class="pre">get_required_callbacks()</span></code> method. The <code class="docutils literal notranslate"><span class="pre">CallbackFactory</span></code> will then ensure that the appropriate callbacks are available for the chosen machine learning framework.</p>
+<p>When creating new aggregators, consider the following:</p>
+<ol class="arabic">
+<li><p><strong>Partial Aggregation Capability</strong>:</p>
+<ul>
+<li><p>Define a class attribute <code class="docutils literal notranslate"><span class="pre">SUPPORTS_PARTIAL_AGGREGATION:</span> <span class="pre">bool</span></code> in your new aggregator class. Set it to <code class="docutils literal notranslate"><span class="pre">True</span></code> if your algorithm can correctly handle partial aggregations, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p></li>
+<li><p>The base <code class="docutils literal notranslate"><span class="pre">Aggregator</span></code> class’s <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method will automatically use this class attribute to set the initial state of <code class="docutils literal notranslate"><span class="pre">self.partial_aggregation</span></code> for instances of your new aggregator. It also handles the <code class="docutils literal notranslate"><span class="pre">disable_partial_aggregation</span></code> parameter.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyCustomAggregator</span><span class="p">(</span><span class="n">Aggregator</span><span class="p">):</span>
+    <span class="n">SUPPORTS_PARTIAL_AGGREGATION</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span> <span class="c1"># Or False, depending on the algorithm</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disable_partial_aggregation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="c1"># other_params...):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">disable_partial_aggregation</span><span class="o">=</span><span class="n">disable_partial_aggregation</span><span class="p">)</span>
+        <span class="c1"># self.other_params = other_params</span>
+        <span class="c1"># No need to manually set self.partial_aggregation here;</span>
+        <span class="c1"># the base class __init__ handles it based on SUPPORTS_PARTIAL_AGGREGATION</span>
+        <span class="c1"># and the disable_partial_aggregation flag.</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+<li><p><strong>Interaction with Optimization Process (Callbacks)</strong>:</p>
+<ul class="simple">
+<li><p>Some aggregators might need more than just model weights, requiring specific information from the training process (e.g., gradients). P2PFL uses a callback system for this.</p></li>
+<li><p>Your aggregator can specify required callbacks via <code class="docutils literal notranslate"><span class="pre">get_required_callbacks()</span></code>. The <code class="docutils literal notranslate"><span class="pre">CallbackFactory</span></code> ensures these are available for the chosen ML framework.</p></li>
+</ul>
+</li>
+</ol>
 <p>The information gathered by these callbacks is stored in a special dictionary called <code class="docutils literal notranslate"><span class="pre">additional_info</span></code> that’s associated with each model. This is where P2PFL’s role becomes crucial. It manages this <code class="docutils literal notranslate"><span class="pre">additional_info</span></code> to ensure that the data collected by the callbacks is not only stored but also persists even after the models are aggregated. This means that your aggregator can reliably access this extra information using <code class="docutils literal notranslate"><span class="pre">model.get_info(callback_name)</span></code> when it’s combining the models. This mechanism allows for a clean separation of concerns: the framework handles the training loop execution, the callbacks gather the necessary data, and P2PFL ensures that this data is available to the aggregator.</p>
 <p>For instance, let’s say you’re building an aggregator that needs to know the L2 norm of the gradients during training. You’d create a callback, like the <code class="docutils literal notranslate"><span class="pre">GradientNormCallbackPT</span></code> we discussed for PyTorch, that calculates this norm and stores it in <code class="docutils literal notranslate"><span class="pre">additional_info</span></code>. Your aggregator would then specify that it requires this callback.</p>
 <p>Here’s how the code for the aggregator (<code class="docutils literal notranslate"><span class="pre">MyAggregator</span></code>) and the callback (<code class="docutils literal notranslate"><span class="pre">GradientNormCallbackPT</span></code>) would look:</p>
@@ -523,9 +553,11 @@
 
 <span class="c1"># MyAggregator Implementation</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">MyAggregator</span><span class="p">(</span><span class="n">Aggregator</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">partial_aggregation</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Set to True if it supports partial aggregation</span>
+    <span class="n">SUPPORTS_PARTIAL_AGGREGATION</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span> <span class="c1"># Example: This custom aggregator supports it</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disable_partial_aggregation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">disable_partial_aggregation</span><span class="o">=</span><span class="n">disable_partial_aggregation</span><span class="p">)</span>
+        <span class="c1"># self.partial_aggregation is now set by the base class logic</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">aggregate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="p">):</span>
         <span class="c1"># Your aggregation logic here, using model.get_weights() and</span>
@@ -640,7 +672,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=c87aa342"></script>
+</div><script src="../../_static/documentation_options.js?v=ff822928"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>

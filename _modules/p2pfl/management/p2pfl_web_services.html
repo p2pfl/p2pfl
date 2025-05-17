@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>p2pfl.management.p2pfl_web_services - p2pfl 0.4.1 documentation</title>
+        <title>p2pfl.management.p2pfl_web_services - p2pfl 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -166,7 +166,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">p2pfl 0.4.1 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">p2pfl 0.4.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -362,6 +362,7 @@
 </li>
 <li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.cli.html">p2pfl.management.cli module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.launch_from_yaml.html">p2pfl.management.launch_from_yaml module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.message_storage.html">p2pfl.management.message_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.node_monitor.html">p2pfl.management.node_monitor module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.p2pfl_web_services.html">p2pfl.management.p2pfl_web_services module</a></li>
@@ -457,7 +458,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
@@ -515,19 +516,17 @@
 
 <div class="viewcode-block" id="P2pflWebServices.register_node">
 <a class="viewcode-back" href="../../../modules/p2pfl.management.p2pfl_web_services.html#p2pfl.management.p2pfl_web_services.P2pflWebServices.register_node">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">register_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">is_simulated</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Register a node.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            node: The node address.</span>
-<span class="sd">            is_simulated: If the node is simulated.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Send request</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="n">node</span><span class="p">,</span>
-            <span class="s2">&quot;is_simulated&quot;</span><span class="p">:</span> <span class="n">is_simulated</span><span class="p">,</span>
             <span class="s2">&quot;creation_date&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">),</span>
         <span class="p">}</span>
         <span class="k">try</span><span class="p">:</span>
@@ -716,6 +715,38 @@
             <span class="k">raise</span> <span class="n">P2pflWebServicesError</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
 
 
+<div class="viewcode-block" id="P2pflWebServices.send_communication_log">
+<a class="viewcode-back" href="../../../modules/p2pfl.management.p2pfl_web_services.html#p2pfl.management.p2pfl_web_services.P2pflWebServices.send_communication_log">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">send_communication_log</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">node</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">timestamp</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span>
+        <span class="n">direction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">cmd</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">source_dest</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">package_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">package_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">round_num</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">additional_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send a communication log to the web services.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            node: The node address.</span>
+<span class="sd">            timestamp: The timestamp of the communication.</span>
+<span class="sd">            direction: Direction of communication (&quot;sent&quot; or &quot;received&quot;).</span>
+<span class="sd">            cmd: The command or message type.</span>
+<span class="sd">            source_dest: Source (if receiving) or destination (if sending) node.</span>
+<span class="sd">            package_type: Type of package (&quot;message&quot; or &quot;weights&quot;).</span>
+<span class="sd">            package_size: Size of the package in bytes (if available).</span>
+<span class="sd">            round_num: The federated learning round number (if applicable).</span>
+<span class="sd">            additional_info: Additional information as a dictionary.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
 <div class="viewcode-block" id="P2pflWebServices.get_pending_actions">
 <a class="viewcode-back" href="../../../modules/p2pfl.management.p2pfl_web_services.html#p2pfl.management.p2pfl_web_services.P2pflWebServices.get_pending_actions">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_pending_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -755,7 +786,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=c87aa342"></script>
+</div><script src="../../../_static/documentation_options.js?v=ff822928"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=5fa4622c"></script>

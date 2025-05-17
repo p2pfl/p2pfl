@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="🧩 Aggregators" href="aggregators.html" /><link rel="prev" title="🧠 Learners" href="learners.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>🗂️ Datasets - p2pfl 0.4.1 documentation</title>
+        <title>🗂️ Datasets - p2pfl 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -167,7 +167,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">p2pfl 0.4.1 documentation</div></a>
+      <a href="../../index.html"><div class="brand">p2pfl 0.4.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -363,6 +363,7 @@
 </li>
 <li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.cli.html">p2pfl.management.cli module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.launch_from_yaml.html">p2pfl.management.launch_from_yaml module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.message_storage.html">p2pfl.management.message_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.node_monitor.html">p2pfl.management.node_monitor module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.p2pfl_web_services.html">p2pfl.management.p2pfl_web_services module</a></li>
@@ -595,24 +596,71 @@ Pandas</label><div class="sd-tab-content docutils">
 <span class="nb">print</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Transformations:</strong>  You can apply transformations to your data using <code class="docutils literal notranslate"><span class="pre">set_transforms()</span></code>. This allows you to preprocess your data before using it for training or evaluation. Here’s an example demonstrating how to apply a simple transformation to the MNIST dataset:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">p2pfl.learning.dataset.p2pfl_dataset</span><span class="w"> </span><span class="kn">import</span> <span class="n">P2PFLDataset</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">torchvision</span><span class="w"> </span><span class="kn">import</span> <span class="n">transforms</span>
+<section id="data-transforms">
+<h3>Data Transforms<a class="headerlink" href="#data-transforms" title="Link to this heading">¶</a></h3>
+<p>P2PFL supports data transformations through a flexible system that leverages the Hugging Face datasets library. Transforms are applied during the dataset processing pipeline before the data is exported to specific ML frameworks.</p>
+<section id="custom-transform-functions">
+<h4>Custom Transform Functions<a class="headerlink" href="#custom-transform-functions" title="Link to this heading">¶</a></h4>
+<p>In P2PFL, transforms are defined as functions that operate on batches of examples. These functions should:</p>
+<ol class="arabic simple">
+<li><p>Accept a dictionary of examples (where each key is a feature name and each value is a list of feature values)</p></li>
+<li><p>Apply the desired transformations</p></li>
+<li><p>Return the transformed dictionary with the same structure</p></li>
+</ol>
+<p>Here’s an example of a transform function for CIFAR10 images:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># p2pfl/examples/cifar10/transforms.py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torchvision.transforms</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">transforms</span>
 
-<span class="c1"># Load MNIST dataset</span>
-<span class="n">mnist_dataset</span> <span class="o">=</span> <span class="n">P2PFLDataset</span><span class="o">.</span><span class="n">from_huggingface</span><span class="p">(</span><span class="s2">&quot;p2pfl/MNIST&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cifar10_transforms</span><span class="p">(</span><span class="n">examples</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply normalization to a batch of CIFAR10 examples.&quot;&quot;&quot;</span>
+    <span class="n">to_tensor</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">()</span>
+    <span class="n">normalize</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="p">[</span><span class="mf">0.4914</span><span class="p">,</span> <span class="mf">0.4822</span><span class="p">,</span> <span class="mf">0.4465</span><span class="p">],</span> <span class="n">std</span><span class="o">=</span><span class="p">[</span><span class="mf">0.2470</span><span class="p">,</span> <span class="mf">0.2435</span><span class="p">,</span> <span class="mf">0.2616</span><span class="p">])</span>
 
-<span class="c1"># Define a transform to convert the image to a tensor and normalize it</span>
-<span class="n">transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">((</span><span class="mf">0.1307</span><span class="p">,),</span> <span class="p">(</span><span class="mf">0.3081</span><span class="p">,))])</span>
+    <span class="c1"># Transform all images using list comprehension</span>
+    <span class="n">transformed_images</span> <span class="o">=</span> <span class="p">[</span><span class="n">normalize</span><span class="p">(</span><span class="n">img</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="n">to_tensor</span><span class="p">(</span><span class="n">img</span><span class="p">))</span> 
+                         <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">examples</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]]</span>
 
-<span class="c1"># Set the transform</span>
-<span class="n">mnist_dataset</span><span class="o">.</span><span class="n">set_transforms</span><span class="p">(</span><span class="n">transform</span><span class="p">)</span>
-
-<span class="c1"># Access a transformed sample</span>
-<span class="n">transformed_sample</span> <span class="o">=</span> <span class="n">mnist_dataset</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">transformed_sample</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">transformed_images</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">examples</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]}</span>
 </pre></div>
 </div>
+</section>
+<section id="programmatically-in-python">
+<h4>Programmatically in Python<a class="headerlink" href="#programmatically-in-python" title="Link to this heading">¶</a></h4>
+<p>You can apply transforms programmatically using the <code class="docutils literal notranslate"><span class="pre">set_transforms()</span></code> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">p2pfl.learning.dataset.p2pfl_dataset</span><span class="w"> </span><span class="kn">import</span> <span class="n">P2PFLDataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">p2pfl.examples.cifar10.transforms</span><span class="w"> </span><span class="kn">import</span> <span class="n">cifar10_transforms</span>
+
+<span class="c1"># Load CIFAR10 dataset</span>
+<span class="n">cifar10_dataset</span> <span class="o">=</span> <span class="n">P2PFLDataset</span><span class="o">.</span><span class="n">from_huggingface</span><span class="p">(</span><span class="s2">&quot;p2pfl/CIFAR10&quot;</span><span class="p">)</span>
+
+<span class="c1"># Set the transform function</span>
+<span class="n">cifar10_dataset</span><span class="o">.</span><span class="n">set_transforms</span><span class="p">(</span><span class="n">cifar10_transforms</span><span class="p">)</span>
+
+<span class="c1"># The transforms will be applied when accessing data</span>
+<span class="n">transformed_sample</span> <span class="o">=</span> <span class="n">cifar10_dataset</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># Or when exporting to a framework-specific format</span>
+</pre></div>
+</div>
+</section>
+<section id="in-yaml-configuration">
+<h4>In YAML Configuration<a class="headerlink" href="#in-yaml-configuration" title="Link to this heading">¶</a></h4>
+<p>Transforms can be configured in YAML files for experiment configuration. This is useful for reproducible experiments:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Dataset settings</span>
+<span class="nt">dataset</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;huggingface&quot;</span><span class="w"> </span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;p2pfl/CIFAR10&quot;</span>
+<span class="w">  </span><span class="nt">batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">64</span>
+<span class="w">  </span><span class="c1"># Transform configuration</span>
+<span class="w">  </span><span class="nt">transforms</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">package</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;p2pfl.examples.cifar10.transforms&quot;</span><span class="w">  </span><span class="c1"># Python package containing the transform</span>
+<span class="w">    </span><span class="nt">function</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;cifar10_transforms&quot;</span><span class="w">                </span><span class="c1"># Function name to use</span>
+<span class="w">    </span><span class="nt">params</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w">                                    </span><span class="c1"># Optional parameters to pass to the function</span>
+</pre></div>
+</div>
+<p>This configuration allows transforms to be easily shared, reused, and versioned as part of your experiment setup.</p>
+</section>
+</section>
 </section>
 <section id="partitioning-for-federated-learning">
 <h2>Partitioning for Federated Learning<a class="headerlink" href="#partitioning-for-federated-learning" title="Link to this heading">¶</a></h2>
@@ -753,7 +801,15 @@ Flax</label><div class="sd-tab-content docutils">
 <li><a class="reference internal" href="#train-test-split">Train/Test Split</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#data-access-and-manipulation">Data Access and Manipulation</a></li>
+<li><a class="reference internal" href="#data-access-and-manipulation">Data Access and Manipulation</a><ul>
+<li><a class="reference internal" href="#data-transforms">Data Transforms</a><ul>
+<li><a class="reference internal" href="#custom-transform-functions">Custom Transform Functions</a></li>
+<li><a class="reference internal" href="#programmatically-in-python">Programmatically in Python</a></li>
+<li><a class="reference internal" href="#in-yaml-configuration">In YAML Configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a class="reference internal" href="#partitioning-for-federated-learning">Partitioning for Federated Learning</a></li>
 <li><a class="reference internal" href="#exporting-data">Exporting Data</a></li>
 </ul>
@@ -767,7 +823,7 @@ Flax</label><div class="sd-tab-content docutils">
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=c87aa342"></script>
+</div><script src="../../_static/documentation_options.js?v=ff822928"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>

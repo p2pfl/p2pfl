@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>p2pfl.learning.dataset.p2pfl_dataset - p2pfl 0.4.1 documentation</title>
+        <title>p2pfl.learning.dataset.p2pfl_dataset - p2pfl 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -166,7 +166,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../../index.html"><div class="brand">p2pfl 0.4.1 documentation</div></a>
+      <a href="../../../../index.html"><div class="brand">p2pfl 0.4.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -362,6 +362,7 @@
 </li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../modules/p2pfl.management.cli.html">p2pfl.management.cli module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../modules/p2pfl.management.launch_from_yaml.html">p2pfl.management.launch_from_yaml module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../modules/p2pfl.management.message_storage.html">p2pfl.management.message_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../modules/p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../modules/p2pfl.management.node_monitor.html">p2pfl.management.node_monitor module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../modules/p2pfl.management.p2pfl_web_services.html">p2pfl.management.p2pfl_web_services module</a></li>
@@ -468,13 +469,12 @@
 <a class="viewcode-back" href="../../../../modules/p2pfl.learning.dataset.p2pfl_dataset.html#p2pfl.learning.dataset.p2pfl_dataset.DataExportStrategy.export">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">export</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">transforms</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">export</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Export the data using the specific strategy.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            data: The data to export.</span>
-<span class="sd">            transforms: The transforms to apply to the data.</span>
+<span class="sd">            data: The data to export. Transforms should already be applied to the dataset.</span>
 <span class="sd">            batch_size: The batch size for the export.</span>
 <span class="sd">            **kwargs: Additional keyword arguments for the export strategy.</span>
 
@@ -541,7 +541,6 @@
         <span class="n">train_split_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span>
         <span class="n">test_split_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="n">transforms</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the P2PFLDataset object.</span>
@@ -551,13 +550,11 @@
 <span class="sd">            train_split_name: The name of the training split.</span>
 <span class="sd">            test_split_name: The name of the test split.</span>
 <span class="sd">            batch_size: The batch size for the dataset.</span>
-<span class="sd">            transforms: The transforms to apply to the data.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_train_split_name</span> <span class="o">=</span> <span class="n">train_split_name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_test_split_name</span> <span class="o">=</span> <span class="n">test_split_name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span> <span class="o">=</span> <span class="n">transforms</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
 
 <div class="viewcode-block" id="P2PFLDataset.get">
@@ -586,13 +583,17 @@
 <a class="viewcode-back" href="../../../../modules/p2pfl.learning.dataset.p2pfl_dataset.html#p2pfl.learning.dataset.p2pfl_dataset.P2PFLDataset.set_transforms">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_transforms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transforms</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Set the transforms to apply to the data.</span>
+<span class="sd">        Set the transforms to apply to the data, delegating to the Hugging Face dataset.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            transforms: The transforms to apply to the data.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span> <span class="o">=</span> <span class="n">transforms</span></div>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">set_transform</span><span class="p">(</span><span class="n">transforms</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="n">DatasetDict</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">split</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">split</span><span class="p">]</span><span class="o">.</span><span class="n">set_transform</span><span class="p">(</span><span class="n">transforms</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="P2PFLDataset.set_batch_size">
@@ -686,7 +687,6 @@
                 <span class="n">train_split_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_train_split_name</span><span class="p">,</span>
                 <span class="n">test_split_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_test_split_name</span><span class="p">,</span>
                 <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
-                <span class="n">transforms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_partitions</span><span class="p">)</span>
         <span class="p">]</span></div>
@@ -718,7 +718,7 @@
 
         <span class="c1"># Export</span>
         <span class="n">split</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_split_name</span> <span class="k">if</span> <span class="n">train</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_split_name</span>
-        <span class="k">return</span> <span class="n">strategy</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">split</span><span class="p">],</span> <span class="n">transforms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">strategy</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">split</span><span class="p">],</span> <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="P2PFLDataset.from_csv">
@@ -865,7 +865,7 @@
       
     </aside>
   </div>
-</div><script src="../../../../_static/documentation_options.js?v=c87aa342"></script>
+</div><script src="../../../../_static/documentation_options.js?v=ff822928"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=5fa4622c"></script>

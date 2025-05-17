@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>p2pfl.management.launch_from_yaml - p2pfl 0.4.1 documentation</title>
+        <title>p2pfl.management.launch_from_yaml - p2pfl 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -166,7 +166,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">p2pfl 0.4.1 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">p2pfl 0.4.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -362,6 +362,7 @@
 </li>
 <li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.cli.html">p2pfl.management.cli module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.launch_from_yaml.html">p2pfl.management.launch_from_yaml module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.message_storage.html">p2pfl.management.message_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.node_monitor.html">p2pfl.management.node_monitor module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.p2pfl_web_services.html">p2pfl.management.p2pfl_web_services module</a></li>
@@ -481,12 +482,13 @@
 
 <div class="viewcode-block" id="run_from_yaml">
 <a class="viewcode-back" href="../../../modules/p2pfl.management.launch_from_yaml.html#p2pfl.management.launch_from_yaml.run_from_yaml">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">run_from_yaml</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_from_yaml</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run a simulation from a YAML file.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        yaml_path: The path to the YAML file.</span>
+<span class="sd">        debug: If True, enable debug mode.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Parse YAML configuration</span>
@@ -577,6 +579,19 @@
 
     <span class="c1"># Batch size</span>
     <span class="n">dataset</span><span class="o">.</span><span class="n">set_batch_size</span><span class="p">(</span><span class="n">dataset_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;batch_size&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="c1"># Transforms</span>
+    <span class="n">transforms_config</span> <span class="o">=</span> <span class="n">dataset_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;transforms&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">transforms_config</span><span class="p">:</span>
+        <span class="n">transforms_package</span> <span class="o">=</span> <span class="n">transforms_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;package&quot;</span><span class="p">)</span>
+        <span class="n">transform_function</span> <span class="o">=</span> <span class="n">transforms_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;function&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">transforms_package</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">transform_function</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing &#39;transforms&#39; configuration in YAML file.&quot;</span><span class="p">)</span>
+        <span class="n">transform_class</span> <span class="o">=</span> <span class="n">load_by_package_and_name</span><span class="p">(</span>
+            <span class="n">transforms_package</span><span class="p">,</span>
+            <span class="n">transform_function</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">dataset</span><span class="o">.</span><span class="n">set_transforms</span><span class="p">(</span><span class="n">transform_class</span><span class="p">(</span><span class="o">**</span><span class="n">transforms_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;params&quot;</span><span class="p">,</span> <span class="p">{})))</span>
 
     <span class="c1"># Partitioning</span>
     <span class="n">partitioning_config</span> <span class="o">=</span> <span class="n">dataset_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;partitioning&quot;</span><span class="p">,</span> <span class="p">{})</span>
@@ -692,7 +707,9 @@
         <span class="n">nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_start_learning</span><span class="p">(</span><span class="n">rounds</span><span class="o">=</span><span class="n">r</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">e</span><span class="p">,</span> <span class="n">trainset_size</span><span class="o">=</span><span class="n">trainset_size</span><span class="p">)</span>
 
         <span class="c1"># Wait and check</span>
-        <span class="n">wait_to_finish</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>  <span class="c1"># 1 hour | TODO: Make this configurable</span>
+        <span class="c1"># Get wait_timeout from experiment config (in minutes), default to 60 minutes (1 hour)</span>
+        <span class="n">wait_timeout</span> <span class="o">=</span> <span class="n">experiment_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;wait_timeout&quot;</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="n">wait_to_finish</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">wait_timeout</span> <span class="o">*</span> <span class="mi">60</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">debug</span><span class="p">)</span>  <span class="c1"># Convert minutes to seconds</span>
 
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">e</span>
@@ -746,7 +763,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=c87aa342"></script>
+</div><script src="../../../_static/documentation_options.js?v=ff822928"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=5fa4622c"></script>

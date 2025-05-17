@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="prev" title="p2pfl.node_state module" href="p2pfl.node_state.html" />
 
     <link rel="shortcut icon" href="../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>p2pfl.settings module - p2pfl 0.4.1 documentation</title>
+        <title>p2pfl.settings module - p2pfl 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -167,7 +167,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">p2pfl 0.4.1 documentation</div></a>
+      <a href="../index.html"><div class="brand">p2pfl 0.4.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -363,6 +363,7 @@
 </li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.cli.html">p2pfl.management.cli module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.launch_from_yaml.html">p2pfl.management.launch_from_yaml module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.management.message_storage.html">p2pfl.management.message_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.node_monitor.html">p2pfl.management.node_monitor module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.p2pfl_web_services.html">p2pfl.management.p2pfl_web_services module</a></li>
@@ -437,7 +438,7 @@
 <p>Module to define constants for the p2pfl system.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="p2pfl.settings.General">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.settings.</span></span><span class="sig-name descname"><span class="pre">General</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">SEED</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">GRPC_TIMEOUT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LOG_LEVEL</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'INFO'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LOG_DIR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'logs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MAX_LOG_RUNS</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DISABLE_RAY</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/settings.html#General"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.settings.General" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.settings.</span></span><span class="sig-name descname"><span class="pre">General</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">SEED</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">GRPC_TIMEOUT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LOG_LEVEL</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'INFO'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LOG_DIR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'logs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MAX_LOG_RUNS</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DISABLE_RAY</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RESOURCE_MONITOR_PERIOD</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/settings.html#General"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.settings.General" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>General system settings.</p>
 <dl class="py attribute">
@@ -468,6 +469,12 @@
 <dt class="sig sig-object py" id="p2pfl.settings.General.MAX_LOG_RUNS">
 <span class="sig-name descname"><span class="pre">MAX_LOG_RUNS</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#p2pfl.settings.General.MAX_LOG_RUNS" title="Link to this definition">¶</a></dt>
 <dd><p>Maximum number of run log files to keep.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.settings.General.RESOURCE_MONITOR_PERIOD">
+<span class="sig-name descname"><span class="pre">RESOURCE_MONITOR_PERIOD</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#p2pfl.settings.General.RESOURCE_MONITOR_PERIOD" title="Link to this definition">¶</a></dt>
+<dd><p>Period (seconds) to send resource monitor information.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -613,7 +620,7 @@
 <p>Class to define global settings for the p2pfl system.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="p2pfl.settings.Settings.general">
-<span class="sig-name descname"><span class="pre">general</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">General(SEED=None,</span> <span class="pre">GRPC_TIMEOUT=10.0,</span> <span class="pre">LOG_LEVEL='INFO',</span> <span class="pre">LOG_DIR='logs',</span> <span class="pre">MAX_LOG_RUNS=10,</span> <span class="pre">DISABLE_RAY=False)</span></em><a class="headerlink" href="#p2pfl.settings.Settings.general" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">general</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">General(SEED=None,</span> <span class="pre">GRPC_TIMEOUT=10.0,</span> <span class="pre">LOG_LEVEL='INFO',</span> <span class="pre">LOG_DIR='logs',</span> <span class="pre">MAX_LOG_RUNS=10,</span> <span class="pre">DISABLE_RAY=False,</span> <span class="pre">RESOURCE_MONITOR_PERIOD=10)</span></em><a class="headerlink" href="#p2pfl.settings.Settings.general" title="Link to this definition">¶</a></dt>
 <dd><p>General settings.</p>
 </dd></dl>
 
@@ -656,12 +663,6 @@ within those classes (e.g., “GRPC_TIMEOUT”, “HEARTBEAT_PERIOD”).</p>
 <dd><p>Training process settings.</p>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="p2pfl.settings.Settings.web">
-<span class="sig-name descname"><span class="pre">web</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Web(RESOURCE_MONITOR_PERIOD=1)</span></em><a class="headerlink" href="#p2pfl.settings.Settings.web" title="Link to this definition">¶</a></dt>
-<dd><p>Web interface and resource monitoring settings.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -685,19 +686,6 @@ within those classes (e.g., “GRPC_TIMEOUT”, “HEARTBEAT_PERIOD”).</p>
 <dt class="sig sig-object py" id="p2pfl.settings.Training.VOTE_TIMEOUT">
 <span class="sig-name descname"><span class="pre">VOTE_TIMEOUT</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">60</span></em><a class="headerlink" href="#p2pfl.settings.Training.VOTE_TIMEOUT" title="Link to this definition">¶</a></dt>
 <dd><p>Timeout (seconds) for a node to wait for a vote.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="p2pfl.settings.Web">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.settings.</span></span><span class="sig-name descname"><span class="pre">Web</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">RESOURCE_MONITOR_PERIOD</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/settings.html#Web"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.settings.Web" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Web interface and resource monitoring settings.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="p2pfl.settings.Web.RESOURCE_MONITOR_PERIOD">
-<span class="sig-name descname"><span class="pre">RESOURCE_MONITOR_PERIOD</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#p2pfl.settings.Web.RESOURCE_MONITOR_PERIOD" title="Link to this definition">¶</a></dt>
-<dd><p>Period (seconds) to send resource monitor information.</p>
 </dd></dl>
 
 </dd></dl>
@@ -758,6 +746,7 @@ within those classes (e.g., “GRPC_TIMEOUT”, “HEARTBEAT_PERIOD”).</p>
 <li><a class="reference internal" href="#p2pfl.settings.General.LOG_DIR"><code class="docutils literal notranslate"><span class="pre">General.LOG_DIR</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.settings.General.LOG_LEVEL"><code class="docutils literal notranslate"><span class="pre">General.LOG_LEVEL</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.settings.General.MAX_LOG_RUNS"><code class="docutils literal notranslate"><span class="pre">General.MAX_LOG_RUNS</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.settings.General.RESOURCE_MONITOR_PERIOD"><code class="docutils literal notranslate"><span class="pre">General.RESOURCE_MONITOR_PERIOD</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.settings.General.SEED"><code class="docutils literal notranslate"><span class="pre">General.SEED</span></code></a></li>
 </ul>
 </li>
@@ -795,17 +784,12 @@ within those classes (e.g., “GRPC_TIMEOUT”, “HEARTBEAT_PERIOD”).</p>
 <li><a class="reference internal" href="#p2pfl.settings.Settings.set_from_dict"><code class="docutils literal notranslate"><span class="pre">Settings.set_from_dict()</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.settings.Settings.ssl"><code class="docutils literal notranslate"><span class="pre">Settings.ssl</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.settings.Settings.training"><code class="docutils literal notranslate"><span class="pre">Settings.training</span></code></a></li>
-<li><a class="reference internal" href="#p2pfl.settings.Settings.web"><code class="docutils literal notranslate"><span class="pre">Settings.web</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#p2pfl.settings.Training"><code class="docutils literal notranslate"><span class="pre">Training</span></code></a><ul>
 <li><a class="reference internal" href="#p2pfl.settings.Training.AGGREGATION_TIMEOUT"><code class="docutils literal notranslate"><span class="pre">Training.AGGREGATION_TIMEOUT</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.settings.Training.DEFAULT_BATCH_SIZE"><code class="docutils literal notranslate"><span class="pre">Training.DEFAULT_BATCH_SIZE</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.settings.Training.VOTE_TIMEOUT"><code class="docutils literal notranslate"><span class="pre">Training.VOTE_TIMEOUT</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#p2pfl.settings.Web"><code class="docutils literal notranslate"><span class="pre">Web</span></code></a><ul>
-<li><a class="reference internal" href="#p2pfl.settings.Web.RESOURCE_MONITOR_PERIOD"><code class="docutils literal notranslate"><span class="pre">Web.RESOURCE_MONITOR_PERIOD</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -819,7 +803,7 @@ within those classes (e.g., “GRPC_TIMEOUT”, “HEARTBEAT_PERIOD”).</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=c87aa342"></script>
+</div><script src="../_static/documentation_options.js?v=ff822928"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=5fa4622c"></script>

@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>p2pfl.management.node_monitor - p2pfl 0.4.1 documentation</title>
+        <title>p2pfl.management.node_monitor - p2pfl 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -166,7 +166,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">p2pfl 0.4.1 documentation</div></a>
+      <a href="../../../index.html"><div class="brand">p2pfl 0.4.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -362,6 +362,7 @@
 </li>
 <li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.cli.html">p2pfl.management.cli module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.launch_from_yaml.html">p2pfl.management.launch_from_yaml module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.message_storage.html">p2pfl.management.message_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.node_monitor.html">p2pfl.management.node_monitor module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../modules/p2pfl.management.p2pfl_web_services.html">p2pfl.management.p2pfl_web_services module</a></li>
@@ -468,18 +469,31 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_addr</span><span class="p">,</span> <span class="n">metric_report_callback</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">report_fn</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the node monitor.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">node_addr</span> <span class="o">=</span> <span class="n">node_addr</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">metric_report_callback</span> <span class="o">=</span> <span class="n">metric_report_callback</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">=</span> <span class="n">Settings</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">RESOURCE_MONITOR_PERIOD</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">last_net_in</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">last_net_out</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_fn</span> <span class="o">=</span> <span class="n">report_fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">=</span> <span class="n">Settings</span><span class="o">.</span><span class="n">general</span><span class="o">.</span><span class="n">RESOURCE_MONITOR_PERIOD</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># Logs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="c1"># Super</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;resource-monitor-thread-&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_addr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;resource-monitor-thread&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="NodeMonitor.set_report_fn">
+<a class="viewcode-back" href="../../../modules/p2pfl.management.node_monitor.html#p2pfl.management.node_monitor.NodeMonitor.set_report_fn">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_report_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">report_fn</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the report function.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_fn</span> <span class="o">=</span> <span class="n">report_fn</span></div>
+
+
+<div class="viewcode-block" id="NodeMonitor.get_logs">
+<a class="viewcode-back" href="../../../modules/p2pfl.management.node_monitor.html#p2pfl.management.node_monitor.NodeMonitor.get_logs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_logs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the logs.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">logs</span></div>
+
 
 <div class="viewcode-block" id="NodeMonitor.stop">
 <a class="viewcode-back" href="../../../modules/p2pfl.management.node_monitor.html#p2pfl.management.node_monitor.NodeMonitor.stop">[docs]</a>
@@ -495,8 +509,13 @@
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">running</span><span class="p">:</span>
             <span class="c1"># Sys Resources</span>
             <span class="n">time_now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__report_system_resources</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">metric_report_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_addr</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">time_now</span><span class="p">)</span>
+            <span class="n">resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__report_system_resources</span><span class="p">()</span>
+            <span class="c1"># Update logs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">time_now</span><span class="p">:</span> <span class="n">resources</span><span class="p">})</span>
+            <span class="c1"># Report</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">report_fn</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">resources</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">report_fn</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">time_now</span><span class="p">)</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="p">)</span></div>
 
 
@@ -507,19 +526,7 @@
         <span class="n">res</span><span class="p">[</span><span class="s2">&quot;cpu&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">cpu_percent</span><span class="p">()</span>
         <span class="c1"># RAM</span>
         <span class="n">res</span><span class="p">[</span><span class="s2">&quot;ram&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">virtual_memory</span><span class="p">()</span><span class="o">.</span><span class="n">percent</span>
-        <span class="c1"># NetWork</span>
-        <span class="n">net_stat</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">net_io_counters</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_net_in</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_net_out</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-            <span class="n">res</span><span class="p">[</span><span class="s2">&quot;net_in&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">net_stat</span><span class="o">.</span><span class="n">bytes_recv</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_net_in</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">20</span><span class="p">)</span>
-            <span class="n">res</span><span class="p">[</span><span class="s2">&quot;net_out&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">net_stat</span><span class="o">.</span><span class="n">bytes_sent</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_net_out</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">20</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">last_net_in</span> <span class="o">=</span> <span class="n">net_stat</span><span class="o">.</span><span class="n">bytes_recv</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">last_net_out</span> <span class="o">=</span> <span class="n">net_stat</span><span class="o">.</span><span class="n">bytes_sent</span>
-
-        <span class="k">return</span> <span class="n">res</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">__report_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Report the status.&quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+        <span class="k">return</span> <span class="n">res</span></div>
 
 </pre></div>
         </article>
@@ -553,7 +560,7 @@
       
     </aside>
   </div>
-</div><script src="../../../_static/documentation_options.js?v=c87aa342"></script>
+</div><script src="../../../_static/documentation_options.js?v=ff822928"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=5fa4622c"></script>

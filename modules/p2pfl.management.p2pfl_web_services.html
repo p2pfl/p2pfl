@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="p2pfl.stages package" href="p2pfl.stages.html" /><link rel="prev" title="p2pfl.management.node_monitor module" href="p2pfl.management.node_monitor.html" />
 
     <link rel="shortcut icon" href="../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>p2pfl.management.p2pfl_web_services module - p2pfl 0.4.1 documentation</title>
+        <title>p2pfl.management.p2pfl_web_services module - p2pfl 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -167,7 +167,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">p2pfl 0.4.1 documentation</div></a>
+      <a href="../index.html"><div class="brand">p2pfl 0.4.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -363,6 +363,7 @@
 </li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.cli.html">p2pfl.management.cli module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.launch_from_yaml.html">p2pfl.management.launch_from_yaml module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.management.message_storage.html">p2pfl.management.message_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.node_monitor.html">p2pfl.management.node_monitor module</a></li>
 <li class="toctree-l4 current current-page"><a class="current reference internal" href="#">p2pfl.management.p2pfl_web_services module</a></li>
@@ -472,13 +473,34 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="p2pfl.management.p2pfl_web_services.P2pflWebServices.register_node">
-<span class="sig-name descname"><span class="pre">register_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_simulated</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/management/p2pfl_web_services.html#P2pflWebServices.register_node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.management.p2pfl_web_services.P2pflWebServices.register_node" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">register_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/management/p2pfl_web_services.html#P2pflWebServices.register_node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.management.p2pfl_web_services.P2pflWebServices.register_node" title="Link to this definition">¶</a></dt>
 <dd><p>Register a node.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>node</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The node address.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.management.p2pfl_web_services.P2pflWebServices.send_communication_log">
+<span class="sig-name descname"><span class="pre">send_communication_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_dest</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">package_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">package_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/management/p2pfl_web_services.html#P2pflWebServices.send_communication_log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.management.p2pfl_web_services.P2pflWebServices.send_communication_log" title="Link to this definition">¶</a></dt>
+<dd><p>Send a communication log to the web services.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>node</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The node address.</p></li>
-<li><p><strong>is_simulated</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If the node is simulated.</p></li>
+<li><p><strong>timestamp</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime</span></code></span>) – The timestamp of the communication.</p></li>
+<li><p><strong>direction</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Direction of communication (“sent” or “received”).</p></li>
+<li><p><strong>cmd</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The command or message type.</p></li>
+<li><p><strong>source_dest</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Source (if receiving) or destination (if sending) node.</p></li>
+<li><p><strong>package_type</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Type of package (“message” or “weights”).</p></li>
+<li><p><strong>package_size</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Size of the package in bytes (if available).</p></li>
+<li><p><strong>round_num</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span>) – The federated learning round number (if applicable).</p></li>
+<li><p><strong>additional_info</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>]</span>) – Additional information as a dictionary.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -652,6 +674,7 @@
 <li><a class="reference internal" href="#p2pfl.management.p2pfl_web_services.P2pflWebServices"><code class="docutils literal notranslate"><span class="pre">P2pflWebServices</span></code></a><ul>
 <li><a class="reference internal" href="#p2pfl.management.p2pfl_web_services.P2pflWebServices.get_pending_actions"><code class="docutils literal notranslate"><span class="pre">P2pflWebServices.get_pending_actions()</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.management.p2pfl_web_services.P2pflWebServices.register_node"><code class="docutils literal notranslate"><span class="pre">P2pflWebServices.register_node()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.management.p2pfl_web_services.P2pflWebServices.send_communication_log"><code class="docutils literal notranslate"><span class="pre">P2pflWebServices.send_communication_log()</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.management.p2pfl_web_services.P2pflWebServices.send_global_metric"><code class="docutils literal notranslate"><span class="pre">P2pflWebServices.send_global_metric()</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.management.p2pfl_web_services.P2pflWebServices.send_local_metric"><code class="docutils literal notranslate"><span class="pre">P2pflWebServices.send_local_metric()</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.management.p2pfl_web_services.P2pflWebServices.send_log"><code class="docutils literal notranslate"><span class="pre">P2pflWebServices.send_log()</span></code></a></li>
@@ -671,7 +694,7 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=c87aa342"></script>
+</div><script src="../_static/documentation_options.js?v=ff822928"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=5fa4622c"></script>

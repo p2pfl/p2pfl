@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="p2pfl.learning.compression.manager module" href="p2pfl.learning.compression.manager.html" /><link rel="prev" title="p2pfl.learning.compression.lra_strategy module" href="p2pfl.learning.compression.lra_strategy.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="p2pfl.management.metric_storage module" href="p2pfl.management.metric_storage.html" /><link rel="prev" title="p2pfl.management.launch_from_yaml module" href="p2pfl.management.launch_from_yaml.html" />
 
     <link rel="shortcut icon" href="../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>p2pfl.learning.compression.lzma_strategy module - p2pfl 0.4.2 documentation</title>
+        <title>p2pfl.management.message_storage module - p2pfl 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -288,7 +288,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="p2pfl.examples.html">p2pfl.examples package</a></li>
-<li class="toctree-l3 current has-children"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle navigation of p2pfl.learning package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle navigation of p2pfl.learning package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.learning.aggregators.html">p2pfl.learning.aggregators package</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><div class="visually-hidden">Toggle navigation of p2pfl.learning.aggregators package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.aggregators.aggregator.html">p2pfl.learning.aggregators.aggregator module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.aggregators.fedavg.html">p2pfl.learning.aggregators.fedavg module</a></li>
@@ -296,10 +296,10 @@
 <li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.aggregators.scaffold.html">p2pfl.learning.aggregators.scaffold module</a></li>
 </ul>
 </li>
-<li class="toctree-l4 current has-children"><a class="reference internal" href="p2pfl.learning.compression.html">p2pfl.learning.compression package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><div class="visually-hidden">Toggle navigation of p2pfl.learning.compression package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.learning.compression.html">p2pfl.learning.compression package</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><div class="visually-hidden">Toggle navigation of p2pfl.learning.compression package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.compression.base_compression_strategy.html">p2pfl.learning.compression.base_compression_strategy module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.compression.lra_strategy.html">p2pfl.learning.compression.lra_strategy module</a></li>
-<li class="toctree-l5 current current-page"><a class="current reference internal" href="#">p2pfl.learning.compression.lzma_strategy module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.compression.lzma_strategy.html">p2pfl.learning.compression.lzma_strategy module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.compression.manager.html">p2pfl.learning.compression.manager module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.compression.quantization_strategy.html">p2pfl.learning.compression.quantization_strategy module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="p2pfl.learning.compression.topk_strategy.html">p2pfl.learning.compression.topk_strategy module</a></li>
@@ -356,14 +356,14 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="p2pfl.management.html">p2pfl.management package</a><input class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" role="switch" type="checkbox"/><label for="toctree-checkbox-26"><div class="visually-hidden">Toggle navigation of p2pfl.management package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 current has-children"><a class="reference internal" href="p2pfl.management.html">p2pfl.management package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" role="switch" type="checkbox"/><label for="toctree-checkbox-26"><div class="visually-hidden">Toggle navigation of p2pfl.management package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l4 has-children"><a class="reference internal" href="p2pfl.management.logger.html">p2pfl.management.logger package</a><input class="toctree-checkbox" id="toctree-checkbox-27" name="toctree-checkbox-27" role="switch" type="checkbox"/><label for="toctree-checkbox-27"><div class="visually-hidden">Toggle navigation of p2pfl.management.logger package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5"><a class="reference internal" href="p2pfl.management.logger.logger.html">p2pfl.management.logger.logger module</a></li>
 </ul>
 </li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.cli.html">p2pfl.management.cli module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.launch_from_yaml.html">p2pfl.management.launch_from_yaml module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="p2pfl.management.message_storage.html">p2pfl.management.message_storage module</a></li>
+<li class="toctree-l4 current current-page"><a class="current reference internal" href="#">p2pfl.management.message_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.node_monitor.html">p2pfl.management.node_monitor module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.p2pfl_web_services.html">p2pfl.management.p2pfl_web_services module</a></li>
@@ -413,7 +413,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../_sources/modules/p2pfl.learning.compression.lzma_strategy.rst.txt" title="View this page">
+  <a class="muted-link" href="../_sources/modules/p2pfl.management.message_storage.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -433,36 +433,103 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="module-p2pfl.learning.compression.lzma_strategy">
-<span id="p2pfl-learning-compression-lzma-strategy-module"></span><h1>p2pfl.learning.compression.lzma_strategy module<a class="headerlink" href="#module-p2pfl.learning.compression.lzma_strategy" title="Link to this heading">¶</a></h1>
-<p>LZMA optimization strategy.</p>
+          <section id="module-p2pfl.management.message_storage">
+<span id="p2pfl-management-message-storage-module"></span><h1>p2pfl.management.message_storage module<a class="headerlink" href="#module-p2pfl.management.message_storage" title="Link to this heading">¶</a></h1>
+<p>Message storage for logging communication events.</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="p2pfl.learning.compression.lzma_strategy.LZMACompressor">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.learning.compression.lzma_strategy.</span></span><span class="sig-name descname"><span class="pre">LZMACompressor</span></span><a class="reference internal" href="../_modules/p2pfl/learning/compression/lzma_strategy.html#LZMACompressor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.learning.compression.lzma_strategy.LZMACompressor" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="p2pfl.learning.compression.base_compression_strategy.html#p2pfl.learning.compression.base_compression_strategy.ByteCompressor" title="p2pfl.learning.compression.base_compression_strategy.ByteCompressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">ByteCompressor</span></code></a></p>
-<p>Lossless compression strategy using LZMA algorithm.</p>
-<p>LZMA provides higher compression ratio than zlib, but it is slower to compress and decompress.</p>
+<dt class="sig sig-object py" id="p2pfl.management.message_storage.MessageStorage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.management.message_storage.</span></span><span class="sig-name descname"><span class="pre">MessageStorage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">disable_locks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/management/message_storage.html#MessageStorage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.management.message_storage.MessageStorage" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Message storage. Stores communication events between nodes.</p>
+<p>Format:</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="p2pfl.learning.compression.lzma_strategy.LZMACompressor.apply_strategy">
-<span class="sig-name descname"><span class="pre">apply_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/learning/compression/lzma_strategy.html#LZMACompressor.apply_strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.learning.compression.lzma_strategy.LZMACompressor.apply_strategy" title="Link to this definition">¶</a></dt>
-<dd><p>Apply LZMA compression strategy to the parameters.</p>
+<dt class="sig sig-object py" id="p2pfl.management.message_storage.MessageStorage.add_message">
+<span class="sig-name descname"><span class="pre">add_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_dest</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">package_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">package_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/management/message_storage.html#MessageStorage.add_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.management.message_storage.MessageStorage.add_message" title="Link to this definition">¶</a></dt>
+<dd><p>Add a message entry to the storage.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></span>) – The input data to be compressed.</p></li>
-<li><p><strong>preset</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Compression level, 0 (fastest) to 9 (most compressed).</p></li>
+<li><p><strong>node</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The node address.</p></li>
+<li><p><strong>direction</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Direction of communication (“sent” or “received”).</p></li>
+<li><p><strong>cmd</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The command or message type.</p></li>
+<li><p><strong>source_dest</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Source (if receiving) or destination (if sending) node.</p></li>
+<li><p><strong>package_type</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Type of package (“message” or “weights”).</p></li>
+<li><p><strong>package_size</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Size of the package in bytes (if available).</p></li>
+<li><p><strong>round_num</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span>) – The federated learning round number (if applicable).</p></li>
+<li><p><strong>additional_info</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]]</span>) – Additional information as a dictionary.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="p2pfl.learning.compression.lzma_strategy.LZMACompressor.reverse_strategy">
-<span class="sig-name descname"><span class="pre">reverse_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/learning/compression/lzma_strategy.html#LZMACompressor.reverse_strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.learning.compression.lzma_strategy.LZMACompressor.reverse_strategy" title="Link to this definition">¶</a></dt>
-<dd><p>Reverse the LZMA compression strategy.</p>
+<dt class="sig sig-object py" id="p2pfl.management.message_storage.MessageStorage.get_messages">
+<span class="sig-name descname"><span class="pre">get_messages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/management/message_storage.html#MessageStorage.get_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.management.message_storage.MessageStorage.get_messages" title="Link to this definition">¶</a></dt>
+<dd><p>Get messages with optional filtering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Filter by node address (as source or destination) (optional).</p></li>
+<li><p><strong>direction</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Filter by direction (“sent” or “received”) (optional).</p></li>
+<li><p><strong>cmd</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Filter by command type (optional).</p></li>
+<li><p><strong>round_num</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span>) – Filter by round number (optional).</p></li>
+<li><p><strong>limit</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span>) – Limit the number of messages returned (optional).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of message dictionaries matching the filters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.management.message_storage.MessageStorage.get_received_messages">
+<span class="sig-name descname"><span class="pre">get_received_messages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/management/message_storage.html#MessageStorage.get_received_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.management.message_storage.MessageStorage.get_received_messages" title="Link to this definition">¶</a></dt>
+<dd><p>Get received messages with optional filtering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Filter by destination node address (optional).</p></li>
+<li><p><strong>cmd</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Filter by command type (optional).</p></li>
+<li><p><strong>round_num</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span>) – Filter by round number (optional).</p></li>
+<li><p><strong>limit</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span>) – Limit the number of messages returned (optional).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Received messages matching the filters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="p2pfl.management.message_storage.MessageStorage.get_sent_messages">
+<span class="sig-name descname"><span class="pre">get_sent_messages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">round_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/management/message_storage.html#MessageStorage.get_sent_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.management.message_storage.MessageStorage.get_sent_messages" title="Link to this definition">¶</a></dt>
+<dd><p>Get sent messages with optional filtering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Filter by source node address (optional).</p></li>
+<li><p><strong>cmd</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Filter by command type (optional).</p></li>
+<li><p><strong>round_num</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span>) – Filter by round number (optional).</p></li>
+<li><p><strong>limit</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span>) – Limit the number of messages returned (optional).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Sent messages matching the filters.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -474,23 +541,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="p2pfl.learning.compression.manager.html">
+          <a class="next-page" href="p2pfl.management.metric_storage.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">p2pfl.learning.compression.manager module</div>
+                <div class="title">p2pfl.management.metric_storage module</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="p2pfl.learning.compression.lra_strategy.html">
+          <a class="prev-page" href="p2pfl.management.launch_from_yaml.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">p2pfl.learning.compression.lra_strategy module</div>
+                <div class="title">p2pfl.management.launch_from_yaml module</div>
                 
               </div>
             </a>
@@ -524,10 +591,12 @@
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">p2pfl.learning.compression.lzma_strategy module</a><ul>
-<li><a class="reference internal" href="#p2pfl.learning.compression.lzma_strategy.LZMACompressor"><code class="docutils literal notranslate"><span class="pre">LZMACompressor</span></code></a><ul>
-<li><a class="reference internal" href="#p2pfl.learning.compression.lzma_strategy.LZMACompressor.apply_strategy"><code class="docutils literal notranslate"><span class="pre">LZMACompressor.apply_strategy()</span></code></a></li>
-<li><a class="reference internal" href="#p2pfl.learning.compression.lzma_strategy.LZMACompressor.reverse_strategy"><code class="docutils literal notranslate"><span class="pre">LZMACompressor.reverse_strategy()</span></code></a></li>
+<li><a class="reference internal" href="#">p2pfl.management.message_storage module</a><ul>
+<li><a class="reference internal" href="#p2pfl.management.message_storage.MessageStorage"><code class="docutils literal notranslate"><span class="pre">MessageStorage</span></code></a><ul>
+<li><a class="reference internal" href="#p2pfl.management.message_storage.MessageStorage.add_message"><code class="docutils literal notranslate"><span class="pre">MessageStorage.add_message()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.management.message_storage.MessageStorage.get_messages"><code class="docutils literal notranslate"><span class="pre">MessageStorage.get_messages()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.management.message_storage.MessageStorage.get_received_messages"><code class="docutils literal notranslate"><span class="pre">MessageStorage.get_received_messages()</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.management.message_storage.MessageStorage.get_sent_messages"><code class="docutils literal notranslate"><span class="pre">MessageStorage.get_sent_messages()</span></code></a></li>
 </ul>
 </li>
 </ul>

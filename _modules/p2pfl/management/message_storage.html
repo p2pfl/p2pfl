@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
     <link rel="shortcut icon" href="../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>p2pfl.learning.frameworks - p2pfl 0.4.2 documentation</title>
+        <title>p2pfl.management.message_storage - p2pfl 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -426,28 +426,242 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <h1>Source code for p2pfl.learning.frameworks</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Package for the learning frameworks in P2PFL.</span>
+          <h1>Source code for p2pfl.management.message_storage</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of the federated_learning_p2p (p2pfl) distribution</span>
+<span class="c1"># (see https://github.com/pguijas/p2pfl).</span>
+<span class="c1"># Copyright (c) 2024 Pedro Guijas Bravo.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, version 3.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful, but</span>
+<span class="c1"># WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU</span>
+<span class="c1"># General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
 
-<span class="sd">This package contains all the integrations with the different learning frameworks.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">&quot;&quot;&quot;Message storage for logging communication events.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">threading</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lock</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
-<span class="c1">###</span>
-<span class="c1">#   Framework Enum</span>
-<span class="c1">###</span>
+<span class="c1"># Define the storage structure types</span>
+<span class="n">MessageEntryType</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>  <span class="c1"># Individual message entry with details</span>
+<span class="n">NodeMessagesType</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">MessageEntryType</span><span class="p">]]</span>  <span class="c1"># Messages by node</span>
+<span class="n">DirectionMessagesType</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NodeMessagesType</span><span class="p">]</span>  <span class="c1"># Messages by direction (sent/received)</span>
+<span class="n">MessageResultType</span> <span class="o">=</span> <span class="nb">list</span><span class="p">[</span><span class="n">MessageEntryType</span><span class="p">]</span>  <span class="c1"># Return type for filtered messages</span>
 
 
-<div class="viewcode-block" id="Framework">
-<a class="viewcode-back" href="../../../modules/p2pfl.learning.frameworks.html#p2pfl.learning.frameworks.Framework">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Framework</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enum for the different learning frameworks.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MessageStorage">
+<a class="viewcode-back" href="../../../modules/p2pfl.management.message_storage.html#p2pfl.management.message_storage.MessageStorage">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MessageStorage</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Message storage. Stores communication events between nodes.</span>
 
-    <span class="n">PYTORCH</span> <span class="o">=</span> <span class="s2">&quot;pytorch&quot;</span>
-    <span class="n">TENSORFLOW</span> <span class="o">=</span> <span class="s2">&quot;tensorflow&quot;</span>
-    <span class="n">FLAX</span> <span class="o">=</span> <span class="s2">&quot;flax&quot;</span></div>
+<span class="sd">    Format:</span>
+
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">        [</span>
+<span class="sd">            {</span>
+<span class="sd">                &quot;timestamp&quot;: datetime.datetime,</span>
+<span class="sd">                &quot;source&quot;: &quot;source_node&quot;,</span>
+<span class="sd">                &quot;destination&quot;: &quot;dest_node&quot;,</span>
+<span class="sd">                &quot;direction&quot;: &quot;sent&quot;/&quot;received&quot;,</span>
+<span class="sd">                &quot;cmd&quot;: &quot;command_name&quot;,</span>
+<span class="sd">                &quot;package_type&quot;: &quot;message&quot;/&quot;weights&quot;,</span>
+<span class="sd">                &quot;package_size&quot;: size_in_bytes,</span>
+<span class="sd">                &quot;round&quot;: round_number,</span>
+<span class="sd">                &quot;additional_info&quot;: {...} or None</span>
+<span class="sd">            },</span>
+<span class="sd">        ]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disable_locks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the message storage.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">messages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MessageEntryType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lock</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">disable_locks</span> <span class="k">else</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="MessageStorage.add_message">
+<a class="viewcode-back" href="../../../modules/p2pfl.management.message_storage.html#p2pfl.management.message_storage.MessageStorage.add_message">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_message</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">node</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">direction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">cmd</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">source_dest</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">package_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">package_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">round_num</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">additional_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a message entry to the storage.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            node: The node address.</span>
+<span class="sd">            direction: Direction of communication (&quot;sent&quot; or &quot;received&quot;).</span>
+<span class="sd">            cmd: The command or message type.</span>
+<span class="sd">            source_dest: Source (if receiving) or destination (if sending) node.</span>
+<span class="sd">            package_type: Type of package (&quot;message&quot; or &quot;weights&quot;).</span>
+<span class="sd">            package_size: Size of the package in bytes (if available).</span>
+<span class="sd">            round_num: The federated learning round number (if applicable).</span>
+<span class="sd">            additional_info: Additional information as a dictionary.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Lock</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Ensure direction is valid</span>
+            <span class="k">if</span> <span class="n">direction</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;sent&quot;</span><span class="p">,</span> <span class="s2">&quot;received&quot;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid direction: </span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2">. Must be &#39;sent&#39; or &#39;received&#39;.&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Create the message entry</span>
+            <span class="n">message_entry</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+                <span class="s2">&quot;cmd&quot;</span><span class="p">:</span> <span class="n">cmd</span><span class="p">,</span>
+                <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="n">direction</span><span class="p">,</span>
+                <span class="s2">&quot;package_type&quot;</span><span class="p">:</span> <span class="n">package_type</span><span class="p">,</span>
+                <span class="s2">&quot;package_size&quot;</span><span class="p">:</span> <span class="n">package_size</span><span class="p">,</span>
+                <span class="s2">&quot;round&quot;</span><span class="p">:</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">round_num</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">round_num</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="c1"># Add source and destination based on direction</span>
+            <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;sent&quot;</span><span class="p">:</span>
+                <span class="n">message_entry</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
+                <span class="n">message_entry</span><span class="p">[</span><span class="s2">&quot;destination&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">source_dest</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">message_entry</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">source_dest</span>
+                <span class="n">message_entry</span><span class="p">[</span><span class="s2">&quot;destination&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
+
+            <span class="c1"># Add additional info if provided</span>
+            <span class="k">if</span> <span class="n">additional_info</span><span class="p">:</span>
+                <span class="n">message_entry</span><span class="p">[</span><span class="s2">&quot;additional_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">additional_info</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">message_entry</span><span class="p">[</span><span class="s2">&quot;additional_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># Add to storage</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message_entry</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="c1"># Unlock</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MessageStorage.get_messages">
+<a class="viewcode-back" href="../../../modules/p2pfl.management.message_storage.html#p2pfl.management.message_storage.MessageStorage.get_messages">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_messages</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">node</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">direction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cmd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">round_num</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">MessageEntryType</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get messages with optional filtering.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            node: Filter by node address (as source or destination) (optional).</span>
+<span class="sd">            direction: Filter by direction (&quot;sent&quot; or &quot;received&quot;) (optional).</span>
+<span class="sd">            cmd: Filter by command type (optional).</span>
+<span class="sd">            round_num: Filter by round number (optional).</span>
+<span class="sd">            limit: Limit the number of messages returned (optional).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of message dictionaries matching the filters.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Lock</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Start with a copy of all messages</span>
+            <span class="n">filtered_messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+            <span class="c1"># Filter by direction if provided</span>
+            <span class="k">if</span> <span class="n">direction</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">direction</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;sent&quot;</span><span class="p">,</span> <span class="s2">&quot;received&quot;</span><span class="p">]:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid direction: </span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2">. Must be &#39;sent&#39; or &#39;received&#39;.&quot;</span><span class="p">)</span>
+                <span class="n">filtered_messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">msg</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">filtered_messages</span> <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;direction&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">direction</span><span class="p">]</span>
+
+            <span class="c1"># Filter by node if provided (node could be source or destination based on direction)</span>
+            <span class="k">if</span> <span class="n">node</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;sent&quot;</span><span class="p">:</span>
+                    <span class="n">filtered_messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">msg</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">filtered_messages</span> <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">node</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;received&quot;</span><span class="p">:</span>
+                    <span class="n">filtered_messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">msg</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">filtered_messages</span> <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;destination&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">node</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># If no direction specified, match either source or destination</span>
+                    <span class="n">filtered_messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">msg</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">filtered_messages</span> <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">node</span> <span class="ow">or</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;destination&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">node</span><span class="p">]</span>
+
+            <span class="c1"># Filter by command if provided</span>
+            <span class="k">if</span> <span class="n">cmd</span><span class="p">:</span>
+                <span class="n">filtered_messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">msg</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">filtered_messages</span> <span class="k">if</span> <span class="n">msg</span><span class="p">[</span><span class="s2">&quot;cmd&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">cmd</span><span class="p">]</span>
+
+            <span class="c1"># Filter by round if provided</span>
+            <span class="k">if</span> <span class="n">round_num</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">filtered_messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">msg</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">filtered_messages</span> <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;round&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">round_num</span><span class="p">]</span>
+
+            <span class="c1"># Apply limit if provided</span>
+            <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">filtered_messages</span><span class="p">:</span>
+                <span class="n">filtered_messages</span> <span class="o">=</span> <span class="n">filtered_messages</span><span class="p">[</span><span class="o">-</span><span class="n">limit</span><span class="p">:]</span>
+
+            <span class="k">return</span> <span class="n">filtered_messages</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="c1"># Unlock</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MessageStorage.get_sent_messages">
+<a class="viewcode-back" href="../../../modules/p2pfl.management.message_storage.html#p2pfl.management.message_storage.MessageStorage.get_sent_messages">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_sent_messages</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cmd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">round_num</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">MessageEntryType</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get sent messages with optional filtering.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            node: Filter by source node address (optional).</span>
+<span class="sd">            cmd: Filter by command type (optional).</span>
+<span class="sd">            round_num: Filter by round number (optional).</span>
+<span class="sd">            limit: Limit the number of messages returned (optional).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Sent messages matching the filters.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_messages</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;sent&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="o">=</span><span class="n">cmd</span><span class="p">,</span> <span class="n">round_num</span><span class="o">=</span><span class="n">round_num</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MessageStorage.get_received_messages">
+<a class="viewcode-back" href="../../../modules/p2pfl.management.message_storage.html#p2pfl.management.message_storage.MessageStorage.get_received_messages">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_received_messages</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cmd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">round_num</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">MessageEntryType</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get received messages with optional filtering.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            node: Filter by destination node address (optional).</span>
+<span class="sd">            cmd: Filter by command type (optional).</span>
+<span class="sd">            round_num: Filter by round number (optional).</span>
+<span class="sd">            limit: Limit the number of messages returned (optional).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Received messages matching the filters.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_messages</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;received&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="o">=</span><span class="n">cmd</span><span class="p">,</span> <span class="n">round_num</span><span class="o">=</span><span class="n">round_num</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">)</span></div>
+</div>
 
 </pre></div>
         </article>

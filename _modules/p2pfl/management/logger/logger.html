@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
     <link rel="shortcut icon" href="../../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>p2pfl.management.logger.logger - p2pfl 0.4.1 documentation</title>
+        <title>p2pfl.management.logger.logger - p2pfl 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -166,7 +166,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../../index.html"><div class="brand">p2pfl 0.4.1 documentation</div></a>
+      <a href="../../../../index.html"><div class="brand">p2pfl 0.4.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -362,6 +362,7 @@
 </li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../modules/p2pfl.management.cli.html">p2pfl.management.cli module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../modules/p2pfl.management.launch_from_yaml.html">p2pfl.management.launch_from_yaml module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../modules/p2pfl.management.message_storage.html">p2pfl.management.message_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../modules/p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../modules/p2pfl.management.node_monitor.html">p2pfl.management.node_monitor module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../../modules/p2pfl.management.p2pfl_web_services.html">p2pfl.management.p2pfl_web_services module</a></li>
@@ -454,10 +455,12 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">p2pfl.experiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">p2pfl.management.message_storage</span><span class="w"> </span><span class="kn">import</span> <span class="n">MessageEntryType</span><span class="p">,</span> <span class="n">MessageStorage</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">p2pfl.management.metric_storage</span><span class="w"> </span><span class="kn">import</span> <span class="n">GlobalLogsType</span><span class="p">,</span> <span class="n">GlobalMetricStorage</span><span class="p">,</span> <span class="n">LocalLogsType</span><span class="p">,</span> <span class="n">LocalMetricStorage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">p2pfl.management.node_monitor</span><span class="w"> </span><span class="kn">import</span> <span class="n">NodeMonitor</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">p2pfl.settings</span><span class="w"> </span><span class="kn">import</span> <span class="n">Settings</span>
 
 <span class="c1">###################</span>
@@ -541,10 +544,13 @@
         <span class="c1"># Node Information</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">nodes</span> <span class="k">if</span> <span class="n">nodes</span> <span class="k">else</span> <span class="p">{}</span>
 
-        <span class="c1"># Experiment Metrics</span>
+        <span class="c1"># Experiment Metrics and Message Storage</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">disable_locks</span> <span class="o">=</span> <span class="n">disable_locks</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">local_metrics</span> <span class="o">=</span> <span class="n">LocalMetricStorage</span><span class="p">(</span><span class="n">disable_locks</span><span class="o">=</span><span class="n">disable_locks</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">global_metrics</span> <span class="o">=</span> <span class="n">GlobalMetricStorage</span><span class="p">(</span><span class="n">disable_locks</span><span class="o">=</span><span class="n">disable_locks</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message_storage</span> <span class="o">=</span> <span class="n">MessageStorage</span><span class="p">(</span><span class="n">disable_locks</span><span class="o">=</span><span class="n">disable_locks</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_monitor</span> <span class="o">=</span> <span class="n">NodeMonitor</span><span class="p">(</span><span class="n">report_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_monitor</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
         <span class="c1"># Python logging</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;p2pfl&quot;</span><span class="p">)</span>
@@ -832,7 +838,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Node State</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># Dict[str, Dict[str,Any]]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Node </span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s2"> already registered.&quot;</span><span class="p">)</span></div>
@@ -849,8 +854,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Node state</span>
-        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="p">[</span><span class="n">node</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="p">:</span>
             <span class="c1"># Unregister the node</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -933,20 +937,129 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="P2PFLogger.log_system_metric">
-<a class="viewcode-back" href="../../../../modules/p2pfl.management.logger.logger.html#p2pfl.management.logger.logger.P2PFLogger.log_system_metric">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">log_system_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">metric</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1">######</span>
+    <span class="c1"># Communication Logs</span>
+    <span class="c1">######</span>
+
+<div class="viewcode-block" id="P2PFLogger.log_communication">
+<a class="viewcode-back" href="../../../../modules/p2pfl.management.logger.logger.html#p2pfl.management.logger.logger.P2PFLogger.log_communication">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log_communication</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">node</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">direction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">cmd</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">source_dest</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">package_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">package_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">round_num</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">additional_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Log a system metric.</span>
+<span class="sd">        Log a communication event.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            node: The node name.</span>
-<span class="sd">            metric: The metric to log.</span>
-<span class="sd">            value: The value.</span>
-<span class="sd">            time: The time.</span>
+<span class="sd">            node: The node address.</span>
+<span class="sd">            direction: Direction of communication (&quot;sent&quot; or &quot;received&quot;).</span>
+<span class="sd">            cmd: The command or message type.</span>
+<span class="sd">            source_dest: Source (if receiving) or destination (if sending) node.</span>
+<span class="sd">            package_type: Type of package (&quot;message&quot; or &quot;weights&quot;).</span>
+<span class="sd">            package_size: Size of the package in bytes (if available).</span>
+<span class="sd">            round_num: The federated learning round number (if applicable).</span>
+<span class="sd">            additional_info: Additional information as a dictionary.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
+        <span class="c1"># Determine emoji based on direction and package type</span>
+        <span class="n">emoji</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;📫&quot;</span> <span class="k">if</span> <span class="n">package_type</span> <span class="o">==</span> <span class="s2">&quot;message&quot;</span> <span class="k">else</span> <span class="s2">&quot;📦&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;received&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="s2">&quot;📤&quot;</span> <span class="k">if</span> <span class="n">package_type</span> <span class="o">==</span> <span class="s2">&quot;message&quot;</span> <span class="k">else</span> <span class="s2">&quot;📬&quot;</span><span class="p">)</span>
+
+        <span class="c1"># If round_num is not specified but we&#39;re in an experiment, get the current round</span>
+        <span class="k">if</span> <span class="n">round_num</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">round_num</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Look for the node in registered nodes</span>
+                <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span> <span class="ow">and</span> <span class="s2">&quot;Experiment&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="p">[</span><span class="n">node</span><span class="p">]:</span>
+                    <span class="n">experiment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;Experiment&quot;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">experiment</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">experiment</span><span class="p">,</span> <span class="s2">&quot;round&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">experiment</span><span class="o">.</span><span class="n">round</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">round_num</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">round</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="c1"># If we can&#39;t get the round, just continue with default round_num (None)</span>
+                <span class="k">pass</span>
+
+        <span class="c1"># Create base message</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">emoji</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">cmd</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2"> &quot;</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;received&quot;</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;from </span><span class="si">{</span><span class="n">source_dest</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;to </span><span class="si">{</span><span class="n">source_dest</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="c1"># Add round information if available</span>
+        <span class="k">if</span> <span class="n">round_num</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">round_num</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; (round </span><span class="si">{</span><span class="n">round_num</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+        <span class="c1"># Log the message at debug level</span>
+        <span class="k">if</span> <span class="n">cmd</span> <span class="o">!=</span> <span class="s2">&quot;beat&quot;</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">Settings</span><span class="o">.</span><span class="n">heartbeat</span><span class="o">.</span><span class="n">EXCLUDE_BEAT_LOGS</span> <span class="ow">and</span> <span class="n">cmd</span> <span class="o">==</span> <span class="s2">&quot;beat&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+
+        <span class="c1"># Get actual round number for storage (default to 0 if None)</span>
+        <span class="n">storage_round</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">round_num</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">round_num</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">round_num</span>
+
+        <span class="c1"># Store in message storage</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message_storage</span><span class="o">.</span><span class="n">add_message</span><span class="p">(</span>
+            <span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">,</span>
+            <span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">,</span>
+            <span class="n">cmd</span><span class="o">=</span><span class="n">cmd</span><span class="p">,</span>
+            <span class="n">source_dest</span><span class="o">=</span><span class="n">source_dest</span><span class="p">,</span>
+            <span class="n">package_type</span><span class="o">=</span><span class="n">package_type</span><span class="p">,</span>
+            <span class="n">package_size</span><span class="o">=</span><span class="n">package_size</span><span class="p">,</span>
+            <span class="n">round_num</span><span class="o">=</span><span class="n">storage_round</span><span class="p">,</span>
+            <span class="n">additional_info</span><span class="o">=</span><span class="n">additional_info</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="P2PFLogger.get_messages">
+<a class="viewcode-back" href="../../../../modules/p2pfl.management.logger.logger.html#p2pfl.management.logger.logger.P2PFLogger.get_messages">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_messages</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">direction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span>  <span class="c1"># &quot;all&quot;, &quot;sent&quot;, or &quot;received&quot;</span>
+        <span class="n">node</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cmd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">round_num</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">MessageEntryType</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get communication messages with optional filtering.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            direction: Filter by message direction (&quot;all&quot;, &quot;sent&quot;, or &quot;received&quot;).</span>
+<span class="sd">            node: Filter by node address (optional).</span>
+<span class="sd">            cmd: Filter by command type (optional).</span>
+<span class="sd">            round_num: Filter by round number (optional).</span>
+<span class="sd">            limit: Limit the number of messages returned per node (optional).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A flat list of message dictionaries. Each message includes a &#39;direction&#39; field</span>
+<span class="sd">            indicating whether it was &#39;sent&#39; or &#39;received&#39;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Validate direction</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;sent&quot;</span><span class="p">,</span> <span class="s2">&quot;received&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid direction: </span><span class="si">{</span><span class="n">direction</span><span class="si">}</span><span class="s2">. Must be &#39;all&#39;, &#39;sent&#39;, or &#39;received&#39;.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Convert &quot;all&quot; to None as expected by message_storage</span>
+        <span class="n">storage_direction</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span> <span class="k">else</span> <span class="n">direction</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_storage</span><span class="o">.</span><span class="n">get_messages</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="n">storage_direction</span><span class="p">,</span> <span class="n">cmd</span><span class="o">=</span><span class="n">cmd</span><span class="p">,</span> <span class="n">round_num</span><span class="o">=</span><span class="n">round_num</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="P2PFLogger.get_system_metrics">
+<a class="viewcode-back" href="../../../../modules/p2pfl.management.logger.logger.html#p2pfl.management.logger.logger.P2PFLogger.get_system_metrics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_system_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the system metrics.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The system metrics.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_monitor</span><span class="o">.</span><span class="n">get_logs</span><span class="p">()</span></div>
 </div>
 
 </pre></div>
@@ -981,7 +1094,7 @@
       
     </aside>
   </div>
-</div><script src="../../../../_static/documentation_options.js?v=c87aa342"></script>
+</div><script src="../../../../_static/documentation_options.js?v=ff822928"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/scripts/furo.js?v=5fa4622c"></script>

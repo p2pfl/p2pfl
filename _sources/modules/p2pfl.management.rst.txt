@@ -22,6 +22,7 @@ Submodules
 
    p2pfl.management.cli
    p2pfl.management.launch_from_yaml
+   p2pfl.management.message_storage
    p2pfl.management.metric_storage
    p2pfl.management.node_monitor
    p2pfl.management.p2pfl_web_services

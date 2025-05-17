@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="p2pfl.learning.compression package" href="p2pfl.learning.compression.html" /><link rel="prev" title="p2pfl.learning.aggregators.fedmedian module" href="p2pfl.learning.aggregators.fedmedian.html" />
 
     <link rel="shortcut icon" href="../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>p2pfl.learning.aggregators.scaffold module - p2pfl 0.4.1 documentation</title>
+        <title>p2pfl.learning.aggregators.scaffold module - p2pfl 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -167,7 +167,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">p2pfl 0.4.1 documentation</div></a>
+      <a href="../index.html"><div class="brand">p2pfl 0.4.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -363,6 +363,7 @@
 </li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.cli.html">p2pfl.management.cli module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.launch_from_yaml.html">p2pfl.management.launch_from_yaml module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="p2pfl.management.message_storage.html">p2pfl.management.message_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.node_monitor.html">p2pfl.management.node_monitor module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="p2pfl.management.p2pfl_web_services.html">p2pfl.management.p2pfl_web_services module</a></li>
@@ -437,7 +438,7 @@
 <p>Callback for SCAFFOLD operations.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="p2pfl.learning.aggregators.scaffold.Scaffold">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.learning.aggregators.scaffold.</span></span><span class="sig-name descname"><span class="pre">Scaffold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/learning/aggregators/scaffold.html#Scaffold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.learning.aggregators.scaffold.Scaffold" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">p2pfl.learning.aggregators.scaffold.</span></span><span class="sig-name descname"><span class="pre">Scaffold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_partial_aggregation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/p2pfl/learning/aggregators/scaffold.html#Scaffold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#p2pfl.learning.aggregators.scaffold.Scaffold" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="p2pfl.learning.aggregators.aggregator.html#p2pfl.learning.aggregators.aggregator.Aggregator" title="p2pfl.learning.aggregators.aggregator.Aggregator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Aggregator</span></code></a></p>
 <p>SCAFFOLD Aggregator.</p>
 <p>Paper: <a class="reference external" href="https://arxiv.org/pdf/1910.06378">https://arxiv.org/pdf/1910.06378</a>
@@ -448,6 +449,11 @@ This consumes additional bandwidth.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="p2pfl.learning.aggregators.scaffold.Scaffold.REQUIRED_INFO_KEYS">
 <span class="sig-name descname"><span class="pre">REQUIRED_INFO_KEYS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['delta_y_i',</span> <span class="pre">'delta_c_i']</span></em><a class="headerlink" href="#p2pfl.learning.aggregators.scaffold.Scaffold.REQUIRED_INFO_KEYS" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="p2pfl.learning.aggregators.scaffold.Scaffold.SUPPORTS_PARTIAL_AGGREGATION">
+<span class="sig-name descname"><span class="pre">SUPPORTS_PARTIAL_AGGREGATION</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#p2pfl.learning.aggregators.scaffold.Scaffold.SUPPORTS_PARTIAL_AGGREGATION" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -532,6 +538,7 @@ This consumes additional bandwidth.</p>
 <li><a class="reference internal" href="#">p2pfl.learning.aggregators.scaffold module</a><ul>
 <li><a class="reference internal" href="#p2pfl.learning.aggregators.scaffold.Scaffold"><code class="docutils literal notranslate"><span class="pre">Scaffold</span></code></a><ul>
 <li><a class="reference internal" href="#p2pfl.learning.aggregators.scaffold.Scaffold.REQUIRED_INFO_KEYS"><code class="docutils literal notranslate"><span class="pre">Scaffold.REQUIRED_INFO_KEYS</span></code></a></li>
+<li><a class="reference internal" href="#p2pfl.learning.aggregators.scaffold.Scaffold.SUPPORTS_PARTIAL_AGGREGATION"><code class="docutils literal notranslate"><span class="pre">Scaffold.SUPPORTS_PARTIAL_AGGREGATION</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.learning.aggregators.scaffold.Scaffold.aggregate"><code class="docutils literal notranslate"><span class="pre">Scaffold.aggregate()</span></code></a></li>
 <li><a class="reference internal" href="#p2pfl.learning.aggregators.scaffold.Scaffold.get_required_callbacks"><code class="docutils literal notranslate"><span class="pre">Scaffold.get_required_callbacks()</span></code></a></li>
 </ul>
@@ -547,7 +554,7 @@ This consumes additional bandwidth.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=c87aa342"></script>
+</div><script src="../_static/documentation_options.js?v=ff822928"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=5fa4622c"></script>

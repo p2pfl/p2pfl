@@ -4,7 +4,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="#" /><link rel="search" title="Search" href="search.html" />
 
-    <link rel="shortcut icon" href="_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 --><title>Index - p2pfl 0.4.1 documentation</title>
+    <link rel="shortcut icon" href="_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 --><title>Index - p2pfl 0.4.2 documentation</title>
 <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
@@ -165,7 +165,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">p2pfl 0.4.1 documentation</div></a>
+      <a href="index.html"><div class="brand">p2pfl 0.4.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -361,6 +361,7 @@
 </li>
 <li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.management.cli.html">p2pfl.management.cli module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.management.launch_from_yaml.html">p2pfl.management.launch_from_yaml module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.management.message_storage.html">p2pfl.management.message_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.management.node_monitor.html">p2pfl.management.node_monitor module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.management.p2pfl_web_services.html">p2pfl.management.p2pfl_web_services module</a></li>
@@ -480,7 +481,11 @@
 </li>
         </ul></li>
         <li><a href="modules/p2pfl.communication.protocols.protobuff.gossiper.html#p2pfl.communication.protocols.protobuff.gossiper.Gossiper.add_message">add_message() (p2pfl.communication.protocols.protobuff.gossiper.Gossiper method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.management.message_storage.html#p2pfl.management.message_storage.MessageStorage.add_message">(p2pfl.management.message_storage.MessageStorage method)</a>
 </li>
+        </ul></li>
         <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#p2pfl.learning.aggregators.aggregator.Aggregator.add_model">add_model() (p2pfl.learning.aggregators.aggregator.Aggregator method)</a>
 </li>
         <li><a href="modules/p2pfl.communication.protocols.protobuff.proto.node_pb2_grpc.html#p2pfl.communication.protocols.protobuff.proto.node_pb2_grpc.add_NodeServicesServicer_to_server">add_NodeServicesServicer_to_server() (in module p2pfl.communication.protocols.protobuff.proto.node_pb2_grpc)</a>
@@ -489,10 +494,10 @@
 </li>
         <li><a href="modules/p2pfl.communication.protocols.protobuff.memory.server.html#p2pfl.communication.protocols.protobuff.memory.server.AddressCounter">AddressCounter (class in p2pfl.communication.protocols.protobuff.memory.server)</a>
 </li>
-        <li><a href="modules/p2pfl.communication.protocols.protobuff.grpc.address.html#p2pfl.communication.protocols.protobuff.grpc.address.AddressParser">AddressParser (class in p2pfl.communication.protocols.protobuff.grpc.address)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="modules/p2pfl.communication.protocols.protobuff.grpc.address.html#p2pfl.communication.protocols.protobuff.grpc.address.AddressParser">AddressParser (class in p2pfl.communication.protocols.protobuff.grpc.address)</a>
+</li>
         <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#p2pfl.learning.aggregators.aggregator.Aggregator.aggregate">aggregate() (p2pfl.learning.aggregators.aggregator.Aggregator method)</a>
 
         <ul>
@@ -985,6 +990,14 @@
 </li>
         <li><a href="modules/p2pfl.management.logger.logger.html#p2pfl.management.logger.logger.P2PFLogger.get_local_logs">get_local_logs() (p2pfl.management.logger.logger.P2PFLogger method)</a>
 </li>
+        <li><a href="modules/p2pfl.management.node_monitor.html#p2pfl.management.node_monitor.NodeMonitor.get_logs">get_logs() (p2pfl.management.node_monitor.NodeMonitor method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.logger.html#p2pfl.management.logger.logger.P2PFLogger.get_messages">get_messages() (p2pfl.management.logger.logger.P2PFLogger method)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.management.message_storage.html#p2pfl.management.message_storage.MessageStorage.get_messages">(p2pfl.management.message_storage.MessageStorage method)</a>
+</li>
+        </ul></li>
         <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#p2pfl.learning.aggregators.aggregator.Aggregator.get_missing_models">get_missing_models() (p2pfl.learning.aggregators.aggregator.Aggregator method)</a>
 </li>
         <li><a href="modules/p2pfl.learning.frameworks.pytorch.lightning_dataset.html#p2pfl.learning.frameworks.pytorch.lightning_dataset.TorchvisionDatasetFactory.get_mnist">get_mnist() (p2pfl.learning.frameworks.pytorch.lightning_dataset.TorchvisionDatasetFactory static method)</a>
@@ -1067,6 +1080,8 @@
 </li>
         <li><a href="modules/p2pfl.management.p2pfl_web_services.html#p2pfl.management.p2pfl_web_services.P2pflWebServices.get_pending_actions">get_pending_actions() (p2pfl.management.p2pfl_web_services.P2pflWebServices method)</a>
 </li>
+        <li><a href="modules/p2pfl.management.message_storage.html#p2pfl.management.message_storage.MessageStorage.get_received_messages">get_received_messages() (p2pfl.management.message_storage.MessageStorage method)</a>
+</li>
         <li><a href="modules/p2pfl.learning.compression.manager.html#p2pfl.learning.compression.manager.CompressionManager.get_registry">get_registry() (p2pfl.learning.compression.manager.CompressionManager static method)</a>
 </li>
         <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#p2pfl.learning.aggregators.aggregator.Aggregator.get_required_callbacks">get_required_callbacks() (p2pfl.learning.aggregators.aggregator.Aggregator method)</a>
@@ -1075,7 +1090,11 @@
           <li><a href="modules/p2pfl.learning.aggregators.scaffold.html#p2pfl.learning.aggregators.scaffold.Scaffold.get_required_callbacks">(p2pfl.learning.aggregators.scaffold.Scaffold method)</a>
 </li>
         </ul></li>
+        <li><a href="modules/p2pfl.management.message_storage.html#p2pfl.management.message_storage.MessageStorage.get_sent_messages">get_sent_messages() (p2pfl.management.message_storage.MessageStorage method)</a>
+</li>
         <li><a href="modules/p2pfl.stages.stage_factory.html#p2pfl.stages.stage_factory.StageFactory.get_stage">get_stage() (p2pfl.stages.stage_factory.StageFactory static method)</a>
+</li>
+        <li><a href="modules/p2pfl.management.logger.logger.html#p2pfl.management.logger.logger.P2PFLogger.get_system_metrics">get_system_metrics() (p2pfl.management.logger.logger.P2PFLogger method)</a>
 </li>
         <li><a href="modules/p2pfl.management.metric_storage.html#p2pfl.management.metric_storage.GlobalMetricStorage">GlobalMetricStorage (class in p2pfl.management.metric_storage)</a>
 </li>
@@ -1239,6 +1258,8 @@
 </li>
         <li><a href="modules/p2pfl.management.logger.logger.html#p2pfl.management.logger.logger.P2PFLogger.log">log() (p2pfl.management.logger.logger.P2PFLogger method)</a>
 </li>
+        <li><a href="modules/p2pfl.management.logger.logger.html#p2pfl.management.logger.logger.P2PFLogger.log_communication">log_communication() (p2pfl.management.logger.logger.P2PFLogger method)</a>
+</li>
         <li><a href="modules/p2pfl.settings.html#p2pfl.settings.General.LOG_DIR">LOG_DIR (p2pfl.settings.General attribute)</a>
 </li>
         <li><a href="modules/p2pfl.learning.frameworks.pytorch.lightning_logger.html#p2pfl.learning.frameworks.pytorch.lightning_logger.FederatedLogger.log_hyperparams">log_hyperparams() (p2pfl.learning.frameworks.pytorch.lightning_logger.FederatedLogger method)</a>
@@ -1249,7 +1270,7 @@
 </li>
         <li><a href="modules/p2pfl.learning.frameworks.pytorch.lightning_logger.html#p2pfl.learning.frameworks.pytorch.lightning_logger.FederatedLogger.log_metrics">log_metrics() (p2pfl.learning.frameworks.pytorch.lightning_logger.FederatedLogger method)</a>
 </li>
-        <li><a href="modules/p2pfl.management.logger.logger.html#p2pfl.management.logger.logger.P2PFLogger.log_system_metric">log_system_metric() (p2pfl.management.logger.logger.P2PFLogger method)</a>
+        <li><a href="modules/p2pfl.communication.protocols.protobuff.client.html#p2pfl.communication.protocols.protobuff.client.ProtobuffClient.log_successful_send">log_successful_send() (p2pfl.communication.protocols.protobuff.client.ProtobuffClient method)</a>
 </li>
         <li><a href="modules/p2pfl.management.cli.html#p2pfl.management.cli.login">login() (in module p2pfl.management.cli)</a>
 </li>
@@ -1274,6 +1295,8 @@
         <li><a href="modules/p2pfl.communication.protocols.protobuff.memory.server.html#p2pfl.communication.protocols.protobuff.memory.server.MemoryServer">MemoryServer (class in p2pfl.communication.protocols.protobuff.memory.server)</a>
 </li>
         <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Gossip.MESSAGES_PER_PERIOD">MESSAGES_PER_PERIOD (p2pfl.settings.Gossip attribute)</a>
+</li>
+        <li><a href="modules/p2pfl.management.message_storage.html#p2pfl.management.message_storage.MessageStorage">MessageStorage (class in p2pfl.management.message_storage)</a>
 </li>
         <li><a href="modules/p2pfl.communication.commands.message.metrics_command.html#p2pfl.communication.commands.message.metrics_command.MetricsCommand">MetricsCommand (class in p2pfl.communication.commands.message.metrics_command)</a>
 </li>
@@ -1484,6 +1507,8 @@
           <li><a href="modules/p2pfl.management.logger.html#module-p2pfl.management.logger">p2pfl.management.logger</a>
 </li>
           <li><a href="modules/p2pfl.management.logger.logger.html#module-p2pfl.management.logger.logger">p2pfl.management.logger.logger</a>
+</li>
+          <li><a href="modules/p2pfl.management.message_storage.html#module-p2pfl.management.message_storage">p2pfl.management.message_storage</a>
 </li>
           <li><a href="modules/p2pfl.management.metric_storage.html#module-p2pfl.management.metric_storage">p2pfl.management.metric_storage</a>
 </li>
@@ -2034,8 +2059,6 @@
           <li><a href="modules/p2pfl.learning.frameworks.html#module-p2pfl.learning.frameworks">module</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li>
     p2pfl.learning.frameworks.callback
 
@@ -2043,6 +2066,8 @@
           <li><a href="modules/p2pfl.learning.frameworks.callback.html#module-p2pfl.learning.frameworks.callback">module</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li>
     p2pfl.learning.frameworks.callback_factory
 
@@ -2268,6 +2293,13 @@
 </li>
         </ul></li>
         <li>
+    p2pfl.management.message_storage
+
+        <ul>
+          <li><a href="modules/p2pfl.management.message_storage.html#module-p2pfl.management.message_storage">module</a>
+</li>
+        </ul></li>
+        <li>
     p2pfl.management.metric_storage
 
         <ul>
@@ -2454,7 +2486,7 @@
 </li>
         <li><a href="modules/p2pfl.learning.aggregators.scaffold.html#p2pfl.learning.aggregators.scaffold.Scaffold.REQUIRED_INFO_KEYS">REQUIRED_INFO_KEYS (p2pfl.learning.aggregators.scaffold.Scaffold attribute)</a>
 </li>
-        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Web.RESOURCE_MONITOR_PERIOD">RESOURCE_MONITOR_PERIOD (p2pfl.settings.Web attribute)</a>
+        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.General.RESOURCE_MONITOR_PERIOD">RESOURCE_MONITOR_PERIOD (p2pfl.settings.General attribute)</a>
 </li>
         <li><a href="modules/p2pfl.learning.frameworks.simulation.actor_pool.html#p2pfl.learning.frameworks.simulation.actor_pool.SuperActorPool.resources">resources (p2pfl.learning.frameworks.simulation.actor_pool.SuperActorPool attribute)</a>
 </li>
@@ -2546,6 +2578,8 @@
           <li><a href="modules/p2pfl.communication.protocols.protobuff.server.html#p2pfl.communication.protocols.protobuff.server.ProtobuffServer.send">(p2pfl.communication.protocols.protobuff.server.ProtobuffServer method)</a>
 </li>
         </ul></li>
+        <li><a href="modules/p2pfl.management.p2pfl_web_services.html#p2pfl.management.p2pfl_web_services.P2pflWebServices.send_communication_log">send_communication_log() (p2pfl.management.p2pfl_web_services.P2pflWebServices method)</a>
+</li>
         <li><a href="modules/p2pfl.management.p2pfl_web_services.html#p2pfl.management.p2pfl_web_services.P2pflWebServices.send_global_metric">send_global_metric() (p2pfl.management.p2pfl_web_services.P2pflWebServices method)</a>
 </li>
         <li><a href="modules/p2pfl.management.p2pfl_web_services.html#p2pfl.management.p2pfl_web_services.P2pflWebServices.send_local_metric">send_local_metric() (p2pfl.management.p2pfl_web_services.P2pflWebServices method)</a>
@@ -2606,8 +2640,6 @@
 </li>
         <li><a href="modules/p2pfl.management.logger.logger.html#p2pfl.management.logger.logger.P2PFLogger.set_level">set_level() (p2pfl.management.logger.logger.P2PFLogger method)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="modules/p2pfl.learning.frameworks.learner.html#p2pfl.learning.frameworks.learner.Learner.set_model">set_model() (p2pfl.learning.frameworks.learner.Learner method)</a>
 
         <ul>
@@ -2618,6 +2650,8 @@
           <li><a href="modules/p2pfl.node.html#p2pfl.node.Node.set_model">(p2pfl.node.Node method)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#p2pfl.learning.aggregators.aggregator.Aggregator.set_nodes_to_aggregate">set_nodes_to_aggregate() (p2pfl.learning.aggregators.aggregator.Aggregator method)</a>
 </li>
         <li><a href="modules/p2pfl.learning.frameworks.flax.flax_model.html#p2pfl.learning.frameworks.flax.flax_model.FlaxModel.set_parameters">set_parameters() (p2pfl.learning.frameworks.flax.flax_model.FlaxModel method)</a>
@@ -2630,6 +2664,8 @@
           <li><a href="modules/p2pfl.learning.frameworks.tensorflow.keras_model.html#p2pfl.learning.frameworks.tensorflow.keras_model.KerasModel.set_parameters">(p2pfl.learning.frameworks.tensorflow.keras_model.KerasModel method)</a>
 </li>
         </ul></li>
+        <li><a href="modules/p2pfl.management.node_monitor.html#p2pfl.management.node_monitor.NodeMonitor.set_report_fn">set_report_fn() (p2pfl.management.node_monitor.NodeMonitor method)</a>
+</li>
         <li><a href="modules/p2pfl.node.html#p2pfl.node.Node.set_start_learning">set_start_learning() (p2pfl.node.Node method)</a>
 </li>
         <li><a href="modules/p2pfl.node.html#p2pfl.node.Node.set_stop_learning">set_stop_learning() (p2pfl.node.Node method)</a>
@@ -2702,6 +2738,16 @@
 </li>
         <li><a href="modules/p2pfl.learning.frameworks.simulation.actor_pool.html#p2pfl.learning.frameworks.simulation.actor_pool.SuperActorPool">SuperActorPool (class in p2pfl.learning.frameworks.simulation.actor_pool)</a>
 </li>
+        <li><a href="modules/p2pfl.learning.aggregators.aggregator.html#p2pfl.learning.aggregators.aggregator.Aggregator.SUPPORTS_PARTIAL_AGGREGATION">SUPPORTS_PARTIAL_AGGREGATION (p2pfl.learning.aggregators.aggregator.Aggregator attribute)</a>
+
+        <ul>
+          <li><a href="modules/p2pfl.learning.aggregators.fedavg.html#p2pfl.learning.aggregators.fedavg.FedAvg.SUPPORTS_PARTIAL_AGGREGATION">(p2pfl.learning.aggregators.fedavg.FedAvg attribute)</a>
+</li>
+          <li><a href="modules/p2pfl.learning.aggregators.fedmedian.html#p2pfl.learning.aggregators.fedmedian.FedMedian.SUPPORTS_PARTIAL_AGGREGATION">(p2pfl.learning.aggregators.fedmedian.FedMedian attribute)</a>
+</li>
+          <li><a href="modules/p2pfl.learning.aggregators.scaffold.html#p2pfl.learning.aggregators.scaffold.Scaffold.SUPPORTS_PARTIAL_AGGREGATION">(p2pfl.learning.aggregators.scaffold.Scaffold attribute)</a>
+</li>
+        </ul></li>
     </ul></td>
   </tr></table>
 </section>
@@ -2824,10 +2870,6 @@
 </li>
         <li><a href="modules/p2pfl.management.logger.logger.html#p2pfl.management.logger.logger.P2PFLogger.warning">warning() (p2pfl.management.logger.logger.P2PFLogger method)</a>
 </li>
-        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Web">Web (class in p2pfl.settings)</a>
-</li>
-        <li><a href="modules/p2pfl.settings.html#p2pfl.settings.Settings.web">web (p2pfl.settings.Settings attribute)</a>
-</li>
     </ul></td>
   </tr></table>
 </section>
@@ -2878,7 +2920,7 @@
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=c87aa342"></script>
+</div><script src="_static/documentation_options.js?v=ff822928"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=5fa4622c"></script>

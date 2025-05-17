@@ -22,10 +22,10 @@ from p2pfl.learning.aggregators.fedavg import FedAvg
 node = Node(
     model=LightningModel(MLP()),  # Wrap your model (MLP in this example) in a LightningModel
     data=P2PFLDataset.from_huggingface("p2pfl/MNIST"),  # Load the MNIST dataset
-    address="127.0.0.1:5000",  # Specify the node's address (optional - a random port will be assigned if not provided)
+    addr="127.0.0.1:5000",  # Specify the node's address (optional - a random port will be assigned if not provided)
     learner=LightningLearner, # Optional: Specify the learner class if needed
     aggregator=FedAvg(), # Optional: Specify the aggregator if needed
-    protocol=GrpcCommunicationProtocol, # Optional: Specify the communication protocol if needed
+    protocol=GrpcCommunicationProtocol(), # Optional: Specify the communication protocol if needed
     simulation=True # Optional: Set to True if running a simulation
 )
 

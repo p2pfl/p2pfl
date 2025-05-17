@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>p2pfl.settings - p2pfl 0.4.1 documentation</title>
+        <title>p2pfl.settings - p2pfl 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -166,7 +166,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">p2pfl 0.4.1 documentation</div></a>
+      <a href="../../index.html"><div class="brand">p2pfl 0.4.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -362,6 +362,7 @@
 </li>
 <li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.cli.html">p2pfl.management.cli module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.launch_from_yaml.html">p2pfl.management.launch_from_yaml module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.message_storage.html">p2pfl.management.message_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.node_monitor.html">p2pfl.management.node_monitor module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../modules/p2pfl.management.p2pfl_web_services.html">p2pfl.management.p2pfl_web_services module</a></li>
@@ -474,7 +475,9 @@
     <span class="n">MAX_LOG_RUNS</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Maximum number of run log files to keep.&quot;&quot;&quot;</span>
     <span class="n">DISABLE_RAY</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Disable Ray for local testing.&quot;&quot;&quot;</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Disable Ray for local testing.&quot;&quot;&quot;</span>
+    <span class="n">RESOURCE_MONITOR_PERIOD</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Period (seconds) to send resource monitor information.&quot;&quot;&quot;</span></div>
 
 
 
@@ -555,17 +558,6 @@
 
 
 
-<div class="viewcode-block" id="Web">
-<a class="viewcode-back" href="../../modules/p2pfl.settings.html#p2pfl.settings.Web">[docs]</a>
-<span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">Web</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Web interface and resource monitoring settings.&quot;&quot;&quot;</span>
-
-    <span class="n">RESOURCE_MONITOR_PERIOD</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Period (seconds) to send resource monitor information.&quot;&quot;&quot;</span></div>
-
-
-
 <span class="c1">###################</span>
 <span class="c1"># Global Settings #</span>
 <span class="c1">###################</span>
@@ -586,8 +578,6 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SSL certificate settings.&quot;&quot;&quot;</span>
     <span class="n">training</span> <span class="o">=</span> <span class="n">Training</span><span class="p">()</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Training process settings.&quot;&quot;&quot;</span>
-    <span class="n">web</span> <span class="o">=</span> <span class="n">Web</span><span class="p">()</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Web interface and resource monitoring settings.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Settings.set_from_dict">
 <a class="viewcode-back" href="../../modules/p2pfl.settings.html#p2pfl.settings.Settings.set_from_dict">[docs]</a>
@@ -651,7 +641,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=c87aa342"></script>
+</div><script src="../../_static/documentation_options.js?v=ff822928"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>

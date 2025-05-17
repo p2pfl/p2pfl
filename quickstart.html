@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="🏛️ Components" href="components/comp-index.html" /><link rel="prev" title="📥 Installation" href="installation.html" />
 
     <link rel="shortcut icon" href="_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>🚀 Quickstart - p2pfl 0.4.1 documentation</title>
+        <title>🚀 Quickstart - p2pfl 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
@@ -167,7 +167,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">p2pfl 0.4.1 documentation</div></a>
+      <a href="index.html"><div class="brand">p2pfl 0.4.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -363,6 +363,7 @@
 </li>
 <li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.management.cli.html">p2pfl.management.cli module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.management.launch_from_yaml.html">p2pfl.management.launch_from_yaml module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.management.message_storage.html">p2pfl.management.message_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.management.metric_storage.html">p2pfl.management.metric_storage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.management.node_monitor.html">p2pfl.management.node_monitor module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="modules/p2pfl.management.p2pfl_web_services.html">p2pfl.management.p2pfl_web_services module</a></li>
@@ -479,7 +480,7 @@ PyTorch</label><div class="sd-tab-content docutils">
 <span class="n">node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">LightningModel</span><span class="p">(</span><span class="n">MLP</span><span class="p">()),</span> <span class="c1"># Wrap your model (a MLP in this example) into a LightningModel</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">P2PFLDataset</span><span class="o">.</span><span class="n">from_huggingface</span><span class="p">(</span><span class="s2">&quot;p2pfl/MNIST&quot;</span><span class="p">),</span> <span class="c1"># Get dataset from Hugging Face</span>
-    <span class="n">address</span><span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;127.0.0.1:</span><span class="si">{</span><span class="mi">6666</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="c1"># Introduce a port or remove to use a random one</span>
+    <span class="n">addr</span><span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;127.0.0.1:</span><span class="si">{</span><span class="mi">6666</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="c1"># Introduce a port or remove to use a random one</span>
 <span class="p">)</span>
 <span class="n">node</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
@@ -504,7 +505,7 @@ Tensorflow</label><div class="sd-tab-content docutils">
     <span class="n">model</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span> <span class="c1"># force initiallization</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">KerasModel</span><span class="p">(</span><span class="n">model</span><span class="p">),</span> <span class="c1"># Wrap your model (a MLP in this example) into a KerasModel</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">P2PFLDataset</span><span class="o">.</span><span class="n">from_huggingface</span><span class="p">(</span><span class="s2">&quot;p2pfl/MNIST&quot;</span><span class="p">),</span> <span class="c1"># Get dataset from Hugging Face</span>
-    <span class="n">address</span><span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;127.0.0.1:</span><span class="si">{</span><span class="mi">6666</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="c1"># Introduce a port or remove to use a random one</span>
+    <span class="n">addr</span><span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;127.0.0.1:</span><span class="si">{</span><span class="mi">6666</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="c1"># Introduce a port or remove to use a random one</span>
 <span class="p">)</span>
 <span class="n">node</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
@@ -530,7 +531,7 @@ Flax</label><div class="sd-tab-content docutils">
     <span class="n">model_params</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">)))[</span><span class="s2">&quot;params&quot;</span><span class="p">]</span> <span class="c1"># force init</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">FlaxModel</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">model_params</span><span class="p">),</span> <span class="c1"># Wrap the Multi Layer Perceptron into a FlaxModel</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">P2PFLDataset</span><span class="o">.</span><span class="n">from_huggingface</span><span class="p">(</span><span class="s2">&quot;p2pfl/MNIST&quot;</span><span class="p">),</span> <span class="c1"># Get dataset from Hugging Face</span>
-    <span class="n">address</span><span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;127.0.0.1:</span><span class="si">{</span><span class="mi">6666</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="c1"># Introduce a port or remove to use a random one</span>
+    <span class="n">addr</span><span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;127.0.0.1:</span><span class="si">{</span><span class="mi">6666</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="c1"># Introduce a port or remove to use a random one</span>
 <span class="p">)</span>
 <span class="n">node</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
@@ -560,7 +561,7 @@ PyTorch</label><div class="sd-tab-content docutils">
 <span class="n">node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">LightningModel</span><span class="p">(</span><span class="n">MLP</span><span class="p">()),</span> <span class="c1"># Wrap your model (a MLP in this example) into a LightningModel</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">P2PFLDataset</span><span class="o">.</span><span class="n">from_huggingface</span><span class="p">(</span><span class="s2">&quot;p2pfl/MNIST&quot;</span><span class="p">),</span>
-    <span class="n">address</span> <span class="o">=</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="c1"># Random port</span>
+    <span class="n">addr</span> <span class="o">=</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="c1"># Random port</span>
 <span class="p">)</span>
 <span class="n">node</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
@@ -600,7 +601,7 @@ Tensorflow</label><div class="sd-tab-content docutils">
     <span class="n">model</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span> <span class="c1"># force initiallization</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">KerasModel</span><span class="p">(</span><span class="n">model</span><span class="p">),</span> <span class="c1"># Wrap your model (a MLP in this example) into a KerasModel</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">P2PFLDataset</span><span class="o">.</span><span class="n">from_huggingface</span><span class="p">(</span><span class="s2">&quot;p2pfl/MNIST&quot;</span><span class="p">),</span>
-    <span class="n">address</span> <span class="o">=</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="c1"># Random port</span>
+    <span class="n">addr</span> <span class="o">=</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="c1"># Random port</span>
 <span class="p">)</span>
 <span class="n">node</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
@@ -641,7 +642,7 @@ Flax</label><div class="sd-tab-content docutils">
     <span class="n">model_params</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">)))[</span><span class="s2">&quot;params&quot;</span><span class="p">]</span> <span class="c1"># force init</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">FlaxModel</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">model_params</span><span class="p">),</span> <span class="c1"># Wrap the Multi Layer Perceptron into a FlaxModel</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">P2PFLDataset</span><span class="o">.</span><span class="n">from_huggingface</span><span class="p">(</span><span class="s2">&quot;p2pfl/MNIST&quot;</span><span class="p">),</span>
-    <span class="n">address</span> <span class="o">=</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="c1"># Random port</span>
+    <span class="n">addr</span> <span class="o">=</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="c1"># Random port</span>
 <span class="p">)</span>
 <span class="n">node</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
@@ -758,7 +759,7 @@ Flax</label><div class="sd-tab-content docutils">
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=c87aa342"></script>
+</div><script src="_static/documentation_options.js?v=ff822928"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=5fa4622c"></script>
