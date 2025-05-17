@@ -83,7 +83,7 @@ class FullModelCommand(Command):
                 self.stop()
 
             except Exception as e:
-                logger.error(self.state.addr, f"❌ Unknown error adding model: {e}")
+                logger.error(self.state.addr, f"❌ Unknown error adding full model: {e}")
                 self.stop()
         else:
             logger.debug(self.state.addr, "❌ Tried to add a model while learning is not running")

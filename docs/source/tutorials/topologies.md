@@ -67,9 +67,9 @@ from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 
 # Create some nodes
 nodes = [
-    Node(LightningModel(MLP()), P2PFLDataset.from_huggingface("p2pfl/MNIST"), address="127.0.0.1:5001"),
-    Node(LightningModel(MLP()), P2PFLDataset.from_huggingface("p2pfl/MNIST"), address="127.0.0.1:5002"),
-    Node(LightningModel(MLP()), P2PFLDataset.from_huggingface("p2pfl/MNIST"), address="127.0.0.1:5003"),
+    Node(LightningModel(MLP()), P2PFLDataset.from_huggingface("p2pfl/MNIST"), addr="127.0.0.1:5001"),
+    Node(LightningModel(MLP()), P2PFLDataset.from_huggingface("p2pfl/MNIST"), addr="127.0.0.1:5002"),
+    Node(LightningModel(MLP()), P2PFLDataset.from_huggingface("p2pfl/MNIST"), addr="127.0.0.1:5003"),
 ]
 
 # Generate a full topology

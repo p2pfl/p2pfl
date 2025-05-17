@@ -24,8 +24,8 @@ from p2pfl.communication.protocols.grpc.grpc_communication_protocol import GrpcC
 
 node = Node(
     # ... other node parameters
-    protocol=GrpcCommunicationProtocol,
-    address="127.0.0.1:5000" # Example address (IP:port)
+    protocol=GrpcCommunicationProtocol(),
+    addr="127.0.0.1:5000" # Example address (IP:port)
 )
 ```
 
@@ -46,8 +46,8 @@ from p2pfl.communication.protocols.memory.memory_communication_protocol import I
 
 node = Node(
     # ... other node parameters
-    protocol=InMemoryCommunicationProtocol,
-    address="node-1" # Example address for in-memory communication
+    protocol=InMemoryCommunicationProtocol(),
+    addr="node-1" # Example address for in-memory communication
 )
 ```
 
@@ -71,8 +71,8 @@ from p2pfl.communication.protocols.grpc.grpc_communication_protocol import GrpcC
 
 node = Node(
     # ... other node parameters
-    protocol=GrpcCommunicationProtocol,
-    address="unix:///tmp/p2pfl.sock" # Example Unix socket address
+    protocol=GrpcCommunicationProtocol(),
+    addr="unix:///tmp/p2pfl.sock" # Example Unix socket address
 )
 ```
 

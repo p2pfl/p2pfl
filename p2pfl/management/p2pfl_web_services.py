@@ -29,7 +29,7 @@ Communication with P2PFL Web Services (via REST API).
 """
 
 import datetime
-from typing import Dict
+from typing import Dict, Optional
 
 import requests
 
@@ -80,19 +80,17 @@ class P2pflWebServices:
         headers["x-api-key"] = self.__key
         return headers
 
-    def register_node(self, node: str, is_simulated: bool) -> None:
+    def register_node(self, node: str) -> None:
         """
         Register a node.
 
         Args:
             node: The node address.
-            is_simulated: If the node is simulated.
 
         """
         # Send request
         data = {
             "address": node,
-            "is_simulated": is_simulated,
             "creation_date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
         try:
@@ -264,6 +262,35 @@ class P2pflWebServices:
             response.raise_for_status()
         except Exception as e:
             raise P2pflWebServicesError(response.status_code, response.text) from e
+
+    def send_communication_log(
+        self,
+        node: str,
+        timestamp: datetime.datetime,
+        direction: str,
+        cmd: str,
+        source_dest: str,
+        package_type: str,
+        package_size: int,
+        round_num: Optional[int] = None,
+        additional_info: Optional[dict] = None,
+    ) -> None:
+        """
+        Send a communication log to the web services.
+
+        Args:
+            node: The node address.
+            timestamp: The timestamp of the communication.
+            direction: Direction of communication ("sent" or "received").
+            cmd: The command or message type.
+            source_dest: Source (if receiving) or destination (if sending) node.
+            package_type: Type of package ("message" or "weights").
+            package_size: Size of the package in bytes (if available).
+            round_num: The federated learning round number (if applicable).
+            additional_info: Additional information as a dictionary.
+
+        """
+        raise NotImplementedError
 
     def get_pending_actions(self):
         """Get pending actions from the p2pfl-web services."""

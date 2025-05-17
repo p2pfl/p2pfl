@@ -18,6 +18,8 @@ python p2pfl/examples/mnist/minst.py
 
 ```sh
 python -m p2pfl run p2pfl/examples/mnist/minst.yaml
+# or
+python -m p2pfl run mnist
 ```
 
 ### Running `node1.py` and then `node1.py`

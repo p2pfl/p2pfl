@@ -33,10 +33,11 @@ class FedAvg(Aggregator):
     Paper: https://arxiv.org/abs/1602.05629.
     """
 
-    def __init__(self) -> None:
+    SUPPORTS_PARTIAL_AGGREGATION: bool = True
+
+    def __init__(self, disable_partial_aggregation: bool = False) -> None:
         """Initialize the aggregator."""
-        super().__init__()
-        self.partial_aggregation = True
+        super().__init__(disable_partial_aggregation=disable_partial_aggregation)
 
     def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
         """

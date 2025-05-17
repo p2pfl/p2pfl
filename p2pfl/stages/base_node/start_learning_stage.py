@@ -75,6 +75,7 @@ class StartLearningStage(Stage):
         # Communicate Initialization
         communication_protocol.broadcast(communication_protocol.build_msg(ModelInitializedCommand.get_name()))
         logger.info(state.addr, "🗣️ Gossiping model initialization.")
+        time.sleep(1.)
         StartLearningStage.__gossip_model(state, communication_protocol, learner)
 
         # Wait to guarantee new connection heartbeats convergence

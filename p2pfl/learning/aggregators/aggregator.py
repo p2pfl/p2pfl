@@ -42,11 +42,19 @@ class Aggregator(NodeComponent):
 
     """
 
-    def __init__(self) -> None:
+    SUPPORTS_PARTIAL_AGGREGATION: bool = False  # Default, subclasses should override
+
+    def __init__(self, disable_partial_aggregation: bool = False) -> None:
         """Initialize the aggregator."""
         self.__train_set: List[str] = []  # TODO: Remove the trainset from the state
         self.__models: List[P2PFLModel] = []
-        self.partial_aggregation = False
+
+        # Initialize instance's partial_aggregation based on the class's support
+        self.partial_aggregation: bool = self.__class__.SUPPORTS_PARTIAL_AGGREGATION
+
+        # If the class supports it, allow disabling it for this instance
+        if self.partial_aggregation and disable_partial_aggregation:
+            self.partial_aggregation = False
 
         # (addr) Super
         NodeComponent.__init__(self)
@@ -162,17 +170,17 @@ class Aggregator(NodeComponent):
                     self.__agg_lock.release()
                     return self.get_aggregated_models()
                 else:
-                    logger.debug(
+                    logger.info(
                         self.addr,
-                        f"Can't add a model from a node ({model.get_contributors()}) that is already in the training set.",
+                        f"🚫 Can't add a model from a node ({model.get_contributors()}) that is already aggregated.",
                     )
             else:
-                logger.debug(
+                logger.info(
                     self.addr,
-                    f"Can't add a model from a node ({model.get_contributors()}) that is not in the training set.",
+                    f"🚫 Can't add a model from a node ({model.get_contributors()}) that is not in the training set.",
                 )
         else:
-            logger.debug(self.addr, "🚫 Received a model when is not needed (already aggregated).")
+            logger.info(self.addr, "🚫 Received a model when is not needed (already aggregated).")
 
         # Release and return
         self.__agg_lock.release()

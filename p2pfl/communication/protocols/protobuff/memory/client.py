@@ -140,6 +140,11 @@ class MemoryClient(ProtobuffClient):
 
         # Send
         res = self.stub.send(msg, None)  # type: ignore
+
+        # Log successful message sending
+        if not res.error:
+            self.log_successful_send(msg)
+
         if res.error:
             logger.info(
                 self.self_addr,

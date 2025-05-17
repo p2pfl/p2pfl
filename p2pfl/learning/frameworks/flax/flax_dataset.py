@@ -18,7 +18,7 @@
 
 """Flax Dataset export strategy."""
 
-from typing import Any, Callable, Generator, Optional, Tuple
+from typing import Any, Generator, Optional, Tuple
 
 import jax.numpy as jnp
 from datasets import Dataset  # type: ignore
@@ -33,17 +33,15 @@ class FlaxExportStrategy(DataExportStrategy):
     @staticmethod
     def export(
         data: Dataset,
-        transforms: Optional[Callable] = None,
         batch_size: Optional[int] = None,
         num_workers: int = 0,
         **kwargs,
     ) -> Generator[Tuple[jnp.ndarray, jnp.ndarray], Any, None]:
         """
-        Export the data using the PyTorch strategy.
+        Export the data using the JAX/Flax strategy.
 
         Args:
-            data: The data to export.
-            transforms: The transforms to apply to the data.
+            data: The data to export. Transforms should already be applied to the dataset via set_transform.
             batch_size: The batch size to use for the exported data.
             num_workers: The number of workers to use for the exported
             kwargs: Additional keyword arguments.
@@ -52,9 +50,6 @@ class FlaxExportStrategy(DataExportStrategy):
             The exported data.
 
         """
-        if transforms is not None:
-            raise NotImplementedError("Transforms are not supported in this export strategy.")
-
         # TODO: HARDCODEADO A MNIST?
 
         # TODO: fix dataloader .with_format(type="jax", ...) with custom collate_fn

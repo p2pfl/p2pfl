@@ -1,4 +1,4 @@
-description: "Example of using P2PFL with the MNIST dataset, a collection of handwritten digits commonly used for training image processing systems."
+description: "Example of using P2PFL with the CIFAR-10 dataset, a collection of 32x32 color images in 10 classes."
 
 # Web logger configuration
 web_logger:
@@ -10,16 +10,16 @@ web_logger:
 network:
   package: "p2pfl.communication.protocols.protobuff.memory"
   protocol: "MemoryCommunicationProtocol"
-  nodes: 10
-  topology: "full"   # Network topology: "line", "ring", "star", "full", null for custom
+  nodes: 1
+  topology: "star"   # Network topology: "line", "ring", "star", "full", null for custom
   additional_connections:
-    - [0, 2]              # Connect node 0 to Node 2 (indices)
-    - [1, 3]              # Connect node 1 to Node 3 (indices)
+  #  - [0, 2]              # Connect node 0 to Node 2 (indices)
+  #  - [1, 3]              # Connect node 1 to Node 3 (indices)
 
 # Defines experiment settings
 experiment:
-  name: "my_experiment"
-  rounds: 4
+  name: "cifar10_experiment"
+  rounds: 20
   epochs: 1
   trainset_size: 4
   seed: 666
@@ -28,12 +28,13 @@ experiment:
   # Dataset settings
   dataset:
     source: "huggingface" # Dataset source: "huggingface", "csv", etc.
-    name: "p2pfl/MNIST"
-    batch_size: 128
-    # Uncomment and adjust this to use transforms
-    #transforms:
-    #  package: "XXXX"
-    #  function: "XX"
+    name: "p2pfl/CIFAR10"
+    batch_size: 64
+    # Use our custom CIFAR10 transform function (normalization only, no data augmentation)
+    transforms:
+      package: "p2pfl.examples.cifar10.transforms"
+      function: "get_cifar10_transform"
+      params: {}
     partitioning:
       package: "p2pfl.learning.dataset.partition_strategies"
       strategy: "RandomIIDPartitionStrategy" # DirichletPartitionStrategy
@@ -48,40 +49,37 @@ experiment:
 
   # Learning algorithm configuration
   model:
-    package: "p2pfl.examples.mnist.model.mlp_pytorch" # mlp_pytorch | mlp_tensorflow
+    package: "p2pfl.examples.cifar10.model.resnet_pytorch" 
     model_build_fn: "model_build_fn"
     params: {}  
     # Learning algorithm parameters (algorithm-specific)
     #compression:
-    ptq:
-      dtype: "int8"
-    topk:
-      k: 0.1
-    zlib:
-      level: 6
-
+    #ptq:
+    #  dtype: "int8"
+    #topk:
+    #  k: 0.1
+    #zlib:
+    #  level: 6
 
   # Aggregation algorithm configuration
   aggregator:
     package: "p2pfl.learning.aggregators.fedavg"
     aggregator: "FedAvg"
     params: {}  # Aggregator parameters (algorithm-specific)
-
-    # Uncomment and adjust this for aggregator transforms
-    #transforms:
-    #  package: "p2pfl.examples.mnist.transforms"
-    #  function: "normalize_transform"
-    #  params:
-    #    mean: 0.1307
-    #    std: 0.3081
-
-
+    # Optional transforms for preprocessing
+    transforms:
+      package: "p2pfl.examples.cifar10.transforms"
+      function: "cifar10_transforms"
+      #params:
+        # Optional parameters for the transforms
+        
 # General experiment settings
 settings:
   general:
     log_level: "INFO" # Logging verbosity: "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
     grpc_timeout: 2
     disable_ray: False
+    resource_monitor_period: 1
 
   SSL:
     use_ssl: false
@@ -106,11 +104,9 @@ settings:
   training:
     vote_timeout: 60
     aggregation_timeout: 300
-  web:
-    resource_monitor_period: 1
 
 # Profiling configuration
 profiling:
   enabled: false
   measure_time: true
-  output_dir: "profile/mnist"
+  output_dir: "profile/cifar10"

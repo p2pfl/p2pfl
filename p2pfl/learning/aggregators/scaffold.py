@@ -40,20 +40,21 @@ class Scaffold(Aggregator):
     """
 
     REQUIRED_INFO_KEYS = ["delta_y_i", "delta_c_i"]
+    SUPPORTS_PARTIAL_AGGREGATION: bool = False
 
-    def __init__(self, global_lr: float = 0.1):
+    def __init__(self, global_lr: float = 0.1, disable_partial_aggregation: bool = False):
         """
         Initialize the aggregator.
 
         Args:
             global_lr: The global learning rate.
+            disable_partial_aggregation: Whether to disable partial aggregation.
 
         """
-        super().__init__()
+        super().__init__(disable_partial_aggregation=disable_partial_aggregation)
         self.global_lr = global_lr
         self.c: list[np.ndarray] = []  # global control variates
         self.global_model_params: list[np.ndarray] = []  # simulate global model
-        self.partial_aggregation = False
 
     def aggregate(self, models: list[P2PFLModel]) -> P2PFLModel:
         """

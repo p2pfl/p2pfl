@@ -165,25 +165,73 @@ item = p2pfl_dataset.get(4, train=True)
 print(item)
 ```
 
-**Transformations:**  You can apply transformations to your data using `set_transforms()`. This allows you to preprocess your data before using it for training or evaluation. Here's an example demonstrating how to apply a simple transformation to the MNIST dataset:
+### Data Transforms
+
+P2PFL supports data transformations through a flexible system that leverages the Hugging Face datasets library. Transforms are applied during the dataset processing pipeline before the data is exported to specific ML frameworks.
+
+#### Custom Transform Functions
+
+In P2PFL, transforms are defined as functions that operate on batches of examples. These functions should:
+
+1. Accept a dictionary of examples (where each key is a feature name and each value is a list of feature values)
+2. Apply the desired transformations
+3. Return the transformed dictionary with the same structure
+
+Here's an example of a transform function for CIFAR10 images:
+
+```python
+# p2pfl/examples/cifar10/transforms.py
+import torch
+import torchvision.transforms as transforms
+
+def cifar10_transforms(examples):
+    """Apply normalization to a batch of CIFAR10 examples."""
+    to_tensor = transforms.ToTensor()
+    normalize = transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2470, 0.2435, 0.2616])
+
+    # Transform all images using list comprehension
+    transformed_images = [normalize(img if isinstance(img, torch.Tensor) else to_tensor(img)) 
+                         for img in examples["image"]]
+
+    return {"image": transformed_images, "label": examples["label"]}
+```
+
+#### Programmatically in Python
+
+You can apply transforms programmatically using the `set_transforms()` method:
 
 ```python
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-from torchvision import transforms
+from p2pfl.examples.cifar10.transforms import cifar10_transforms
 
-# Load MNIST dataset
-mnist_dataset = P2PFLDataset.from_huggingface("p2pfl/MNIST")
+# Load CIFAR10 dataset
+cifar10_dataset = P2PFLDataset.from_huggingface("p2pfl/CIFAR10")
 
-# Define a transform to convert the image to a tensor and normalize it
-transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
+# Set the transform function
+cifar10_dataset.set_transforms(cifar10_transforms)
 
-# Set the transform
-mnist_dataset.set_transforms(transform)
-
-# Access a transformed sample
-transformed_sample = mnist_dataset.get(0, train=True)
-print(transformed_sample)
+# The transforms will be applied when accessing data
+transformed_sample = cifar10_dataset.get(0, train=True)
+# Or when exporting to a framework-specific format
 ```
+
+#### In YAML Configuration
+
+Transforms can be configured in YAML files for experiment configuration. This is useful for reproducible experiments:
+
+```yaml
+# Dataset settings
+dataset:
+  source: "huggingface" 
+  name: "p2pfl/CIFAR10"
+  batch_size: 64
+  # Transform configuration
+  transforms:
+    package: "p2pfl.examples.cifar10.transforms"  # Python package containing the transform
+    function: "cifar10_transforms"                # Function name to use
+    params: {}                                    # Optional parameters to pass to the function
+```
+This configuration allows transforms to be easily shared, reused, and versioned as part of your experiment setup.
 
 ## Partitioning for Federated Learning
 

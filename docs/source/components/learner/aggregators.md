@@ -12,11 +12,12 @@ Aggregators are responsible for combining model updates from multiple nodes duri
 
 Currently, the library has support for the following aggregators:
 
-| Aggregator       | Description                                                                                   | Partial Aggregation | Paper Link                                                                                                |
-| :---------------- | :-------------------------------------------------------------------------------------------- | :-----------------: | :-------------------------------------------------------------------------------------------------------- |
-| [`FedAvg`](#FedAvg)            | Federated Averaging combines updates using a weighted average based on sample size.           |         ✅         | [Communication-Efficient Learning of Deep Networks from Decentralized Data](https://arxiv.org/abs/1602.05629) |
-| [`FedMedian`](#FedMedian)         | Computes the median of updates for robustness against outliers or adversarial contributions. |         ✅         | [Robust Aggregation for Federated Learning](https://arxiv.org/abs/1705.05491)                               |
-| [`Scaffold`](#Scaffold)          | Uses control variates to reduce variance and correct client drift in non-IID data scenarios. |         ❌         | [SCAFFOLD: Stochastic Controlled Averaging for Federated Learning](https://arxiv.org/abs/1910.06378)        |
+| Aggregator       | Description                                                                                   | Supports Partial Aggregation (Class Default) | Paper Link                                                                                                |
+| :---------------- | :-------------------------------------------------------------------------------------------- | :------------------------------------------: | :-------------------------------------------------------------------------------------------------------- |
+| [`FedAvg`](#FedAvg)            | Federated Averaging combines updates using a weighted average based on sample size.           |                       ✅                      | [Communication-Efficient Learning of Deep Networks from Decentralized Data](https://arxiv.org/abs/1602.05629) |
+| [`FedMedian`](#FedMedian)         | Computes the median of updates for robustness against outliers or adversarial contributions. |                       ✅                      | [Robust Aggregation for Federated Learning](https://arxiv.org/abs/1705.05491)                               |
+| [`Scaffold`](#Scaffold)          | Uses control variates to reduce variance and correct client drift in non-IID data scenarios. |                       ❌                      | [SCAFFOLD: Stochastic Controlled Averaging for Federated Learning](https://arxiv.org/abs/1910.06378)        |
+*An instance's partial aggregation can be turned off using the `disable_partial_aggregation=True` parameter in its constructor if the class supports it.*
 
 ## How to Use Aggregators
 
@@ -50,13 +51,28 @@ In a gossip-based system, a node might receive model updates from multiple other
 
 While beneficial, not all aggregation algorithms are suitable for partial aggregation. For instance, while it's mathematically equivalent to full aggregation for algorithms like [FedAvg](#FedAvg), it might negatively impact the model's convergence for others.
 
-Partial aggregation, therefore, provides a more flexible and efficient aggregation process, especially in **dynamic and decentralized environments**. It allows for a balance between communication efficiency and model convergence, depending on the specific aggregation algorithm being used.
-
 ## Creating New Aggregators
 
-When creating new aggregators, there are a few key aspects to keep in mind. First, consider whether your aggregation algorithm can support **partial aggregation**. If it can, you'll want to set the `partial_aggregation` attribute of your `Aggregator` class to `True`.
+When creating new aggregators, consider the following:
 
-Another important consideration is how your aggregator might interact with the **optimization process**. Some aggregators require more than just the model weights; they might need specific information about the training process itself, such as gradients or other calculated values. To handle this, P2PFL uses a **callback system**. These callbacks, which are essentially extensions of the framework-specific callbacks like those in PyTorch, allow you to inject custom logic into the training loop. Your aggregator can specify which callbacks it needs using the `get_required_callbacks()` method. The `CallbackFactory` will then ensure that the appropriate callbacks are available for the chosen machine learning framework.
+1.  **Partial Aggregation Capability**:
+    *   Define a class attribute `SUPPORTS_PARTIAL_AGGREGATION: bool` in your new aggregator class. Set it to `True` if your algorithm can correctly handle partial aggregations, `False` otherwise.
+    *   The base `Aggregator` class's `__init__` method will automatically use this class attribute to set the initial state of `self.partial_aggregation` for instances of your new aggregator. It also handles the `disable_partial_aggregation` parameter.
+        ```python
+        class MyCustomAggregator(Aggregator):
+            SUPPORTS_PARTIAL_AGGREGATION: bool = True # Or False, depending on the algorithm
+
+            def __init__(self, disable_partial_aggregation: bool = False, # other_params...):
+                super().__init__(disable_partial_aggregation=disable_partial_aggregation)
+                # self.other_params = other_params
+                # No need to manually set self.partial_aggregation here;
+                # the base class __init__ handles it based on SUPPORTS_PARTIAL_AGGREGATION
+                # and the disable_partial_aggregation flag.
+        ```
+
+2.  **Interaction with Optimization Process (Callbacks)**:
+    *   Some aggregators might need more than just model weights, requiring specific information from the training process (e.g., gradients). P2PFL uses a callback system for this.
+    *   Your aggregator can specify required callbacks via `get_required_callbacks()`. The `CallbackFactory` ensures these are available for the chosen ML framework.
 
 The information gathered by these callbacks is stored in a special dictionary called `additional_info` that's associated with each model. This is where P2PFL's role becomes crucial. It manages this `additional_info` to ensure that the data collected by the callbacks is not only stored but also persists even after the models are aggregated. This means that your aggregator can reliably access this extra information using `model.get_info(callback_name)` when it's combining the models. This mechanism allows for a clean separation of concerns: the framework handles the training loop execution, the callbacks gather the necessary data, and P2PFL ensures that this data is available to the aggregator.
 
@@ -72,9 +88,11 @@ import torch
 
 # MyAggregator Implementation
 class MyAggregator(Aggregator):
-    def __init__(self):
-        super().__init__()
-        self.partial_aggregation = False  # Set to True if it supports partial aggregation
+    SUPPORTS_PARTIAL_AGGREGATION: bool = True # Example: This custom aggregator supports it
+
+    def __init__(self, disable_partial_aggregation: bool = False):
+        super().__init__(disable_partial_aggregation=disable_partial_aggregation)
+        # self.partial_aggregation is now set by the base class logic
 
     def aggregate(self, models):
         # Your aggregation logic here, using model.get_weights() and

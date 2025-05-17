@@ -114,23 +114,33 @@ def full_connection(node: Node, nodes: List[Node]) -> None:
         node.connect(n.addr)
 
 
-def wait_to_finish(nodes: List[Node], timeout=60):
+def wait_to_finish(nodes: List[Node], timeout=3600, debug=False) -> None:
     """
     Wait until all nodes have finished the workflow.
 
     Args:
         nodes: List of nodes.
-        timeout: Timeout.
+        timeout: Timeout in seconds (default: 1 hour = 3600 seconds).
+        debug: Debug mode.
+
+    Raises:
+        TimeoutError: If the nodes don't finish within the timeout period.
 
     """
-    # Wait untill all nodes finised the workflow
+    # Wait until all nodes finish the workflow
     start = time.time()
     while True:
+        if debug:
+            logger.info(
+                "Waiting for nodes to finish",
+                str([n.learning_workflow.finished for n in nodes]),
+            )
         if all(n.learning_workflow.finished for n in nodes):
             break
         time.sleep(1)
-        if time.time() - start > timeout:
-            raise TimeoutError("Timeout waiting for nodes to finish")
+        elapsed = time.time() - start
+        if elapsed > timeout:
+            raise TimeoutError(f"Timeout waiting for nodes to finish (elapsed: {int(elapsed//60)} minutes {int(elapsed%60)} seconds)")
 
 
 def check_equal_models(nodes: List[Node]) -> None:

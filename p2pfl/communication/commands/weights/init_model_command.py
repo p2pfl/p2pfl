@@ -67,18 +67,25 @@ class InitModelCommand(Command):
 
             # Check moment (not init and invalid round)
             if not self.state.model_initialized_lock.locked():
-                logger.error(
+                logger.info(
                     self.state.addr,
-                    "Model initizalization message when the model is already initialized. Ignored.",
+                    "🕳  Model initizalization message when the model is already initialized. Ignored.",
                 )
                 return
 
             try:
                 # Set new weights
                 self.learner.set_model(weights)
-                # Release lock
-                self.state.model_initialized_lock.release()
-                logger.info(self.state.addr, "🤖 Model Weights Initialized")
+                # Release lock - wrap in try/except to handle concurrent releases
+                try:
+                    self.state.model_initialized_lock.release()
+                    logger.info(self.state.addr, "🤖 Model Weights Initialized")
+                except RuntimeError:
+                    # This likely means another concurrent INIT_MODEL message already released the lock.
+                    logger.debug(
+                        self.state.addr,
+                        "Attempted to release model_initialized_lock, but it was already unlocked. Likely due to concurrent initialization",
+                    )
 
             # Warning: these stops can cause a denegation of service attack
             except DecodingParamsError:
@@ -90,7 +97,7 @@ class InitModelCommand(Command):
                 self.stop()
 
             except Exception as e:
-                logger.error(self.state.addr, f"Unknown error adding model: {e}")
+                logger.error(self.state.addr, f"Unknown error adding initial model: {e}")
                 self.stop()
 
         else:

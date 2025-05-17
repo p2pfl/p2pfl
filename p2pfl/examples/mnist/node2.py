@@ -47,7 +47,7 @@ def node2(port: int) -> None:
         port: The port to connect.
 
     """
-    node = Node(model_build_fn(), P2PFLDataset.from_huggingface("p2pfl/MNIST"), address="127.0.0.1")
+    node = Node(model_build_fn(), P2PFLDataset.from_huggingface("p2pfl/MNIST"), addr="127.0.0.1")
     node.start()
     node.connect(f"127.0.0.1:{port}")
     time.sleep(4)

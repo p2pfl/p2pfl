@@ -33,6 +33,12 @@ class FedMedian(Aggregator):
     Paper: https://arxiv.org/pdf/1803.01498v1.pdf
     """
 
+    SUPPORTS_PARTIAL_AGGREGATION: bool = True  # Assuming it can support it
+
+    def __init__(self, disable_partial_aggregation: bool = False) -> None:
+        """Initialize the aggregator."""
+        super().__init__(disable_partial_aggregation=disable_partial_aggregation)
+
     def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
         """
         Compute the median of the models.

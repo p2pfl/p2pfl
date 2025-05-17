@@ -46,7 +46,7 @@ def node1(port: int) -> None:
         port: The port where the node will be listening.
 
     """
-    node = Node(model_build_fn(), P2PFLDataset.from_huggingface("p2pfl/MNIST"), address=f"127.0.0.1:{port}")
+    node = Node(model_build_fn(), P2PFLDataset.from_huggingface("p2pfl/MNIST"), addr=f"127.0.0.1:{port}")
     node.start()
 
     input("Press any key to stop\n")

@@ -36,13 +36,12 @@ class DataExportStrategy(ABC):
 
     @staticmethod
     @abstractmethod
-    def export(data: Dataset, transforms: Optional[Callable] = None, batch_size: Optional[int] = None, **kwargs) -> Any:
+    def export(data: Dataset, batch_size: Optional[int] = None, **kwargs) -> Any:
         """
         Export the data using the specific strategy.
 
         Args:
-            data: The data to export.
-            transforms: The transforms to apply to the data.
+            data: The data to export. Transforms should already be applied to the dataset.
             batch_size: The batch size for the export.
             **kwargs: Additional keyword arguments for the export strategy.
 
@@ -105,7 +104,6 @@ class P2PFLDataset:
         train_split_name: str = "train",
         test_split_name: str = "test",
         batch_size: int = 1,
-        transforms: Optional[Callable] = None,
     ):
         """
         Initialize the P2PFLDataset object.
@@ -115,13 +113,11 @@ class P2PFLDataset:
             train_split_name: The name of the training split.
             test_split_name: The name of the test split.
             batch_size: The batch size for the dataset.
-            transforms: The transforms to apply to the data.
 
         """
         self._data = data
         self._train_split_name = train_split_name
         self._test_split_name = test_split_name
-        self._transforms = transforms
         self.batch_size = batch_size
 
     def get(self, idx, train: bool = True) -> Dict[str, Any]:
@@ -145,13 +141,17 @@ class P2PFLDataset:
 
     def set_transforms(self, transforms: Callable) -> None:
         """
-        Set the transforms to apply to the data.
+        Set the transforms to apply to the data, delegating to the Hugging Face dataset.
 
         Args:
             transforms: The transforms to apply to the data.
 
         """
-        self._transforms = transforms
+        if isinstance(self._data, Dataset):
+            self._data.set_transform(transforms)
+        elif isinstance(self._data, DatasetDict):
+            for split in self._data:
+                self._data[split].set_transform(transforms)
 
     def set_batch_size(self, batch_size: int) -> None:
         """
@@ -233,7 +233,6 @@ class P2PFLDataset:
                 train_split_name=self._train_split_name,
                 test_split_name=self._test_split_name,
                 batch_size=self.batch_size,
-                transforms=self._transforms,
             )
             for i in range(num_partitions)
         ]
@@ -262,7 +261,7 @@ class P2PFLDataset:
 
         # Export
         split = self._train_split_name if train else self._test_split_name
-        return strategy.export(self._data[split], transforms=self._transforms, batch_size=self.batch_size, **kwargs)
+        return strategy.export(self._data[split], batch_size=self.batch_size, **kwargs)
 
     @classmethod
     def from_csv(cls, data_files: DataFilesType, **kwargs) -> "P2PFLDataset":
