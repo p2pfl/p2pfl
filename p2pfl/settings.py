@@ -112,6 +112,7 @@ class Training:
     """Timeout (seconds) for a node to wait for other models. Timeout starts when the first model is added."""
     DEFAULT_BATCH_SIZE: int = 128
     """Default batch size for training."""
+    RAY_ACTOR_POOL_SIZE: int = 4
 
 
 ###################

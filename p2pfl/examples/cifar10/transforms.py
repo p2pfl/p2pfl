@@ -34,3 +34,8 @@ def cifar10_transforms(examples):
     transformed_images = [normalize(img if isinstance(img, torch.Tensor) else to_tensor(img)) for img in examples["image"]]
 
     return {"image": transformed_images, "label": examples["label"]}
+
+
+def get_cifar10_transforms():
+    """Get the CIFAR10 transforms."""
+    return cifar10_transforms
