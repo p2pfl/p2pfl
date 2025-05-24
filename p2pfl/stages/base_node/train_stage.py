@@ -151,20 +151,31 @@ class TrainStage(Stage):
                 if (n in state.train_set)
             ]
 
-        def model_fn(node: str) -> Any:
+        def model_fn(node: str) -> tuple[Any, str, int, list[str]]:
+            if state.round is None:
+                raise Exception("Round not initialized.")
             try:
                 model = aggregator.get_model(TrainStage.__get_aggregated_models(node, state))
             except NoModelsToAggregateError:
                 logger.info(state.addr, f"❔ No models to aggregate for {node}.")
-                return None
-            if state.round is None:
-                raise Exception("Round not initialized.")
-            return communication_protocol.build_weights(
+                return (
+                    None,
+                    PartialModelCommand.get_name(),
+                    state.round,
+                    [],
+                )
+            model_msg = communication_protocol.build_weights(
                 PartialModelCommand.get_name(),
                 state.round,
                 model.encode_parameters(),
                 model.get_contributors(),
                 model.get_num_samples(),
+            )
+            return (
+                model_msg,
+                PartialModelCommand.get_name(),
+                state.round,
+                model.get_contributors(),
             )
 
         # Gossip

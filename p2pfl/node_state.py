@@ -52,6 +52,7 @@ class NodeState:
         self.status = "Idle"
 
         # Aggregator (move to the aggregator?)
+        self.models_aggregated_lock = threading.Lock()
         self.models_aggregated: Dict[str, List[str]] = {}
 
         # Other neis state (only round)

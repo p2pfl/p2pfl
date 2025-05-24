@@ -29,6 +29,7 @@ from p2pfl.communication.commands.message.metrics_command import MetricsCommand
 from p2pfl.communication.commands.message.model_initialized_command import ModelInitializedCommand
 from p2pfl.communication.commands.message.models_agregated_command import ModelsAggregatedCommand
 from p2pfl.communication.commands.message.models_ready_command import ModelsReadyCommand
+from p2pfl.communication.commands.message.pre_send_model_command import PreSendModelCommand
 from p2pfl.communication.commands.message.start_learning_command import StartLearningCommand
 from p2pfl.communication.commands.message.stop_learning_command import StopLearningCommand
 from p2pfl.communication.commands.message.vote_train_set_command import VoteTrainSetCommand
@@ -134,6 +135,7 @@ class Node:
             InitModelCommand(self.state, self.stop, self.aggregator, self.learner),
             PartialModelCommand(self.state, self.stop, self.aggregator, self._communication_protocol, self.learner),
             FullModelCommand(self.state, self.stop, self.aggregator, self.learner),
+            PreSendModelCommand(self.addr),
         ]
         self._communication_protocol.add_command(commands)
 

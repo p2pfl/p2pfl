@@ -491,7 +491,8 @@ class P2PFLogger:
 
         # Log the message at debug level
         if cmd != "beat" or (not Settings.heartbeat.EXCLUDE_BEAT_LOGS and cmd == "beat"):
-            self.debug(node, message)
+            pass
+            # self.debug(node, message)
 
         # Get actual round number for storage (default to 0 if None)
         storage_round = 0 if round_num is None or round_num < 0 else round_num

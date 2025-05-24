@@ -136,7 +136,7 @@ class GrpcClient(ProtobuffClient):
         temporal_connection: bool = False,
         raise_error: bool = False,
         disconnect_on_error: bool = True,
-    ) -> None:
+    ) -> str:
         """
         Send a message to the neighbor.
 
@@ -157,10 +157,8 @@ class GrpcClient(ProtobuffClient):
                             self.self_addr, f"💔 Neighbor {self.nei_addr} not connected. Trying to send message with temporal connection"
                         )
                         self.connect(handshake_msg=False)
-            elif raise_error:
-                raise NeighborNotConnectedError(f"Neighbor {self.nei_addr} not connected.")
             else:
-                return
+                raise NeighborNotConnectedError(f"Neighbor {self.nei_addr} not connected.")
 
         # Send
         try:
@@ -169,6 +167,9 @@ class GrpcClient(ProtobuffClient):
             # Log successful message sending
             if not res.error:
                 self.log_successful_send(msg)
+            else:
+                raise CommunicationError(f"Error while sending a message: {msg.cmd}: {res.error}")
+
         except Exception as e:
             # Unexpected error
             logger.info(
@@ -183,7 +184,7 @@ class GrpcClient(ProtobuffClient):
             if raise_error:
                 raise e
             else:
-                return
+                return res.response
 
         if res.error:
             logger.info(
@@ -203,3 +204,5 @@ class GrpcClient(ProtobuffClient):
         # Raise
         if res.error and raise_error:
             raise CommunicationError(f"Error while sending a message: {msg.cmd}: {res.error}")
+
+        return res.response

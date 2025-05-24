@@ -19,6 +19,7 @@
 """Command interface."""
 
 import abc
+from typing import Optional
 
 
 class Command(abc.ABC):
@@ -30,7 +31,7 @@ class Command(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def execute(self, source: str, round: int, **kwargs) -> None:
+    def execute(self, source: str, round: int, **kwargs) -> Optional[str]:
         """
         Execute the command.
 
