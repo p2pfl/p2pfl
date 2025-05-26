@@ -19,7 +19,7 @@ network:
 # Defines experiment settings
 experiment:
   name: "cifar10_experiment"
-  rounds: 20
+  rounds: 30
   epochs: 1
   trainset_size: 4
   seed: 666

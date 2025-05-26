@@ -157,7 +157,7 @@ class TrainStage(Stage):
             try:
                 model = aggregator.get_model(TrainStage.__get_aggregated_models(node, state))
             except NoModelsToAggregateError:
-                logger.info(state.addr, f"❔ No models to aggregate for {node}.")
+                logger.debug(state.addr, f"❔ No models to aggregate for {node}.")
                 return (
                     None,
                     PartialModelCommand.get_name(),

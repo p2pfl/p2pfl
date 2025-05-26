@@ -135,7 +135,7 @@ class Node:
             InitModelCommand(self.state, self.stop, self.aggregator, self.learner),
             PartialModelCommand(self.state, self.stop, self.aggregator, self._communication_protocol, self.learner),
             FullModelCommand(self.state, self.stop, self.aggregator, self.learner),
-            PreSendModelCommand(self.addr),
+            PreSendModelCommand(self.state),
         ]
         self._communication_protocol.add_command(commands)
 

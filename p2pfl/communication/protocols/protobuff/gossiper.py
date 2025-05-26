@@ -247,7 +247,7 @@ class Gossiper(threading.Thread, NodeComponent):
                 # Send model
                 if presend_response != "true":
                     logger.info(
-                        self.addr, f"Avoiding concurrent model sending to {client.nei_addr}. Msg: {command_name} | Hash: {model_hashes} "
+                        self.addr, f"Avoiding concurrent model sending to {client.nei_addr}. Msg: {command_name} | Hash: {model_hashes}"
                     )
                     continue
 

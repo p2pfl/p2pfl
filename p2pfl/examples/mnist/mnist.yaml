@@ -106,7 +106,6 @@ settings:
   training:
     vote_timeout: 60
     aggregation_timeout: 300
-    #ray_actor_pool_size: 1
 
 # Profiling configuration
 profiling:
