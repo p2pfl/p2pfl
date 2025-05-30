@@ -31,6 +31,7 @@ import pytest  # noqa: E402, I001
 from datasets import DatasetDict, load_dataset  # noqa: E402, I001
 
 from p2pfl.communication.protocols.protobuff.memory import MemoryCommunicationProtocol
+from p2pfl.examples.mnist.model.mlp_generator_factory import ModelType, get_model_builder
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset  # noqa: E402
 from p2pfl.learning.dataset.partition_strategies import DirichletPartitionStrategy, RandomIIDPartitionStrategy
 from p2pfl.learning.frameworks.learner_factory import LearnerFactory
@@ -168,9 +169,10 @@ def test_set_dataset_partition_reproducibility(strategy, strategy_kwargs):
 ##
 
 
-@pytest.mark.parametrize("model_build_fn", [model_build_fn_pytorch, model_build_fn_tensorflow])  # , model_build_fn_flax])
-def test_model_initialization_reproducibility(model_build_fn):
+@pytest.mark.parametrize("model_type", [ModelType.PYTORCH, ModelType.TENSORFLOW])  # TODO: Flax
+def test_model_initialization_reproducibility(model_type):
     """Test that seed ensures reproducible model initialization."""
+    model_build_fn = get_model_builder(model_type)
     try:
         # First initialization with seed
         Settings.general.SEED = 666
@@ -206,9 +208,10 @@ def test_model_initialization_reproducibility(model_build_fn):
 
 
 @pytest.mark.skip(reason="Working but slow....")
-@pytest.mark.parametrize("model_build_fn", [model_build_fn_pytorch, model_build_fn_tensorflow])  # model_build_fn_flax
-def test_local_training_reproducibility(model_build_fn):
+@pytest.mark.parametrize("model_type", [ModelType.PYTORCH, ModelType.TENSORFLOW])  # TODO: Flax
+def test_local_training_reproducibility(model_type):
     """Test that seed ensures reproducible training results."""
+    model_build_fn = get_model_builder(model_type)
     try:
         # Create a small dataset for testing
         dataset = P2PFLDataset(
@@ -352,16 +355,16 @@ def __flatten_results(item):
 
 @pytest.mark.skip(reason="Working but slow....")
 @pytest.mark.parametrize(
-    "input",
+    "model_type, disable_ray",
     [
-        (model_build_fn_tensorflow, True),
-        (model_build_fn_pytorch, False),
-        (model_build_fn_tensorflow, False),
+        (ModelType.TENSORFLOW, True),
+        (ModelType.PYTORCH, False),
+        (ModelType.TENSORFLOW, False),
     ],
 )
-def test_global_training_reproducibility(input):
+def test_global_training_reproducibility(model_type, disable_ray):
     """Test that seed ensures reproducible global training results."""
-    model_build_fn, disable_ray = input
+    model_build_fn = get_model_builder(model_type)
     n, r = 10, 1
 
     exp_name1 = __train_with_seed(666, n, r, model_build_fn, disable_ray)

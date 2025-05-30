@@ -20,6 +20,7 @@
 import contextlib  # noqa: E402, I001
 import time  # noqa: E402
 import pytest  # noqa: E402
+from p2pfl.examples.mnist.model.mlp_generator_factory import ModelType, get_model_builder
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset  # noqa: E402
 from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy  # noqa: E402
 from p2pfl.learning.frameworks import Framework
@@ -82,9 +83,10 @@ def log_test_start_and_end(request):
 #   stochastic process, so is not fully deterministic!.
 #
 @pytest.mark.parametrize("x", [(2, 2), (6, 3)])
-@pytest.mark.parametrize("model_build_fn", [model_build_fn_pytorch, model_build_fn_tensorflow])
-def test_convergence(x, model_build_fn):
+@pytest.mark.parametrize("model_type", [ModelType.PYTORCH, ModelType.TENSORFLOW])  # TODO: Flax
+def test_convergence(x, model_type):
     """Test convergence (on learning) of two nodes."""
+    model_build_fn = get_model_builder(model_type)
     n, r = x
 
     Settings.general.SEED = 777
@@ -221,14 +223,15 @@ def _test_node_down_on_learning(n):
 #####
 
 
-@pytest.mark.parametrize("build_model_fn", [model_build_fn_pytorch, model_build_fn_tensorflow])
-def test_framework_node(build_model_fn):
+@pytest.mark.parametrize("model_type", [ModelType.PYTORCH, ModelType.TENSORFLOW])  # TODO: Flax
+def test_framework_node(model_type):
     """Test a TensorFlow node."""
     # Data
     data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
     partitions = data.generate_partitions(400, RandomIIDPartitionStrategy)
 
     # Create the model
+    build_model_fn = get_model_builder(model_type)
     p2pfl_model = build_model_fn()
 
     # Nodes
