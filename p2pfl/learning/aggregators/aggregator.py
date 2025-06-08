@@ -179,17 +179,17 @@ class Aggregator(NodeComponent):
                     self.__agg_lock.release()
                     return self.get_aggregated_models()
                 else:
-                    logger.info(
+                    logger.debug(
                         self.addr,
                         f"🚫 Can't add a model from a node ({model.get_contributors()}) that is already aggregated.",
                     )
             else:
-                logger.info(
+                logger.debug(
                     self.addr,
                     f"🚫 Can't add a model from a node ({model.get_contributors()}) that is not in the training set.",
                 )
         else:
-            logger.info(self.addr, "🚫 Received a model when is not needed. Saving a iteration to affor bandwith.")
+            logger.debug(self.addr, "🚫 Received a model when is not needed. Saving a iteration to affor bandwith.")
             self.__unhandled_models.append(model)
 
         # Release and return
