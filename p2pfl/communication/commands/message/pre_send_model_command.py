@@ -22,6 +22,7 @@ import time
 from typing import Optional
 
 from p2pfl.communication.commands.command import Command
+from p2pfl.communication.commands.weights.full_model_command import FullModelCommand
 from p2pfl.node_state import NodeState
 from p2pfl.settings import Settings
 
@@ -73,6 +74,18 @@ class PreSendModelCommand(Command):
                 if new_hash in hashes:
                     compatible_hashes = False
                     break
+
+            # ----- Bandwidth optimization -------
+            # If add_model and node in trainset has full local state, refuse redundant weights
+            if cmd == FullModelCommand.get_name() and self.node_state.addr in self.node_state.train_set:
+                # Collect all unique models aggregated locally
+                all_aggregated_models = set()
+                for models_list in self.node_state.models_aggregated.values():
+                    all_aggregated_models.update(models_list)
+
+                # If this node has aggregated all trainset models, it has full weights locally
+                if set(self.node_state.train_set) == all_aggregated_models:
+                    return "false"
 
             if compatible_hashes:
                 for new_hash in model_hash:

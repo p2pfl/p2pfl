@@ -65,7 +65,7 @@ def __fl_without_training(seed):
     # Create X nodes (model and data do not matter)
     nodes = [
         Node(model_build_fn_pytorch(), P2PFLDataset.from_huggingface("p2pfl/MNIST"), protocol=MemoryCommunicationProtocol())
-        for _ in range(10)
+        for _ in range(5)
     ]
 
     try:
