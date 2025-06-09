@@ -75,7 +75,7 @@ class Krum(Aggregator):
                     distance = 0.0
                     for layer_i, layer_j in zip(model_params[i], model_params[j]):
                         # Compute L2 norm of the difference
-                        distance += np.linalg.norm(layer_i - layer_j)
+                        distance += float(np.linalg.norm(layer_i - layer_j))
                     distance_sum += distance
             distance_sums.append(distance_sum)
 

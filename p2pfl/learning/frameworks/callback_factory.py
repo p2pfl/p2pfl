@@ -94,6 +94,13 @@ except ImportError:
     pass
 
 try:
+    from p2pfl.learning.frameworks.pytorch.callbacks.fedprox_callback import FedProxCallback as FedProxCallbackPT
+
+    CallbackFactory.register_callback(learner=Framework.PYTORCH.value, callback=FedProxCallbackPT)
+except ImportError:
+    pass
+
+try:
     from p2pfl.learning.frameworks.tensorflow.callbacks.scaffold_callback import SCAFFOLDCallback as SCAFFOLDCallbackTF
 
     CallbackFactory.register_callback(learner=Framework.TENSORFLOW.value, callback=SCAFFOLDCallbackTF)
