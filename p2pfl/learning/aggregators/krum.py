@@ -68,11 +68,11 @@ class Krum(Aggregator):
         # Calculate pairwise distances and sum for each model
         distance_sums = []
         for i in range(total_models):
-            distance_sum = 0
+            distance_sum = 0.0
             for j in range(total_models):
                 if i != j:
                     # Calculate L2 distance between models i and j
-                    distance = 0
+                    distance = 0.0
                     for layer_i, layer_j in zip(model_params[i], model_params[j]):
                         # Compute L2 norm of the difference
                         distance += np.linalg.norm(layer_i - layer_j)
@@ -80,7 +80,7 @@ class Krum(Aggregator):
             distance_sums.append(distance_sum)
 
         # Find the model with minimum distance sum
-        min_index = np.argmin(distance_sums)
+        min_index = int(np.argmin(distance_sums))
         selected_model = models[min_index]
 
         # Aggregate contributors from all models

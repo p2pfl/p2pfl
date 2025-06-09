@@ -71,7 +71,7 @@ class FedAvg(Aggregator):
         accum = [np.divide(layer, total_samples) for layer in accum]
 
         # Get contributors
-        contributors: List[str] = []
+        contributors: list[str] = []
         for m in models:
             contributors = contributors + m.get_contributors()
 

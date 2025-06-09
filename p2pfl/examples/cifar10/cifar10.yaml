@@ -19,11 +19,11 @@ network:
 # Defines experiment settings
 experiment:
   name: "cifar10_experiment"
-  rounds: 30
+  rounds: 20
   epochs: 1
   trainset_size: 4
   seed: 666
-  wait_timeout: 60  # Timeout in minutes for wait_to_finish (default: 60 minutes)
+  wait_timeout: 120  # Timeout in minutes for wait_to_finish
 
   # Dataset settings
   dataset:
