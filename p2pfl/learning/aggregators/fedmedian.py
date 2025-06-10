@@ -33,7 +33,7 @@ class FedMedian(Aggregator):
     Paper: https://arxiv.org/pdf/1803.01498v1.pdf
     """
 
-    SUPPORTS_PARTIAL_AGGREGATION: bool = True  # Assuming it can support it
+    SUPPORTS_PARTIAL_AGGREGATION: bool = False
 
     def __init__(self, disable_partial_aggregation: bool = False) -> None:
         """Initialize the aggregator."""
@@ -50,7 +50,6 @@ class FedMedian(Aggregator):
             A P2PFLModel with the aggregated
 
         """
-        raise NotImplementedError("This method is not implemented yet (need to add tests)")
         # Check if there are models to aggregate
         if len(models) == 0:
             raise NoModelsToAggregateError(f"({self.node_name}) Trying to aggregate models when there are no models")
