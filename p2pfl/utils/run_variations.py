@@ -18,18 +18,19 @@
 #
 """Run experiments with parameter variations."""
 
-# python -m p2pfl.utils.run_variations p2pfl/examples/cifar10/cifar10.yaml --aggregators FedAvg FedMedian Scaffold FedAdagrad FedAdam FedProx FedYogi Krum --seeds 42 --rounds 10 --epochs 1 --nodes 10 --param settings.training.ray_actor_pool_size=8
-   
+# python -m p2pfl.utils.run_variations p2pfl/examples/cifar10/cifar10.yaml \
+#   --aggregators FedAvg FedMedian Scaffold FedAdagrad FedAdam FedProx FedYogi Krum \
+#   --seeds 42 --rounds 10 --epochs 1 --nodes 10 --param settings.training.ray_actor_pool_size=8
+
 import argparse
 import copy
 import hashlib
 import itertools
 import json
-import os
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 import pandas as pd
 import yaml
@@ -48,6 +49,7 @@ def generate_experiment_id(config: Dict[str, Any], variation_params: Dict[str, A
 
     Returns:
         A unique string identifier
+
     """
     # Create a deterministic string representation of the variation parameters
     param_str = json.dumps(variation_params, sort_keys=True)
@@ -58,10 +60,7 @@ def generate_experiment_id(config: Dict[str, Any], variation_params: Dict[str, A
     parts = []
     for key, value in sorted(variation_params.items()):
         key_short = key.split(".")[-1]  # Get last part of dot notation
-        if isinstance(value, str):
-            value_str = value
-        else:
-            value_str = str(value)
+        value_str = value if isinstance(value, str) else str(value)
         parts.append(f"{key_short}_{value_str}")
 
     readable_part = "_".join(parts[:3])  # Limit to 3 params for readability
@@ -77,6 +76,7 @@ def set_nested_value(config: Dict[str, Any], path: str, value: Any) -> None:
         config: The configuration dictionary
         path: Dot-separated path (e.g., 'experiment.rounds')
         value: The value to set
+
     """
     keys = path.split(".")
     current = config
@@ -98,6 +98,7 @@ def check_results_exist(results_dir: Path) -> bool:
 
     Returns:
         True if results exist, False otherwise
+
     """
     if not results_dir.exists():
         return False
@@ -121,6 +122,7 @@ def run_single_experiment(config: Dict[str, Any], results_dir: Path) -> None:
     Args:
         config: The configuration dictionary
         results_dir: Directory to save results
+
     """
     # Create results directory
     results_dir.mkdir(parents=True, exist_ok=True)
@@ -144,7 +146,7 @@ def run_single_experiment(config: Dict[str, Any], results_dir: Path) -> None:
         # Clean up temp file
         temp_yaml_path.unlink()
 
-        print(f"Experiment completed successfully.")
+        print("Experiment completed successfully.")
 
     except Exception as e:
         print(f"Error running experiment: {e}")
@@ -157,7 +159,6 @@ def run_single_experiment(config: Dict[str, Any], results_dir: Path) -> None:
 
 def save_experiment_results(results_dir: Path, start_time: float) -> None:
     """Save experiment results including logs and metrics."""
-
     # Save message logs
     all_msgs = logger.get_messages(direction="all")
     if all_msgs:
@@ -232,6 +233,7 @@ def parse_custom_params(param_strings: List[str]) -> Dict[str, List[Any]]:
 
     Returns:
         Dictionary mapping parameter paths to lists of values
+
     """
     custom_params = {}
 
@@ -264,7 +266,7 @@ def parse_custom_params(param_strings: List[str]) -> Dict[str, List[Any]]:
 
 
 def main():
-    """Main function."""
+    """Execute the main function for running experiments with variations."""
     parser = argparse.ArgumentParser(
         description="Run P2PFL experiments with parameter variations",
         formatter_class=argparse.RawDescriptionHelpFormatter,
