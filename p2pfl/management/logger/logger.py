@@ -150,6 +150,28 @@ class P2PFLogger:
         for handler in self._logger.handlers:
             self._logger.removeHandler(handler)
 
+    def setup_wandb(
+        self,
+        project: str = "p2pfl",
+        config: Optional[Dict[str, Any]] = None,
+        experiment: Optional[Experiment] = None,
+        run_name: Optional[str] = None,
+    ):
+        """
+        Set up Weights & Biases logging.
+        This method is a placeholder and is meant to be implemented by a decorator.
+        By default, it does nothing.
+        """
+        pass
+
+    def finish(self):
+        """
+        Finish any logging activities, like closing a W&B run.
+        This method is a placeholder and is meant to be implemented by a decorator.
+        By default, it does nothing.
+        """
+        pass
+
     ######
     # Application logging
     ######

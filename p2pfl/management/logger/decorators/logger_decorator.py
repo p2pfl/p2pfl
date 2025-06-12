@@ -60,6 +60,25 @@ class LoggerDecorator(P2PFLogger):
         """Cleanup the logger."""
         self._p2pfl_logger.cleanup()
 
+    def setup_wandb(
+        self,
+        project: str = "p2pfl",
+        config: Optional[Dict[str, Any]] = None,
+        experiment: Optional[Experiment] = None,
+        run_name: Optional[str] = None,
+    ):
+        """Pass the W&B setup call to the wrapped logger."""
+        self._p2pfl_logger.setup_wandb(
+            project=project,
+            config=config,
+            experiment=experiment,
+            run_name=run_name,
+        )
+
+    def finish(self):
+        """Pass the finish call to the wrapped logger."""
+        self._p2pfl_logger.finish()
+
     def set_level(self, level: Union[int, str]) -> None:
         """
         Set the logger level.
