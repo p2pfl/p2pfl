@@ -111,9 +111,13 @@ class SuperActorPool(ActorPool):
         if not hasattr(self, "initialized"):
             # Initialize ActorPool
             num_actors = Settings.training.RAY_ACTOR_POOL_SIZE if amount_actors is None else amount_actors
+            
+            # Calculate GPU resources per actor
+            self.gpu_per_actor = self._calculate_gpu_per_actor(num_actors)
+            
             actors = [self.create_actor() for _ in range(num_actors)]
             self.num_actors = len(actors)
-            logger.info("ActorPool", f"Initialized with {self.num_actors} actors")
+            logger.info("ActorPool", f"Initialized with {self.num_actors} actors, {self.gpu_per_actor} GPU per actor")
             super().__init__(actors)
 
             # A dict that maps addr to another dict containing: a reference to the remote job
@@ -126,6 +130,36 @@ class SuperActorPool(ActorPool):
             # Mark as initialized
             self.initialized = True
 
+    def _calculate_gpu_per_actor(self, num_actors: int) -> float:
+        """
+        Calculate GPU resources per actor based on available GPUs.
+
+        Args:
+            num_actors: Number of actors to create.
+
+        Returns:
+            GPU fraction per actor.
+
+        """
+        # Get available GPU resources from Ray (framework-agnostic)
+        available_resources = ray.available_resources()
+        num_gpus = available_resources.get("GPU", 0)
+        
+        if num_gpus == 0:
+            logger.warning("ActorPool", "No GPUs available. Actors will run on CPU only.")
+            return 0
+        
+        # Calculate GPU per actor (fractional GPUs allowed in Ray)
+        gpu_per_actor = num_gpus / num_actors
+        
+        logger.info("ActorPool", f"Ray detected {num_gpus} GPU(s), allocating {gpu_per_actor:.2f} GPU per actor")
+        
+        # Log warning if GPU allocation is very small
+        if gpu_per_actor < 0.1:
+            logger.warning("ActorPool", f"GPU allocation per actor is very small ({gpu_per_actor:.2f}). Consider reducing the number of actors.")
+        
+        return gpu_per_actor
+    
     def create_actor(self) -> VirtualLearnerActor:
         """
         Create a new VirtualLearnerActor instance using provided resources.
@@ -134,7 +168,11 @@ class SuperActorPool(ActorPool):
             New actor instance.
 
         """
-        return VirtualLearnerActor.options().remote()  # type: ignore
+        # Create actor with GPU resources if available
+        if hasattr(self, 'gpu_per_actor') and self.gpu_per_actor > 0:
+            return VirtualLearnerActor.options(num_gpus=self.gpu_per_actor).remote()  # type: ignore
+        else:
+            return VirtualLearnerActor.options().remote()  # type: ignore
 
     def add_actor(self, num_actors: int) -> None:
         """
