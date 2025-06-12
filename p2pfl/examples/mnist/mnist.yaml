@@ -53,12 +53,12 @@ experiment:
     params: {}  
     # Learning algorithm parameters (algorithm-specific)
     #compression:
-    ptq:
-      dtype: "int8"
-    topk:
-      k: 0.1
-    zlib:
-      level: 6
+    #ptq:
+    #  dtype: "int8"
+    #topk:
+    #  k: 0.1
+    #zlib:
+    #  level: 6
 
 
   # Aggregation algorithm configuration

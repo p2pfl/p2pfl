@@ -94,13 +94,15 @@ class FedYogi(Aggregator):
 
         # Create weighted average of models
         first_model_weights = models[0].get_parameters()
-        fedavg_weights = [np.zeros_like(layer) for layer in first_model_weights]
+        # Ensure fedavg_weights uses float dtype to handle weighted averaging
+        fedavg_weights = [np.zeros_like(layer, dtype=np.float64) for layer in first_model_weights]
 
         # Add weighted models
         for m in models:
             weight = m.get_num_samples() / total_samples
             for i, layer in enumerate(m.get_parameters()):
-                fedavg_weights[i] += layer * weight
+                # Convert to float64 to ensure proper arithmetic
+                fedavg_weights[i] += layer.astype(np.float64) * weight
 
         # Initialize current_weights on first round
         if not self.current_weights:
