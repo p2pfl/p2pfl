@@ -196,10 +196,10 @@ def save_experiment_results(results_dir: Path, start_time: float) -> None:
     if system_metrics_data:
         flattened_system_metrics = []
         try:
-            for timestamp, metrics in system_metrics_data.items():
-                for metric_name, value in metrics.items():
+            for timestamp, sys_metrics in system_metrics_data.items():
+                for sys_metric_name, sys_value in sys_metrics.items():
                     flattened_system_metrics.append(
-                        {"timestamp": timestamp.strftime("%Y-%m-%d %H:%M:%S.%f"), "metric_name": metric_name, "metric_value": value}
+                        {"timestamp": timestamp.strftime("%Y-%m-%d %H:%M:%S.%f"), "metric_name": sys_metric_name, "metric_value": sys_value}
                     )
 
             if flattened_system_metrics:
@@ -242,7 +242,7 @@ def parse_custom_params(param_strings: List[str]) -> Dict[str, List[Any]]:
             raise ValueError(f"Invalid parameter format: {param_str}. Expected 'path=value1,value2'")
 
         path, values_str = param_str.split("=", 1)
-        values = []
+        values: List[Any] = []
 
         for value in values_str.split(","):
             # Try to parse as number
@@ -265,7 +265,7 @@ def parse_custom_params(param_strings: List[str]) -> Dict[str, List[Any]]:
     return custom_params
 
 
-def main():
+def main() -> int:
     """Execute the main function for running experiments with variations."""
     parser = argparse.ArgumentParser(
         description="Run P2PFL experiments with parameter variations",
@@ -370,6 +370,7 @@ Examples:
         variations.update(custom_params)
 
     # Generate all combinations
+    combinations: List[Dict[str, Any]] = []
     if not variations:
         print("No variations specified. Running single experiment with base configuration.")
         combinations = [{}]
@@ -380,7 +381,6 @@ Examples:
         param_values = [item[1] for item in param_items]
 
         # Generate cartesian product
-        combinations = []
         for values in itertools.product(*param_values):
             combo = dict(zip(param_names, values))
 
