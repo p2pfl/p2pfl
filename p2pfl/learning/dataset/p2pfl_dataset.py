@@ -104,6 +104,7 @@ class P2PFLDataset:
         train_split_name: str = "train",
         test_split_name: str = "test",
         batch_size: int = 1,
+        dataset_name: Optional[str] = None,
     ):
         """
         Initialize the P2PFLDataset object.
@@ -113,12 +114,14 @@ class P2PFLDataset:
             train_split_name: The name of the training split.
             test_split_name: The name of the test split.
             batch_size: The batch size for the dataset.
+            dataset_name: The name of the dataset.
 
         """
         self._data = data
         self._train_split_name = train_split_name
         self._test_split_name = test_split_name
         self.batch_size = batch_size
+        self.dataset_name = dataset_name
 
     def get(self, idx, train: bool = True) -> Dict[str, Any]:
         """
@@ -340,7 +343,7 @@ class P2PFLDataset:
 
         """
         dataset = load_dataset(dataset_name, **kwargs)
-        return cls(dataset)
+        return cls(dataset, dataset_name=dataset_name)
 
     @classmethod
     def from_generator(cls, generator: Callable[[], Iterable[Dict[str, Any]]]) -> "P2PFLDataset":

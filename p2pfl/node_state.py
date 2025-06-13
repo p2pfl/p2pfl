@@ -88,17 +88,21 @@ class NodeState:
         """Get the actual experiment name."""
         return self.experiment.exp_name if self.experiment is not None else None
 
-    def set_experiment(self, exp_name: str, total_rounds: int) -> None:
+    def set_experiment(self, exp_name: str, total_rounds: int, **kwargs) -> None:
         """
         Start a new experiment.
 
         Attributes:
             exp_name: The name of the experiment.
             total_rounds: The total rounds of the experiment.
+            **kwargs: Additional experiment attributes to set.
 
         """
         self.status = "Learning"
-        self.experiment = Experiment(exp_name, total_rounds)
+        if self.experiment is None:
+            self.experiment = Experiment(exp_name, total_rounds)
+        for key, value in kwargs.items():
+            setattr(self.experiment, key, value)
         logger.experiment_started(self.addr, self.experiment)  # TODO: Improve changes on the experiment
 
     def increase_round(self) -> None:

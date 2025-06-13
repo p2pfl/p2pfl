@@ -21,7 +21,7 @@
 from typing import Any, Dict, Optional
 
 import wandb
-
+from wandb.sdk.wandb_run import Run
 from p2pfl.experiment import Experiment
 from p2pfl.management.logger.decorators.logger_decorator import LoggerDecorator
 from p2pfl.management.logger.logger import P2PFLogger
@@ -30,77 +30,91 @@ from p2pfl.management.logger.logger import P2PFLogger
 class WandbLogger(LoggerDecorator):
     """WandB Logger Decorator that can be configured at runtime."""
 
+    _run: Optional[Run] = None
+
     def __init__(self, p2pflogger: P2PFLogger):
-        """Initializes the WandbLogger decorator."""
+        """Initialize the WandbLogger decorator."""
         super().__init__(p2pflogger)
         self._project: str = "p2pfl"  # Default project
         self._entity: Optional[str] = None
         self._config: Dict[str, Any] = {}
         self._run_name: Optional[str] = None
-        self._wandb_initialized = False
-        self._experiment_configured = False
 
         self._init_wandb()
+
     def setup_wandb(
         self,
         project: str = "p2pfl",
-        config: Optional[Dict[str, Any]] = None,
         experiment: Optional[Experiment] = None,
         run_name: Optional[str] = None,
-    ):
+    ) -> None:
         """
         Configure and initialize WandB. This should be called before any logging.
 
         Args:
             project (str): The name of the project where you're sending the new run.
-            config (Dict, optional): A dictionary of hyperparameters for your run.
-            entity (str, optional): An entity is a username or team name where you're sending runs.
             experiment (Experiment, optional): The p2pfl experiment object.
             run_name (str, optional): A short display name for this run.
+
         """
         self._project = project
-        if config:
-            self._config.update(config)
-        self._run_name = run_name
 
-        self._init_wandb(experiment=experiment)
+        if experiment and WandbLogger._run is not None:
+            self._run_name = experiment.exp_name
+            experiment_config = {
+                "exp_name": experiment.exp_name,
+                "total_rounds": experiment.total_rounds,
+                "dataset_name": experiment.dataset_name,
+                "model_name": experiment.model_name,
+                "aggregator_name": experiment.aggregator_name,
+                "framework_name": experiment.framework_name,
+            }
+            experiment_config = {k: v for k, v in experiment_config.items() if v is not None}
+            self._config.update(experiment_config)
 
-    def _init_wandb(self, experiment: Optional[Experiment] = None):
-        """Initializes a wandb run."""
-        if self._wandb_initialized:
+            WandbLogger._run.config.update(experiment_config)   # type: ignore
+            WandbLogger._run.name = experiment.exp_name
+
+            super().debug("WandbLogger", f"W&B run initialized with config: {experiment_config}")
+
+        elif run_name:
+            self._run_name = run_name
+
+    def _init_wandb(self) -> None:
+        """Initialize a wandb run."""
+        if WandbLogger._run is not None:
             return
 
-        wandb.init(
+        WandbLogger._run = wandb.init(
             project=self._project,
             name=self._run_name,
             config=self._config,
-            reinit=True,
         )
-        self._wandb_initialized = True
 
-    def log_metric(self, addr: str, metric: str, value: float, step: Optional[int] = None, round: Optional[int] = None):
-        """Logs a metric to wandb."""
+    def log_metric(self, addr: str, metric: str, value: float, step: Optional[int] = None, round: Optional[int] = None) -> None:
+        """Log a metric to wandb."""
         # Ensure W&B is initialized
-        if not self._wandb_initialized:
-            return
-            
-        if self._wandb_initialized:
-            try:
-                log_dict = {f"{addr}/{metric}": value}
-                if round is not None:
-                    log_dict["round"] = round
-                if step is not None:
-                    wandb.log(log_dict, step=step)
-                else:
-                    wandb.log(log_dict)
-            except Exception as e:
-                print(f"[WARNING] Failed to log to W&B: {e}")
+        if WandbLogger._run is None:
+            return super().log_metric(addr, metric, value, step=step, round=round)
 
-        return super().log_metric(addr, metric, value, step=step, round=round)
+        try:
+            log_dict = {f"{addr}/{metric}": value}
+            if round is not None:
+                log_dict["round"] = round
 
-    def finish(self):
-        """Finishes the wandb run."""
-        if self._wandb_initialized:
+            if step is not None:
+                wandb.log(log_dict, step=step)
+            else:
+                wandb.log(log_dict)
+        except Exception as e:
+            super().warning(addr, f"Failed to log to W&B: {e}")
+
+        super().log_metric(addr, metric, value, step=step, round=round)
+
+    def finish(self) -> None:
+        """Finish the wandb run."""
+        if WandbLogger._run is not None:
             wandb.finish()
-            self._wandb_initialized = False
-            self._experiment_configured = False
+            WandbLogger._run = None
+
+        super().finish()
