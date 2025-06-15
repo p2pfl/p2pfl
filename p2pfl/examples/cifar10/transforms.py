@@ -21,21 +21,53 @@ CIFAR10 transforms for P2PFL datasets.
 This module contains transformation functions for CIFAR10 datasets.
 """
 
-import torch
 import torchvision.transforms as transforms
 
 
-def cifar10_transforms(examples):
-    """Apply normalization to a batch of CIFAR10 examples."""
-    to_tensor = transforms.ToTensor()
-    normalize = transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2470, 0.2435, 0.2616])
+def cifar10_train_transforms(examples):
+    """Apply training transforms (with data augmentation) to a batch of CIFAR10 examples."""
+    # Define training transforms with data augmentation
+    train_transform = transforms.Compose(
+        [
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(p=0.5),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2470, 0.2435, 0.2616]),
+        ]
+    )
 
     # Transform all images using list comprehension
-    transformed_images = [normalize(img if isinstance(img, torch.Tensor) else to_tensor(img)) for img in examples["image"]]
+    transformed_images = [train_transform(img) for img in examples["image"]]
+
+    return {"image": transformed_images, "label": examples["label"]}
+
+
+def cifar10_test_transforms(examples):
+    """Apply test transforms (normalization only) to a batch of CIFAR10 examples."""
+    # Define test transforms (no data augmentation)
+    test_transform = transforms.Compose(
+        [transforms.ToTensor(), transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2470, 0.2435, 0.2616])]
+    )
+
+    # Transform all images using list comprehension
+    transformed_images = [test_transform(img) for img in examples["image"]]
 
     return {"image": transformed_images, "label": examples["label"]}
 
 
 def get_cifar10_transforms():
-    """Get the CIFAR10 transforms."""
-    return cifar10_transforms
+    """
+    Get the CIFAR10 transforms.
+
+    Returns a dictionary with separate transforms for train and test splits.
+    This would allow different transforms for each split if the framework supported it.
+
+    Note: The current P2PFLDataset implementation applies the same transform to all splits.
+    To use different transforms for train/test, the framework's set_transforms method
+    would need to be modified to handle dictionary returns.
+
+    Returns:
+        dict: A dictionary mapping split names to transform functions
+
+    """
+    return {"train": cifar10_train_transforms, "test": cifar10_test_transforms}
