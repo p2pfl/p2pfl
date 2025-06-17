@@ -55,19 +55,4 @@ def cifar10_test_transforms(examples):
     return {"image": transformed_images, "label": examples["label"]}
 
 
-def get_cifar10_transforms():
-    """
-    Get the CIFAR10 transforms.
-
-    Returns a dictionary with separate transforms for train and test splits.
-    This would allow different transforms for each split if the framework supported it.
-
-    Note: The current P2PFLDataset implementation applies the same transform to all splits.
-    To use different transforms for train/test, the framework's set_transforms method
-    would need to be modified to handle dictionary returns.
-
-    Returns:
-        dict: A dictionary mapping split names to transform functions
-
-    """
-    return {"train": cifar10_train_transforms, "test": cifar10_test_transforms}
+cifar10_transforms = {"train": cifar10_train_transforms, "test": cifar10_test_transforms}
