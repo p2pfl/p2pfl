@@ -19,7 +19,7 @@ network:
 # Defines experiment settings
 experiment:
   name: "cifar10_experiment"
-  rounds: 20
+  rounds: 130
   epochs: 1
   trainset_size: 4
   seed: 666
@@ -29,7 +29,7 @@ experiment:
   dataset:
     source: "huggingface" # Dataset source: "huggingface", "csv", etc.
     name: "p2pfl/CIFAR10"
-    batch_size: 64
+    batch_size: 256
     # Use our custom CIFAR10 transform function (normalization only, no data augmentation)
     transforms:
       package: "p2pfl.examples.cifar10.transforms"
@@ -100,7 +100,7 @@ settings:
     amount_last_messages_saved: 1000
     models_period: 1
     models_per_round: 4
-    exit_on_x_equal_rounds: 50
+    exit_on_x_equal_rounds: 150
   training:
     vote_timeout: 60
     aggregation_timeout: 300

@@ -184,7 +184,7 @@ class GrpcClient(ProtobuffClient):
             if raise_error:
                 raise e
             else:
-                return res.response
+                return ""
 
         if res.error:
             logger.info(

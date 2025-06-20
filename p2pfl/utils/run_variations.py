@@ -426,7 +426,8 @@ Examples:
             print(f"Running experiment: {exp_id}")
             print(f"Results directory: {results_dir}")
 
-            # Note: Logger state is managed by the experiment itself
+            # Reset logger state before running the experiment
+            logger.reset()
 
             run_single_experiment(config, results_dir)
             completed += 1

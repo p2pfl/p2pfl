@@ -55,4 +55,6 @@ def cifar10_test_transforms(examples):
     return {"image": transformed_images, "label": examples["label"]}
 
 
-cifar10_transforms = {"train": cifar10_train_transforms, "test": cifar10_test_transforms}
+def get_cifar10_transforms():
+    """Export trans."""
+    return {"train": cifar10_train_transforms, "test": cifar10_test_transforms}

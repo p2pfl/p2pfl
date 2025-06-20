@@ -371,3 +371,12 @@ class RayP2PFLogger(P2PFLogger):
 
         """
         return ray.get(self.ray_actor.get_system_metrics.remote())
+
+    def reset(self) -> None:
+        """
+        Reset the logger state between experiments.
+
+        This clears all stored metrics, messages, and system logs while keeping
+        the logger configuration and handlers intact.
+        """
+        ray.get(self.ray_actor.reset.remote())
