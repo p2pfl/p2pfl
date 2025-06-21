@@ -21,10 +21,10 @@
 from typing import Any, Dict, Optional
 
 import wandb
-from wandb.sdk.wandb_run import Run
 from p2pfl.experiment import Experiment
 from p2pfl.management.logger.decorators.logger_decorator import LoggerDecorator
 from p2pfl.management.logger.logger import P2PFLogger
+from wandb.sdk.wandb_run import Run
 
 
 class WandbLogger(LoggerDecorator):
@@ -72,7 +72,7 @@ class WandbLogger(LoggerDecorator):
             experiment_config = {k: v for k, v in experiment_config.items() if v is not None}
             self._config.update(experiment_config)
 
-            WandbLogger._run.config.update(experiment_config)   # type: ignore
+            WandbLogger._run.config.update(experiment_config)  # type: ignore
             WandbLogger._run.name = experiment.exp_name
 
             super().debug("WandbLogger", f"W&B run initialized with config: {experiment_config}")
