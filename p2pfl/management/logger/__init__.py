@@ -41,4 +41,3 @@ if ray_installed():
 else:
     # This is only executed once, when the module is first imported
     logger = SingletonLogger(WandbLogger(WebP2PFLogger(FileLogger(AsyncLogger(P2PFLogger(disable_locks=False))))))
-    # logger = SingletonLogger(WebP2PFLogger(FileLogger(AsyncLogger(P2PFLogger(disable_locks=False)))))

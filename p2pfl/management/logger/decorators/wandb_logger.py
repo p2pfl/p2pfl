@@ -99,11 +99,9 @@ class WandbLogger(LoggerDecorator):
 
         try:
             log_dict = {f"{addr}/{metric}": value}
-            if round is not None:
-                log_dict["round"] = round
 
             if step is not None:
-                wandb.log(log_dict, step=step)
+                wandb.log(log_dict, step=round)
             else:
                 wandb.log(log_dict)
         except Exception as e:
