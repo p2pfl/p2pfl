@@ -45,7 +45,7 @@ from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.learning.frameworks.learner_factory import LearnerFactory
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.learning.frameworks.simulation import try_init_learner_with_ray
-from p2pfl.management.logger import logger
+from p2pfl.management.logger import WANDB_AVAILABLE, logger
 from p2pfl.node_state import NodeState
 from p2pfl.settings import Settings
 from p2pfl.stages.workflows import LearningWorkflow
@@ -413,8 +413,11 @@ class Node:
                 epochs_per_round=epochs,
             )
 
-            # Set up wandb logging
-            logger.setup_wandb(run_name=experiment_name, experiment=self.state.experiment)
+            # Set up wandb logging only if wandb is available
+            if WANDB_AVAILABLE:
+                logger.setup_wandb(run_name=experiment_name, experiment=self.state.experiment)
+            else:
+                logger.info(self.addr, "WandB not available or disabled. Experiment will be logged locally only.")
 
             # Run learning workflow
             self.learning_workflow.run(
@@ -442,6 +445,7 @@ class Node:
         # State
         self.state.clear()
         logger.experiment_finished(self.addr)
+        logger.finish()
         # Try to free wait locks
         with contextlib.suppress(Exception):
             self.state.wait_votes_ready_lock.release()

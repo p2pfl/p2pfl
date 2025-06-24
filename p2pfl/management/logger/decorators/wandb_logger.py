@@ -18,19 +18,28 @@
 
 """WandB Logger Decorator."""
 
-from typing import Any, Dict, Optional
+import os
+from typing import Any, Dict, Optional, Literal
 
-import wandb
+try:
+    import wandb
+    from wandb.sdk.wandb_run import Run
+
+    WANDB_AVAILABLE = True
+except ImportError:
+    wandb = None # type: ignore
+    Run = None # type: ignore
+    WANDB_AVAILABLE = False
+
 from p2pfl.experiment import Experiment
 from p2pfl.management.logger.decorators.logger_decorator import LoggerDecorator
 from p2pfl.management.logger.logger import P2PFLogger
-from wandb.sdk.wandb_run import Run
 
 
 class WandbLogger(LoggerDecorator):
     """WandB Logger Decorator that can be configured at runtime."""
 
-    _run: Optional[Run] = None
+    _run: Optional["Run"] = None
 
     def __init__(self, p2pflogger: P2PFLogger):
         """Initialize the WandbLogger decorator."""
@@ -39,8 +48,12 @@ class WandbLogger(LoggerDecorator):
         self._entity: Optional[str] = None
         self._config: Dict[str, Any] = {}
         self._run_name: Optional[str] = None
+        self._wandb_enabled: bool = WANDB_AVAILABLE
 
-        self._init_wandb()
+        if WANDB_AVAILABLE:
+            self._init_wandb()
+        else:
+            super().debug("WandbLogger", "WandB not available. Logging will be disabled for WandB.")
 
     def setup_wandb(
         self,
@@ -57,6 +70,10 @@ class WandbLogger(LoggerDecorator):
             run_name (str, optional): A short display name for this run.
 
         """
+        if not self._wandb_enabled:
+            super().debug("WandbLogger", "WandB not available or disabled. Skipping WandB setup.")
+            return
+
         self._project = project
 
         if experiment and WandbLogger._run is not None:
@@ -82,19 +99,65 @@ class WandbLogger(LoggerDecorator):
 
     def _init_wandb(self) -> None:
         """Initialize a wandb run."""
+        if not WANDB_AVAILABLE:
+            return
+
         if WandbLogger._run is not None:
             return
 
-        WandbLogger._run = wandb.init(
-            project=self._project,
-            name=self._run_name,
-            config=self._config,
-        )
+        try:
+            # Determine wandb mode based on environment and configuration
+            wandb_mode = self._determine_wandb_mode()
+
+            WandbLogger._run = wandb.init(
+                project=self._project,
+                name=self._run_name,
+                config=self._config,
+                mode=wandb_mode,
+            )
+
+            if wandb_mode == "disabled":
+                self._wandb_enabled = False
+                super().debug("WandbLogger", "WandB initialized in disabled mode")
+            elif wandb_mode == "offline":
+                super().debug("WandbLogger", "WandB initialized in offline mode")
+            else:
+                super().debug("WandbLogger", "WandB initialized in online mode")
+
+        except Exception as e:
+            super().warning("WandbLogger", f"Failed to initialize WandB: {e}. Disabling WandB logging.")
+            WandbLogger._run = None
+            self._wandb_enabled = False
+
+    def _determine_wandb_mode(self) -> Literal["online", "offline", "disabled"]:
+        """
+        Determine the appropriate wandb mode based on environment and configuration.
+
+        Returns:
+            Literal["online", "offline", "disabled"]: The wandb mode
+
+        """
+        # Check if API key is configured
+        try:
+            api_key = wandb.api.api_key
+            if api_key is None or api_key == "":
+                # No API key configured, use offline mode in CI/non-interactive environments
+                if os.getenv("CI") or not os.isatty(0):
+                    return "offline"
+                else:
+                    return "disabled"
+        except Exception:
+            if os.getenv("CI") or not os.isatty(0):
+                return "offline"
+            else:
+                return "disabled"
+
+        return "online"
 
     def log_metric(self, addr: str, metric: str, value: float, step: Optional[int] = None, round: Optional[int] = None) -> None:
         """Log a metric to wandb."""
-        # Ensure W&B is initialized
-        if WandbLogger._run is None:
+        # Ensure W&B is initialized and enabled
+        if not self._wandb_enabled or WandbLogger._run is None:
             return super().log_metric(addr, metric, value, step=step, round=round)
 
         try:
@@ -111,8 +174,11 @@ class WandbLogger(LoggerDecorator):
 
     def finish(self) -> None:
         """Finish the wandb run."""
-        if WandbLogger._run is not None:
-            wandb.finish()
+        if self._wandb_enabled and WandbLogger._run is not None:
+            try:
+                wandb.finish()
+            except Exception as e:
+                super().warning("WandbLogger", f"Failed to finish WandB run: {e}")
             WandbLogger._run = None
 
         super().finish()

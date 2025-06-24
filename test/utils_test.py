@@ -184,3 +184,26 @@ def test_node_component_methods():
     addr = "test_address"
     component.set_addr(addr)
     assert component.example_method() == addr
+
+
+def test_check_wandb():
+    """Test the check_wandb function."""
+    from p2pfl.utils.check_wandb import check_wandb, is_wandb_configured, should_use_wandb
+    import importlib.util
+    
+    # Test that check_wandb returns a boolean
+    result = check_wandb()
+    assert isinstance(result, bool)
+    
+    # Test that it reflects the actual availability of wandb
+    wandb_available = importlib.util.find_spec("wandb") is not None
+    assert result == wandb_available
+    
+    # Test other functions return booleans
+    assert isinstance(is_wandb_configured(), bool)
+    assert isinstance(should_use_wandb(), bool)
+    
+    # If wandb is not available, other functions should return False
+    if not result:
+        assert not is_wandb_configured()
+        assert not should_use_wandb()

@@ -160,3 +160,6 @@ Pipfile.lock
 junit
 .ruff_cache
 .vscode
+
+# WandB files
+wandb/

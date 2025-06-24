@@ -21,10 +21,16 @@
 from p2pfl.management.logger.decorators.async_logger import AsyncLogger
 from p2pfl.management.logger.decorators.file_logger import FileLogger
 from p2pfl.management.logger.decorators.singleton_logger import SingletonLogger
-from p2pfl.management.logger.decorators.wandb_logger import WandbLogger
 from p2pfl.management.logger.decorators.web_logger import WebP2PFLogger
 from p2pfl.management.logger.logger import P2PFLogger
 from p2pfl.utils.check_ray import ray_installed
+from p2pfl.utils.check_wandb import should_use_wandb
+
+# Check if wandb should be used
+WANDB_AVAILABLE = should_use_wandb()
+
+if WANDB_AVAILABLE:
+    from p2pfl.management.logger.decorators.wandb_logger import WandbLogger
 
 # Check if 'ray' is installed in the Python environment
 if ray_installed():
@@ -36,8 +42,14 @@ if ray_installed():
     try:
         logger: P2PFLogger = RayP2PFLogger.from_actor(ray.get_actor("p2pfl_ray_logger"))
     except ValueError:
-        logger = RayP2PFLogger(lambda: WandbLogger(WebP2PFLogger(FileLogger(P2PFLogger(disable_locks=True)))))
+        if WANDB_AVAILABLE:
+            logger = RayP2PFLogger(lambda: WandbLogger(WebP2PFLogger(FileLogger(P2PFLogger(disable_locks=True)))))
+        else:
+            logger = RayP2PFLogger(lambda: WebP2PFLogger(FileLogger(P2PFLogger(disable_locks=True))))
 
 else:
     # This is only executed once, when the module is first imported
-    logger = SingletonLogger(WandbLogger(WebP2PFLogger(FileLogger(AsyncLogger(P2PFLogger(disable_locks=False))))))
+    if WANDB_AVAILABLE:
+        logger = SingletonLogger(WandbLogger(WebP2PFLogger(FileLogger(AsyncLogger(P2PFLogger(disable_locks=False))))))
+    else:
+        logger = SingletonLogger(WebP2PFLogger(FileLogger(AsyncLogger(P2PFLogger(disable_locks=False)))))

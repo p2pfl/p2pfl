@@ -32,7 +32,7 @@ pandas = "^2.2.3"
 tqdm = "^4.67.0"
 protobuf = ">=5.29.1"
 pyyaml = "^6.0.2"
-wandb = "^0.19.11"
+wandb = "^0.20.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
@@ -59,6 +59,7 @@ sphinx-design = "^0.6.1"
 torch = ["torch", "torchvision", "torchmetrics", "lightning"]
 tensorflow = ["tensorflow", "keras", "types-tensorflow"]
 flax = ["flax"]
+wandb = ["wandb"]
 
 [build-system]
 requires = ["poetry-core"]
