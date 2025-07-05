@@ -17,10 +17,11 @@
 #
 
 """XGBoost model wrapper for P2PFL."""
-
+import os
 from typing import Any, Dict, List, Optional, Union
 import numpy as np
 import xgboost as xgb
+from sklearn.exceptions import NotFittedError
 
 from p2pfl.learning.frameworks import Framework
 from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
@@ -62,14 +63,15 @@ class XGBoostModel(P2PFLModel):
         Returns:
             List of parameter arrays corresponding to each model attribute.
         """
-        # For Booster, use get_dump or get_fscore? Use get_fscore not good. Instead get raw weights from Booster.attributes or internal.
-        # Best: use get_dump return model as text and skip? Actually XGBoost stores weights in internal formats.
-        # Use model.save_raw() to get bytes, but we want numpy
-        # Instead, if wrapping XGBModel, get_booster().get_dump()
         # Serialize booster to raw bytes
-        raw = self.model.get_booster().save_raw()
-        arr = np.frombuffer(raw, dtype=np.uint8)
-        return [arr]
+        # raw = self.model.get_booster().save_raw()
+        # arr = np.frombuffer(raw, dtype=np.uint8)
+        try:
+            self.model.save_model("temp_model.json")  # Save to JSON for compatibility
+
+        except NotFittedError:
+            return []
+        return [1]
 
     def set_parameters(self, params: Union[List[np.ndarray], bytes]) -> None:
         """
@@ -96,11 +98,17 @@ class XGBoostModel(P2PFLModel):
         #     raise ModelNotMatchingError("First parameter array must be uint8 raw bytes")
 
         raw_bytes = raw_arr.tobytes()
-        booster = xgb.Booster()
-        booster.load_model(raw_bytes)
+        if isinstance(self.model, xgb.sklearn.XGBClassifier):
+            model = xgb.XGBClassifier()
+        else:
+            model = xgb.XGBRegressor()
+        model.load_model("temp_model.json")  # Load from JSON for compatibility
+        # remove the temporary file
+        os.remove("temp_model.json")
+        # booster.load_model(raw_bytes)
 
         # Attach loaded booster to sklearn API model
-        self.model._Booster = booster
+        self.model = model
 
     def get_framework(self) -> str:
         """

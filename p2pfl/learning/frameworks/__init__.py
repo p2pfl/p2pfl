@@ -17,3 +17,4 @@ class Framework(Enum):
     PYTORCH = "pytorch"
     TENSORFLOW = "tensorflow"
     FLAX = "flax"
+    XGBOOST = "xgboost"
