@@ -67,15 +67,6 @@ experiment:
     aggregator: "FedAvg"
     params: {}  # Aggregator parameters (algorithm-specific)
 
-    # Uncomment and adjust this for aggregator transforms
-    #transforms:
-    #  package: "p2pfl.examples.mnist.transforms"
-    #  function: "normalize_transform"
-    #  params:
-    #    mean: 0.1307
-    #    std: 0.3081
-
-
 # General experiment settings
 settings:
   general:
