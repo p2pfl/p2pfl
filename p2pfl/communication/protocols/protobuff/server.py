@@ -141,11 +141,11 @@ class ProtobuffServer(ABC, node_pb2_grpc.NodeServicesServicer, NodeComponent):
 
         """
         # If message already processed, return
-        if request.HasField("message") and not self._gossiper.check_and_set_processed(request):
+        if request.HasField("gossip_message") and not self._gossiper.check_and_set_processed(request):
             return node_pb2.ResponseMessage()
 
         # Log
-        package_type = "message" if request.HasField("message") else "weights"
+        package_type = "message" if request.HasField("gossip_message") else "weights"
         package_size = len(request.SerializeToString())
         # Pass None for negative rounds, the logger will handle it
         round_num = request.round if request.round >= 0 else None
@@ -160,12 +160,15 @@ class ProtobuffServer(ABC, node_pb2_grpc.NodeServicesServicer, NodeComponent):
         )
 
         # Process message/model
+        cmd_out: Optional[str] = None
         if request.cmd in self.__commands:
             try:
-                if request.HasField("message"):
-                    self.__commands[request.cmd].execute(request.source, request.round, *request.message.args)
+                if request.HasField("gossip_message"):
+                    cmd_out = self.__commands[request.cmd].execute(request.source, request.round, *request.gossip_message.args)
+                elif request.HasField("direct_message"):
+                    cmd_out = self.__commands[request.cmd].execute(request.source, request.round, *request.direct_message.args)
                 elif request.HasField("weights"):
-                    self.__commands[request.cmd].execute(
+                    cmd_out = self.__commands[request.cmd].execute(
                         request.source,
                         request.round,
                         weights=request.weights.weights,
@@ -173,7 +176,7 @@ class ProtobuffServer(ABC, node_pb2_grpc.NodeServicesServicer, NodeComponent):
                         num_samples=request.weights.num_samples,
                     )
                 else:
-                    error_text = f"Error while processing command: {request.cmd}: No message or weights"
+                    error_text = f"Error while processing command: {request.cmd}: No message or weights."
                     logger.error(self.addr, error_text)
                     return node_pb2.ResponseMessage(error=error_text)
             except Exception as e:
@@ -186,12 +189,12 @@ class ProtobuffServer(ABC, node_pb2_grpc.NodeServicesServicer, NodeComponent):
             return node_pb2.ResponseMessage(error=f"Unknown command: {request.cmd}")
 
         # If message gossip
-        if request.HasField("message") and request.message.ttl > 0:
+        if request.HasField("gossip_message") and request.gossip_message.ttl > 0:
             # Update ttl and gossip
-            request.message.ttl -= 1
+            request.gossip_message.ttl -= 1
             self._gossiper.add_message(request)
 
-        return node_pb2.ResponseMessage()
+        return node_pb2.ResponseMessage(response=cmd_out)
 
     ####
     # Commands

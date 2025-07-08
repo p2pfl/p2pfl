@@ -491,7 +491,8 @@ class P2PFLogger:
 
         # Log the message at debug level
         if cmd != "beat" or (not Settings.heartbeat.EXCLUDE_BEAT_LOGS and cmd == "beat"):
-            self.debug(node, message)
+            pass
+            # self.debug(node, message)
 
         # Get actual round number for storage (default to 0 if None)
         storage_round = 0 if round_num is None or round_num < 0 else round_num
@@ -549,3 +550,21 @@ class P2PFLogger:
 
         """
         return self.node_monitor.get_logs()
+
+    def reset(self) -> None:
+        """
+        Reset the logger state between experiments.
+
+        This clears all stored metrics, messages, and system logs while keeping
+        the logger configuration and handlers intact.
+        """
+        # Recreate storage instances to clear all data
+        self.local_metrics = LocalMetricStorage(disable_locks=self.disable_locks)
+        self.global_metrics = GlobalMetricStorage(disable_locks=self.disable_locks)
+        self.message_storage = MessageStorage(disable_locks=self.disable_locks)
+
+        # Clear system metrics and registered nodes
+        self.node_monitor.logs.clear()
+        self._nodes.clear()
+
+        self.info("SYSTEM", "Logger state reset for new experiment")

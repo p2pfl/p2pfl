@@ -288,3 +288,12 @@ class LoggerDecorator(P2PFLogger):
 
         """
         return self._p2pfl_logger.get_system_metrics()
+
+    def reset(self) -> None:
+        """
+        Reset the logger state between experiments.
+
+        This clears all stored metrics, messages, and system logs while keeping
+        the logger configuration and handlers intact.
+        """
+        self._p2pfl_logger.reset()

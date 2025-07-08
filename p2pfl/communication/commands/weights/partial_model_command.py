@@ -22,6 +22,7 @@ from typing import Callable, List, Optional
 
 from p2pfl.communication.commands.command import Command
 from p2pfl.communication.commands.message.models_agregated_command import ModelsAggregatedCommand
+from p2pfl.communication.commands.message.pre_send_model_command import PreSendModelCommand
 from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.frameworks.exceptions import DecodingParamsError, ModelNotMatchingError
@@ -94,6 +95,9 @@ class PartialModelCommand(Command):
                             round=self.state.round,
                         )
                     )
+                else:
+                    # Try to remove the model from the node_state.sending_models
+                    PreSendModelCommand.remove_hashed(self.state, self.get_name(), contributors, self.state.round)
 
             # Warning: these stops can cause a denegation of service attack
             except DecodingParamsError:

@@ -23,6 +23,7 @@ import threading
 import time
 from typing import Any, Callable, List, Optional
 
+from p2pfl.communication.commands.message.pre_send_model_command import PreSendModelCommand
 from p2pfl.communication.protocols.protobuff.client import ProtobuffClient
 from p2pfl.communication.protocols.protobuff.neighbors import Neighbors
 from p2pfl.communication.protocols.protobuff.proto import node_pb2
@@ -37,6 +38,7 @@ class Gossiper(threading.Thread, NodeComponent):
     def __init__(
         self,
         neighbors: Neighbors,
+        build_msg: Callable[..., node_pb2.RootMessage],
         period: Optional[float] = None,
         messages_per_period: Optional[int] = None,
     ) -> None:
@@ -60,6 +62,9 @@ class Gossiper(threading.Thread, NodeComponent):
         self.__neighbors = neighbors
         self.period = period
         self.messages_per_period = messages_per_period
+
+        # Build msgs
+        self.build_msg_fn = build_msg
 
     def set_addr(self, addr: str) -> str:
         """Set the address."""
@@ -113,13 +118,13 @@ class Gossiper(threading.Thread, NodeComponent):
 
         # Check if message was already processed
         with self.__processed_messages_lock:
-            if msg.message.hash in self.__processed_messages:
+            if msg.gossip_message.hash in self.__processed_messages:
                 return False
             # If there are more than X messages, remove the oldest one
             if len(self.__processed_messages) > Settings.gossip.AMOUNT_LAST_MESSAGES_SAVED:
                 self.__processed_messages.pop(0)
             # Add message
-            self.__processed_messages.append(msg.message.hash)
+            self.__processed_messages.append(msg.gossip_message.hash)
             return True
 
     def run(self) -> None:
@@ -166,7 +171,7 @@ class Gossiper(threading.Thread, NodeComponent):
         early_stopping_fn: Callable[[], bool],
         get_candidates_fn: Callable[[], List[str]],
         status_fn: Callable[[], Any],
-        model_fn: Callable[[str], Any],
+        model_fn: Callable[[str], tuple[Any, str, int, list[str]]],  # TODO: this can be simplified
         period: float,
         temporal_connection: bool,
     ) -> None:
@@ -196,7 +201,7 @@ class Gossiper(threading.Thread, NodeComponent):
                 return
 
             # Get nodes wich need models
-            neis = neis = get_candidates_fn()
+            neis = get_candidates_fn()
 
             # Determine end of gossip
             if neis == []:
@@ -230,10 +235,23 @@ class Gossiper(threading.Thread, NodeComponent):
 
             # Generate and Send Model Partial Aggregations (model, node_contributors)
             for client in neis_clients:
-                # Send Partial Aggregation
-                model = model_fn(client.nei_addr)
+                # Get Model
+                model, command_name, round, model_hashes = model_fn(client.nei_addr)
                 if model is None:
                     continue
+
+                # Pre send weights
+                presend_msg = self.build_msg_fn(PreSendModelCommand.get_name(), [command_name] + model_hashes, round, direct=True)
+                presend_response = client.send(presend_msg, temporal_connection=temporal_connection)
+
+                # Send model
+                if presend_response != "true":
+                    logger.info(
+                        self.addr, f"Avoiding concurrent model sending to {client.nei_addr}. Msg: {command_name} | Hash: {model_hashes}"
+                    )
+                    continue
+
+                # Send
                 logger.debug(self.addr, f"🗣️ Gossiping model to {client.nei_addr}.")
                 client.send(model, temporal_connection=temporal_connection)
 

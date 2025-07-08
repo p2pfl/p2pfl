@@ -52,6 +52,7 @@ class NodeState:
         self.status = "Idle"
 
         # Aggregator (move to the aggregator?)
+        self.models_aggregated_lock = threading.Lock()
         self.models_aggregated: Dict[str, List[str]] = {}
 
         # Other neis state (only round)
@@ -63,6 +64,10 @@ class NodeState:
 
         # Actual experiment
         self.experiment: Optional[Experiment] = None
+
+        # For PreSendModelCommand state
+        self.sending_models: dict[str, dict[str, float]] = {}
+        self.sending_models_lock = threading.Lock()
 
         # Locks
         self.train_set_votes_lock = threading.Lock()
@@ -126,5 +131,6 @@ class NodeState:
             f"NodeState(addr={self.addr}, status={self.status}, exp_name={self.exp_name}, "
             f"round={self.round}, total_rounds={self.total_rounds}, "
             f"models_aggregated={self.models_aggregated}, nei_status={self.nei_status}, "
-            f"train_set={self.train_set}, train_set_votes={self.train_set_votes})"
+            f"train_set={self.train_set}, train_set_votes={self.train_set_votes}, "
+            f"sending_models={self.sending_models})"
         )

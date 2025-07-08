@@ -19,15 +19,15 @@
 """Actor pool for distributed computing using Ray."""
 
 import threading
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, Optional, Set, Tuple
 
 import ray
 from ray.util.actor_pool import ActorPool
 
 from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
-from p2pfl.learning.frameworks.simulation.utils import check_client_resources, pool_size_from_resources
 from p2pfl.management.logger import logger
+from p2pfl.settings import Settings
 
 ###
 # Inspired by the implementation of Flower. Thank you so much for taking FL to another level :)
@@ -98,47 +98,69 @@ class SuperActorPool(ActorPool):
                 cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, resources=None, actor_list: Optional[List[VirtualLearnerActor]] = None):
+    def __init__(self, amount_actors: Optional[int] = None):
         """
         Initialize SuperActorPool.
 
         Args:
-            resources: Resources for actor creation. Defaults to None.
-            actor_list: List of pre-created actor instances. Defaults to None.
+            actor_list: List of pre-initialized actors. Defaults to None.
+            amount_actors: Number of actors to initialize. Defaults to None.
 
         """
-        if not hasattr(self, "initialized"):  # To avoid reinitialization
-            self.resources = check_client_resources(resources)
+        # To avoid reinitialization
+        if not hasattr(self, "initialized"):
+            # Initialize ActorPool
+            num_actors = Settings.training.RAY_ACTOR_POOL_SIZE if amount_actors is None else amount_actors
 
-            if actor_list is None:
-                num_actors = pool_size_from_resources(self.resources)
-                actors = [self.create_actor() for _ in range(num_actors)]
-            else:
-                actors = actor_list
+            # Calculate GPU resources per actor
+            self.gpu_per_actor = self._calculate_gpu_per_actor(num_actors)
 
+            actors = [self.create_actor() for _ in range(num_actors)]
+            self.num_actors = len(actors)
+            logger.info("ActorPool", f"Initialized with {self.num_actors} actors, {self.gpu_per_actor} GPU per actor")
             super().__init__(actors)
 
             # A dict that maps addr to another dict containing: a reference to the remote job
             # and its status (i.e. whether it is ready or not)
             self._addr_to_future: dict[str, dict[str, Any]] = {}
-            self.actor_to_remove: Set[str] = set()  # a set of actor ids to be removed
-            self.num_actors = len(actors)
-            logger.info("ActorPool", f"Initialized with {self.num_actors} actors")
-            self.lock = threading.RLock()
-            self.initialized = True  # Mark as initialized
+            # a set of actor ids to be removed
+            self.actor_to_remove: Set[str] = set()
 
-    def __reduce__(self):
+            self.lock = threading.RLock()
+            # Mark as initialized
+            self.initialized = True
+
+    def _calculate_gpu_per_actor(self, num_actors: int) -> float:
         """
-        Reduces the SuperActorPool instance to its constructor arguments.
+        Calculate GPU resources per actor based on available GPUs.
+
+        Args:
+            num_actors: Number of actors to create.
 
         Returns:
-            Constructor arguments for SuperActorPool.
+            GPU fraction per actor.
 
         """
-        return SuperActorPool, (
-            self.resources,
-            self._idle_actors,
-        )
+        # Get available GPU resources from Ray (framework-agnostic)
+        available_resources = ray.available_resources()
+        num_gpus = available_resources.get("GPU", 0)
+
+        if num_gpus == 0:
+            logger.warning("ActorPool", "No GPUs available. Actors will run on CPU only.")
+            return 0
+
+        # Calculate GPU per actor (fractional GPUs allowed in Ray)
+        gpu_per_actor = num_gpus / num_actors
+
+        logger.info("ActorPool", f"Ray detected {num_gpus} GPU(s), allocating {gpu_per_actor:.2f} GPU per actor")
+
+        # Log warning if GPU allocation is very small
+        if gpu_per_actor < 0.1:
+            logger.warning(
+                "ActorPool", f"GPU allocation per actor is very small ({gpu_per_actor:.2f}). Consider reducing the number of actors."
+            )
+
+        return gpu_per_actor
 
     def create_actor(self) -> VirtualLearnerActor:
         """
@@ -148,7 +170,11 @@ class SuperActorPool(ActorPool):
             New actor instance.
 
         """
-        return VirtualLearnerActor.options(**self.resources).remote()  # type: ignore
+        # Create actor with GPU resources if available
+        if hasattr(self, "gpu_per_actor") and self.gpu_per_actor > 0:
+            return VirtualLearnerActor.options(num_gpus=self.gpu_per_actor).remote()  # type: ignore
+        else:
+            return VirtualLearnerActor.options().remote()  # type: ignore
 
     def add_actor(self, num_actors: int) -> None:
         """
@@ -182,6 +208,8 @@ class SuperActorPool(ActorPool):
             self._future_to_actor[future_key] = (self._next_task_index, actor, addr)
             self._next_task_index += 1
             self._addr_to_future[addr]["future"] = future_key
+        else:
+            logger.error("ActorPool", "Actor should have been removed from pool but wasn't")
 
     def submit_learner_job(self, actor_fn: Any, job: Tuple[str, Learner]) -> None:
         """
@@ -294,20 +322,6 @@ class SuperActorPool(ActorPool):
                 return False
             return True
 
-    def _check_actor_fits_in_pool(self) -> bool:
-        """
-        Check if the current number of actors in the pool is within resource limits.
-
-        Returns:
-            True if the number of actors is within limits, False otherwise.
-
-        """
-        num_actors_updated = pool_size_from_resources(self.resources)
-        if num_actors_updated < self.num_actors:
-            self.num_actors -= 1
-            return False
-        return True
-
     def process_unordered_future(self, timeout: Optional[float] = None) -> None:
         """
         Process the next unordered future result from the pool.
@@ -330,12 +344,9 @@ class SuperActorPool(ActorPool):
         with self.lock:
             _, actor, addr = self._future_to_actor.pop(future, (None, None, -1))
             if actor is not None:
-                if self._check_actor_fits_in_pool():
-                    if self._check_and_remove_actor_from_pool(actor):
-                        self._return_actor(actor)  # type: ignore
-                    self._flag_future_as_ready(addr)
-                else:
-                    actor.terminate.remote()
+                if self._check_and_remove_actor_from_pool(actor):
+                    self._return_actor(actor)  # type: ignore
+                self._flag_future_as_ready(addr)
 
     def get_learner_result(self, addr: str, timeout: Optional[float]) -> Tuple[Any, Any]:
         """

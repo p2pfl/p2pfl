@@ -21,13 +21,16 @@ class RootMessage(google.protobuf.message.Message):
     SOURCE_FIELD_NUMBER: builtins.int
     ROUND_FIELD_NUMBER: builtins.int
     CMD_FIELD_NUMBER: builtins.int
-    MESSAGE_FIELD_NUMBER: builtins.int
+    GOSSIP_MESSAGE_FIELD_NUMBER: builtins.int
+    DIRECT_MESSAGE_FIELD_NUMBER: builtins.int
     WEIGHTS_FIELD_NUMBER: builtins.int
     source: builtins.str
     round: builtins.int
     cmd: builtins.str
     @property
-    def message(self) -> global___Message: ...
+    def gossip_message(self) -> global___GossipMessage: ...
+    @property
+    def direct_message(self) -> global___DirectMessage: ...
     @property
     def weights(self) -> global___Weights: ...
     def __init__(
@@ -36,20 +39,21 @@ class RootMessage(google.protobuf.message.Message):
         source: builtins.str = ...,
         round: builtins.int | None = ...,
         cmd: builtins.str = ...,
-        message: global___Message | None = ...,
+        gossip_message: global___GossipMessage | None = ...,
+        direct_message: global___DirectMessage | None = ...,
         weights: global___Weights | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing.Literal["_round", b"_round", "message", b"message", "payload_type", b"payload_type", "round", b"round", "weights", b"weights"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing.Literal["_round", b"_round", "cmd", b"cmd", "message", b"message", "payload_type", b"payload_type", "round", b"round", "source", b"source", "weights", b"weights"]) -> None: ...
+    def HasField(self, field_name: typing.Literal["_round", b"_round", "direct_message", b"direct_message", "gossip_message", b"gossip_message", "payload_type", b"payload_type", "round", b"round", "weights", b"weights"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["_round", b"_round", "cmd", b"cmd", "direct_message", b"direct_message", "gossip_message", b"gossip_message", "payload_type", b"payload_type", "round", b"round", "source", b"source", "weights", b"weights"]) -> None: ...
     @typing.overload
     def WhichOneof(self, oneof_group: typing.Literal["_round", b"_round"]) -> typing.Literal["round"] | None: ...
     @typing.overload
-    def WhichOneof(self, oneof_group: typing.Literal["payload_type", b"payload_type"]) -> typing.Literal["message", "weights"] | None: ...
+    def WhichOneof(self, oneof_group: typing.Literal["payload_type", b"payload_type"]) -> typing.Literal["gossip_message", "direct_message", "weights"] | None: ...
 
 global___RootMessage = RootMessage
 
 @typing.final
-class Message(google.protobuf.message.Message):
+class GossipMessage(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
     TTL_FIELD_NUMBER: builtins.int
@@ -68,7 +72,23 @@ class Message(google.protobuf.message.Message):
     ) -> None: ...
     def ClearField(self, field_name: typing.Literal["args", b"args", "hash", b"hash", "ttl", b"ttl"]) -> None: ...
 
-global___Message = Message
+global___GossipMessage = GossipMessage
+
+@typing.final
+class DirectMessage(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    ARGS_FIELD_NUMBER: builtins.int
+    @property
+    def args(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.str]: ...
+    def __init__(
+        self,
+        *,
+        args: collections.abc.Iterable[builtins.str] | None = ...,
+    ) -> None: ...
+    def ClearField(self, field_name: typing.Literal["args", b"args"]) -> None: ...
+
+global___DirectMessage = DirectMessage
 
 @typing.final
 class Weights(google.protobuf.message.Message):
@@ -111,15 +131,21 @@ global___HandShakeRequest = HandShakeRequest
 class ResponseMessage(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    RESPONSE_FIELD_NUMBER: builtins.int
     ERROR_FIELD_NUMBER: builtins.int
+    response: builtins.str
     error: builtins.str
     def __init__(
         self,
         *,
+        response: builtins.str | None = ...,
         error: builtins.str | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing.Literal["_error", b"_error", "error", b"error"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing.Literal["_error", b"_error", "error", b"error"]) -> None: ...
+    def HasField(self, field_name: typing.Literal["_error", b"_error", "_response", b"_response", "error", b"error", "response", b"response"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["_error", b"_error", "_response", b"_response", "error", b"error", "response", b"response"]) -> None: ...
+    @typing.overload
     def WhichOneof(self, oneof_group: typing.Literal["_error", b"_error"]) -> typing.Literal["error"] | None: ...
+    @typing.overload
+    def WhichOneof(self, oneof_group: typing.Literal["_response", b"_response"]) -> typing.Literal["response"] | None: ...
 
 global___ResponseMessage = ResponseMessage

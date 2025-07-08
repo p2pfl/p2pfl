@@ -81,6 +81,8 @@ class Gossip:
     """Amount of equal rounds to exit gossiping. Careful, a low value can cause an early stop of gossiping."""
     EXIT_ON_X_EQUAL_ROUNDS: int = 10
     """Amount of equal rounds to exit gossiping. Careful, a low value can cause an early stop of gossiping."""
+    MODE_EXPECTATION_TIMEOUT: float = 60.0
+    """Timeout (seconds) to wait for a model to be received."""
 
 
 @dataclass
@@ -112,6 +114,7 @@ class Training:
     """Timeout (seconds) for a node to wait for other models. Timeout starts when the first model is added."""
     DEFAULT_BATCH_SIZE: int = 128
     """Default batch size for training."""
+    RAY_ACTOR_POOL_SIZE: int = 4
 
 
 ###################

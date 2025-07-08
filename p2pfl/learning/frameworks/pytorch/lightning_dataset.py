@@ -98,5 +98,11 @@ class PyTorchExportStrategy(DataExportStrategy):
         if not batch_size:
             batch_size = Settings.training.DEFAULT_BATCH_SIZE
 
-        # Export to a PyTorch dataloader
-        return DataLoader(data.with_format(type="torch", output_all_columns=True), batch_size=batch_size, num_workers=num_workers)
+        # Check if data is already in torch format or has transforms applied
+        # If format type is None, it means transforms might be handling conversion
+        if hasattr(data, "format") and data.format["type"] is not None:
+            # No format applied, likely transforms are handling conversion
+            return DataLoader(data, batch_size=batch_size, num_workers=num_workers)
+        else:
+            # Apply torch format
+            return DataLoader(data.with_format(type="torch", output_all_columns=True), batch_size=batch_size, num_workers=num_workers)

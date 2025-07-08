@@ -72,7 +72,7 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
         # Neighbors
         self._neighbors = Neighbors(self.bluid_client)
         # Gossip
-        self._gossiper = Gossiper(self._neighbors)
+        self._gossiper = Gossiper(self._neighbors, self.build_msg)
         # GRPC
         self._server = self.build_server(self._gossiper, self._neighbors, commands)
         # Hearbeat
@@ -155,7 +155,9 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
         """
         self._neighbors.remove(nei, disconnect_msg=disconnect_msg)
 
-    def build_msg(self, cmd: str, args: Optional[list[str]] = None, round: Optional[int] = None) -> node_pb2.RootMessage:
+    def build_msg(
+        self, cmd: str, args: Optional[list[str]] = None, round: Optional[int] = None, direct: bool = False
+    ) -> node_pb2.RootMessage:
         """
         Build a RootMessage to send to the neighbors.
 
@@ -163,6 +165,7 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
             cmd: Command of the message.
             args: Arguments of the message.
             round: Round of the message.
+            direct: If direct message.
 
         Returns:
             RootMessage to send.
@@ -172,19 +175,29 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
             round = -1
         if args is None:
             args = []
-        hs = hash(str(cmd) + str(args) + str(datetime.now()) + str(random.randint(0, 100000)))
         args = [str(a) for a in args]
 
-        return node_pb2.RootMessage(
-            source=self.addr,
-            round=round,
-            cmd=cmd,
-            message=node_pb2.Message(
-                ttl=Settings.gossip.TTL,
-                hash=hs,
-                args=args,
-            ),
-        )
+        if direct:
+            return node_pb2.RootMessage(
+                source=self.addr,
+                round=round,
+                cmd=cmd,
+                direct_message=node_pb2.DirectMessage(
+                    args=args,
+                ),
+            )
+        else:
+            hs = hash(str(cmd) + str(args) + str(datetime.now()) + str(random.randint(0, 100000)))
+            return node_pb2.RootMessage(
+                source=self.addr,
+                round=round,
+                cmd=cmd,
+                gossip_message=node_pb2.GossipMessage(
+                    ttl=Settings.gossip.TTL,
+                    hash=hs,
+                    args=args,
+                ),
+            )
 
     def build_weights(
         self,
@@ -290,7 +303,7 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
         early_stopping_fn: Callable[[], bool],
         get_candidates_fn: Callable[[], list[str]],
         status_fn: Callable[[], Any],
-        model_fn: Callable[[str], Any],
+        model_fn: Callable[[str], tuple[Any, str, int, list[str]]],
         period: Optional[float] = None,
         create_connection: bool = False,
     ) -> None:

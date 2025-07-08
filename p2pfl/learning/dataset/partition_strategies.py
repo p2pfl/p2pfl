@@ -265,7 +265,7 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
             max_tries: The maximum number of tries to find a valid partitioning.
 
         """
-        if not sum(class_proportions.values()) == 1:
+        if not abs(sum(class_proportions.values()) - 1.0) < 1e-10:
             raise ValueError("The sum of the class proportions must be 1")
 
         for _ in range(max_tries):

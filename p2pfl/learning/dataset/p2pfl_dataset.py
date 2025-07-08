@@ -139,7 +139,7 @@ class P2PFLDataset:
             data = self._data[split][idx]
         return data
 
-    def set_transforms(self, transforms: Callable) -> None:
+    def set_transforms(self, transforms: Union[Callable, dict[str, Callable]]) -> None:
         """
         Set the transforms to apply to the data, delegating to the Hugging Face dataset.
 
@@ -149,9 +149,14 @@ class P2PFLDataset:
         """
         if isinstance(self._data, Dataset):
             self._data.set_transform(transforms)
-        elif isinstance(self._data, DatasetDict):
+        elif isinstance(self._data, DatasetDict) and callable(transforms):
             for split in self._data:
                 self._data[split].set_transform(transforms)
+        elif isinstance(self._data, DatasetDict) and isinstance(transforms, dict):
+            for split in self._data:
+                self._data[split].set_transform(transforms[split])
+        else:
+            raise ValueError("Unsupported data type.")
 
     def set_batch_size(self, batch_size: int) -> None:
         """

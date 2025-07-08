@@ -72,11 +72,16 @@ class GossipModelStage(Stage):
         def status_fn() -> Any:
             return get_candidates_fn()
 
-        def model_fn(node: str) -> Any:
+        def model_fn(node: str) -> tuple[Any, str, int, list[str]]:
             if state.round is None:
                 raise Exception("Round not initialized")
             encoded_model = learner.get_model().encode_parameters()
-            return communication_protocol.build_weights(FullModelCommand.get_name(), state.round, encoded_model)
+            return (
+                communication_protocol.build_weights(FullModelCommand.get_name(), state.round, encoded_model),
+                FullModelCommand.get_name(),
+                state.round,
+                [str(state.round)],
+            )
 
         # Gossip
         communication_protocol.gossip_weights(

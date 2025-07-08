@@ -112,7 +112,7 @@ class MemoryClient(ProtobuffClient):
         temporal_connection: bool = False,
         raise_error: bool = False,
         disconnect_on_error: bool = True,
-    ) -> None:
+    ) -> str:
         """
         Send a message to the neighbor.
 
@@ -133,10 +133,8 @@ class MemoryClient(ProtobuffClient):
                             self.self_addr, f"💔 Neighbor {self.nei_addr} not connected. Trying to send message with temporal connection"
                         )
                         self.connect(handshake_msg=False)
-            elif raise_error:
-                raise NeighborNotConnectedError(f"Neighbor {self.nei_addr} not connected.")
             else:
-                return
+                raise NeighborNotConnectedError(f"Neighbor {self.nei_addr} not connected.")
 
         # Send
         res = self.stub.send(msg, None)  # type: ignore
@@ -163,3 +161,5 @@ class MemoryClient(ProtobuffClient):
         # Raise
         if res.error and raise_error:
             raise CommunicationError(f"Error while sending a message: {msg.cmd}: {res.error}")
+
+        return res.response

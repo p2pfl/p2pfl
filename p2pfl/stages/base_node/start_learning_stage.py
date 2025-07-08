@@ -75,7 +75,7 @@ class StartLearningStage(Stage):
         # Communicate Initialization
         communication_protocol.broadcast(communication_protocol.build_msg(ModelInitializedCommand.get_name()))
         logger.info(state.addr, "🗣️ Gossiping model initialization.")
-        time.sleep(1.)
+        time.sleep(1.0)
         StartLearningStage.__gossip_model(state, communication_protocol, learner)
 
         # Wait to guarantee new connection heartbeats convergence
@@ -105,11 +105,16 @@ class StartLearningStage(Stage):
         def status_fn() -> Any:
             return get_candidates_fn()
 
-        def model_fn(_: str) -> Any:
+        def model_fn(_: str) -> tuple[Any, str, int, list[str]]:
             if state.round is None:
                 raise Exception("Round not initialized.")
             encoded_model = learner.get_model().encode_parameters()
-            return communication_protocol.build_weights(InitModelCommand.get_name(), state.round, encoded_model)
+            return (
+                communication_protocol.build_weights(InitModelCommand.get_name(), state.round, encoded_model),
+                InitModelCommand.get_name(),
+                state.round,
+                [str(state.round)],
+            )
 
         # Gossip
         communication_protocol.gossip_weights(

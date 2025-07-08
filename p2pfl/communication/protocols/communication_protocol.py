@@ -180,7 +180,7 @@ class CommunicationProtocol(ABC, NodeComponent):
         early_stopping_fn: Callable[[], bool],
         get_candidates_fn: Callable[[], List[str]],
         status_fn: Callable[[], Any],
-        model_fn: Callable[[str], Any],
+        model_fn: Callable[[str], tuple[Any, str, int, list[str]]],
         period: Optional[float] = None,
         create_connection: bool = False,
     ) -> None:

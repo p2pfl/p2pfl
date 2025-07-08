@@ -146,20 +146,7 @@ def run_from_yaml(yaml_path: str, debug: bool = False) -> None:
     # Batch size
     dataset.set_batch_size(dataset_config.get("batch_size", 1))
 
-    # Transforms
-    transforms_config = dataset_config.get("transforms", None)
-    if transforms_config:
-        transforms_package = transforms_config.get("package")
-        transform_function = transforms_config.get("function")
-        if not transforms_package or not transform_function:
-            raise ValueError("Missing 'transforms' configuration in YAML file.")
-        transform_class = load_by_package_and_name(
-            transforms_package,
-            transform_function,
-        )
-        dataset.set_transforms(transform_class(**transforms_config.get("params", {})))
-
-    # Partitioning
+    # Partitioning (do this BEFORE applying transforms)
     partitioning_config = dataset_config.get("partitioning", {})
     if not partitioning_config:
         raise ValueError("Missing 'partitioning' configuration in YAML file.")
@@ -177,6 +164,21 @@ def run_from_yaml(yaml_path: str, debug: bool = False) -> None:
         ),
         **partitioning_config.get("params", {}),
     )
+
+    # Transforms (apply AFTER partitioning)
+    transforms_config = dataset_config.get("transforms", None)
+    if transforms_config:
+        transforms_package = transforms_config.get("package")
+        transform_function = transforms_config.get("function")
+        if not transforms_package or not transform_function:
+            raise ValueError("Missing 'transforms' configuration in YAML file.")
+        transform_class = load_by_package_and_name(
+            transforms_package,
+            transform_function,
+        )
+        # Apply transforms to each partition
+        for partition in partitions:
+            partition.set_transforms(transform_class(**transforms_config.get("params", {})))
 
     #########
     # Model #

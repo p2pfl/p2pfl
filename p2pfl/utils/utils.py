@@ -60,6 +60,7 @@ def set_standalone_settings() -> None:
     Settings.gossip.EXIT_ON_X_EQUAL_ROUNDS = 10
     Settings.training.VOTE_TIMEOUT = 60
     Settings.training.AGGREGATION_TIMEOUT = 60
+    Settings.training.RAY_ACTOR_POOL_SIZE = 1
     Settings.general.LOG_LEVEL = "INFO"
     logger.set_level(Settings.general.LOG_LEVEL)  # Refresh (maybe already initialized)
 

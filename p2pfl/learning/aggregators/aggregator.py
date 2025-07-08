@@ -64,6 +64,9 @@ class Aggregator(NodeComponent):
         self._finish_aggregation_event = threading.Event()
         self._finish_aggregation_event.set()
 
+        # Unhandled models
+        self.__unhandled_models: List[P2PFLModel] = []
+
     def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
         """
         Aggregate the models.
@@ -95,17 +98,23 @@ class Aggregator(NodeComponent):
             Exception: If the aggregation is running.
 
         """
-        if self._finish_aggregation_event.is_set():
-            self.__train_set = nodes_to_aggregate
-            self._finish_aggregation_event.clear()
-        else:
+        if not self._finish_aggregation_event.is_set():
             raise Exception("It is not possible to set nodes to aggregate when the aggregation is running.")
+
+        # Start new aggregation
+        self.__train_set = nodes_to_aggregate
+        self._finish_aggregation_event.clear()
+        for m in self.__unhandled_models:
+            self.add_model(m)
+            # NOTE: Don´t need to send message indicating this aggregations. Self aggregation will be sufficient to notify the network.
+        self.__unhandled_models = []
 
     def clear(self) -> None:
         """Clear the aggregation (remove trainset and release locks)."""
         with self.__agg_lock:
             self.__train_set = []
             self.__models = []
+            self.__unhandled_models = []
             self._finish_aggregation_event.set()
 
     def get_aggregated_models(self) -> List[str]:
@@ -160,7 +169,7 @@ class Aggregator(NodeComponent):
                         self.addr,
                         f"🧩 Model added ({models_added}/{ str(len(self.__train_set))}) from {str(model.get_contributors())}",
                     )
-                    logger.debug(self.addr, f"Models added: {self.get_aggregated_models()}")
+                    # logger.debug(self.addr, f"Models added: {self.get_aggregated_models()}")
 
                     # Check if all models were added
                     if len(self.get_aggregated_models()) >= len(self.__train_set):
@@ -170,17 +179,18 @@ class Aggregator(NodeComponent):
                     self.__agg_lock.release()
                     return self.get_aggregated_models()
                 else:
-                    logger.info(
+                    logger.debug(
                         self.addr,
                         f"🚫 Can't add a model from a node ({model.get_contributors()}) that is already aggregated.",
                     )
             else:
-                logger.info(
+                logger.debug(
                     self.addr,
                     f"🚫 Can't add a model from a node ({model.get_contributors()}) that is not in the training set.",
                 )
         else:
-            logger.info(self.addr, "🚫 Received a model when is not needed (already aggregated).")
+            logger.debug(self.addr, "🚫 Received a model when is not needed. Saving a iteration to affor bandwith.")
+            self.__unhandled_models.append(model)
 
         # Release and return
         self.__agg_lock.release()
