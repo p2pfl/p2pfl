@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Coverage for p2pfl/learning/frameworks/callback_factory.py: 64%</title>
+    <title>Coverage for p2pfl/learning/frameworks/callback_factory.py: 63%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
-    <link rel="stylesheet" href="style_cb_8e611ae1.css" type="text/css">
+    <link rel="stylesheet" href="style_cb_81f8c14c.css" type="text/css">
     <script src="coverage_html_cb_6fb7b396.js" defer></script>
 </head>
 <body class="pyfile">
@@ -12,7 +12,7 @@
     <div class="content">
         <h1>
             <span class="text">Coverage for </span><b>p2pfl/learning/frameworks/callback_factory.py</b>:
-            <span class="pc_cov">64%</span>
+            <span class="pc_cov">63%</span>
         </h1>
         <aside id="help_panel_wrapper">
             <input id="help_panel_state" type="checkbox">
@@ -54,9 +54,9 @@
             </div>
         </aside>
         <h2>
-            <span class="text">36 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">23<span class="text"> run</span></button>
-            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">13<span class="text"> missing</span></button>
+            <span class="text">41 statements &nbsp;</span>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">26<span class="text"> run</span></button>
+            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">15<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
         </h2>
         <p class="text">
@@ -64,8 +64,8 @@
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a id="nextFileLink" class="nav" href="z_bb91e668f4486ffc_exceptions_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.8.1">coverage.py v7.8.1</a>,
-            created at 2025-06-02 13:45 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
+            created at 2025-07-08 08:24 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -176,11 +176,18 @@
     <p class="mis show_mis"><span class="n"><a id="t94" href="#t94">94</a></span><span class="t">    <span class="key">pass</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t95" href="#t95">95</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t96" href="#t96">96</a></span><span class="t"><span class="key">try</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t97" href="#t97">97</a></span><span class="t">    <span class="key">from</span> <span class="nam">p2pfl</span><span class="op">.</span><span class="nam">learning</span><span class="op">.</span><span class="nam">frameworks</span><span class="op">.</span><span class="nam">tensorflow</span><span class="op">.</span><span class="nam">callbacks</span><span class="op">.</span><span class="nam">scaffold_callback</span> <span class="key">import</span> <span class="nam">SCAFFOLDCallback</span> <span class="key">as</span> <span class="nam">SCAFFOLDCallbackTF</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t97" href="#t97">97</a></span><span class="t">    <span class="key">from</span> <span class="nam">p2pfl</span><span class="op">.</span><span class="nam">learning</span><span class="op">.</span><span class="nam">frameworks</span><span class="op">.</span><span class="nam">pytorch</span><span class="op">.</span><span class="nam">callbacks</span><span class="op">.</span><span class="nam">fedprox_callback</span> <span class="key">import</span> <span class="nam">FedProxCallback</span> <span class="key">as</span> <span class="nam">FedProxCallbackPT</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t98" href="#t98">98</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t99" href="#t99">99</a></span><span class="t">    <span class="nam">CallbackFactory</span><span class="op">.</span><span class="nam">register_callback</span><span class="op">(</span><span class="nam">learner</span><span class="op">=</span><span class="nam">Framework</span><span class="op">.</span><span class="nam">TENSORFLOW</span><span class="op">.</span><span class="nam">value</span><span class="op">,</span> <span class="nam">callback</span><span class="op">=</span><span class="nam">SCAFFOLDCallbackTF</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t99" href="#t99">99</a></span><span class="t">    <span class="nam">CallbackFactory</span><span class="op">.</span><span class="nam">register_callback</span><span class="op">(</span><span class="nam">learner</span><span class="op">=</span><span class="nam">Framework</span><span class="op">.</span><span class="nam">PYTORCH</span><span class="op">.</span><span class="nam">value</span><span class="op">,</span> <span class="nam">callback</span><span class="op">=</span><span class="nam">FedProxCallbackPT</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t100" href="#t100">100</a></span><span class="t"><span class="key">except</span> <span class="nam">ImportError</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t101" href="#t101">101</a></span><span class="t">    <span class="key">pass</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t102" href="#t102">102</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t103" href="#t103">103</a></span><span class="t"><span class="key">try</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t104" href="#t104">104</a></span><span class="t">    <span class="key">from</span> <span class="nam">p2pfl</span><span class="op">.</span><span class="nam">learning</span><span class="op">.</span><span class="nam">frameworks</span><span class="op">.</span><span class="nam">tensorflow</span><span class="op">.</span><span class="nam">callbacks</span><span class="op">.</span><span class="nam">scaffold_callback</span> <span class="key">import</span> <span class="nam">SCAFFOLDCallback</span> <span class="key">as</span> <span class="nam">SCAFFOLDCallbackTF</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t105" href="#t105">105</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t106" href="#t106">106</a></span><span class="t">    <span class="nam">CallbackFactory</span><span class="op">.</span><span class="nam">register_callback</span><span class="op">(</span><span class="nam">learner</span><span class="op">=</span><span class="nam">Framework</span><span class="op">.</span><span class="nam">TENSORFLOW</span><span class="op">.</span><span class="nam">value</span><span class="op">,</span> <span class="nam">callback</span><span class="op">=</span><span class="nam">SCAFFOLDCallbackTF</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t107" href="#t107">107</a></span><span class="t"><span class="key">except</span> <span class="nam">ImportError</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t108" href="#t108">108</a></span><span class="t">    <span class="key">pass</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -189,8 +196,8 @@
             <a class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a class="nav" href="z_bb91e668f4486ffc_exceptions_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.8.1">coverage.py v7.8.1</a>,
-            created at 2025-06-02 13:45 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
+            created at 2025-07-08 08:24 +0000
         </p>
     </div>
 </footer>
