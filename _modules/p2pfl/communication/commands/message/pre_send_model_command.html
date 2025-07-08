@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" />
 
     <link rel="shortcut icon" href="../../../../../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
-        <title>p2pfl.learning.frameworks.simulation.utils - p2pfl 0.4.2 documentation</title>
+        <title>p2pfl.communication.commands.message.pre_send_model_command - p2pfl 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -238,6 +238,7 @@
 <li class="toctree-l6"><a class="reference internal" href="../../../../../modules/p2pfl.communication.commands.message.model_initialized_command.html">p2pfl.communication.commands.message.model_initialized_command module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="../../../../../modules/p2pfl.communication.commands.message.models_agregated_command.html">p2pfl.communication.commands.message.models_agregated_command module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="../../../../../modules/p2pfl.communication.commands.message.models_ready_command.html">p2pfl.communication.commands.message.models_ready_command module</a></li>
+<li class="toctree-l6"><a class="reference internal" href="../../../../../modules/p2pfl.communication.commands.message.pre_send_model_command.html">p2pfl.communication.commands.message.pre_send_model_command module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="../../../../../modules/p2pfl.communication.commands.message.start_learning_command.html">p2pfl.communication.commands.message.start_learning_command module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="../../../../../modules/p2pfl.communication.commands.message.stop_learning_command.html">p2pfl.communication.commands.message.stop_learning_command module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="../../../../../modules/p2pfl.communication.commands.message.vote_train_set_command.html">p2pfl.communication.commands.message.vote_train_set_command module</a></li>
@@ -290,13 +291,19 @@
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../../../modules/p2pfl.learning.html">p2pfl.learning package</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle navigation of p2pfl.learning package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4 has-children"><a class="reference internal" href="../../../../../modules/p2pfl.learning.aggregators.html">p2pfl.learning.aggregators package</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><div class="visually-hidden">Toggle navigation of p2pfl.learning.aggregators package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5"><a class="reference internal" href="../../../../../modules/p2pfl.learning.aggregators.aggregator.html">p2pfl.learning.aggregators.aggregator module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../../../modules/p2pfl.learning.aggregators.fedadagrad.html">p2pfl.learning.aggregators.fedadagrad module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../../../modules/p2pfl.learning.aggregators.fedadam.html">p2pfl.learning.aggregators.fedadam module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="../../../../../modules/p2pfl.learning.aggregators.fedavg.html">p2pfl.learning.aggregators.fedavg module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="../../../../../modules/p2pfl.learning.aggregators.fedmedian.html">p2pfl.learning.aggregators.fedmedian module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../../../modules/p2pfl.learning.aggregators.fedprox.html">p2pfl.learning.aggregators.fedprox module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../../../modules/p2pfl.learning.aggregators.fedyogi.html">p2pfl.learning.aggregators.fedyogi module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../../../modules/p2pfl.learning.aggregators.krum.html">p2pfl.learning.aggregators.krum module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="../../../../../modules/p2pfl.learning.aggregators.scaffold.html">p2pfl.learning.aggregators.scaffold module</a></li>
 </ul>
 </li>
 <li class="toctree-l4 has-children"><a class="reference internal" href="../../../../../modules/p2pfl.learning.compression.html">p2pfl.learning.compression package</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><div class="visually-hidden">Toggle navigation of p2pfl.learning.compression package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l5"><a class="reference internal" href="../../../../../modules/p2pfl.learning.compression.base_compression_strategy.html">p2pfl.learning.compression.base_compression_strategy module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../../../../modules/p2pfl.learning.compression.dp_strategy.html">p2pfl.learning.compression.dp_strategy module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="../../../../../modules/p2pfl.learning.compression.lra_strategy.html">p2pfl.learning.compression.lra_strategy module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="../../../../../modules/p2pfl.learning.compression.lzma_strategy.html">p2pfl.learning.compression.lzma_strategy module</a></li>
 <li class="toctree-l5"><a class="reference internal" href="../../../../../modules/p2pfl.learning.compression.manager.html">p2pfl.learning.compression.manager module</a></li>
@@ -319,6 +326,7 @@
 </li>
 <li class="toctree-l5 has-children"><a class="reference internal" href="../../../../../modules/p2pfl.learning.frameworks.pytorch.html">p2pfl.learning.frameworks.pytorch package</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><div class="visually-hidden">Toggle navigation of p2pfl.learning.frameworks.pytorch package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l6 has-children"><a class="reference internal" href="../../../../../modules/p2pfl.learning.frameworks.pytorch.callbacks.html">p2pfl.learning.frameworks.pytorch.callbacks package</a><input class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><div class="visually-hidden">Toggle navigation of p2pfl.learning.frameworks.pytorch.callbacks package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l7"><a class="reference internal" href="../../../../../modules/p2pfl.learning.frameworks.pytorch.callbacks.fedprox_callback.html">p2pfl.learning.frameworks.pytorch.callbacks.fedprox_callback module</a></li>
 <li class="toctree-l7"><a class="reference internal" href="../../../../../modules/p2pfl.learning.frameworks.pytorch.callbacks.scaffold_callback.html">p2pfl.learning.frameworks.pytorch.callbacks.scaffold_callback module</a></li>
 </ul>
 </li>
@@ -330,7 +338,6 @@
 </li>
 <li class="toctree-l5 has-children"><a class="reference internal" href="../../../../../modules/p2pfl.learning.frameworks.simulation.html">p2pfl.learning.frameworks.simulation package</a><input class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" role="switch" type="checkbox"/><label for="toctree-checkbox-23"><div class="visually-hidden">Toggle navigation of p2pfl.learning.frameworks.simulation package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l6"><a class="reference internal" href="../../../../../modules/p2pfl.learning.frameworks.simulation.actor_pool.html">p2pfl.learning.frameworks.simulation.actor_pool module</a></li>
-<li class="toctree-l6"><a class="reference internal" href="../../../../../modules/p2pfl.learning.frameworks.simulation.utils.html">p2pfl.learning.frameworks.simulation.utils module</a></li>
 <li class="toctree-l6"><a class="reference internal" href="../../../../../modules/p2pfl.learning.frameworks.simulation.virtual_learner.html">p2pfl.learning.frameworks.simulation.virtual_learner module</a></li>
 </ul>
 </li>
@@ -426,11 +433,11 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <h1>Source code for p2pfl.learning.frameworks.simulation.utils</h1><div class="highlight"><pre>
+          <h1>Source code for p2pfl.communication.commands.message.pre_send_model_command</h1><div class="highlight"><pre>
 <span></span><span class="c1">#</span>
 <span class="c1"># This file is part of the federated_learning_p2p (p2pfl) distribution</span>
-<span class="c1"># (see https://github.com/pguijas/federated_learning_p2p).</span>
-<span class="c1"># Copyright (c) 2022 Pedro Guijas Bravo.</span>
+<span class="c1"># (see https://github.com/pguijas/p2pfl).</span>
+<span class="c1"># Copyright (c) 2024 Pedro Guijas Bravo.</span>
 <span class="c1">#</span>
 <span class="c1"># This program is free software: you can redistribute it and/or modify</span>
 <span class="c1"># it under the terms of the GNU General Public License as published by</span>
@@ -444,90 +451,95 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 <span class="c1">#</span>
-<span class="sd">&quot;&quot;&quot;Utility functions for the simulation.&quot;&quot;&quot;</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span>
+<span class="sd">&quot;&quot;&quot;PRE_SEND_MODEL command.&quot;&quot;&quot;</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">ray</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">p2pfl.management.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
-
-<span class="c1">###</span>
-<span class="c1"># Inspired by the implementation of flower. Thank you so much for taking FL to another level :)</span>
-<span class="c1">#</span>
-<span class="c1"># Original implementation: https://github.com/adap/flower/blob/main/src/py/flwr/simulation/ray_transport/ray_actor.py</span>
-<span class="c1">###</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">p2pfl.communication.commands.command</span><span class="w"> </span><span class="kn">import</span> <span class="n">Command</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">p2pfl.communication.commands.weights.full_model_command</span><span class="w"> </span><span class="kn">import</span> <span class="n">FullModelCommand</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">p2pfl.node_state</span><span class="w"> </span><span class="kn">import</span> <span class="n">NodeState</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">p2pfl.settings</span><span class="w"> </span><span class="kn">import</span> <span class="n">Settings</span>
 
 
-<div class="viewcode-block" id="check_client_resources">
-<a class="viewcode-back" href="../../../../../modules/p2pfl.learning.frameworks.simulation.utils.html#p2pfl.learning.frameworks.simulation.utils.check_client_resources">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">check_client_resources</span><span class="p">(</span><span class="n">client_resources</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if client_resources are valid and return them.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">client_resources</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="s2">&quot;ActorPool&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;No `client_resources` specified. Using minimal resources for clients.&quot;</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">client_resources</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;num_cpus&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;num_gpus&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">}</span>
+<div class="viewcode-block" id="PreSendModelCommand">
+<a class="viewcode-back" href="../../../../../modules/p2pfl.communication.commands.message.pre_send_model_command.html#p2pfl.communication.commands.message.pre_send_model_command.PreSendModelCommand">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PreSendModelCommand</span><span class="p">(</span><span class="n">Command</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Command used to notify a recipient node before a model is actually sent.&quot;&quot;&quot;</span>
 
-    <span class="c1"># Each client needs at the very least one CPU</span>
-    <span class="k">if</span> <span class="s2">&quot;num_cpus&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">client_resources</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ActorPool&quot;</span><span class="p">,</span> <span class="s2">&quot;No `num_cpus` specified in `client_resources`. &quot;</span> <span class="o">+</span> <span class="s2">&quot;Using `num_cpus=1` for each client.&quot;</span><span class="p">)</span>
-        <span class="n">client_resources</span><span class="p">[</span><span class="s2">&quot;num_cpus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_state</span><span class="p">:</span> <span class="n">NodeState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the command.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_state</span> <span class="o">=</span> <span class="n">node_state</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;ActorPool&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Resources for each Virtual Client: </span><span class="si">{</span><span class="n">client_resources</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">client_resources</span></div>
+<div class="viewcode-block" id="PreSendModelCommand.get_name">
+<a class="viewcode-back" href="../../../../../modules/p2pfl.communication.commands.message.pre_send_model_command.html#p2pfl.communication.commands.message.pre_send_model_command.PreSendModelCommand.get_name">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the command name.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;PRE_SEND_MODEL&quot;</span></div>
 
 
+<div class="viewcode-block" id="PreSendModelCommand.remove_hashed">
+<a class="viewcode-back" href="../../../../../modules/p2pfl.communication.commands.message.pre_send_model_command.html#p2pfl.communication.commands.message.pre_send_model_command.PreSendModelCommand.remove_hashed">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove_hashed</span><span class="p">(</span><span class="n">node_state</span><span class="p">:</span> <span class="n">NodeState</span><span class="p">,</span> <span class="n">cmd</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">hashes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">round</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove hashes from sending_models.&quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">node_state</span><span class="o">.</span><span class="n">sending_models_lock</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">hashed</span> <span class="ow">in</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">hs</span><span class="p">)</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="nb">round</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">hs</span> <span class="ow">in</span> <span class="n">hashes</span><span class="p">]:</span>
+                <span class="k">del</span> <span class="n">node_state</span><span class="o">.</span><span class="n">sending_models</span><span class="p">[</span><span class="n">cmd</span><span class="p">][</span><span class="n">hashed</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="pool_size_from_resources">
-<a class="viewcode-back" href="../../../../../modules/p2pfl.learning.frameworks.simulation.utils.html#p2pfl.learning.frameworks.simulation.utils.pool_size_from_resources">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">pool_size_from_resources</span><span class="p">(</span><span class="n">client_resources</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculate number of Actors that fit in the cluster.</span>
 
-<span class="sd">    For this we consider the resources available on each node and those required per</span>
-<span class="sd">    client.</span>
+<div class="viewcode-block" id="PreSendModelCommand.execute">
+<a class="viewcode-back" href="../../../../../modules/p2pfl.communication.commands.message.pre_send_model_command.html#p2pfl.communication.commands.message.pre_send_model_command.PreSendModelCommand.execute">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">round</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute the command.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Expected at least 2 args: original_cmd_intended and model_hash&quot;</span><span class="p">)</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">total_num_actors</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># Get args</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">hashes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_state</span><span class="o">.</span><span class="n">sending_models</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="n">hashes</span> <span class="o">==</span> <span class="p">{}:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">node_state</span><span class="o">.</span><span class="n">sending_models</span><span class="p">[</span><span class="n">cmd</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">model_hash</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">hs</span><span class="p">)</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="nb">round</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">hs</span> <span class="ow">in</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
 
-    <span class="c1"># We calculate the number of actors that fit in a node per node basis. This is</span>
-    <span class="c1"># the right way of doing it otherwise situations like the following arise: imagine</span>
-    <span class="c1"># each client needs 3 CPUs and Ray has w nodes (one with 2 CPUs and another with 4)</span>
-    <span class="c1"># if we don&#39;t follow a per-node estimation of actors, we&#39;ll be creating an actor</span>
-    <span class="c1"># pool with 2 Actors. This, however, doesn&#39;t fit in the cluster since only one of</span>
-    <span class="c1"># the nodes can fit one Actor.</span>
-    <span class="n">nodes</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_state</span><span class="o">.</span><span class="n">sending_models_lock</span><span class="p">:</span>
+            <span class="c1"># Clear outdated models</span>
+            <span class="n">hashes_to_delete</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">saved_hash</span><span class="p">,</span> <span class="n">timestamp</span> <span class="ow">in</span> <span class="n">hashes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">timestamp</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">Settings</span><span class="o">.</span><span class="n">gossip</span><span class="o">.</span><span class="n">MODE_EXPECTATION_TIMEOUT</span><span class="p">:</span>
+                    <span class="n">hashes_to_delete</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">saved_hash</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">saved_hash</span> <span class="ow">in</span> <span class="n">hashes_to_delete</span><span class="p">:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_state</span><span class="o">.</span><span class="n">sending_models</span><span class="p">[</span><span class="n">cmd</span><span class="p">][</span><span class="n">saved_hash</span><span class="p">]</span>
 
-    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
-        <span class="n">node_resources</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;Resources&quot;</span><span class="p">]</span>
+            <span class="c1"># Check if hash is already in sending_models</span>
+            <span class="n">compatible_hashes</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">for</span> <span class="n">new_hash</span> <span class="ow">in</span> <span class="n">model_hash</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">new_hash</span> <span class="ow">in</span> <span class="n">hashes</span><span class="p">:</span>
+                    <span class="n">compatible_hashes</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">break</span>
 
-        <span class="c1"># If a node has detached, it is still in the list of nodes</span>
-        <span class="c1"># however, its resources will be empty.</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">node_resources</span><span class="p">:</span>
-            <span class="k">continue</span>
+            <span class="c1"># ----- Bandwidth optimization -------</span>
+            <span class="c1"># If add_model and node in trainset has full local state, refuse redundant weights</span>
+            <span class="k">if</span> <span class="n">cmd</span> <span class="o">==</span> <span class="n">FullModelCommand</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_state</span><span class="o">.</span><span class="n">addr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_state</span><span class="o">.</span><span class="n">train_set</span><span class="p">:</span>
+                <span class="c1"># Collect all unique models aggregated locally</span>
+                <span class="n">all_aggregated_models</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">models_list</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_state</span><span class="o">.</span><span class="n">models_aggregated</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="n">all_aggregated_models</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">models_list</span><span class="p">)</span>
 
-        <span class="n">num_cpus</span> <span class="o">=</span> <span class="n">node_resources</span><span class="p">[</span><span class="s2">&quot;CPU&quot;</span><span class="p">]</span>
-        <span class="n">num_gpus</span> <span class="o">=</span> <span class="n">node_resources</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GPU&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># There might not be GPU</span>
-        <span class="n">num_actors</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_cpus</span> <span class="o">/</span> <span class="n">client_resources</span><span class="p">[</span><span class="s2">&quot;num_cpus&quot;</span><span class="p">])</span>
+                <span class="c1"># If this node has aggregated all trainset models, it has full weights locally</span>
+                <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_state</span><span class="o">.</span><span class="n">train_set</span><span class="p">)</span> <span class="o">==</span> <span class="n">all_aggregated_models</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="s2">&quot;false&quot;</span>
 
-        <span class="c1"># If a GPU is present and client resources do require one</span>
-        <span class="k">if</span> <span class="s2">&quot;num_gpus&quot;</span> <span class="ow">in</span> <span class="n">client_resources</span> <span class="ow">and</span> <span class="n">client_resources</span><span class="p">[</span><span class="s2">&quot;num_gpus&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="n">num_actors</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">num_actors</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_gpus</span> <span class="o">/</span> <span class="n">client_resources</span><span class="p">[</span><span class="s2">&quot;num_gpus&quot;</span><span class="p">]))</span> <span class="k">if</span> <span class="n">num_gpus</span> <span class="k">else</span> <span class="mi">0</span>
-        <span class="n">total_num_actors</span> <span class="o">+=</span> <span class="n">num_actors</span>
-
-    <span class="k">if</span> <span class="n">total_num_actors</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-            <span class="s2">&quot;ActorPool&quot;</span><span class="p">,</span>
-            <span class="sa">f</span><span class="s2">&quot;The ActorPool is empty. The system (CPUs=</span><span class="si">{</span><span class="n">num_cpus</span><span class="si">}</span><span class="s2">, GPUs=</span><span class="si">{</span><span class="n">num_gpus</span><span class="si">}</span><span class="s2">)&quot;</span>
-            <span class="o">+</span> <span class="s2">&quot;does not meet the criteria to host at least one client with resources:&quot;</span>
-            <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{client_resources}</span><span class="s2">. Lowering the `client_resources` could help.&quot;</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;ActorPool is empty. Stopping Simulation. &quot;</span> <span class="s2">&quot;Check &#39;client_resources&#39;&quot;</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">total_num_actors</span></div>
+            <span class="k">if</span> <span class="n">compatible_hashes</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">new_hash</span> <span class="ow">in</span> <span class="n">model_hash</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">node_state</span><span class="o">.</span><span class="n">sending_models</span><span class="p">[</span><span class="n">cmd</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">new_hash</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()})</span>
+                <span class="k">return</span> <span class="s2">&quot;true&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;false&quot;</span></div>
+</div>
 
 </pre></div>
         </article>

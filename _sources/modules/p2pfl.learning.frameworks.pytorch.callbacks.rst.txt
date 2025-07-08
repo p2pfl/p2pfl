@@ -12,4 +12,5 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
+   p2pfl.learning.frameworks.pytorch.callbacks.fedprox_callback
    p2pfl.learning.frameworks.pytorch.callbacks.scaffold_callback
