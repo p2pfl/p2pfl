@@ -20,7 +20,7 @@
 | p2pfl/communication/commands/message/stop\_learning\_command.py               |       22 |        7 |     68% |     54-64 |
 | p2pfl/communication/commands/message/vote\_train\_set\_command.py             |       24 |        2 |     92% |     69-74 |
 | p2pfl/communication/commands/weights/\_\_init\_\_.py                          |        0 |        0 |    100% |           |
-| p2pfl/communication/commands/weights/full\_model\_command.py                  |       40 |       13 |     68% |55, 67-68, 77-89 |
+| p2pfl/communication/commands/weights/full\_model\_command.py                  |       40 |       15 |     62% |55, 61-65, 67-68, 77-89 |
 | p2pfl/communication/commands/weights/init\_model\_command.py                  |       44 |       18 |     59% |55-56, 62-66, 70-74, 83-104 |
 | p2pfl/communication/commands/weights/partial\_model\_command.py               |       46 |       16 |     65% |68, 74-78, 82-83, 100-116 |
 | p2pfl/communication/protocols/\_\_init\_\_.py                                 |        0 |        0 |    100% |           |
@@ -31,11 +31,11 @@
 | p2pfl/communication/protocols/protobuff/gossiper.py                           |      110 |       14 |     87% |117, 125, 150-152, 200-201, 216-228 |
 | p2pfl/communication/protocols/protobuff/grpc/\_\_init\_\_.py                  |       15 |        0 |    100% |           |
 | p2pfl/communication/protocols/protobuff/grpc/address.py                       |       53 |       23 |     57% |45-46, 52-55, 68-71, 80-82, 93-95, 99, 104-114 |
-| p2pfl/communication/protocols/protobuff/grpc/client.py                        |       89 |       30 |     66% |68-69, 85, 90, 99-101, 114-115, 124-125, 152-161, 180-183, 187, 190, 197-200, 202, 206 |
+| p2pfl/communication/protocols/protobuff/grpc/client.py                        |       89 |       29 |     67% |68-69, 85, 90, 99-101, 114-115, 124-125, 152-161, 180-183, 190, 197-200, 202, 206 |
 | p2pfl/communication/protocols/protobuff/grpc/server.py                        |       41 |        4 |     90% |99-101, 112 |
 | p2pfl/communication/protocols/protobuff/heartbeater.py                        |       49 |        1 |     98% |        79 |
 | p2pfl/communication/protocols/protobuff/memory/\_\_init\_\_.py                |       15 |        0 |    100% |           |
-| p2pfl/communication/protocols/protobuff/memory/client.py                      |       64 |       13 |     80% |64-65, 78-79, 84-88, 94-95, 102-103, 137, 159 |
+| p2pfl/communication/protocols/protobuff/memory/client.py                      |       64 |       12 |     81% |64-65, 78-79, 84-88, 94-95, 102-103, 159 |
 | p2pfl/communication/protocols/protobuff/memory/server.py                      |       41 |        2 |     95% |  107, 120 |
 | p2pfl/communication/protocols/protobuff/memory/singleton\_dict.py             |        3 |        0 |    100% |           |
 | p2pfl/communication/protocols/protobuff/neighbors.py                          |       61 |        6 |     90% |77-78, 84-86, 163 |
