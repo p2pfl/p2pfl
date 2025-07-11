@@ -15,14 +15,14 @@
 | p2pfl/communication/commands/message/model\_initialized\_command.py           |       11 |        0 |    100% |           |
 | p2pfl/communication/commands/message/models\_agregated\_command.py            |       16 |        1 |     94% |        57 |
 | p2pfl/communication/commands/message/models\_ready\_command.py                |       15 |        1 |     93% |        57 |
-| p2pfl/communication/commands/message/pre\_send\_model\_command.py             |       49 |        6 |     88% |46-48, 53, 67, 69 |
+| p2pfl/communication/commands/message/pre\_send\_model\_command.py             |       49 |        3 |     94% |53, 67, 69 |
 | p2pfl/communication/commands/message/start\_learning\_command.py              |       13 |        1 |     92% |        63 |
 | p2pfl/communication/commands/message/stop\_learning\_command.py               |       22 |        7 |     68% |     54-64 |
 | p2pfl/communication/commands/message/vote\_train\_set\_command.py             |       24 |        2 |     92% |     69-74 |
 | p2pfl/communication/commands/weights/\_\_init\_\_.py                          |        0 |        0 |    100% |           |
 | p2pfl/communication/commands/weights/full\_model\_command.py                  |       40 |       15 |     62% |55, 61-65, 67-68, 77-89 |
 | p2pfl/communication/commands/weights/init\_model\_command.py                  |       44 |       18 |     59% |55-56, 62-66, 70-74, 83-104 |
-| p2pfl/communication/commands/weights/partial\_model\_command.py               |       46 |       16 |     65% |68, 74-78, 82-83, 100-116 |
+| p2pfl/communication/commands/weights/partial\_model\_command.py               |       46 |       15 |     67% |68, 74-78, 82-83, 103-116 |
 | p2pfl/communication/protocols/\_\_init\_\_.py                                 |        0 |        0 |    100% |           |
 | p2pfl/communication/protocols/communication\_protocol.py                      |       46 |       12 |     74% |46, 51, 63, 76, 93, 113, 125, 137, 149, 160, 175, 199 |
 | p2pfl/communication/protocols/exceptions.py                                   |        6 |        0 |    100% |           |
@@ -53,7 +53,7 @@
 | p2pfl/experiment.py                                                           |       15 |        5 |     67% |51, 66-69, 73 |
 | p2pfl/learning/\_\_init\_\_.py                                                |        0 |        0 |    100% |           |
 | p2pfl/learning/aggregators/\_\_init\_\_.py                                    |        0 |        0 |    100% |           |
-| p2pfl/learning/aggregators/aggregator.py                                      |       98 |       20 |     80% |57, 78, 108, 146-148, 182-197, 219, 222, 275-279, 292 |
+| p2pfl/learning/aggregators/aggregator.py                                      |       98 |       17 |     83% |57, 78, 108, 146-148, 187-193, 219, 222, 275-279, 292 |
 | p2pfl/learning/aggregators/fedadagrad.py                                      |       44 |       44 |      0% |    21-130 |
 | p2pfl/learning/aggregators/fedadam.py                                         |       53 |       53 |      0% |    21-157 |
 | p2pfl/learning/aggregators/fedavg.py                                          |       21 |        0 |    100% |           |
@@ -138,7 +138,7 @@
 | p2pfl/utils/singleton.py                                                      |        7 |        0 |    100% |           |
 | p2pfl/utils/topologies.py                                                     |       71 |        4 |     94% |97, 109, 131-132 |
 | p2pfl/utils/utils.py                                                          |       63 |        7 |     89% |95, 102, 114-115, 135, 144, 167 |
-|                                                                     **TOTAL** | **5081** | **1708** | **66%** |           |
+|                                                                     **TOTAL** | **5081** | **1701** | **67%** |           |
 
 
 ## Setup coverage badge
