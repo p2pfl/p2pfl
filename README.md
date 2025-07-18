@@ -47,7 +47,7 @@ pip install "p2pfl[torch]"
 ```bash
 git clone https://github.com/p2pfl/p2pfl.git
 cd p2pfl
-poetry install -E torch 
+uv sync --extra torch
 ```
 
 > **Note:** Use the extras (`-E`) flag to install specific dependencies (e.g., `-E torch`). Use `--no-dev` to exclude development dependencies.
@@ -55,6 +55,7 @@ poetry install -E torch
 #### 🐳 Docker
 
 ```bash
+docker build -t p2pfl .
 docker build -t p2pfl .
 docker run -it --rm p2pfl bash
 ```

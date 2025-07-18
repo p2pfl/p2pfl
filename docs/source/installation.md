@@ -51,13 +51,13 @@ pip install "p2pfl[torch,tensorflow,ray]"
 
 #### 🐍 Python
 
-> **Prerequisite**: Before installing the library, ensure that **Poetry** is installed. If you haven't installed it yet, follow the instructions in the official [Poetry Installation Guide](https://python-poetry.org/docs/).
+> **Prerequisite**: Before installing the library, ensure that **UV** is installed. If you haven't installed it yet, follow the instructions in the official [UV Installation Guide](https://docs.astral.sh/uv/getting-started/installation/).
 
 
 ```bash
 git clone https://github.com/pguijas/p2pfl.git
 cd p2pfl
-poetry install -E torch
+uv sync --extra torch
 ```
 
 > **Note**: You can use the extras (`-E`) flag to install the library with the desired dependencies. Available options are:
@@ -68,7 +68,7 @@ poetry install -E torch
 
 If you want to install all dependencies, you can run:
 ```bash
-poetry install --all-extras
+uv sync --all-extras
 ```
 
 Additionally, you can use the --no-dev flag to install the library without the development dependencies.

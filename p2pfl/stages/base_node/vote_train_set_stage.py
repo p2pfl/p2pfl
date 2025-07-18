@@ -90,7 +90,7 @@ class VoteTrainSetStage(Stage):
         samples = min(trainset_size, len(candidates))
         nodes_voted = generator.sample(candidates, samples)
         weights = [math.floor(generator.randint(0, 1000) / (i + 1)) for i in range(samples)]
-        votes = list(zip(nodes_voted, weights))
+        votes = list(zip(nodes_voted, weights, strict=False))
 
         # Adding votes
         state.train_set_votes_lock.acquire()

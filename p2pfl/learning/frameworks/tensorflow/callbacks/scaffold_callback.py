@@ -50,7 +50,7 @@ class ScaffoldOptimizerWrapper(Optimizer):
     def apply_gradients(self, grads_and_vars, name=None, **kwargs):
         """Apply gradients with SCAFFOLD adjustments."""
         adjustment = []
-        for (grad, var), c_i_var, c_var in zip(grads_and_vars, self.c_i, self.c):
+        for (grad, var), c_i_var, c_var in zip(grads_and_vars, self.c_i, self.c, strict=False):
             if grad is not None:
                 adjusted_grad = grad + self.eta_l * (c_i_var - c_var)
                 adjustment.append((adjusted_grad, var))
@@ -152,8 +152,8 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
             c_i_var.assign_add(adjustment)
 
         # Compute delta y_i and delta c_i
-        delta_y_i = [y_i_param - x_g_param for y_i_param, x_g_param in zip(y_i, x_g)]
-        delta_c_i = [c_i_new.numpy() - c_i_old for c_i_new, c_i_old in zip(self.c_i, previous_c_i)]
+        delta_y_i = [y_i_param - x_g_param for y_i_param, x_g_param in zip(y_i, x_g, strict=False)]
+        delta_c_i = [c_i_new.numpy() - c_i_old for c_i_new, c_i_old in zip(self.c_i, previous_c_i, strict=False)]
 
         self.additional_info["delta_y_i"] = delta_y_i
         self.additional_info["delta_c_i"] = delta_c_i

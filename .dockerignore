@@ -7,4 +7,4 @@ logs
 MNIST
 other
 __pycache__
-poetry.lock
+uv.lock

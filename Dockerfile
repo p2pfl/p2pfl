@@ -1,28 +1,33 @@
-FROM python:3.9-slim
+# Use multi-stage build for efficiency
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
 
 WORKDIR /app
 
+# Copy dependency files first for better caching
+COPY pyproject.toml uv.lock ./
+
+# Install dependencies
+RUN uv sync --frozen --no-install-project --no-dev
+
+# Copy the rest of the application
 COPY . .
+
+# Install the project
+RUN uv sync --frozen --no-dev
+
+# Final stage
+FROM python:3.12-slim-bookworm
+
+WORKDIR /app
+
+# Copy UV and the virtual environment from builder
+COPY --from=builder /usr/local/bin/uv /usr/local/bin/uv
+COPY --from=builder /app/.venv /app/.venv
+COPY --from=builder /app .
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=on \
-    PIP_DEFAULT_TIMEOUT=100 \
-    POETRY_VERSION=1.8.3 \
-    POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_CREATE=false \
-    HOME=/app
+    PATH="/app/.venv/bin:$PATH" \
+    VIRTUAL_ENV=/app/.venv
 
-# Update and install dependencies
-
-# Install Poetry
-RUN pip install "poetry==$POETRY_VERSION"
-
-# Install dependencies
-RUN poetry install --without dev,docs
-
-# Install torch (cpu) - poetry present problem with torch-cpu installation
-RUN poetry run pip install torch==2.2.2 torchvision==0.17.2 --index-url https://download.pytorch.org/whl/cpu
-
-# Install torchmetrics and pytorch-lightning
-RUN poetry run pip install torchmetrics==1.4.0.post0 pytorch-lightning==1.9.5
+# The virtual environment is already activated due to PATH

@@ -125,7 +125,7 @@ def test_convergence(x, model_build_fn):
         assert int(len(history) / len(stage_pattern)) == r
         # Check pattern
         for i in range(r):
-            for gt, st in zip(stage_pattern, history[i * len(stage_pattern) : (i + 1) * len(stage_pattern)]):
+            for gt, st in zip(stage_pattern, history[i * len(stage_pattern) : (i + 1) * len(stage_pattern)], strict=False):
                 if isinstance(gt, list):
                     assert st in gt
                 else:

@@ -85,7 +85,7 @@ class Scaffold(Aggregator):
         # Update global model
         if not self.global_model_params:
             self.global_model_params = models[0].get_parameters()
-        self.global_model_params = [param + delta for param, delta in zip(self.global_model_params, accum_delta_y)]
+        self.global_model_params = [param + delta for param, delta in zip(self.global_model_params, accum_delta_y, strict=False)]
 
         # Accumulate control variates
         delta_c_i_first = self._get_and_validate_model_info(models[0])["delta_c_i"]  # take first model as reference

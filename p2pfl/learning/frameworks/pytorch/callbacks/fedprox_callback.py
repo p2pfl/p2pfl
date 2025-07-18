@@ -90,7 +90,7 @@ class FedProxCallback(Callback, P2PFLCallback):
                 )
                 return
 
-            for model_param, initial_param in zip(model_params, self.initial_params):
+            for model_param, initial_param in zip(model_params, self.initial_params, strict=False):
                 if model_param.grad is not None:
                     if model_param.data.shape != initial_param.shape:
                         print(

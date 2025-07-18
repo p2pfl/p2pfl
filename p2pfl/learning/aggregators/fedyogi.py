@@ -114,25 +114,25 @@ class FedYogi(Aggregator):
             return models[0].build_copy(params=self.current_weights, num_samples=total_samples, contributors=contributors)
 
         # Compute delta_t: difference between aggregated and current weights
-        delta_t = [x - y for x, y in zip(fedavg_weights, self.current_weights)]
+        delta_t = [x - y for x, y in zip(fedavg_weights, self.current_weights, strict=False)]
 
         # Update momentum (m_t)
         if not self.m_t:
             self.m_t = [np.zeros_like(x) for x in delta_t]
 
-        self.m_t = [self.beta_1 * x + (1 - self.beta_1) * y for x, y in zip(self.m_t, delta_t)]
+        self.m_t = [self.beta_1 * x + (1 - self.beta_1) * y for x, y in zip(self.m_t, delta_t, strict=False)]
 
         # Update second moment (v_t) - Yogi's unique update rule
         if not self.v_t:
             self.v_t = [np.zeros_like(x) for x in delta_t]
 
         # Yogi update: v_t = v_t - (1 - β₂) * delta_t² * sign(v_t - delta_t²)
-        self.v_t = [x - (1.0 - self.beta_2) * np.multiply(y, y) * np.sign(x - np.multiply(y, y)) for x, y in zip(self.v_t, delta_t)]
+        self.v_t = [x - (1.0 - self.beta_2) * np.multiply(y, y) * np.sign(x - np.multiply(y, y)) for x, y in zip(self.v_t, delta_t, strict=False)]
 
         # Update weights: w_t = w_t + η * m_t / (√v_t + τ)
         self.current_weights = [
             x + self.eta * y / (np.sqrt(np.abs(z)) + self.tau)  # abs to handle potential negative values
-            for x, y, z in zip(self.current_weights, self.m_t, self.v_t)
+            for x, y, z in zip(self.current_weights, self.m_t, self.v_t, strict=False)
         ]
 
         # Get contributors

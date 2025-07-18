@@ -18,8 +18,8 @@
 
 """Example of a P2PFL MNIST experiment, using a MLP model and a MnistFederatedDM."""
 
-# poetry run snakeviz _MainThread-0.pstat
-# poetry run gprof2dot -f pstats Gossiper-10.pstat | dot -Tpng -o output.png && open output.png
+# uv run snakeviz _MainThread-0.pstat
+# uv run gprof2dot -f pstats Gossiper-10.pstat | dot -Tpng -o output.png && open output.png
 
 import argparse
 import time
@@ -168,7 +168,7 @@ def mnist(
                 for round_num, round_metrics in logs_l.items():
                     for node_name, node_metrics in round_metrics.items():
                         for metric, values in node_metrics.items():
-                            x, y = zip(*values)
+                            x, y = zip(*values, strict=False)
                             plt.plot(x, y, label=metric)
                             # Add a red point to the last data point
                             plt.scatter(x[-1], y[-1], color="red")
@@ -185,7 +185,7 @@ def mnist(
                 # Plot experiment metrics
                 for node_name, node_metrics in logs_g.items():
                     for metric, values in node_metrics.items():
-                        x, y = zip(*values)
+                        x, y = zip(*values, strict=False)
                         plt.plot(x, y, label=metric)
                         # Add a red point to the last data point
                         plt.scatter(x[-1], y[-1], color="red")

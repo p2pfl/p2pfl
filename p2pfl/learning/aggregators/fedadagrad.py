@@ -101,17 +101,17 @@ class FedAdagrad(Aggregator):
             return models[0].build_copy(params=self.current_weights, num_samples=total_samples, contributors=contributors)
 
         # Compute delta_t: difference between aggregated and current weights
-        delta_t = [x - y for x, y in zip(fedavg_weights, self.current_weights)]
+        delta_t = [x - y for x, y in zip(fedavg_weights, self.current_weights, strict=False)]
 
         # Update accumulated squared gradients (v_t) - Adagrad update
         if not self.v_t:
             self.v_t = [np.zeros_like(x) for x in delta_t]
 
         # Adagrad update: accumulate squared gradients
-        self.v_t = [x + np.multiply(y, y) for x, y in zip(self.v_t, delta_t)]
+        self.v_t = [x + np.multiply(y, y) for x, y in zip(self.v_t, delta_t, strict=False)]
 
         # Update weights: w_t = w_t + η * delta_t / (√v_t + τ)
-        self.current_weights = [x + self.eta * y / (np.sqrt(z) + self.tau) for x, y, z in zip(self.current_weights, delta_t, self.v_t)]
+        self.current_weights = [x + self.eta * y / (np.sqrt(z) + self.tau) for x, y, z in zip(self.current_weights, delta_t, self.v_t, strict=False)]
 
         # Get contributors
         contributors = []

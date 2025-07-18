@@ -138,7 +138,7 @@ class DifferentialPrivacyCompressor(TensorCompressor):
         else:
             # Previous params provided - compute update
             update_params = []
-            for current, previous in zip(params, previous_params):
+            for current, previous in zip(params, previous_params, strict=False):
                 update_params.append(current - previous)
             computed_update = True
 
@@ -167,7 +167,7 @@ class DifferentialPrivacyCompressor(TensorCompressor):
         # Step 4: If we computed update, add it back to previous params
         if computed_update and previous_params is not None:
             dp_params = []
-            for dp_update, previous in zip(noisy_updates, previous_params):
+            for dp_update, previous in zip(noisy_updates, previous_params, strict=False):
                 dp_params.append(previous + dp_update)
         else:
             dp_params = noisy_updates

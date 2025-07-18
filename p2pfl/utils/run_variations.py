@@ -382,7 +382,7 @@ Examples:
 
         # Generate cartesian product
         for values in itertools.product(*param_values):
-            combo = dict(zip(param_names, values))
+            combo = dict(zip(param_names, values, strict=False))
 
             # Handle special case for aggregator config
             if "_aggregator_config" in combo:

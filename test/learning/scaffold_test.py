@@ -126,7 +126,7 @@ def test_scaffold_correct_aggregation():
     aggregated_model = aggr.aggregate([model1, model2])
 
     # check correct global model updates
-    for aggr_param, expected_param in zip(aggregated_model.get_parameters(), expected_global_model_params):
+    for aggr_param, expected_param in zip(aggregated_model.get_parameters(), expected_global_model_params, strict=False):
         assert np.allclose(aggr_param, expected_param, atol=1e-7), "Aggregated model parameters do not match"
 
     # check correct contributors
@@ -138,7 +138,7 @@ def test_scaffold_correct_aggregation():
         (1.0 + 2.0) / 2,  # (1 + 2) / 2 = 1.5
         (1.0 + 2.0) / 2,
     ]
-    for global_c, expected in zip(aggr.c, expected_c):
+    for global_c, expected in zip(aggr.c, expected_c, strict=False):
         assert np.allclose(global_c, expected, atol=1e-7), "Global control variates do not match"
 
 

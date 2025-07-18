@@ -215,7 +215,7 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
         if active_partitions is None:
             return class_division_proportions
         else:
-            unnormalized_result = [proportion * active for proportion, active in zip(class_division_proportions, active_partitions)]
+            unnormalized_result = [proportion * active for proportion, active in zip(class_division_proportions, active_partitions, strict=False)]
             return [element / sum(unnormalized_result) for element in unnormalized_result]
 
     @classmethod

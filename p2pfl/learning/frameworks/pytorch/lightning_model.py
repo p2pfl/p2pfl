@@ -87,7 +87,7 @@ class LightningModel(P2PFLModel):
 
         # Build state_dict
         state_dict = self.model.state_dict()
-        for (layer_name, param), new_param in zip(state_dict.items(), params):
+        for (layer_name, param), new_param in zip(state_dict.items(), params, strict=False):
             if param.shape != new_param.shape:
                 raise ModelNotMatchingError("Not matching models")
             state_dict[layer_name] = torch.tensor(new_param)

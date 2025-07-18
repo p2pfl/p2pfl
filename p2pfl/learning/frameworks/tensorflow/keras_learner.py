@@ -122,7 +122,7 @@ class KerasLearner(Learner):
                 results = model.evaluate(data, verbose=0)
                 if not isinstance(results, list):
                     results = [results]
-                results_dict = dict(zip(model.metrics_names, results))
+                results_dict = dict(zip(model.metrics_names, results, strict=False))
                 for k, v in results_dict.items():
                     logger.log_metric(self.addr, k, v)
                 return results_dict

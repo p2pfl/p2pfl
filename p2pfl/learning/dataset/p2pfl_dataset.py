@@ -182,10 +182,12 @@ class P2PFLDataset:
             if self._train_split_name in self._data and self._test_split_name in self._data:
                 raise ValueError("Train and test splits already exist. Use a different name or clear the dataset.")
             train_test_split = self._data[self._train_split_name].train_test_split(**kwargs)
-            self._data = DatasetDict({
-                self._train_split_name: train_test_split[self._train_split_name],
-                self._test_split_name: train_test_split[self._test_split_name],
-            })
+            self._data = DatasetDict(
+                {
+                    self._train_split_name: train_test_split[self._train_split_name],
+                    self._test_split_name: train_test_split[self._test_split_name],
+                }
+            )
         else:
             raise ValueError("Unsupported data type.")
 
