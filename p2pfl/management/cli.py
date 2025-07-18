@@ -20,7 +20,7 @@
 
 import os
 from glob import glob
-from typing import Annotated, Dict, TypedDict
+from typing import Annotated, TypedDict
 
 import typer
 import yaml
@@ -97,7 +97,7 @@ class ExampleInfo(TypedDict):
     path: str
 
 
-def __get_available_examples() -> Dict[str, ExampleInfo]:
+def __get_available_examples() -> dict[str, ExampleInfo]:
     """Get all the available yaml examples and their descriptions."""
     examples = {}
     # Find all yaml files in examples subdirectories

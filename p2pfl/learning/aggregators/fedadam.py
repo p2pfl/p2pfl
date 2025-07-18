@@ -138,7 +138,9 @@ class FedAdam(Aggregator):
         eta_norm = self.eta * np.sqrt(1 - np.power(self.beta_2, self.round_counter)) / (1 - np.power(self.beta_1, self.round_counter))
 
         # Update weights with bias-corrected learning rate
-        self.current_weights = [x + eta_norm * y / (np.sqrt(z) + self.tau) for x, y, z in zip(self.current_weights, self.m_t, self.v_t, strict=False)]
+        self.current_weights = [
+            x + eta_norm * y / (np.sqrt(z) + self.tau) for x, y, z in zip(self.current_weights, self.m_t, self.v_t, strict=False)
+        ]
 
         # Get contributors
         contributors = []

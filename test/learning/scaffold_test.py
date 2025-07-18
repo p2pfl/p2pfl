@@ -19,7 +19,7 @@
 """Unit tests for the Scaffold."""
 
 import copy
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 import pytest
@@ -34,10 +34,10 @@ class MockP2PFLModel(P2PFLModel):
 
     def __init__(
         self,
-        params: List[np.ndarray],
+        params: list[np.ndarray],
         num_samples: int,
-        additional_info: Optional[Dict[str, Any]] = None,
-        contributors: Optional[List[str]] = None,
+        additional_info: dict[str, Any] | None = None,
+        contributors: list[str] | None = None,
     ) -> None:
         """Initialize the MockP2PFLModel."""
         self._params = params
@@ -45,7 +45,7 @@ class MockP2PFLModel(P2PFLModel):
         self.additional_info = additional_info or {}
         self._contributors = contributors or ["contributor1", "contributor2"]
 
-    def get_parameters(self) -> List[np.ndarray]:
+    def get_parameters(self) -> list[np.ndarray]:
         """Return the model parameters."""
         return self._params
 
@@ -57,7 +57,7 @@ class MockP2PFLModel(P2PFLModel):
         """Add additional information to the learner state."""
         self.additional_info[callback] = info
 
-    def get_info(self, callback: Optional[str] = None) -> Any:
+    def get_info(self, callback: str | None = None) -> Any:
         """Get additional information from the learner state."""
         if callback is None:
             return self.additional_info
@@ -72,7 +72,7 @@ class MockP2PFLModel(P2PFLModel):
             contributors=kwargs.get("contributors", copy.deepcopy(self._contributors)),
         )
 
-    def get_contributors(self) -> List[str]:
+    def get_contributors(self) -> list[str]:
         """Return the contributors."""
         return self._contributors
 

@@ -37,7 +37,7 @@
 
 """Post-Training Quantization (PTQ) compression strategy."""
 
-from typing import Literal, Union
+from typing import Literal
 
 import numpy as np
 
@@ -120,8 +120,8 @@ class PTQuantization(TensorCompressor):
 
         # For integer quantization, we need to scale properly
         quantized_params = []
-        scales: list[Union[float, np.ndarray]] = []  # Updated typing to allow both scalar and array
-        zero_points: list[Union[int, np.ndarray]] = []  # Updated typing to allow both scalar and array
+        scales: list[float | np.ndarray] = []  # Updated typing to allow both scalar and array
+        zero_points: list[int | np.ndarray] = []  # Updated typing to allow both scalar and array
 
         for param in params:
             if granularity == "per_tensor":
@@ -441,13 +441,13 @@ class PTQuantization(TensorCompressor):
 
         """
         # Validate scale and zero_point
-        if not isinstance(scale, (int, float)):
+        if not isinstance(scale, int | float):
             raise ValueError(f"Invalid scale factor: {scale}. Scale must be a number.")
 
         if scale <= 0:
             raise ValueError(f"Invalid scale factor: {scale}. Scale must be positive.")
 
-        if not isinstance(zero_point, (int, np.integer)):
+        if not isinstance(zero_point, int | np.integer):
             raise ValueError(f"Invalid zero point: {zero_point}. Zero point must be an integer.")
 
         # Handle empty tensor
@@ -542,7 +542,7 @@ class PTQuantization(TensorCompressor):
             if scale_value <= 0:
                 raise ValueError(f"Invalid scale factor at index {c}: {scale_value}. Scale must be positive.")
 
-            if not isinstance(zero_point, (int, np.integer)):
+            if not isinstance(zero_point, int | np.integer):
                 raise ValueError(f"Invalid zero point at index {c}: {zero_point}. Zero point must be an integer.")
 
             # Dequantize

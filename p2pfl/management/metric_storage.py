@@ -19,12 +19,11 @@
 """Metric storage."""
 
 from threading import Lock
-from typing import Dict, List, Tuple, Union
 
-MetricsType = Dict[str, List[Tuple[int, float]]]  # Metric name -> [(step, value)...]
-NodeLogsType = Dict[str, MetricsType]  # Node name -> MetricsType
-RoundLogsType = Dict[int, NodeLogsType]  # Round -> NodeLogsType
-LocalLogsType = Dict[str, RoundLogsType]  # Experiment -> RoundLogsType
+MetricsType = dict[str, list[tuple[int, float]]]  # Metric name -> [(step, value)...]
+NodeLogsType = dict[str, MetricsType]  # Node name -> MetricsType
+RoundLogsType = dict[int, NodeLogsType]  # Round -> NodeLogsType
+LocalLogsType = dict[str, RoundLogsType]  # Experiment -> RoundLogsType
 
 
 class LocalMetricStorage:
@@ -58,7 +57,7 @@ class LocalMetricStorage:
         round: int,
         metric: str,
         node: str,
-        val: Union[int, float],
+        val: int | float,
         step: int,
     ) -> None:
         """
@@ -152,7 +151,7 @@ class LocalMetricStorage:
         return self.exp_dicts[exp][round][node]
 
 
-GlobalLogsType = Dict[str, NodeLogsType]
+GlobalLogsType = dict[str, NodeLogsType]
 
 
 class GlobalMetricStorage:
@@ -177,7 +176,7 @@ class GlobalMetricStorage:
         self.exp_dicts: GlobalLogsType = {}
         self.lock = Lock() if not disable_locks else None
 
-    def add_log(self, exp_name: str, round: int, metric: str, node: str, val: Union[int, float]) -> None:
+    def add_log(self, exp_name: str, round: int, metric: str, node: str, val: int | float) -> None:
         """
         Add a log entry.
 

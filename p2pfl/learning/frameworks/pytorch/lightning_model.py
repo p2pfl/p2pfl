@@ -18,7 +18,7 @@
 
 """Convolutional Neural Network (for MNIST) with PyTorch Lightning."""
 
-from typing import Any, List, Optional, Union
+from typing import Any
 
 import lightning as L
 import numpy as np
@@ -50,16 +50,16 @@ class LightningModel(P2PFLModel):
     def __init__(
         self,
         model: L.LightningModule,
-        params: Optional[Union[list[np.ndarray], bytes]] = None,
-        num_samples: Optional[int] = None,
-        contributors: Optional[list[str]] = None,
-        additional_info: Optional[dict[str, Any]] = None,
-        compression: Optional[dict[str, dict[str, Any]]] = None,
+        params: list[np.ndarray] | bytes | None = None,
+        num_samples: int | None = None,
+        contributors: list[str] | None = None,
+        additional_info: dict[str, Any] | None = None,
+        compression: dict[str, dict[str, Any]] | None = None,
     ) -> None:
         """Initialize the model."""
         super().__init__(model, params, num_samples, contributors, additional_info, compression)
 
-    def get_parameters(self) -> List[np.ndarray]:
+    def get_parameters(self) -> list[np.ndarray]:
         """
         Get the parameters of the model.
 
@@ -69,7 +69,7 @@ class LightningModel(P2PFLModel):
         """
         return [param.cpu().numpy() for _, param in self.model.state_dict().items()]
 
-    def set_parameters(self, params: Union[List[np.ndarray], bytes]) -> None:
+    def set_parameters(self, params: list[np.ndarray] | bytes) -> None:
         """
         Set the parameters of the model.
 

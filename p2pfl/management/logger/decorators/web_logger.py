@@ -20,7 +20,7 @@
 
 import datetime
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 from p2pfl.experiment import Experiment
 from p2pfl.management.logger.decorators.logger_decorator import LoggerDecorator
@@ -95,7 +95,7 @@ class WebP2PFLogger(LoggerDecorator):
     def __init__(self, p2pflogger: P2PFLogger):
         """Initialize the logger."""
         super().__init__(p2pflogger)
-        self._p2pfl_web_services: Optional[P2pflWebServices] = None
+        self._p2pfl_web_services: P2pflWebServices | None = None
 
     def connect_web(self, url: str, key: str) -> None:
         """
@@ -111,7 +111,7 @@ class WebP2PFLogger(LoggerDecorator):
         self._p2pfl_web_services = P2pflWebServices(url, key)
         self.add_handler(P2pflWebLogHandler(self._p2pfl_web_services))
 
-    def log_metric(self, addr: str, metric: str, value: float, step: Optional[int] = None, round: Optional[int] = None) -> None:
+    def log_metric(self, addr: str, metric: str, value: float, step: int | None = None, round: int | None = None) -> None:
         """
         Log a metric.
 
@@ -146,8 +146,8 @@ class WebP2PFLogger(LoggerDecorator):
         source_dest: str,
         package_type: str,
         package_size: int,
-        round_num: Optional[int] = None,
-        additional_info: Optional[Dict[str, Any]] = None,
+        round_num: int | None = None,
+        additional_info: dict[str, Any] | None = None,
     ) -> None:
         """
         Log a communication event and send it to web services if connected.

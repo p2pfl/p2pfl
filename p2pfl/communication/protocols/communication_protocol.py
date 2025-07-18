@@ -19,7 +19,8 @@
 """Communication protocol."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 from p2pfl.communication.commands.command import Command
 from p2pfl.utils.node_component import NodeComponent, allow_no_addr_check
@@ -35,7 +36,7 @@ class CommunicationProtocol(ABC, NodeComponent):
 
     """
 
-    def __init__(self, commands: Optional[List[Command]] = None, *args, **kwargs) -> None:
+    def __init__(self, commands: list[Command] | None = None, *args, **kwargs) -> None:
         """Initialize the communication protocol."""
         # (addr) Super
         NodeComponent.__init__(self)
@@ -52,7 +53,7 @@ class CommunicationProtocol(ABC, NodeComponent):
 
     @allow_no_addr_check
     @abstractmethod
-    def add_command(self, cmds: Union[Command, List[Command]]) -> None:
+    def add_command(self, cmds: Command | list[Command]) -> None:
         """
         Add a command to the communication protocol.
 
@@ -63,7 +64,7 @@ class CommunicationProtocol(ABC, NodeComponent):
         pass
 
     @abstractmethod
-    def build_msg(self, cmd: str, args: Optional[List[str]] = None, round: Optional[int] = None) -> Any:
+    def build_msg(self, cmd: str, args: list[str] | None = None, round: int | None = None) -> Any:
         """
         Build a message.
 
@@ -76,9 +77,7 @@ class CommunicationProtocol(ABC, NodeComponent):
         pass
 
     @abstractmethod
-    def build_weights(
-        self, cmd: str, round: int, serialized_model: bytes, contributors: Optional[List[str]] = None, weight: int = 1
-    ) -> Any:
+    def build_weights(self, cmd: str, round: int, serialized_model: bytes, contributors: list[str] | None = None, weight: int = 1) -> Any:
         """
         Build weights.
 
@@ -113,7 +112,7 @@ class CommunicationProtocol(ABC, NodeComponent):
         pass
 
     @abstractmethod
-    def broadcast(self, msg: Any, node_list: Optional[List[str]] = None) -> None:
+    def broadcast(self, msg: Any, node_list: list[str] | None = None) -> None:
         """
         Broadcast a message to all neighbors.
 
@@ -149,7 +148,7 @@ class CommunicationProtocol(ABC, NodeComponent):
         pass
 
     @abstractmethod
-    def get_neighbors(self, only_direct: bool = False) -> Dict[str, Any]:
+    def get_neighbors(self, only_direct: bool = False) -> dict[str, Any]:
         """
         Get the neighbors.
 
@@ -178,10 +177,10 @@ class CommunicationProtocol(ABC, NodeComponent):
     def gossip_weights(
         self,
         early_stopping_fn: Callable[[], bool],
-        get_candidates_fn: Callable[[], List[str]],
+        get_candidates_fn: Callable[[], list[str]],
         status_fn: Callable[[], Any],
         model_fn: Callable[[str], tuple[Any, str, int, list[str]]],
-        period: Optional[float] = None,
+        period: float | None = None,
         create_connection: bool = False,
     ) -> None:
         """

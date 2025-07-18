@@ -18,7 +18,6 @@
 """GRPC client."""
 
 from os.path import isfile
-from typing import Optional
 
 import grpc
 
@@ -44,8 +43,8 @@ class GrpcClient(ProtobuffClient):
         super().__init__(self_addr, nei_addr)
 
         # GRPC
-        self.channel: Optional[grpc.Channel] = None
-        self.stub: Optional[node_pb2_grpc.NodeServicesStub] = None
+        self.channel: grpc.Channel | None = None
+        self.stub: node_pb2_grpc.NodeServicesStub | None = None
 
     ####
     # Connection

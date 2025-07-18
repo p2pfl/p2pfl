@@ -18,7 +18,7 @@
 """Start learning stage."""
 
 import time
-from typing import Any, List, Optional, Type, Union
+from typing import Any
 
 from p2pfl.communication.commands.message.model_initialized_command import ModelInitializedCommand
 from p2pfl.communication.commands.weights.init_model_command import InitModelCommand
@@ -42,15 +42,15 @@ class StartLearningStage(Stage):
 
     @staticmethod
     def execute(
-        rounds: Optional[int] = None,
-        epochs: Optional[int] = None,
-        experiment_name: Optional[str] = None,
-        state: Optional[NodeState] = None,
-        learner: Optional[Learner] = None,
-        communication_protocol: Optional[CommunicationProtocol] = None,
-        aggregator: Optional[Aggregator] = None,
+        rounds: int | None = None,
+        epochs: int | None = None,
+        experiment_name: str | None = None,
+        state: NodeState | None = None,
+        learner: Learner | None = None,
+        communication_protocol: CommunicationProtocol | None = None,
+        aggregator: Aggregator | None = None,
         **kwargs,
-    ) -> Union[Type["Stage"], None]:
+    ) -> type["Stage"] | None:
         """Execute the stage."""
         if (
             rounds is None
@@ -99,7 +99,7 @@ class StartLearningStage(Stage):
         def candidate_condition(node: str) -> bool:
             return node not in state.nei_status
 
-        def get_candidates_fn() -> List[str]:
+        def get_candidates_fn() -> list[str]:
             return [n for n in communication_protocol.get_neighbors(only_direct=True) if candidate_condition(n)]
 
         def status_fn() -> Any:

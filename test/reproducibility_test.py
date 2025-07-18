@@ -338,7 +338,7 @@ def __flatten_results(item):
         A list of numerical values found in the item.
 
     """
-    if isinstance(item, (int, float)):
+    if isinstance(item, int | float):
         return [item]  # Base case: if it's a number, return it in a list
     elif isinstance(item, list):
         return [sub_item for element in item for sub_item in __flatten_results(element)]

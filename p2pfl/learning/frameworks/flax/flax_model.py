@@ -20,7 +20,7 @@
 
 import copy
 import pickle
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 from flax import linen as nn
@@ -40,12 +40,12 @@ class FlaxModel(P2PFLModel):
     def __init__(
         self,
         model: nn.Module,
-        init_params: Dict[str, Any],
-        params: Optional[Union[List[np.ndarray], bytes]] = None,
-        num_samples: Optional[int] = None,
-        contributors: Optional[List[str]] = None,
-        additional_info: Optional[Dict[str, Any]] = None,
-        compression: Optional[dict[str, dict[str, Any]]] = None,
+        init_params: dict[str, Any],
+        params: list[np.ndarray] | bytes | None = None,
+        num_samples: int | None = None,
+        contributors: list[str] | None = None,
+        additional_info: dict[str, Any] | None = None,
+        compression: dict[str, dict[str, Any]] | None = None,
     ) -> None:
         """Initialize Flax model."""
         # TODO: fix: when using arg params for jax params, fedavg.aggregate fails in models[0].build_copy(params=accum, ...)
@@ -58,17 +58,17 @@ class FlaxModel(P2PFLModel):
             self.model_params = self.__np_to_dict(self.model_params, params)
 
     @staticmethod
-    def __dict_to_np(params: Dict[str, Any]) -> List[np.ndarray]:
+    def __dict_to_np(params: dict[str, Any]) -> list[np.ndarray]:
         return [np.array(v) for layer in params.values() for v in layer.values()]
 
     @staticmethod
-    def __np_to_dict(target: Dict[str, Any], params: List[np.ndarray]) -> Dict[str, Any]:
+    def __np_to_dict(target: dict[str, Any], params: list[np.ndarray]) -> dict[str, Any]:
         for i, layer_name in enumerate(target.keys()):
             for j, param_name in enumerate(target[layer_name].keys()):
                 target[layer_name][param_name] = params[i * len(target[layer_name]) + j]
         return target
 
-    def get_parameters(self) -> List[np.ndarray]:
+    def get_parameters(self) -> list[np.ndarray]:
         """
         Get the parameters of the model.
 
@@ -78,7 +78,7 @@ class FlaxModel(P2PFLModel):
         """
         return self.__dict_to_np(self.model_params) if self.model_params else []
 
-    def set_parameters(self, params: Union[List[np.ndarray], bytes]) -> None:
+    def set_parameters(self, params: list[np.ndarray] | bytes) -> None:
         """
         Set the parameters of the model.
 
@@ -93,14 +93,14 @@ class FlaxModel(P2PFLModel):
             params, _ = self.decode_parameters(params)
 
         try:
-            if isinstance(params, List):
+            if isinstance(params, list):
                 self.__np_to_dict(self.model_params, params)
             else:
                 raise ValueError("Unvalid parameters.")
         except Exception as e:
             raise ModelNotMatchingError("Not matching models") from e
 
-    def encode_parameters(self, params: Optional[List[np.ndarray]] = None) -> bytes:
+    def encode_parameters(self, params: list[np.ndarray] | None = None) -> bytes:
         """
         Encode the parameters of the model.
 
@@ -122,7 +122,7 @@ class FlaxModel(P2PFLModel):
         }
         return pickle.dumps(data_to_serialize)
 
-    def decode_parameters(self, data: bytes) -> Tuple[List[np.ndarray], Dict[str, Any]]:
+    def decode_parameters(self, data: bytes) -> tuple[list[np.ndarray], dict[str, Any]]:
         """
         Decode the parameters of the model.
 

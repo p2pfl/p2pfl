@@ -19,7 +19,6 @@
 
 import traceback
 from abc import ABC, abstractmethod
-from typing import Optional, Union
 
 import google.protobuf.empty_pb2
 import grpc
@@ -48,7 +47,7 @@ class ProtobuffServer(ABC, node_pb2_grpc.NodeServicesServicer, NodeComponent):
         self,
         gossiper: Gossiper,
         neighbors: Neighbors,
-        commands: Optional[list[Command]] = None,
+        commands: list[Command] | None = None,
     ) -> None:
         """Initialize the GRPC server."""
         # Message handlers
@@ -160,7 +159,7 @@ class ProtobuffServer(ABC, node_pb2_grpc.NodeServicesServicer, NodeComponent):
         )
 
         # Process message/model
-        cmd_out: Optional[str] = None
+        cmd_out: str | None = None
         if request.cmd in self.__commands:
             try:
                 if request.HasField("gossip_message"):
@@ -201,7 +200,7 @@ class ProtobuffServer(ABC, node_pb2_grpc.NodeServicesServicer, NodeComponent):
     ####
 
     @allow_no_addr_check
-    def add_command(self, cmds: Union[Command, list[Command]]) -> None:
+    def add_command(self, cmds: Command | list[Command]) -> None:
         """
         Add a command.
 

@@ -19,7 +19,7 @@
 """Callback for SCAFFOLD operations (PyTorch Lighting)."""
 
 import copy
-from typing import Any, Optional
+from typing import Any
 
 import lightning as pl
 import numpy as np
@@ -42,7 +42,7 @@ class SCAFFOLDCallback(Callback, P2PFLCallback):
         self.c_i: list[torch.Tensor] = []
         self.c: list[torch.Tensor] = []
         self.initial_model_params: list[torch.Tensor] = []
-        self.saved_lr: Optional[float] = None
+        self.saved_lr: float | None = None
         self.K: int = 0
         self.additional_info: dict[str, Any] = {}
 

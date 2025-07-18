@@ -19,7 +19,6 @@
 
 from concurrent import futures
 from os.path import isfile
-from typing import Optional
 
 import grpc
 
@@ -48,7 +47,7 @@ class GrpcServer(ProtobuffServer):
         self,
         gossiper: Gossiper,
         neighbors: Neighbors,
-        commands: Optional[list[Command]] = None,
+        commands: list[Command] | None = None,
     ) -> None:
         """Initialize the GRPC server."""
         # Super

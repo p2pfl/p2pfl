@@ -127,7 +127,9 @@ class FedYogi(Aggregator):
             self.v_t = [np.zeros_like(x) for x in delta_t]
 
         # Yogi update: v_t = v_t - (1 - β₂) * delta_t² * sign(v_t - delta_t²)
-        self.v_t = [x - (1.0 - self.beta_2) * np.multiply(y, y) * np.sign(x - np.multiply(y, y)) for x, y in zip(self.v_t, delta_t, strict=False)]
+        self.v_t = [
+            x - (1.0 - self.beta_2) * np.multiply(y, y) * np.sign(x - np.multiply(y, y)) for x, y in zip(self.v_t, delta_t, strict=False)
+        ]
 
         # Update weights: w_t = w_t + η * m_t / (√v_t + τ)
         self.current_weights = [

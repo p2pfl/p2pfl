@@ -30,7 +30,7 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import pandas as pd
 import yaml
@@ -39,7 +39,7 @@ from p2pfl.management.launch_from_yaml import run_from_yaml
 from p2pfl.management.logger import logger
 
 
-def generate_experiment_id(config: Dict[str, Any], variation_params: Dict[str, Any]) -> str:
+def generate_experiment_id(config: dict[str, Any], variation_params: dict[str, Any]) -> str:
     """
     Generate a unique identifier for an experiment configuration.
 
@@ -68,7 +68,7 @@ def generate_experiment_id(config: Dict[str, Any], variation_params: Dict[str, A
     return f"{readable_part}_{param_hash}"
 
 
-def set_nested_value(config: Dict[str, Any], path: str, value: Any) -> None:
+def set_nested_value(config: dict[str, Any], path: str, value: Any) -> None:
     """
     Set a value in a nested dictionary using dot notation.
 
@@ -108,14 +108,14 @@ def check_results_exist(results_dir: Path) -> bool:
     return len(csv_files) > 0
 
 
-def save_variation_config(config: Dict[str, Any], results_dir: Path) -> None:
+def save_variation_config(config: dict[str, Any], results_dir: Path) -> None:
     """Save the configuration used for this variation."""
     config_path = results_dir / "config.yaml"
     with open(config_path, "w") as f:
         yaml.dump(config, f, default_flow_style=False)
 
 
-def run_single_experiment(config: Dict[str, Any], results_dir: Path) -> None:
+def run_single_experiment(config: dict[str, Any], results_dir: Path) -> None:
     """
     Run a single experiment with the given configuration.
 
@@ -224,7 +224,7 @@ def save_experiment_results(results_dir: Path, start_time: float) -> None:
         print(f"Error saving execution time: {e}")
 
 
-def parse_custom_params(param_strings: List[str]) -> Dict[str, List[Any]]:
+def parse_custom_params(param_strings: list[str]) -> dict[str, list[Any]]:
     """
     Parse custom parameter strings in the format 'path.to.param=value1,value2'.
 
@@ -242,7 +242,7 @@ def parse_custom_params(param_strings: List[str]) -> Dict[str, List[Any]]:
             raise ValueError(f"Invalid parameter format: {param_str}. Expected 'path=value1,value2'")
 
         path, values_str = param_str.split("=", 1)
-        values: List[Any] = []
+        values: list[Any] = []
 
         for value in values_str.split(","):
             # Try to parse as number
@@ -370,7 +370,7 @@ Examples:
         variations.update(custom_params)
 
     # Generate all combinations
-    combinations: List[Dict[str, Any]] = []
+    combinations: list[dict[str, Any]] = []
     if not variations:
         print("No variations specified. Running single experiment with base configuration.")
         combinations = [{}]

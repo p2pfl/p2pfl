@@ -17,8 +17,6 @@
 #
 """Stage."""
 
-from typing import Type, Union
-
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 
@@ -32,7 +30,7 @@ class Stage:
         raise NotImplementedError("Stage name not implemented.")
 
     @staticmethod
-    def execute() -> Union[Type["Stage"], None]:
+    def execute() -> type["Stage"] | None:
         """Execute the stage."""
         raise NotImplementedError("Stage execute not implemented.")
 

@@ -18,7 +18,7 @@
 
 """Flax Learner for P2PFL."""
 
-from typing import Any, Dict, Optional, Tuple, cast
+from typing import Any, cast
 
 import jax
 import jax.numpy as jnp
@@ -50,9 +50,9 @@ class FlaxLearner(Learner):
 
     def __init__(
         self,
-        model: Optional[P2PFLModel] = None,
-        data: Optional[P2PFLDataset] = None,
-        aggregator: Optional[Aggregator] = None,
+        model: P2PFLModel | None = None,
+        data: P2PFLDataset | None = None,
+        aggregator: Aggregator | None = None,
     ) -> None:
         """Initialize the FlaxLearner."""
         super().__init__(model, data, aggregator)
@@ -68,11 +68,11 @@ class FlaxLearner(Learner):
         """Retrieve the Flax model."""
         return cast(FlaxModel, self.get_model())
 
-    def __get_flax_data(self, train: bool = True) -> Tuple:
+    def __get_flax_data(self, train: bool = True) -> tuple:
         return self.get_data().export(FlaxExportStrategy, train=train)
 
     @staticmethod
-    def __calculate_loss_acc(state: train_state.TrainState, params: Dict, x: jnp.ndarray, y: jnp.ndarray):
+    def __calculate_loss_acc(state: train_state.TrainState, params: dict, x: jnp.ndarray, y: jnp.ndarray):
         logits = state.apply_fn(params, x)
         predictions = jnp.argmax(logits, axis=-1)
         # Calculate the loss and accuracy
@@ -90,11 +90,11 @@ class FlaxLearner(Learner):
         )
         return loss, acc
 
-    def train_step(self, state: train_state.TrainState, x: jnp.ndarray, y: jnp.ndarray) -> Tuple[train_state.TrainState, float, float]:
+    def train_step(self, state: train_state.TrainState, x: jnp.ndarray, y: jnp.ndarray) -> tuple[train_state.TrainState, float, float]:
         """Perform a single training step."""
 
         # TODO: test jit
-        def compute_grads(params: FrozenDict[str, Any]) -> Tuple[train_state.TrainState, float, float]:
+        def compute_grads(params: FrozenDict[str, Any]) -> tuple[train_state.TrainState, float, float]:
             grad_fn = jax.value_and_grad(self.__calculate_loss_acc, argnums=1, has_aux=True)
             (loss, acc), grads = grad_fn(state, params, x, y)
             new_state = state.apply_gradients(grads=grads)  # type: ignore
@@ -138,7 +138,7 @@ class FlaxLearner(Learner):
             logger.error(self.addr, f"Error in training with Flax: {e}")
             raise e
 
-    def evaluate(self) -> Dict[str, float]:
+    def evaluate(self) -> dict[str, float]:
         """Evaluate the Flax model."""
 
         # TODO: test jit

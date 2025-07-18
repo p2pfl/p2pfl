@@ -82,8 +82,6 @@ Refs:
 
 """
 
-from typing import Optional
-
 import numpy as np
 
 from p2pfl.learning.compression.base_compression_strategy import TensorCompressor
@@ -115,7 +113,7 @@ class DifferentialPrivacyCompressor(TensorCompressor):
         params: list[np.ndarray],
         clip_norm: float = 1.0,
         noise_multiplier: float = 1.0,
-        previous_params: Optional[list[np.ndarray]] = None,
+        previous_params: list[np.ndarray] | None = None,
     ) -> tuple[list[np.ndarray], dict]:
         """
         Apply differential privacy to model parameters.

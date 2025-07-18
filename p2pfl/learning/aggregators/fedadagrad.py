@@ -111,7 +111,9 @@ class FedAdagrad(Aggregator):
         self.v_t = [x + np.multiply(y, y) for x, y in zip(self.v_t, delta_t, strict=False)]
 
         # Update weights: w_t = w_t + η * delta_t / (√v_t + τ)
-        self.current_weights = [x + self.eta * y / (np.sqrt(z) + self.tau) for x, y, z in zip(self.current_weights, delta_t, self.v_t, strict=False)]
+        self.current_weights = [
+            x + self.eta * y / (np.sqrt(z) + self.tau) for x, y, z in zip(self.current_weights, delta_t, self.v_t, strict=False)
+        ]
 
         # Get contributors
         contributors = []

@@ -18,8 +18,6 @@
 
 """Keras learner for P2PFL."""
 
-from typing import Dict, Optional, Tuple, Union
-
 import numpy as np
 import tensorflow as tf  # type: ignore
 
@@ -47,14 +45,12 @@ class KerasLearner(Learner):
 
     """
 
-    def __init__(
-        self, model: Optional[P2PFLModel] = None, data: Optional[P2PFLDataset] = None, aggregator: Optional[Aggregator] = None
-    ) -> None:
+    def __init__(self, model: P2PFLModel | None = None, data: P2PFLDataset | None = None, aggregator: Aggregator | None = None) -> None:
         """Initialize the KerasLearner."""
         super().__init__(model, data, aggregator)
 
     @allow_no_addr_check
-    def set_model(self, model: Union[P2PFLModel, list[np.ndarray], bytes]) -> None:
+    def set_model(self, model: P2PFLModel | list[np.ndarray] | bytes) -> None:
         """
         Set the model of the learner.
 
@@ -74,7 +70,7 @@ class KerasLearner(Learner):
         self.callbacks.append(FederatedLogger(addr))
         return super().set_addr(addr)
 
-    def __get_tf_model_data(self, train: bool = True) -> Tuple[tf.keras.Model, tf.data.Dataset]:
+    def __get_tf_model_data(self, train: bool = True) -> tuple[tf.keras.Model, tf.data.Dataset]:
         # Get Model
         tf_model = self.get_model().get_model()
         if not isinstance(tf_model, tf.keras.Model):
@@ -114,7 +110,7 @@ class KerasLearner(Learner):
         # Need to implement a custom callback or use a flag to stop training.
         logger.error(self.addr, "Interrupting training (not fully implemented for Keras).")
 
-    def evaluate(self) -> Dict[str, float]:
+    def evaluate(self) -> dict[str, float]:
         """Evaluate the Keras model."""
         try:
             if self.epochs > 0:

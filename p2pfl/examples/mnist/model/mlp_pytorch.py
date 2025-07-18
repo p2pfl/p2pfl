@@ -18,8 +18,6 @@
 
 """Simple MLP on PyTorch Lightning for MNIST."""
 
-from typing import Dict, Optional
-
 import lightning as L
 import torch
 from torchmetrics import Accuracy, Metric
@@ -39,7 +37,7 @@ class MLP(L.LightningModule):
     def __init__(
         self,
         input_size: int = 28 * 28,
-        hidden_sizes: Optional[list[int]] = None,
+        hidden_sizes: list[int] | None = None,
         out_channels: int = 10,
         activation: str = "relu",
         metric: type[Metric] = Accuracy,
@@ -96,7 +94,7 @@ class MLP(L.LightningModule):
         """Configure the optimizer."""
         return torch.optim.Adam(self.parameters(), lr=self.lr_rate)
 
-    def training_step(self, batch: Dict[str, torch.Tensor], batch_id: int) -> torch.Tensor:
+    def training_step(self, batch: dict[str, torch.Tensor], batch_id: int) -> torch.Tensor:
         """Training step of the MLP."""
         x = batch["image"].float()
         y = batch["label"]
@@ -104,11 +102,11 @@ class MLP(L.LightningModule):
         self.log("train_loss", loss, prog_bar=True)
         return loss
 
-    def validation_step(self, batch: Dict[str, torch.Tensor], batch_id: int) -> torch.Tensor:
+    def validation_step(self, batch: dict[str, torch.Tensor], batch_id: int) -> torch.Tensor:
         """Perform validation step for the MLP."""
         raise NotImplementedError("Validation step not implemented")
 
-    def test_step(self, batch: Dict[str, torch.Tensor], batch_id: int) -> torch.Tensor:
+    def test_step(self, batch: dict[str, torch.Tensor], batch_id: int) -> torch.Tensor:
         """Test step for the MLP."""
         x = batch["image"].float()
         y = batch["label"]

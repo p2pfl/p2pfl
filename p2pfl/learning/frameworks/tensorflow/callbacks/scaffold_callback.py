@@ -18,7 +18,7 @@
 
 """Callback for SCAFFOLD operations (Keras)."""
 
-from typing import Any, Optional
+from typing import Any
 
 import tensorflow as tf  # type: ignore
 from keras import callbacks  # type: ignore
@@ -79,7 +79,7 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
         self.c_i: list[tf.Variable] = []
         self.c: list[tf.Variable] = []
         self.initial_model_params: list[tf.Variable] = []
-        self.saved_lr: Optional[float] = None
+        self.saved_lr: float | None = None
         self.K: int = 0
         self.additional_info: dict[str, Any] = {}
 
@@ -88,7 +88,7 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
         """Return the name of the callback."""
         return "scaffold"
 
-    def on_train_begin(self, logs: Optional[dict[str, Any]] = None) -> None:
+    def on_train_begin(self, logs: dict[str, Any] | None = None) -> None:
         """Initialize control variates and replace the optimizer with custom one."""
         optimizer = self.model.optimizer
         if hasattr(optimizer, "learning_rate"):
@@ -120,7 +120,7 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
             eta_l=self.saved_lr,
         )  # type: ignore
 
-    def on_train_batch_end(self, batch: Any, logs: Optional[dict[str, Any]] = None) -> None:
+    def on_train_batch_end(self, batch: Any, logs: dict[str, Any] | None = None) -> None:
         """
         Increment the local step counter after each batch.
 
@@ -131,7 +131,7 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
         """
         self.K += 1
 
-    def on_train_end(self, logs: Optional[dict[str, Any]] = None) -> None:
+    def on_train_end(self, logs: dict[str, Any] | None = None) -> None:
         """
         Update local control variate (c_i) and compute deltas.
 

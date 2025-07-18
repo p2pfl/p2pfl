@@ -26,7 +26,7 @@ P2PFL Logger.
 import copy
 import datetime
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from p2pfl.experiment import Experiment
 from p2pfl.management.message_storage import MessageEntryType, MessageStorage
@@ -99,10 +99,10 @@ class P2PFLogger:
 
     """
 
-    def __init__(self, nodes: Optional[Dict[str, Dict[str, Any]]] = None, disable_locks: bool = False) -> None:
+    def __init__(self, nodes: dict[str, dict[str, Any]] | None = None, disable_locks: bool = False) -> None:
         """Initialize the logger."""
         # Node Information
-        self._nodes: Dict[str, Dict[Any, Any]] = nodes if nodes else {}
+        self._nodes: dict[str, dict[Any, Any]] = nodes if nodes else {}
 
         # Experiment Metrics and Message Storage
         self.disable_locks = disable_locks
@@ -154,7 +154,7 @@ class P2PFLogger:
     # Application logging
     ######
 
-    def set_level(self, level: Union[int, str]) -> None:
+    def set_level(self, level: int | str) -> None:
         """
         Set the logger level.
 
@@ -273,7 +273,7 @@ class P2PFLogger:
     # Metrics
     ######
 
-    def log_metric(self, addr: str, metric: str, value: float, step: Optional[int] = None, round: Optional[int] = None) -> None:
+    def log_metric(self, addr: str, metric: str, value: float, step: int | None = None, round: int | None = None) -> None:
         """
         Log a metric.
 
@@ -414,7 +414,7 @@ class P2PFLogger:
         self.warning(node, "Uncatched Experiment Ended on Logger")
         del self._nodes[node]["Experiment"]
 
-    def get_nodes(self) -> Dict[str, Dict[Any, Any]]:
+    def get_nodes(self) -> dict[str, dict[Any, Any]]:
         """
         Get the registered nodes.
 
@@ -446,8 +446,8 @@ class P2PFLogger:
         source_dest: str,
         package_type: str,
         package_size: int,
-        round_num: Optional[int] = None,
-        additional_info: Optional[Dict[str, Any]] = None,
+        round_num: int | None = None,
+        additional_info: dict[str, Any] | None = None,
     ) -> None:
         """
         Log a communication event.
@@ -512,11 +512,11 @@ class P2PFLogger:
     def get_messages(
         self,
         direction: str = "all",  # "all", "sent", or "received"
-        node: Optional[str] = None,
-        cmd: Optional[str] = None,
-        round_num: Optional[int] = None,
-        limit: Optional[int] = None,
-    ) -> List[MessageEntryType]:
+        node: str | None = None,
+        cmd: str | None = None,
+        round_num: int | None = None,
+        limit: int | None = None,
+    ) -> list[MessageEntryType]:
         """
         Get communication messages with optional filtering.
 
@@ -541,7 +541,7 @@ class P2PFLogger:
 
         return self.message_storage.get_messages(node=node, direction=storage_direction, cmd=cmd, round_num=round_num, limit=limit)
 
-    def get_system_metrics(self) -> Dict[datetime.datetime, Dict[str, float]]:
+    def get_system_metrics(self) -> dict[datetime.datetime, dict[str, float]]:
         """
         Get the system metrics.
 
