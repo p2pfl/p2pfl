@@ -56,7 +56,6 @@ uv sync --extra torch
 
 ```bash
 docker build -t p2pfl .
-docker build -t p2pfl .
 docker run -it --rm p2pfl bash
 ```
 
