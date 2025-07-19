@@ -79,11 +79,21 @@ class XGBoostLearner(Learner):
             # each P2PFLCallback should expose an XGBoost-compatible callback
             if hasattr(cb, "to_xgb_callback"):
                 xgb_callbacks.append(cb.to_xgb_callback())
-        model.fit(
-            X_train,
-            y_train,
-            verbose=True
-        )
+
+        try:
+            model.fit(
+                X_train,
+                y_train,
+                verbose=True,
+                xgb_model=self.get_model().get_file_name(),  # Load previous model if exists
+            )
+        except NotFittedError:
+            model.fit(
+                X_train,
+                y_train,
+                verbose=True
+            )
+
         self.get_model().set_contribution([self.addr], self.get_data().get_num_samples(train=True))
         # store callback info back to model
         self.add_callback_info_to_model()

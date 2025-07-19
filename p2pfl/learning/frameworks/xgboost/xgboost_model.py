@@ -51,10 +51,12 @@ class XGBoostModel(P2PFLModel):
         contributors: Optional[List[str]] = None,
         additional_info: Optional[Dict[str, Any]] = None,
         compression: Optional[Dict[str, Dict[str, Any]]] = None,
+        id: Optional[int] = None
     ) -> None:
         if not isinstance(model, xgb.XGBModel):
             raise ModelNotMatchingError("Provided model is not an XGBoost sklearn model")
         super().__init__(model, params, num_samples, contributors, additional_info, compression)
+        self.id = id if id is not None else 0  # Default ID if not provided
 
     def get_parameters(self) -> List[np.ndarray]:
         """
@@ -67,11 +69,27 @@ class XGBoostModel(P2PFLModel):
         # raw = self.model.get_booster().save_raw()
         # arr = np.frombuffer(raw, dtype=np.uint8)
         try:
-            self.model.save_model("temp_model.json")  # Save to JSON for compatibility
-
+            file_name = f"temp_model{self.id}_{self.model._estimator_type}.json"
+            self.model.save_model(file_name)  # Save to JSON for compatibility
+            print(f"MODEL SAVED TO {file_name}")
+            return [np.array(file_name)]
         except NotFittedError:
+            print(f"NOT FITTED FOR MODEL {self.id}")
             return []
-        return [1]
+
+    def get_file_name(self) -> str:
+        """
+        Returns the file name of the model.
+        This is used to identify the model in federated learning.
+        """
+        try:
+            file_name = f"temp_model{self.id}_{self.model._estimator_type}.json"
+            self.model.save_model(file_name)  # Save to JSON for compatibility
+            print(f"MODEL SAVED TO {file_name}")
+            return file_name
+        except NotFittedError:
+            print(f"NOT FITTED FOR MODEL {self.id}")
+            return ""
 
     def set_parameters(self, params: Union[List[np.ndarray], bytes]) -> None:
         """
@@ -84,31 +102,32 @@ class XGBoostModel(P2PFLModel):
         """
         # If bytes, decode compression first
         if isinstance(params, bytes):
-            params_list, _ = self.decode_parameters(params)
+            params = self.decode_parameters(params)
+        if params is None or len(params) == 0:
+            pass
+            # type_of_model = self.model._estimator_type
+            # if type_of_model == "classifier":
+            #     # Load as XGBClassifier
+            #     model = xgb.XGBClassifier()
+            # else:
+            #     model = xgb.XGBRegressor()
+            # self.model = model
         else:
-            params_list = params
+            params = np.array2string(params[0]).replace("'","")
+            file_name = params
+            type_of_model = file_name.replace(".json", "").split("_")[-1] # Extract type from filename
+            if type_of_model == "classifier":
+                # Load as XGBClassifier
+                model = xgb.XGBClassifier()
+            else:
+                model = xgb.XGBRegressor()
+            model.load_model(file_name)  # Load from JSON for compatibility
+            # remove the temporary file
+            # os.remove(file_name)
+            # booster.load_model(raw_bytes)
 
-        if not isinstance(params_list, list) or len(params_list) == 0:
-            raise ModelNotMatchingError("Parameters format is invalid for XGBoost model")
-
-        # self.model = xgb.XGBClassifier(**params_list) if isinstance(self.model, xgb.XGBClassifier) else xgb.XGBRegressor(**params_list)
-
-        raw_arr = params_list[0]
-        # if not isinstance(raw_arr, np.ndarray) or raw_arr.dtype != np.uint8:
-        #     raise ModelNotMatchingError("First parameter array must be uint8 raw bytes")
-
-        raw_bytes = raw_arr.tobytes()
-        if isinstance(self.model, xgb.sklearn.XGBClassifier):
-            model = xgb.XGBClassifier()
-        else:
-            model = xgb.XGBRegressor()
-        model.load_model("temp_model.json")  # Load from JSON for compatibility
-        # remove the temporary file
-        os.remove("temp_model.json")
-        # booster.load_model(raw_bytes)
-
-        # Attach loaded booster to sklearn API model
-        self.model = model
+            # Attach loaded booster to sklearn API model
+            self.model = model
 
     def get_framework(self) -> str:
         """
