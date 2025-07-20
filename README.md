@@ -42,15 +42,23 @@ pip install "p2pfl[torch]"
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/p2pfl/p2pfl/tree/develop?quickstart=1)
 
-#### 🐍 Python (using Poetry)
+#### 🐍 Python (using UV)
 
 ```bash
 git clone https://github.com/p2pfl/p2pfl.git
 cd p2pfl
-uv sync --extra torch
+uv sync --all-extras
 ```
 
-> **Note:** Use the extras (`-E`) flag to install specific dependencies (e.g., `-E torch`). Use `--no-dev` to exclude development dependencies.
+> **Note:** The above command installs all dependencies (PyTorch, TensorFlow, and Ray). If you only need specific frameworks, you can use:
+> - `uv sync` - Install only core dependencies
+> - `uv sync --extra torch` - Install with PyTorch support
+> - `uv sync --extra tensorflow` - Install with TensorFlow support
+> - `uv sync --extra ray` - Install with Ray support
+> 
+> Use `--no-dev` to exclude development dependencies.
+
+> **⚠️ Important for Ray users:** If you're using Ray, we recommend activating the virtual environment traditionally instead of using `uv run` to avoid dependency issues with Ray workers. See the [installation guide](https://p2pfl.github.io/p2pfl/installation.html#working-with-traditional-virtual-environment-activation) for details.
 
 #### 🐳 Docker
 

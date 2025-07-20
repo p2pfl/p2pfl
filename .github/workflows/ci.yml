@@ -29,20 +29,20 @@ jobs:
       - name: Install dependencies
         run: |
           uv lock
-          uv sync --all-extras
+          uv sync --all-extras --activate
 
       - name: Format (ruff)
         run: |
-          uv run ruff format p2pfl
+          ruff format p2pfl
 
       - name: Lint (ruff)
         run: |
-          uv run ruff check p2pfl --output-format=github
+          ruff check p2pfl --output-format=github
         continue-on-error: true
 
       - name: Type checks (mypy)
         run: |
-          uv run mypy -p p2pfl
+          mypy -p p2pfl
 
       - name: Generate certificates
         run: |
@@ -51,7 +51,7 @@ jobs:
 
       - name: Test (pytest)
         run: |
-          uv run pytest -v --cov=p2pfl
+          pytest -v --cov=p2pfl
 
       - name: Coverage comment
         id: coverage_comment

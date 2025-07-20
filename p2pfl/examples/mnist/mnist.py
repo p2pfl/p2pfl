@@ -18,8 +18,9 @@
 
 """Example of a P2PFL MNIST experiment, using a MLP model and a MnistFederatedDM."""
 
-# uv run snakeviz _MainThread-0.pstat
-# uv run gprof2dot -f pstats Gossiper-10.pstat | dot -Tpng -o output.png && open output.png
+# source .venv/bin/activate  # Or .venv\Scripts\activate on Windows
+# snakeviz _MainThread-0.pstat
+# gprof2dot -f pstats Gossiper-10.pstat | dot -Tpng -o output.png && open output.png
 
 import argparse
 import time

@@ -31,11 +31,12 @@ jobs:
 
       - name: Generate documentation
         run: |
+          source .venv/bin/activate
           cd docs
-          uv run make clean
+          make clean
           rm -fr source/modules
-          uv run sphinx-apidoc -M -e -f -o source/modules ../p2pfl
-          uv run make html
+          sphinx-apidoc -M -e -f -o source/modules ../p2pfl
+          make html
           touch ./build/html/.nojekyll
 
       - name: Deploy to GitHub Pages

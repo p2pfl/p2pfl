@@ -57,21 +57,52 @@ pip install "p2pfl[torch,tensorflow,ray]"
 ```bash
 git clone https://github.com/pguijas/p2pfl.git
 cd p2pfl
-uv sync --extra torch
-```
-
-> **Note**: You can use the extras (`-E`) flag to install the library with the desired dependencies. Available options are:
-
-- `torch`: For PyTorch-related dependencies
-- `tensorflow`: For TensorFlow-related dependencies
-- `ray`: For Ray-related dependencies
-
-If you want to install all dependencies, you can run:
-```bash
 uv sync --all-extras
 ```
 
-Additionally, you can use the --no-dev flag to install the library without the development dependencies.
+This installs p2pfl with all available dependencies (PyTorch, TensorFlow, and Ray).
+
+> **Note**: If you only need specific frameworks, you can use:
+> - `uv sync` - Install only core p2pfl dependencies
+> - `uv sync --extra torch` - Install with PyTorch support
+> - `uv sync --extra tensorflow` - Install with TensorFlow support  
+> - `uv sync --extra ray` - Install with Ray support
+> 
+> You can also combine extras: `uv sync --extra torch --extra ray`
+> 
+> Additionally, you can use the `--no-dev` flag to install the library without development dependencies.
+
+##### Working with Traditional Virtual Environment Activation
+
+> **⚠️ Important Note for Ray Users**: When using Ray with `uv run`, you may encounter the following warning:
+> ```
+> warning: `VIRTUAL_ENV=XXX/p2pfl/.venv` does not match the project environment path `.venv` 
+> and will be ignored; use `--active` to target the active environment instead
+> ```
+> 
+> This happens because Ray propagates the virtual environment to worker processes, but `uv` expects relative paths while the `VIRTUAL_ENV` variable contains absolute paths. This mismatch can cause dependency issues in Ray workers.
+>
+> **To avoid these issues, we recommend using traditional virtual environment activation when working with Ray:**
+
+```bash
+# First, ensure the virtual environment is created
+uv sync --all-extras
+
+# Then activate it traditionally
+# On Unix/macOS:
+source .venv/bin/activate
+
+# On Windows:
+.venv\Scripts\activate
+
+# Now you can run commands directly without 'uv run'
+python your_script.py
+p2pfl your_command
+pytest -v
+# etc.
+```
+
+This approach ensures that Ray workers inherit the correct environment without path conflicts.
 
 
 #### 🐳 Docker
