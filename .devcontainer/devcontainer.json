@@ -12,7 +12,7 @@
 	// "forwardPorts": [],
 
 	// Install uv and sync dependencies after container is created
-	"postCreateCommand": "curl -LsSf https://astral.sh/uv/install.sh | sh && uv sync --all-extras",
+	"postCreateCommand": "curl -LsSf https://astral.sh/uv/install.sh | sh && uv sync --all-extras && echo 'source /workspaces/p2pfl/.venv/bin/activate' >> ~/.bashrc",
 
 	// Configure tool-specific properties.
 	"customizations": {
@@ -25,7 +25,11 @@
 			  "github.copilot",
 			  "zxh404.vscode-proto3",
 			  "tamasfe.even-better-toml"
-            ]
+            ],
+            // Set the Python interpreter to the virtual environment
+            "settings": {
+                "python.defaultInterpreterPath": "/workspaces/p2pfl/.venv/bin/python"
+            }
           }
     }
 
