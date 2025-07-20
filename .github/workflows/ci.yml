@@ -29,19 +29,22 @@ jobs:
       - name: Install dependencies
         run: |
           uv lock
-          uv sync --all-extras --active
+          uv sync --all-extras
 
       - name: Format (ruff)
         run: |
+          source .venv/bin/activate
           ruff format p2pfl
 
       - name: Lint (ruff)
         run: |
+          source .venv/bin/activate
           ruff check p2pfl --output-format=github
         continue-on-error: true
 
       - name: Type checks (mypy)
         run: |
+          source .venv/bin/activate
           mypy -p p2pfl
 
       - name: Generate certificates
@@ -51,6 +54,7 @@ jobs:
 
       - name: Test (pytest)
         run: |
+          source .venv/bin/activate
           pytest -v --cov=p2pfl
 
       - name: Coverage comment
