@@ -18,6 +18,7 @@
 
 """Federated Averaging (FedAvg) Aggregator."""
 import json
+import os
 from typing import Optional, Tuple
 
 import numpy as np
@@ -66,11 +67,26 @@ class FedXgbBagging(Aggregator):
 
         # Add weighted models
         global_model = models[0].get_file_name()
+        if global_model == "":
+            return models[0]
+        # Siempre cargar el JSON del primer modelo
+        with open(global_model, "r") as f:
+            global_model_json = json.load(f)
+        os.remove(global_model)  # Remove the file to avoid conflicts
         if len(models) > 1:
             for m in models[1:]:
-                print("AGGREGATING BOOSTERS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                global_model = aggregate_boosters(global_model, m.get_file_name())
+                print("AGGREGATING BOOSTERS!")
+                model_file = m.get_file_name()
+                with open(model_file, "r") as f:
+                    current_model_json = json.load(f)
+                os.remove(model_file)
+                global_model_json = aggregate_boosters(global_model_json, current_model_json)
 
+        # Save aggregated model to a temporary file
+        global_model = global_model
+        with open(global_model, "w") as f:
+            json.dump(global_model_json, f)
+        print(f"Aggregated model saved to {global_model}")
         # Get contributors
         contributors: list[str] = []
         for m in models:
@@ -98,19 +114,12 @@ def _get_tree_nums(xgb_model: dict) -> Tuple[int, int]:
 
 
 def aggregate_boosters(
-        bst_prev_json: Optional[str],
-        bst_curr_json: str,
-) -> str:
+        bst_prev: Optional[dict],
+        bst_curr: dict,
+) -> dict:
     """Conduct bagging aggregation for given trees."""
-    if not bst_prev_json:
-        return bst_curr_json
-
-    # Get the tree numbers
-
-    with open(bst_prev_json, "r") as f:
-        bst_prev = json.load(f)
-    with open(bst_curr_json, "r") as f:
-        bst_curr = json.load(f)
+    if not bst_prev:
+        return bst_curr
 
     tree_num_prev, _ = _get_tree_nums(bst_prev)
     _, paral_tree_num_curr = _get_tree_nums(bst_curr)
@@ -134,7 +143,4 @@ def aggregate_boosters(
         )
         bst_prev["learner"]["gradient_booster"]["model"]["tree_info"].append(0)
 
-    with open(bst_prev_json, "w") as f:
-        json.dump(bst_prev, f)
-
-    return bst_prev_json
+    return bst_prev

@@ -17,7 +17,7 @@
 #
 
 """XGBoost Learner for P2PFL."""
-
+import os
 from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
@@ -81,13 +81,18 @@ class XGBoostLearner(Learner):
                 xgb_callbacks.append(cb.to_xgb_callback())
 
         try:
+            # Try to get the file name of the current model to continue training
+            previous_model_file = self.get_model().get_file_name()
             model.fit(
                 X_train,
                 y_train,
                 verbose=True,
-                xgb_model=self.get_model().get_file_name(),  # Load previous model if exists
+                xgb_model=previous_model_file,  # Load previous model if exists
             )
-        except NotFittedError:
+            os.remove(previous_model_file)  # Clean up the temporary file after training
+        except (NotFittedError, Exception) as e:
+            # If no previous model exists or there's an error, start fresh
+            print(f"Starting fresh training for model {self.get_model().id}: {e}")
             model.fit(
                 X_train,
                 y_train,

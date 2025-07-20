@@ -22,6 +22,7 @@ from typing import Any, Dict, List, Optional, Union
 import numpy as np
 import xgboost as xgb
 from sklearn.exceptions import NotFittedError
+import uuid
 
 from p2pfl.learning.frameworks import Framework
 from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
@@ -65,14 +66,15 @@ class XGBoostModel(P2PFLModel):
         Returns:
             List of parameter arrays corresponding to each model attribute.
         """
-        # Serialize booster to raw bytes
-        # raw = self.model.get_booster().save_raw()
-        # arr = np.frombuffer(raw, dtype=np.uint8)
         try:
-            file_name = f"temp_model{self.id}_{self.model._estimator_type}.json"
+            temp_dir = "temp_xgboost_json"
+            os.makedirs(temp_dir, exist_ok=True)
+            rand = uuid.uuid4().hex
+            file_name = os.path.join(temp_dir, f"temp_model{self.id}_{rand}_{self.model._estimator_type}.json")
             self.model.save_model(file_name)  # Save to JSON for compatibility
             print(f"MODEL SAVED TO {file_name}")
-            return [np.array(file_name)]
+            arr = [np.array(file_name)]
+            return arr
         except NotFittedError:
             print(f"NOT FITTED FOR MODEL {self.id}")
             return []
@@ -82,14 +84,17 @@ class XGBoostModel(P2PFLModel):
         Returns the file name of the model.
         This is used to identify the model in federated learning.
         """
+        temp_dir = "temp_xgboost_json"
+        os.makedirs(temp_dir, exist_ok=True)
+        rand = uuid.uuid4().hex
+        file_name = os.path.join(temp_dir, f"temp_model{self.id}_{rand}_{self.model._estimator_type}.json")
         try:
-            file_name = f"temp_model{self.id}_{self.model._estimator_type}.json"
             self.model.save_model(file_name)  # Save to JSON for compatibility
             print(f"MODEL SAVED TO {file_name}")
             return file_name
         except NotFittedError:
             print(f"NOT FITTED FOR MODEL {self.id}")
-            return ""
+            raise NotFittedError("Model is not fitted, cannot get file name.")
 
     def set_parameters(self, params: Union[List[np.ndarray], bytes]) -> None:
         """
@@ -102,16 +107,9 @@ class XGBoostModel(P2PFLModel):
         """
         # If bytes, decode compression first
         if isinstance(params, bytes):
-            params = self.decode_parameters(params)
+            params, _ = self.decode_parameters(params)
         if params is None or len(params) == 0:
             pass
-            # type_of_model = self.model._estimator_type
-            # if type_of_model == "classifier":
-            #     # Load as XGBClassifier
-            #     model = xgb.XGBClassifier()
-            # else:
-            #     model = xgb.XGBRegressor()
-            # self.model = model
         else:
             params = np.array2string(params[0]).replace("'","")
             file_name = params
@@ -122,16 +120,11 @@ class XGBoostModel(P2PFLModel):
             else:
                 model = xgb.XGBRegressor()
             model.load_model(file_name)  # Load from JSON for compatibility
-            # remove the temporary file
-            # os.remove(file_name)
-            # booster.load_model(raw_bytes)
-
-            # Attach loaded booster to sklearn API model
             self.model = model
+            os.remove(file_name)
 
     def get_framework(self) -> str:
         """
         Returns the framework name identifier.
         """
         return Framework.XGBOOST.value
-
