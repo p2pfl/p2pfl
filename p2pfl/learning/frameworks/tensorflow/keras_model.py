@@ -18,7 +18,7 @@
 
 """Keras model abstraction for P2PFL."""
 
-from typing import Any, Optional, Union
+from typing import Any
 
 import numpy as np
 import tensorflow as tf  # type: ignore
@@ -55,11 +55,11 @@ class KerasModel(P2PFLModel):
     def __init__(
         self,
         model: tf.keras.Model,
-        params: Optional[Union[list[np.ndarray], bytes]] = None,
-        num_samples: Optional[int] = None,
-        contributors: Optional[list[str]] = None,
-        additional_info: Optional[dict[str, Any]] = None,
-        compression: Optional[dict[str, dict[str, Any]]] = None,
+        params: list[np.ndarray] | bytes | None = None,
+        num_samples: int | None = None,
+        contributors: list[str] | None = None,
+        additional_info: dict[str, Any] | None = None,
+        compression: dict[str, dict[str, Any]] | None = None,
     ) -> None:
         """Initialize the KerasModel."""
         super().__init__(model, params, num_samples, contributors, additional_info, compression)
@@ -80,7 +80,7 @@ class KerasModel(P2PFLModel):
         """
         return self.model.get_weights()
 
-    def set_parameters(self, params: Union[list[np.ndarray], bytes]) -> None:
+    def set_parameters(self, params: list[np.ndarray] | bytes) -> None:
         """
         Set the parameters of the model.
 

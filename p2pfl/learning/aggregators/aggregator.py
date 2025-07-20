@@ -19,7 +19,6 @@
 """Abstract aggregator."""
 
 import threading
-from typing import List
 
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
@@ -46,8 +45,8 @@ class Aggregator(NodeComponent):
 
     def __init__(self, disable_partial_aggregation: bool = False) -> None:
         """Initialize the aggregator."""
-        self.__train_set: List[str] = []  # TODO: Remove the trainset from the state
-        self.__models: List[P2PFLModel] = []
+        self.__train_set: list[str] = []  # TODO: Remove the trainset from the state
+        self.__models: list[P2PFLModel] = []
 
         # Initialize instance's partial_aggregation based on the class's support
         self.partial_aggregation: bool = self.__class__.SUPPORTS_PARTIAL_AGGREGATION
@@ -65,9 +64,9 @@ class Aggregator(NodeComponent):
         self._finish_aggregation_event.set()
 
         # Unhandled models
-        self.__unhandled_models: List[P2PFLModel] = []
+        self.__unhandled_models: list[P2PFLModel] = []
 
-    def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
+    def aggregate(self, models: list[P2PFLModel]) -> P2PFLModel:
         """
         Aggregate the models.
 
@@ -77,7 +76,7 @@ class Aggregator(NodeComponent):
         """
         raise NotImplementedError
 
-    def get_required_callbacks(self) -> List[str]:
+    def get_required_callbacks(self) -> list[str]:
         """
         Get the required callbacks for the aggregation.
 
@@ -87,7 +86,7 @@ class Aggregator(NodeComponent):
         """
         return []
 
-    def set_nodes_to_aggregate(self, nodes_to_aggregate: List[str]) -> None:
+    def set_nodes_to_aggregate(self, nodes_to_aggregate: list[str]) -> None:
         """
         List with the name of nodes to aggregate. Be careful, by setting new nodes, the actual aggregation will be lost.
 
@@ -117,7 +116,7 @@ class Aggregator(NodeComponent):
             self.__unhandled_models = []
             self._finish_aggregation_event.set()
 
-    def get_aggregated_models(self) -> List[str]:
+    def get_aggregated_models(self) -> list[str]:
         """
         Get the list of aggregated models.
 
@@ -130,7 +129,7 @@ class Aggregator(NodeComponent):
             models_added += n.get_contributors()
         return models_added
 
-    def add_model(self, model: P2PFLModel) -> List[str]:
+    def add_model(self, model: P2PFLModel) -> list[str]:
         """
         Add a model. The first model to be added starts the `run` method (timeout).
 
@@ -243,7 +242,7 @@ class Aggregator(NodeComponent):
         missing_models = set(self.__train_set) - set(agg_models)
         return missing_models
 
-    def __get_partial_aggregation(self, except_nodes: List[str]) -> P2PFLModel:
+    def __get_partial_aggregation(self, except_nodes: list[str]) -> P2PFLModel:
         """
         Obtain a partial aggregation.
 

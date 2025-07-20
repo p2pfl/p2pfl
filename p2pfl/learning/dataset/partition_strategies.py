@@ -19,7 +19,6 @@
 
 import random
 from abc import abstractmethod
-from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -40,7 +39,7 @@ class DataPartitionStrategy:
     @abstractmethod
     def generate_partitions(
         train_data: Dataset, test_data: Dataset, num_partitions: int, **kwargs
-    ) -> Tuple[List[List[int]], List[List[int]]]:
+    ) -> tuple[list[list[int]], list[list[int]]]:
         """
         Generate partitions of the dataset based on the specific strategy.
 
@@ -65,7 +64,7 @@ class RandomIIDPartitionStrategy(DataPartitionStrategy):
     @staticmethod
     def generate_partitions(
         train_data: Dataset, test_data: Dataset, num_partitions: int, **kwargs
-    ) -> Tuple[List[List[int]], List[List[int]]]:
+    ) -> tuple[list[list[int]], list[list[int]]]:
         """
         Generate partitions of the dataset using random sampling.
 
@@ -87,7 +86,7 @@ class RandomIIDPartitionStrategy(DataPartitionStrategy):
         )
 
     @staticmethod
-    def __partition_data(data: Dataset, num_partitions: int) -> List[List[int]]:
+    def __partition_data(data: Dataset, num_partitions: int) -> list[list[int]]:
         # Shuffle the indices
         indices = list(range(len(data)))
         random.Random(Settings.general.SEED).shuffle(indices)
@@ -120,7 +119,7 @@ class LabelSkewedPartitionStrategy(DataPartitionStrategy):
         num_partitions: int,
         label_tag: str = "label",
         **kwargs,
-    ) -> Tuple[List[List[int]], List[List[int]]]:
+    ) -> tuple[list[list[int]], list[list[int]]]:
         """
         Generate partitions of the dataset by grouping samples with the same label.
 
@@ -168,7 +167,7 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
     """
 
     @staticmethod
-    def _preprocess_alpha(alpha: Union[int, float, list[float]], num_partitions: int) -> list[float]:
+    def _preprocess_alpha(alpha: int | float | list[float], num_partitions: int) -> list[float]:
         """
         Convert alpha to the used format in the code (ndaarray).
 
@@ -200,7 +199,7 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
 
     @classmethod
     def _adapt_class_division_proportions(
-        cls, class_division_proportions: List[float], active_partitions: Optional[list[bool]]
+        cls, class_division_proportions: list[float], active_partitions: list[bool] | None
     ) -> list[float]:
         """
         Adapt the class division proportions to the active partitions.
@@ -215,7 +214,9 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
         if active_partitions is None:
             return class_division_proportions
         else:
-            unnormalized_result = [proportion * active for proportion, active in zip(class_division_proportions, active_partitions)]
+            unnormalized_result = [
+                proportion * active for proportion, active in zip(class_division_proportions, active_partitions, strict=False)
+            ]
             return [element / sum(unnormalized_result) for element in unnormalized_result]
 
     @classmethod
@@ -245,7 +246,7 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
     def _generate_proportions(
         cls,
         num_partitions,
-        class_proportions: dict[Union[str, int], float],
+        class_proportions: dict[str | int, float],
         min_partition_proportion: float,
         alpha: list[float],
         random_generator: np.random.Generator,
@@ -319,7 +320,7 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
         random_generator: np.random.Generator,
         balancing: bool,
         max_tries: int = 10,
-    ) -> List[List[int]]:
+    ) -> list[list[int]]:
         """
         Partition the data and return the list of indexes.
 
@@ -345,7 +346,7 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
             max_tries=max_tries,
         )
 
-        result: List[List[int]] = [[] for _ in range(num_partitions)]
+        result: list[list[int]] = [[] for _ in range(num_partitions)]
 
         for label in class_proportions:
             label_index = [idx for idx, lab in enumerate(data[label_tag]) if lab == label]
@@ -361,11 +362,11 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
         test_data: Dataset,
         num_partitions: int,
         label_tag: str = "label",
-        alpha: Union[int, float, list[float]] = 1,
+        alpha: int | float | list[float] = 1,
         min_partition_size: int = 2,
         self_balancing: bool = False,
         **kwargs,
-    ) -> Tuple[List[List[int]], List[List[int]]]:
+    ) -> tuple[list[list[int]], list[list[int]]]:
         """
         Generate partitions of the dataset using Dirichlet distribution.
 

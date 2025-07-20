@@ -18,7 +18,7 @@
 """ML Framework tests."""
 
 import contextlib
-from typing import Generator
+from collections.abc import Generator
 
 import numpy as np
 import pytest
@@ -72,7 +72,7 @@ def test_get_set_params_torch():
     # Set parameters
     p2pfl_model.set_parameters(params)
     # Check if the parameters are different (+1)
-    for layer_og, layer_new in zip(params_og, p2pfl_model.get_parameters()):
+    for layer_og, layer_new in zip(params_og, p2pfl_model.get_parameters(), strict=False):
         assert np.all(layer_og + 1 == layer_new)
 
 
@@ -88,7 +88,7 @@ def test_get_set_params_tensorflow():
     # Set parameters
     p2pfl_model.set_parameters(params)
     # Check if the parameters are different (+1)
-    for layer_og, layer_new in zip(params_og, p2pfl_model.get_parameters()):
+    for layer_og, layer_new in zip(params_og, p2pfl_model.get_parameters(), strict=False):
         assert np.all(layer_og + 1 == layer_new)
 
 
@@ -120,7 +120,7 @@ def __test_get_set_params_flax():
     # Set parameters
     p2pfl_model.set_parameters(params)
     # Check if the parameters are different (+1)
-    for layer_og, layer_new in zip(params_og, p2pfl_model.get_parameters()):
+    for layer_og, layer_new in zip(params_og, p2pfl_model.get_parameters(), strict=False):
         assert np.all(layer_og + 1 == layer_new)
 
 
@@ -165,7 +165,7 @@ def __test_encoding_flax():
     decoded_params, additional_info = p2pfl_model2.decode_parameters(encoded_params)
     p2pfl_model2.set_parameters(decoded_params)
 
-    for arr1, arr2 in zip(p2pfl_model1.get_parameters(), p2pfl_model2.get_parameters()):
+    for arr1, arr2 in zip(p2pfl_model1.get_parameters(), p2pfl_model2.get_parameters(), strict=False):
         assert np.array_equal(arr1, arr2)
         assert p2pfl_model1.additional_info == p2pfl_model2.additional_info
 

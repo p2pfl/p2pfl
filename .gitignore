@@ -160,3 +160,8 @@ Pipfile.lock
 junit
 .ruff_cache
 .vscode
+
+# UV specific
+.uv/
+uv.lock.tmp*
+.uv-cache/

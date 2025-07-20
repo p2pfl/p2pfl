@@ -19,7 +19,6 @@
 """PRE_SEND_MODEL command."""
 
 import time
-from typing import Optional
 
 from p2pfl.communication.commands.command import Command
 from p2pfl.communication.commands.weights.full_model_command import FullModelCommand
@@ -47,7 +46,7 @@ class PreSendModelCommand(Command):
             for hashed in [f"{str(hs)}-{round}" for hs in hashes]:
                 del node_state.sending_models[cmd][hashed]
 
-    def execute(self, source: str, round: int, *args, **kwargs) -> Optional[str]:
+    def execute(self, source: str, round: int, *args, **kwargs) -> str | None:
         """Execute the command."""
         if len(args) < 2:
             raise ValueError("Expected at least 2 args: original_cmd_intended and model_hash")

@@ -15,29 +15,34 @@ jobs:
     steps:  
       - uses: actions/checkout@v4
       
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install dependencies (poetry)
+      - name: Install dependencies
         run: |
-          pip install poetry
-          python -m poetry lock
-          python -m poetry install --all-extras
+          uv lock
+          uv sync --all-extras
 
       - name: Format (ruff)
         run: |
-          poetry run ruff format p2pfl
+          uv run ruff format p2pfl
 
       - name: Lint (ruff)
         run: |
-          poetry run ruff check p2pfl --output-format=github
+          uv run ruff check p2pfl --output-format=github
         continue-on-error: true
 
       - name: Type checks (mypy)
         run: |
-          poetry run mypy -p p2pfl
+          uv run mypy -p p2pfl
 
       - name: Generate certificates
         run: |
@@ -46,7 +51,8 @@ jobs:
 
       - name: Test (pytest)
         run: |
-          poetry run pytest -v --cov=p2pfl
+          source .venv/bin/activate
+          pytest -v --cov=p2pfl
 
       - name: Coverage comment
         id: coverage_comment

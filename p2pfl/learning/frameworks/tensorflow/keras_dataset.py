@@ -18,8 +18,6 @@
 
 """Keras dataset export strategy."""
 
-from typing import List, Optional
-
 import tensorflow as tf  # type: ignore
 from datasets import Dataset  # type: ignore
 
@@ -33,9 +31,9 @@ class KerasExportStrategy(DataExportStrategy):
     @staticmethod
     def export(
         data: Dataset,
-        batch_size: Optional[int] = None,
-        columns: Optional[List[str]] = None,
-        label_cols: Optional[List[str]] = None,
+        batch_size: int | None = None,
+        columns: list[str] | None = None,
+        label_cols: list[str] | None = None,
         **kwargs,
     ) -> tf.data.Dataset:
         """

@@ -181,7 +181,7 @@ def test_model_initialization_reproducibility(model_build_fn):
         params2 = model_build_fn().get_parameters()
 
         # Assert parameters are identical
-        for p1, p2 in zip(params1, params2):
+        for p1, p2 in zip(params1, params2, strict=False):
             assert np.array_equal(p1, p2), "Model parameters differ despite using the same seed"
 
         # Different seed should produce different parameters
@@ -190,7 +190,7 @@ def test_model_initialization_reproducibility(model_build_fn):
 
         # At least one parameter should be different
         any_different = False
-        for p1, p3 in zip(params1, params3):
+        for p1, p3 in zip(params1, params3, strict=False):
             if not np.array_equal(p1, p3):
                 any_different = True
                 break
@@ -239,7 +239,7 @@ def test_local_training_reproducibility(model_build_fn):
         eval1_1 = learner1_1.evaluate()
 
         # Assert parameters and evaluation metrics are identical or very close
-        for p1, p1_1 in zip(params1, params1_1):
+        for p1, p1_1 in zip(params1, params1_1, strict=False):
             assert np.array_equal(p1, p1_1), "Model parameters are not identical despite using equal seeds"
 
         for metric in eval1:
@@ -257,7 +257,7 @@ def test_local_training_reproducibility(model_build_fn):
         params2 = model2.get_parameters()
 
         # Assert parameters and evaluation metrics are identical or very close
-        for p1, p2 in zip(params1, params2):
+        for p1, p2 in zip(params1, params2, strict=False):
             assert not np.array_equal(p1, p2), "Model parameters not differ despite using different seed"
 
     except ImportError:
@@ -338,7 +338,7 @@ def __flatten_results(item):
         A list of numerical values found in the item.
 
     """
-    if isinstance(item, (int, float)):
+    if isinstance(item, int | float):
         return [item]  # Base case: if it's a number, return it in a list
     elif isinstance(item, list):
         return [sub_item for element in item for sub_item in __flatten_results(element)]

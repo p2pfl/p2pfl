@@ -1,10 +1,65 @@
-.*
-docs
-dist
-htmlcov
-junit
-logs
-MNIST
-other
+# Git
+.git
+.gitignore
+
+# Python
 __pycache__
-poetry.lock
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Documentation
+docs/
+*.md
+!README.md
+LICENSE*
+
+# Tests
+test/
+tests/
+junit/
+
+# Logs
+logs/
+*.log
+lightning_logs/
+
+# Data
+MNIST/
+data/
+datasets/
+
+# Other
+other/
+ignore/
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
