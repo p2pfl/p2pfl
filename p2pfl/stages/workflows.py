@@ -17,8 +17,6 @@
 #
 """Workflows."""
 
-from typing import List, Optional, Type
-
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
 from p2pfl.stages.stage import Stage, check_early_stop
@@ -28,17 +26,17 @@ from p2pfl.stages.stage_factory import StageFactory
 class StageWokflow:
     """Class to run a workflow of stages."""
 
-    def __init__(self, first_stage: Type[Stage]) -> None:
+    def __init__(self, first_stage: type[Stage]) -> None:
         """Initialize the workflow."""
         self.current_stage = first_stage
-        self.history: List[str] = []
+        self.history: list[str] = []
         self.finished = False
 
     def run(self, **kwargs) -> None:
         """Run the workflow."""
         self.finished = False
         # get state (need info from state)
-        state: Optional[NodeState] = kwargs.get("state")
+        state: NodeState | None = kwargs.get("state")
         if state:
             while True:
                 logger.debug(state.addr, f"🏃 Running stage: {(self.current_stage.name())}")

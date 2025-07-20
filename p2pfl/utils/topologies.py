@@ -20,7 +20,6 @@
 
 import time
 from enum import Enum
-from typing import List
 
 import numpy as np
 
@@ -111,7 +110,7 @@ class TopologyFactory:
         return matrix
 
     @staticmethod
-    def connect_nodes(adjacency_matrix: np.ndarray, nodes: List[Node]):
+    def connect_nodes(adjacency_matrix: np.ndarray, nodes: list[Node]):
         """
         Connect nodes based on the adjacency matrix.
 

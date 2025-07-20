@@ -17,8 +17,6 @@
 #
 """Wait aggregated models stage."""
 
-from typing import Optional, Type, Union
-
 from p2pfl.communication.commands.message.models_ready_command import ModelsReadyCommand
 from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
 from p2pfl.management.logger import logger
@@ -38,8 +36,8 @@ class WaitAggregatedModelsStage(Stage):
 
     @staticmethod
     def execute(
-        state: Optional[NodeState] = None, communication_protocol: Optional[CommunicationProtocol] = None, **kwargs
-    ) -> Union[Type["Stage"], None]:
+        state: NodeState | None = None, communication_protocol: CommunicationProtocol | None = None, **kwargs
+    ) -> type["Stage"] | None:
         """Execute the stage."""
         if state is None or communication_protocol is None:
             raise Exception("Invalid parameters on WaitAggregatedModelsStage.")

@@ -18,8 +18,6 @@
 
 """Round Finished Stage."""
 
-from typing import Optional, Type, Union
-
 from p2pfl.communication.commands.message.metrics_command import MetricsCommand
 from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
@@ -40,12 +38,12 @@ class RoundFinishedStage(Stage):
 
     @staticmethod
     def execute(
-        state: Optional[NodeState] = None,
-        learner: Optional[Learner] = None,
-        communication_protocol: Optional[CommunicationProtocol] = None,
-        aggregator: Optional[Aggregator] = None,
+        state: NodeState | None = None,
+        learner: Learner | None = None,
+        communication_protocol: CommunicationProtocol | None = None,
+        aggregator: Aggregator | None = None,
         **kwargs,
-    ) -> Union[Type["Stage"], None]:
+    ) -> type["Stage"] | None:
         """Execute the stage."""
         if state is None or communication_protocol is None or aggregator is None or learner is None:
             raise Exception("Invalid parameters on RoundFinishedStage.")

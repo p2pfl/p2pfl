@@ -6,7 +6,13 @@ transforming it to a Hugging Face dataset.
 
 Usage:
 ```bash
-poetry run python p2pfl/learning/pytorch/utils/torchvision_to_datasets.py \
+# First activate the virtual environment
+source .venv/bin/activate  # On Unix/macOS
+# or
+.venv\\Scripts\activate  # On Windows
+
+# Then run the script
+python p2pfl/learning/pytorch/utils/torchvision_to_datasets.py \
 	--dataset_name XXXX \
 	--cache_dir ./data \
 	--token XXXXXXXX \
@@ -16,7 +22,7 @@ poetry run python p2pfl/learning/pytorch/utils/torchvision_to_datasets.py \
     --public
 ```
 
-"""
+"""  # noqa: D301
 
 import argparse
 import os

@@ -18,7 +18,7 @@
 
 """StartLearning command."""
 
-from typing import Callable, Optional
+from collections.abc import Callable
 
 from p2pfl.communication.commands.command import Command
 
@@ -40,10 +40,10 @@ class StartLearningCommand(Command):
         self,
         source: str,
         round: int,
-        learning_rounds: Optional[int] = None,
-        learning_epochs: Optional[int] = None,
-        trainset_size: Optional[int] = None,
-        experiment_name: Optional[str] = None,
+        learning_rounds: int | None = None,
+        learning_epochs: int | None = None,
+        trainset_size: int | None = None,
+        experiment_name: str | None = None,
         **kwargs,
     ) -> None:
         """

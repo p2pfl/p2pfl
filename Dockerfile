@@ -1,28 +1,16 @@
-FROM python:3.9-slim
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
+# Install build dependencies
+RUN apt-get update && apt-get install -y gcc
+
+# Add source code to the image
+ADD . /app
 WORKDIR /app
 
-COPY . .
+# Install
+RUN uv sync --all-extras --locked
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=on \
-    PIP_DEFAULT_TIMEOUT=100 \
-    POETRY_VERSION=1.8.3 \
-    POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_CREATE=false \
-    HOME=/app
-
-# Update and install dependencies
-
-# Install Poetry
-RUN pip install "poetry==$POETRY_VERSION"
-
-# Install dependencies
-RUN poetry install --without dev,docs
-
-# Install torch (cpu) - poetry present problem with torch-cpu installation
-RUN poetry run pip install torch==2.2.2 torchvision==0.17.2 --index-url https://download.pytorch.org/whl/cpu
-
-# Install torchmetrics and pytorch-lightning
-RUN poetry run pip install torchmetrics==1.4.0.post0 pytorch-lightning==1.9.5
+# Default command - runs bash shell with environment activated
+# You can override this to run p2pfl directly: docker run <image> /bin/bash -c "source .venv/bin/activate && p2pfl"
+# Or run any other command: docker run <image> /bin/bash -c "source .venv/bin/activate && python script.py"
+CMD ["/bin/bash", "-c", "source .venv/bin/activate && bash"]

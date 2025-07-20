@@ -18,8 +18,6 @@
 
 """GRPC implementation of the `CommunicationProtocol`."""
 
-from typing import Optional
-
 from p2pfl.communication.commands.command import Command
 from p2pfl.communication.protocols.protobuff.grpc.client import GrpcClient
 from p2pfl.communication.protocols.protobuff.grpc.server import GrpcServer
@@ -30,7 +28,7 @@ from p2pfl.utils.node_component import allow_no_addr_check
 class GrpcCommunicationProtocol(ProtobuffCommunicationProtocol):
     """GRPC communication protocol."""
 
-    def __init__(self, commands: Optional[list[Command]] = None) -> None:
+    def __init__(self, commands: list[Command] | None = None) -> None:
         """Initialize the GRPC communication protocol."""
         super().__init__(commands)
 

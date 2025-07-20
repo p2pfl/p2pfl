@@ -283,7 +283,7 @@ def test_topk_sparsification(sample_k: float):
     decompressed_parameters = technique.reverse_strategy(compressed_parameters, technique_params)
     total_decompressed_size = sum(layer.size for layer in decompressed_parameters)
     assert total_decompressed_size == total_original_size
-    for orig, decomp in zip(original_params, decompressed_parameters):
+    for orig, decomp in zip(original_params, decompressed_parameters, strict=False):
         assert orig.shape == decomp.shape, "Decompressed shape does not match original"
 
 
@@ -316,7 +316,7 @@ def test_lowrank(threshold: float):
     assert total_original == total_decompressed, "Number of elements not matching after reverse strategy."
 
     tol = 0.05
-    for orig, decomp in zip(original_params, decompressed_parameters):
+    for orig, decomp in zip(original_params, decompressed_parameters, strict=False):
         if orig.ndim == 2:
             # relative error to compressed layers, expected ~= 1 - threshold
             energy_total = np.sum(np.linalg.svd(orig, full_matrices=False)[1] ** 2)
@@ -444,7 +444,7 @@ def test_manager_multiple_techniques(compression_manager: CompressionManager):
     assert pickle.loads(decompressed_bytes)["additional_info"]["applied_techniques"][1][0] == "low_rank"
 
     decompressed_params, decompressed_info = compression_manager.reverse(compressed_data)
-    for orig, decomp in zip(original_params, decompressed_params):
+    for orig, decomp in zip(original_params, decompressed_params, strict=False):
         assert orig.shape == decomp.shape
     assert len(decompressed_params) == len(original_params)
 

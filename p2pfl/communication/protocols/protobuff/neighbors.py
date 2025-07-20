@@ -20,7 +20,7 @@
 
 import threading
 import time
-from typing import Callable
+from collections.abc import Callable
 
 from p2pfl.communication.protocols.exceptions import NeighborNotConnectedError
 from p2pfl.communication.protocols.protobuff.client import ProtobuffClient
