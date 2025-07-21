@@ -94,6 +94,7 @@ class FedXgbBagging(Aggregator):
 
         # Return an aggregated p2pfl model
         returned_model = models[0].build_copy(params=[np.array(global_model)], num_samples=total_samples, contributors=contributors)
+        os.remove(global_model)  # Clean up the temporary file
         return returned_model
 
 
