@@ -92,7 +92,6 @@ class XGBoostLearner(Learner):
             os.remove(previous_model_file)  # Clean up the temporary file after training
         except (NotFittedError, Exception) as e:
             # If no previous model exists or there's an error, start fresh
-            print(f"Starting fresh training for model {self.get_model().id}: {e}")
             model.fit(
                 X_train,
                 y_train,

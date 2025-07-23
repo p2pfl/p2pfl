@@ -63,7 +63,6 @@ class FedXgbBagging(Aggregator):
 
         # Total Samples
         total_samples = sum([m.get_num_samples() for m in models])
-        print("Running FedXgbBagging with {} models and {} total samples".format(len(models), total_samples))
 
         # Add weighted models
         global_model = models[0].get_file_name()
@@ -75,7 +74,6 @@ class FedXgbBagging(Aggregator):
         os.remove(global_model)  # Remove the file to avoid conflicts
         if len(models) > 1:
             for m in models[1:]:
-                print("AGGREGATING BOOSTERS!")
                 model_file = m.get_file_name()
                 with open(model_file, "r") as f:
                     current_model_json = json.load(f)
@@ -86,7 +84,6 @@ class FedXgbBagging(Aggregator):
         global_model = global_model
         with open(global_model, "w") as f:
             json.dump(global_model_json, f)
-        print(f"Aggregated model saved to {global_model}")
         # Get contributors
         contributors: list[str] = []
         for m in models:
@@ -94,7 +91,7 @@ class FedXgbBagging(Aggregator):
 
         # Return an aggregated p2pfl model
         returned_model = models[0].build_copy(params=[np.array(global_model)], num_samples=total_samples, contributors=contributors)
-        os.remove(global_model)  # Clean up the temporary file
+        # os.remove(global_model)  # Clean up the temporary file
         return returned_model
 
 

@@ -72,11 +72,9 @@ class XGBoostModel(P2PFLModel):
             rand = uuid.uuid4().hex
             file_name = os.path.join(temp_dir, f"temp_model{self.id}_{rand}_{self.model._estimator_type}.json")
             self.model.save_model(file_name)  # Save to JSON for compatibility
-            print(f"MODEL SAVED TO {file_name}")
             arr = [np.array(file_name)]
             return arr
         except NotFittedError:
-            print(f"NOT FITTED FOR MODEL {self.id}")
             return []
 
     def get_file_name(self) -> str:
@@ -90,10 +88,8 @@ class XGBoostModel(P2PFLModel):
         file_name = os.path.join(temp_dir, f"temp_model{self.id}_{rand}_{self.model._estimator_type}.json")
         try:
             self.model.save_model(file_name)  # Save to JSON for compatibility
-            print(f"MODEL SAVED TO {file_name}")
             return file_name
         except NotFittedError:
-            print(f"NOT FITTED FOR MODEL {self.id}")
             raise NotFittedError("Model is not fitted, cannot get file name.")
 
     def set_parameters(self, params: Union[List[np.ndarray], bytes]) -> None:
