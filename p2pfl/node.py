@@ -415,7 +415,7 @@ class Node:
 
             # Set up wandb logging only if wandb is available
             if WANDB_AVAILABLE:
-                logger.setup_wandb(run_name=experiment_name, experiment=self.state.experiment)
+                logger.connect(run_name=experiment_name, experiment=self.state.experiment)
             else:
                 logger.info(self.addr, "WandB not available or disabled. Experiment will be logged locally only.")
 

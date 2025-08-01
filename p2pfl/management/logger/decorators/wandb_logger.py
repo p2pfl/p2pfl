@@ -19,7 +19,7 @@
 """WandB Logger Decorator."""
 
 import os
-from typing import Any, Dict, Optional, Literal
+from typing import Any, Dict, Literal, Optional
 
 try:
     import wandb
@@ -27,11 +27,10 @@ try:
 
     WANDB_AVAILABLE = True
 except ImportError:
-    wandb = None # type: ignore
-    Run = None # type: ignore
+    wandb = None  # type: ignore
+    Run = None  # type: ignore
     WANDB_AVAILABLE = False
 
-from p2pfl.experiment import Experiment
 from p2pfl.management.logger.decorators.logger_decorator import LoggerDecorator
 from p2pfl.management.logger.logger import P2PFLogger
 
@@ -55,26 +54,33 @@ class WandbLogger(LoggerDecorator):
         else:
             super().debug("WandbLogger", "WandB not available. Logging will be disabled for WandB.")
 
-    def setup_wandb(
-        self,
-        project: str = "p2pfl",
-        experiment: Optional[Experiment] = None,
-        run_name: Optional[str] = None,
-    ) -> None:
+    def connect(self, **kwargs):
         """
-        Configure and initialize WandB. This should be called before any logging.
+        Connect and setup WandB logging.
 
         Args:
-            project (str): The name of the project where you're sending the new run.
-            experiment (Experiment, optional): The p2pfl experiment object.
-            run_name (str, optional): A short display name for this run.
+            **kwargs: Connection parameters. Expected keys:
+                - project: The project name (or WANDB_PROJECT env var, default: "p2pfl")
+                - entity: The entity/username (or WANDB_ENTITY env var)
+                - experiment: The p2pfl experiment object
+                - run_name: A short display name for this run
+                - mode: WandB mode ("online", "offline", "disabled")
 
         """
         if not self._wandb_enabled:
             super().debug("WandbLogger", "WandB not available or disabled. Skipping WandB setup.")
             return
 
+        # Get parameters from kwargs or environment variables
+        project = kwargs.get("project") or os.environ.get("WANDB_PROJECT") or "p2pfl"
+        entity = kwargs.get("entity") or os.environ.get("WANDB_ENTITY")
+        experiment = kwargs.get("experiment")
+        run_name = kwargs.get("run_name")
+        mode = kwargs.get("mode")
+
         self._project = project
+        if entity:
+            self._entity = entity
 
         if experiment and WandbLogger._run is not None:
             self._run_name = experiment.exp_name
@@ -97,7 +103,11 @@ class WandbLogger(LoggerDecorator):
         elif run_name:
             self._run_name = run_name
 
-    def _init_wandb(self) -> None:
+        # Initialize wandb if not already done
+        if WandbLogger._run is None:
+            self._init_wandb(mode=mode)
+
+    def _init_wandb(self, mode: Optional[Literal["online", "offline", "disabled"]] = None) -> None:
         """Initialize a wandb run."""
         if not WANDB_AVAILABLE:
             return
@@ -107,19 +117,20 @@ class WandbLogger(LoggerDecorator):
 
         try:
             # Determine wandb mode based on environment and configuration
-            wandb_mode = self._determine_wandb_mode()
+            if mode is None:
+                mode = self._determine_wandb_mode()
 
             WandbLogger._run = wandb.init(
                 project=self._project,
                 name=self._run_name,
                 config=self._config,
-                mode=wandb_mode,
+                mode=mode,
             )
 
-            if wandb_mode == "disabled":
+            if mode == "disabled":
                 self._wandb_enabled = False
                 super().debug("WandbLogger", "WandB initialized in disabled mode")
-            elif wandb_mode == "offline":
+            elif mode == "offline":
                 super().debug("WandbLogger", "WandB initialized in offline mode")
             else:
                 super().debug("WandbLogger", "WandB initialized in online mode")

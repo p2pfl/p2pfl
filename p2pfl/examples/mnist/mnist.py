@@ -220,7 +220,7 @@ if __name__ == "__main__":
 
     # Set logger
     if args.token != "":
-        logger.connect_web("http://localhost:3000/api/v1", args.token)
+        logger.connect(url="http://localhost:3000/api/v1", key=args.token)
 
     # Seed
     if args.seed is not None:

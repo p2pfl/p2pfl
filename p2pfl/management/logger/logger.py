@@ -129,16 +129,18 @@ class P2PFLogger:
         stream_handler.setFormatter(cmd_formatter)
         self._logger.addHandler(stream_handler)  # not async
 
-    def connect_web(self, url: str, key: str) -> None:
+    def connect(self, **kwargs):
         """
-        Connect to the web services.
+        Establish connection/setup for the logger.
+
+        This method should be overridden by loggers that require connection setup.
+        By default, it does nothing.
 
         Args:
-            url: The URL of the web services.
-            key: The API key.
+            **kwargs: Connection parameters specific to each logger type.
 
         """
-        raise NotImplementedError("Web Services not implemented.")
+        pass
 
     def cleanup(self) -> None:
         """Cleanup the logger."""
@@ -149,20 +151,6 @@ class P2PFLogger:
         # Remove handlers from the logger
         for handler in self._logger.handlers:
             self._logger.removeHandler(handler)
-
-    def setup_wandb(
-        self,
-        project: str = "p2pfl",
-        experiment: Optional[Experiment] = None,
-        run_name: Optional[str] = None,
-    ) -> None:
-        """
-        Set up Weights & Biases logging.
-
-        This method is a placeholder and is meant to be implemented by a decorator.
-        By default, it does nothing.
-        """
-        pass
 
     def finish(self) -> None:
         """

@@ -99,7 +99,7 @@ def run_from_yaml(yaml_path: str, debug: bool = False) -> None:
 
     web_logger = config.get("web_logger", {})
     if web_logger.get("enabled", False):
-        logger.connect_web(web_logger.get("url"), web_logger.get("token"))
+        logger.connect(url=web_logger.get("url"), key=web_logger.get("token"))
 
     ###########
     # Dataset #

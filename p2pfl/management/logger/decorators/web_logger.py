@@ -20,6 +20,7 @@
 
 import datetime
 import logging
+import os
 from typing import Any, Dict, Optional
 
 from p2pfl.experiment import Experiment
@@ -97,17 +98,28 @@ class WebP2PFLogger(LoggerDecorator):
         super().__init__(p2pflogger)
         self._p2pfl_web_services: Optional[P2pflWebServices] = None
 
-    def connect_web(self, url: str, key: str) -> None:
+    def connect(self, **kwargs):
         """
         Connect to the web services.
 
         Args:
-            url: The URL of the web services.
-            key: The API key.
+            **kwargs: Connection parameters. Expected keys:
+                - url: The URL of the web services (or WEB_LOGGER_URL env var)
+                - key: The API key (or WEB_LOGGER_KEY env var)
 
         """
         if self._p2pfl_web_services is not None:
             raise Exception("Web services already connected.")
+
+        # Get parameters from kwargs or environment variables
+        url = kwargs.get("url") or os.environ.get("WEB_LOGGER_URL")
+        key = kwargs.get("key") or os.environ.get("WEB_LOGGER_KEY")
+
+        if not url:
+            raise ValueError("Web logger URL is required. Set via 'url' parameter or WEB_LOGGER_URL environment variable.")
+        if not key:
+            raise ValueError("Web logger API key is required. Set via 'key' parameter or WEB_LOGGER_KEY environment variable.")
+
         self._p2pfl_web_services = P2pflWebServices(url, key)
         self.add_handler(P2pflWebLogHandler(self._p2pfl_web_services))
 

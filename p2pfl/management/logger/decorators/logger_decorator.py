@@ -45,33 +45,21 @@ class LoggerDecorator(P2PFLogger):
         """
         self._p2pfl_logger = logger() if callable(logger) else logger
 
-    def connect_web(self, url: str, key: str) -> None:
+    def connect(self, **kwargs):
         """
-        Connect to the web services.
+        Establish connection/setup for the logger.
+
+        Delegates to the wrapped logger's connect method.
 
         Args:
-            url: The URL of the web services.
-            key: The API key.
+            **kwargs: Connection parameters specific to each logger type.
 
         """
-        self._p2pfl_logger.connect_web(url, key)
+        self._p2pfl_logger.connect(**kwargs)
 
     def cleanup(self) -> None:
         """Cleanup the logger."""
         self._p2pfl_logger.cleanup()
-
-    def setup_wandb(
-        self,
-        project: str = "p2pfl",
-        experiment: Optional[Experiment] = None,
-        run_name: Optional[str] = None,
-    ) -> None:
-        """Pass the W&B setup call to the wrapped logger."""
-        self._p2pfl_logger.setup_wandb(
-            project=project,
-            experiment=experiment,
-            run_name=run_name,
-        )
 
     def finish(self) -> None:
         """Pass the finish call to the wrapped logger."""
