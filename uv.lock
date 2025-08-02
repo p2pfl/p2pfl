@@ -500,6 +500,18 @@ wheels = [
 ]
 
 [[package]]
+name = "deprecated"
+version = "1.2.18"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "wrapt" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/98/97/06afe62762c9a8a86af0cfb7bfdab22a43ad17138b07af5b1a58442690a2/deprecated-1.2.18.tar.gz", hash = "sha256:422b6f6d859da6f2ef57857761bfb392480502a64c3028ca9bbe86085d72115d", size = 2928744, upload-time = "2025-01-27T10:46:25.7Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6e/c6/ac0b6c1e2d138f1002bcf799d330bd6d85084fece321e662a14223794041/Deprecated-1.2.18-py2.py3-none-any.whl", hash = "sha256:bd5011788200372a32418f888e326a09ff80d0214bd961147cfed01b5c018eec", size = 9998, upload-time = "2025-01-27T10:46:09.186Z" },
+]
+
+[[package]]
 name = "dill"
 version = "0.3.7"
 source = { registry = "https://pypi.org/simple" }
@@ -1807,6 +1819,24 @@ wheels = [
 ]
 
 [[package]]
+name = "opendp"
+version = "0.13.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "deprecated" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/93/ef/d84d4107f5baf07c2161d01d381bb98a0167ee66ff9d17f322440a3ca051/opendp-0.13.0.tar.gz", hash = "sha256:20b1ce5493a55967cc1d2cce27cd662a2b181e2ceac6607f997cee71d53c76ad", size = 551246, upload-time = "2025-04-22T20:07:08.508Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/14/18/4bfe23b44c7f700e485188fcce2432f075613630fed8632a065086042bdc/opendp-0.13.0-cp39-abi3-macosx_10_13_x86_64.whl", hash = "sha256:a16141ad9ffbc84614f3b3cc437609e73e5c91cf7e1e3a8fef52d5436fb3de75", size = 23971957, upload-time = "2025-04-22T20:06:45.425Z" },
+    { url = "https://files.pythonhosted.org/packages/d8/01/69084ea070945ec01257221e4e3f4470bcb96561589fb6209cb6721d8dca/opendp-0.13.0-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:e8abd61078f47df17b907bc04d8946772b6a7036e0e9a7d1313e316901ec0353", size = 22686053, upload-time = "2025-04-22T20:06:50.07Z" },
+    { url = "https://files.pythonhosted.org/packages/81/bb/402b7790af8835eff6de013285ba94b2dfe1993fbbab91e335faf088b9ad/opendp-0.13.0-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:eb520c05ba380996efc75b734f5ea49cb2abb99daaf51942104f14265bd4bf60", size = 25720927, upload-time = "2025-04-22T20:06:52.941Z" },
+    { url = "https://files.pythonhosted.org/packages/bb/a7/8ac9eff217a921c590dd7fbca228733ff055fea4a8ece6d8c485b759c0e3/opendp-0.13.0-cp39-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:0566c91fb554dc96d24b644d9c835d16f4a38aff80cf660c10398fc2172f2763", size = 25762274, upload-time = "2025-04-22T20:06:56.527Z" },
+    { url = "https://files.pythonhosted.org/packages/ce/bc/1bfc879da7457235958a915aee13d60998392a4907aacae670f047cdfbe3/opendp-0.13.0-cp39-abi3-win32.whl", hash = "sha256:fc5dd44668a1eeb14b8522b4f7615c6529609ef2014e94b94b70540cc053f69e", size = 19983897, upload-time = "2025-04-22T20:07:00.216Z" },
+    { url = "https://files.pythonhosted.org/packages/de/3f/d88d913dbb44914ad5edc73a046061c14be85af3bb46f2564b61d9aad32c/opendp-0.13.0-cp39-abi3-win_amd64.whl", hash = "sha256:93b9c568108822bf4e0d185d15be0bb7435202cea27d1bb5c7d0ca77dc06d070", size = 22777777, upload-time = "2025-04-22T20:07:03.385Z" },
+    { url = "https://files.pythonhosted.org/packages/42/29/8a9faca009495306a0acada4704cb78eeeb71dfa1b5df35a99eba3fc9a9b/opendp-0.13.0-py3-none-manylinux_2_24_aarch64.whl", hash = "sha256:bef37fd3959099681ba04d14cb3eca3d146c510bf7a8c46ea9d1d86cdfa5c7b9", size = 24721061, upload-time = "2025-04-22T20:07:06.42Z" },
+]
+
+[[package]]
 name = "opt-einsum"
 version = "3.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1914,6 +1944,7 @@ dependencies = [
     { name = "grpcio-tools" },
     { name = "matplotlib" },
     { name = "numpy" },
+    { name = "opendp" },
     { name = "pandas" },
     { name = "protobuf" },
     { name = "psutil" },
@@ -1973,6 +2004,7 @@ requires-dist = [
     { name = "lightning", marker = "extra == 'torch'", specifier = ">=2.4.0,<3" },
     { name = "matplotlib", specifier = ">=3.8.3,<4" },
     { name = "numpy", specifier = ">=1.20,<2.0" },
+    { name = "opendp", specifier = ">=0.12.0" },
     { name = "pandas", specifier = ">=2.2.3,<3" },
     { name = "protobuf", specifier = ">=5.29.1" },
     { name = "psutil", specifier = ">=5.9.8,<6" },

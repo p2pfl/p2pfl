@@ -83,8 +83,13 @@ Refs:
 """
 
 import numpy as np
+import opendp.prelude as dp
 
 from p2pfl.learning.compression.base_compression_strategy import TensorCompressor
+
+
+# Allows you to use features added by the community
+dp.enable_features('contrib')
 
 
 class DifferentialPrivacyCompressor(TensorCompressor):
@@ -112,8 +117,10 @@ class DifferentialPrivacyCompressor(TensorCompressor):
         self,
         params: list[np.ndarray],
         clip_norm: float = 1.0,
-        noise_multiplier: float = 1.0,
+        epsilon: float = 3.0,
+        delta: float = 1e-5,
         previous_params: list[np.ndarray] | None = None,
+        noise_type: str = "gaussian",
     ) -> tuple[list[np.ndarray], dict]:
         """
         Apply differential privacy to model parameters.
@@ -121,8 +128,15 @@ class DifferentialPrivacyCompressor(TensorCompressor):
         Args:
             params: Current model parameters
             clip_norm: Maximum L2 norm for clipping (C)
-            noise_multiplier: Noise scale relative to clip_norm (σ = C * noise_multiplier)
+            epsilon: The privacy budget (ε). Lower values correspond
+                to stronger privacy guarantees. Represents the maximum "information leakage"
+                allowed for a single data point. A typical value is between 0.1 and 10.0.
+            delta: The privacy budget (δ), typically a small number (e.g., 1e-5).
+                It represents the probability that the privacy guarantee of epsilon
+                is broken. It should be less than 1/N, where N is the number of
+                data points in the dataset. This parameter is only used for Gaussian noise.
             previous_params: Previous round parameters (if None, treats params as update)
+            noise_type: Type of noise to add ("gaussian" or "laplace")
 
         Returns:
             Tuple of (dp_params, dp_info) where dp_info contains privacy parameters
@@ -141,26 +155,39 @@ class DifferentialPrivacyCompressor(TensorCompressor):
             computed_update = True
 
         # Step 1: Compute global L2 norm across all parameters
-        total_norm = 0.0
-        for param in update_params:
-            total_norm += np.sum(param**2)
-        total_norm = np.sqrt(total_norm)
+        flat_update = np.concatenate([p.flatten() for p in update_params])
+        total_norm = np.linalg.norm(flat_update)
 
         # Step 2: Clip if necessary
-        clipped_params = []
         if total_norm > clip_norm:
-            clip_factor = clip_norm / total_norm
-            for param in update_params:
-                clipped_params.append(param * clip_factor)
+            clip_factor = clip_norm / (total_norm + 1e-6) # Add epsilon for stability
+            clipped_params = [p * clip_factor for p in update_params]
         else:
             clipped_params = [p.copy() for p in update_params]
 
-        # Step 3: Add Gaussian noise
-        noise_scale = clip_norm * noise_multiplier
+        # Step 3: Add calibrated noise
+        if noise_type == "laplace":
+            # For Laplace, use L1 distance and calibrate scale for (epsilon)-DP
+            scale = clip_norm / epsilon
+            distance_metric = dp.l1_distance(T=float)
+            noise_mechanism = dp.m.then_laplace
+        elif noise_type == "gaussian":
+            # For Gaussian, use L2 distance and calibrate scale for (epsilon, delta)-DP
+            scale = clip_norm * np.sqrt(2 * np.log(1.25 / delta)) / epsilon
+            distance_metric = dp.l2_distance(T=float)
+            noise_mechanism = dp.m.then_gaussian
+        else:
+            raise ValueError("The parameter `noise_type` must be 'gaussian' or 'laplace'")
+
         noisy_updates = []
         for param in clipped_params:
-            noise = np.random.normal(0, noise_scale, param.shape).astype(param.dtype)
-            noisy_updates.append(param + noise)
+            # Define the measurement space for this specific parameter vector
+            space = dp.vector_domain(dp.atom_domain(T=float, nan=False), param.size), distance_metric
+            # Build the final mechanism by applying the chosen noise function
+            mech = space >> noise_mechanism(scale=scale)
+            # Apply the mechanism to the flattened parameter vector
+            noisy_flat_param = mech(param.flatten().tolist())
+            noisy_updates.append(np.array(noisy_flat_param).reshape(param.shape))  
 
         # Step 4: If we computed update, add it back to previous params
         if computed_update and previous_params is not None:
@@ -174,10 +201,12 @@ class DifferentialPrivacyCompressor(TensorCompressor):
         dp_info = {
             "dp_applied": True,
             "clip_norm": clip_norm,
-            "noise_multiplier": noise_multiplier,
-            "noise_scale": noise_scale,
+            "epsilon": epsilon,
+            "delta": delta if noise_type == "gaussian" else None,
+            "noise_type": noise_type,
+            "noise_scale": scale,
             "original_norm": float(total_norm),
-            "was_clipped": total_norm > clip_norm,
+            "was_clipped": bool(total_norm > clip_norm),
             "computed_update": computed_update,
         }
 
