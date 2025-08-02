@@ -17,8 +17,6 @@
 #
 """Virtual Node Learner."""
 
-from typing import Dict, List, Union
-
 import numpy as np
 
 from p2pfl.learning.aggregators.aggregator import Aggregator
@@ -42,7 +40,7 @@ class VirtualNodeLearner(Learner):
         self.learner.set_addr(addr)
         return super().set_addr(addr)
 
-    def set_model(self, model: Union[P2PFLModel, List[np.ndarray], bytes]) -> None:
+    def set_model(self, model: P2PFLModel | list[np.ndarray] | bytes) -> None:
         """
         Set the model of the learner (not weights).
 
@@ -129,7 +127,7 @@ class VirtualNodeLearner(Learner):
         # TODO: Need to implement this!
         raise NotImplementedError
 
-    def evaluate(self) -> Dict[str, float]:
+    def evaluate(self) -> dict[str, float]:
         """
         Evaluate the model with actual parameters.
 
@@ -142,7 +140,7 @@ class VirtualNodeLearner(Learner):
                 lambda actor, addr, learner: actor.evaluate.remote(addr, learner),
                 (str(self.addr), self.learner),
             )
-            result: Dict[str, float] = self.actor_pool.get_learner_result(str(self.addr), None)[1]
+            result: dict[str, float] = self.actor_pool.get_learner_result(str(self.addr), None)[1]
             return result
         except Exception as ex:
             logger.error(self.addr, f"An error occurred during remote evaluation: {ex}")

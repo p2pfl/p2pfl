@@ -10,7 +10,7 @@ web_logger:
 network:
   package: "p2pfl.communication.protocols.protobuff.memory"
   protocol: "MemoryCommunicationProtocol"
-  nodes: 1
+  nodes: 4
   topology: "star"   # Network topology: "line", "ring", "star", "full", null for custom
   additional_connections:
   #  - [0, 2]              # Connect node 0 to Node 2 (indices)
@@ -19,21 +19,21 @@ network:
 # Defines experiment settings
 experiment:
   name: "cifar10_experiment"
-  rounds: 20
+  rounds: 130
   epochs: 1
   trainset_size: 4
   seed: 666
-  wait_timeout: 60  # Timeout in minutes for wait_to_finish (default: 60 minutes)
+  wait_timeout: 120  # Timeout in minutes for wait_to_finish
 
   # Dataset settings
   dataset:
     source: "huggingface" # Dataset source: "huggingface", "csv", etc.
     name: "p2pfl/CIFAR10"
-    batch_size: 64
+    batch_size: 256
     # Use our custom CIFAR10 transform function (normalization only, no data augmentation)
     transforms:
       package: "p2pfl.examples.cifar10.transforms"
-      function: "get_cifar10_transform"
+      function: "get_cifar10_transforms"
       params: {}
     partitioning:
       package: "p2pfl.learning.dataset.partition_strategies"
@@ -89,8 +89,8 @@ settings:
     SERVER_KEY: None
     CLIENT_KEY: None
   heartbeat:
-    period: 2
-    timeout: 10
+    period: 10
+    timeout: 60
     wait_convergence: 4
     exclude_beat_logs: true
   gossip:
@@ -100,10 +100,11 @@ settings:
     amount_last_messages_saved: 1000
     models_period: 1
     models_per_round: 4
-    exit_on_x_equal_rounds: 50
+    exit_on_x_equal_rounds: 150
   training:
     vote_timeout: 60
     aggregation_timeout: 300
+    ray_actor_pool_size: 1
 
 # Profiling configuration
 profiling:

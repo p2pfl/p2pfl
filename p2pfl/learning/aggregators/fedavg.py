@@ -18,8 +18,6 @@
 
 """Federated Averaging (FedAvg) Aggregator."""
 
-from typing import List
-
 import numpy as np
 
 from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
@@ -39,7 +37,7 @@ class FedAvg(Aggregator):
         """Initialize the aggregator."""
         super().__init__(disable_partial_aggregation=disable_partial_aggregation)
 
-    def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
+    def aggregate(self, models: list[P2PFLModel]) -> P2PFLModel:
         """
         Aggregate the models.
 
@@ -48,6 +46,9 @@ class FedAvg(Aggregator):
 
         Returns:
             A P2PFLModel with the aggregated.
+
+        Raises:
+            NoModelsToAggregateError: If there are no models to aggregate.
 
         """
         # Check if there are models to aggregate
@@ -70,7 +71,7 @@ class FedAvg(Aggregator):
         accum = [np.divide(layer, total_samples) for layer in accum]
 
         # Get contributors
-        contributors: List[str] = []
+        contributors: list[str] = []
         for m in models:
             contributors = contributors + m.get_contributors()
 

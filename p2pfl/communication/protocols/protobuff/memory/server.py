@@ -18,7 +18,6 @@
 """In-memory server."""
 
 import threading
-from typing import Optional
 
 from p2pfl.communication.commands.command import Command
 from p2pfl.communication.protocols.protobuff.gossiper import Gossiper
@@ -77,7 +76,7 @@ class MemoryServer(ProtobuffServer):
         self,
         gossiper: Gossiper,
         neighbors: Neighbors,
-        commands: Optional[list[Command]] = None,
+        commands: list[Command] | None = None,
     ) -> None:
         """Initialize the in-memory server."""
         # Super

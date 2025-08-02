@@ -1,7 +1,8 @@
 """Component of a node (Learner, Aggregator, Communication Protocol...)."""
 
 from abc import ABCMeta
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 def allow_no_addr_check(method: Callable[..., Any]) -> Callable[..., Any]:

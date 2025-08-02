@@ -18,7 +18,6 @@
 """Utils."""
 
 import time
-from typing import List, Optional, Union
 
 import numpy as np
 
@@ -60,6 +59,7 @@ def set_standalone_settings() -> None:
     Settings.gossip.EXIT_ON_X_EQUAL_ROUNDS = 10
     Settings.training.VOTE_TIMEOUT = 60
     Settings.training.AGGREGATION_TIMEOUT = 60
+    Settings.training.RAY_ACTOR_POOL_SIZE = 1
     Settings.general.LOG_LEVEL = "INFO"
     logger.set_level(Settings.general.LOG_LEVEL)  # Refresh (maybe already initialized)
 
@@ -67,7 +67,7 @@ def set_standalone_settings() -> None:
 def wait_convergence(
     nodes: list[Node | CommunicationProtocol],
     n_neis: int,
-    wait: Union[int, float] = 5,
+    wait: int | float = 5,
     only_direct: bool = False,
     debug: bool = False,
 ) -> None:
@@ -101,7 +101,7 @@ def wait_convergence(
             raise AssertionError()
 
 
-def full_connection(node: Node, nodes: List[Node]) -> None:
+def full_connection(node: Node, nodes: list[Node]) -> None:
     """
     Connect node to all nodes.
 
@@ -114,7 +114,7 @@ def full_connection(node: Node, nodes: List[Node]) -> None:
         node.connect(n.addr)
 
 
-def wait_to_finish(nodes: List[Node], timeout=3600, debug=False) -> None:
+def wait_to_finish(nodes: list[Node], timeout=3600, debug=False) -> None:
     """
     Wait until all nodes have finished the workflow.
 
@@ -143,7 +143,7 @@ def wait_to_finish(nodes: List[Node], timeout=3600, debug=False) -> None:
             raise TimeoutError(f"Timeout waiting for nodes to finish (elapsed: {int(elapsed//60)} minutes {int(elapsed%60)} seconds)")
 
 
-def check_equal_models(nodes: List[Node]) -> None:
+def check_equal_models(nodes: list[Node]) -> None:
     """
     Check that all nodes have the same model.
 
@@ -154,7 +154,7 @@ def check_equal_models(nodes: List[Node]) -> None:
         AssertionError: If the condition is not met.
 
     """
-    model_params: Optional[List[np.ndarray]] = None
+    model_params: list[np.ndarray] | None = None
     first = True
     for node in nodes:
         if first:

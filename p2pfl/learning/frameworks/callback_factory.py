@@ -18,8 +18,6 @@
 
 """P2PFLCallback factory."""
 
-from typing import Dict, List, Type
-
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.frameworks import Framework
 from p2pfl.learning.frameworks.callback import P2PFLCallback
@@ -32,10 +30,10 @@ from p2pfl.learning.frameworks.callback import P2PFLCallback
 class CallbackFactory:
     """Factory for creating callbacks based on learner framework and aggregator requirements."""
 
-    _callback_registry: Dict[str, List[Type[P2PFLCallback]]] = {}
+    _callback_registry: dict[str, list[type[P2PFLCallback]]] = {}
 
     @classmethod
-    def register_callback(cls, learner: str, callback: Type[P2PFLCallback]):
+    def register_callback(cls, learner: str, callback: type[P2PFLCallback]):
         """
         Register a callback constructor for a given learner framework and callback key.
 
@@ -54,7 +52,7 @@ class CallbackFactory:
         cls._callback_registry[learner].append(callback)
 
     @classmethod
-    def create_callbacks(cls, framework: str, aggregator: Aggregator) -> List[P2PFLCallback]:
+    def create_callbacks(cls, framework: str, aggregator: Aggregator) -> list[P2PFLCallback]:
         """
         Create the callbacks required by the aggregator for the given learner.
 
@@ -90,6 +88,13 @@ try:
     from p2pfl.learning.frameworks.pytorch.callbacks.scaffold_callback import SCAFFOLDCallback as SCAFFOLDCallbackPT
 
     CallbackFactory.register_callback(learner=Framework.PYTORCH.value, callback=SCAFFOLDCallbackPT)
+except ImportError:
+    pass
+
+try:
+    from p2pfl.learning.frameworks.pytorch.callbacks.fedprox_callback import FedProxCallback as FedProxCallbackPT
+
+    CallbackFactory.register_callback(learner=Framework.PYTORCH.value, callback=FedProxCallbackPT)
 except ImportError:
     pass
 

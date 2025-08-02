@@ -19,7 +19,6 @@
 """Abstract aggregator."""
 
 import threading
-from typing import List
 
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
@@ -46,8 +45,8 @@ class Aggregator(NodeComponent):
 
     def __init__(self, disable_partial_aggregation: bool = False) -> None:
         """Initialize the aggregator."""
-        self.__train_set: List[str] = []  # TODO: Remove the trainset from the state
-        self.__models: List[P2PFLModel] = []
+        self.__train_set: list[str] = []  # TODO: Remove the trainset from the state
+        self.__models: list[P2PFLModel] = []
 
         # Initialize instance's partial_aggregation based on the class's support
         self.partial_aggregation: bool = self.__class__.SUPPORTS_PARTIAL_AGGREGATION
@@ -64,7 +63,10 @@ class Aggregator(NodeComponent):
         self._finish_aggregation_event = threading.Event()
         self._finish_aggregation_event.set()
 
-    def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
+        # Unhandled models
+        self.__unhandled_models: list[P2PFLModel] = []
+
+    def aggregate(self, models: list[P2PFLModel]) -> P2PFLModel:
         """
         Aggregate the models.
 
@@ -74,7 +76,7 @@ class Aggregator(NodeComponent):
         """
         raise NotImplementedError
 
-    def get_required_callbacks(self) -> List[str]:
+    def get_required_callbacks(self) -> list[str]:
         """
         Get the required callbacks for the aggregation.
 
@@ -84,7 +86,7 @@ class Aggregator(NodeComponent):
         """
         return []
 
-    def set_nodes_to_aggregate(self, nodes_to_aggregate: List[str]) -> None:
+    def set_nodes_to_aggregate(self, nodes_to_aggregate: list[str]) -> None:
         """
         List with the name of nodes to aggregate. Be careful, by setting new nodes, the actual aggregation will be lost.
 
@@ -95,20 +97,26 @@ class Aggregator(NodeComponent):
             Exception: If the aggregation is running.
 
         """
-        if self._finish_aggregation_event.is_set():
-            self.__train_set = nodes_to_aggregate
-            self._finish_aggregation_event.clear()
-        else:
+        if not self._finish_aggregation_event.is_set():
             raise Exception("It is not possible to set nodes to aggregate when the aggregation is running.")
+
+        # Start new aggregation
+        self.__train_set = nodes_to_aggregate
+        self._finish_aggregation_event.clear()
+        for m in self.__unhandled_models:
+            self.add_model(m)
+            # NOTE: Don´t need to send message indicating this aggregations. Self aggregation will be sufficient to notify the network.
+        self.__unhandled_models = []
 
     def clear(self) -> None:
         """Clear the aggregation (remove trainset and release locks)."""
         with self.__agg_lock:
             self.__train_set = []
             self.__models = []
+            self.__unhandled_models = []
             self._finish_aggregation_event.set()
 
-    def get_aggregated_models(self) -> List[str]:
+    def get_aggregated_models(self) -> list[str]:
         """
         Get the list of aggregated models.
 
@@ -121,7 +129,7 @@ class Aggregator(NodeComponent):
             models_added += n.get_contributors()
         return models_added
 
-    def add_model(self, model: P2PFLModel) -> List[str]:
+    def add_model(self, model: P2PFLModel) -> list[str]:
         """
         Add a model. The first model to be added starts the `run` method (timeout).
 
@@ -160,7 +168,7 @@ class Aggregator(NodeComponent):
                         self.addr,
                         f"🧩 Model added ({models_added}/{ str(len(self.__train_set))}) from {str(model.get_contributors())}",
                     )
-                    logger.debug(self.addr, f"Models added: {self.get_aggregated_models()}")
+                    # logger.debug(self.addr, f"Models added: {self.get_aggregated_models()}")
 
                     # Check if all models were added
                     if len(self.get_aggregated_models()) >= len(self.__train_set):
@@ -170,17 +178,18 @@ class Aggregator(NodeComponent):
                     self.__agg_lock.release()
                     return self.get_aggregated_models()
                 else:
-                    logger.info(
+                    logger.debug(
                         self.addr,
                         f"🚫 Can't add a model from a node ({model.get_contributors()}) that is already aggregated.",
                     )
             else:
-                logger.info(
+                logger.debug(
                     self.addr,
                     f"🚫 Can't add a model from a node ({model.get_contributors()}) that is not in the training set.",
                 )
         else:
-            logger.info(self.addr, "🚫 Received a model when is not needed (already aggregated).")
+            logger.debug(self.addr, "🚫 Received a model when is not needed. Saving a iteration to affor bandwith.")
+            self.__unhandled_models.append(model)
 
         # Release and return
         self.__agg_lock.release()
@@ -233,7 +242,7 @@ class Aggregator(NodeComponent):
         missing_models = set(self.__train_set) - set(agg_models)
         return missing_models
 
-    def __get_partial_aggregation(self, except_nodes: List[str]) -> P2PFLModel:
+    def __get_partial_aggregation(self, except_nodes: list[str]) -> P2PFLModel:
         """
         Obtain a partial aggregation.
 

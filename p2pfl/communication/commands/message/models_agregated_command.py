@@ -47,8 +47,12 @@ class ModelsAggregatedCommand(Command):
 
         """
         if round == self.state.round:
-            # esto meterlo en estado o agg
-            self.state.models_aggregated[source] = list(args)
+            # TODO: Use the state of the aggregator
+            with self.state.models_aggregated_lock:
+                # This is to ensure that gossip order does not matter
+                current_models = self.state.models_aggregated.get(source, [])
+                current_models.extend(args)
+                self.state.models_aggregated[source] = list(set(current_models))
         else:
             logger.debug(
                 self.state.addr,

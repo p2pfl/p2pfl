@@ -23,12 +23,13 @@ import random
 import threading
 import time
 import traceback
-from typing import Any, Dict, Optional
+from typing import Any
 
 from p2pfl.communication.commands.message.metrics_command import MetricsCommand
 from p2pfl.communication.commands.message.model_initialized_command import ModelInitializedCommand
 from p2pfl.communication.commands.message.models_agregated_command import ModelsAggregatedCommand
 from p2pfl.communication.commands.message.models_ready_command import ModelsReadyCommand
+from p2pfl.communication.commands.message.pre_send_model_command import PreSendModelCommand
 from p2pfl.communication.commands.message.start_learning_command import StartLearningCommand
 from p2pfl.communication.commands.message.stop_learning_command import StopLearningCommand
 from p2pfl.communication.commands.message.vote_train_set_command import VoteTrainSetCommand
@@ -92,9 +93,9 @@ class Node:
         model: P2PFLModel,
         data: P2PFLDataset,
         addr: str = "",
-        learner: Optional[Learner] = None,
-        aggregator: Optional[Aggregator] = None,
-        protocol: Optional[CommunicationProtocol] = None,
+        learner: Learner | None = None,
+        aggregator: Aggregator | None = None,
+        protocol: CommunicationProtocol | None = None,
         **kwargs,
     ) -> None:
         """Initialize a node."""
@@ -134,6 +135,7 @@ class Node:
             InitModelCommand(self.state, self.stop, self.aggregator, self.learner),
             PartialModelCommand(self.state, self.stop, self.aggregator, self._communication_protocol, self.learner),
             FullModelCommand(self.state, self.stop, self.aggregator, self.learner),
+            PreSendModelCommand(self.state),
         ]
         self._communication_protocol.add_command(commands)
 
@@ -160,7 +162,7 @@ class Node:
         # Connect
         return self._communication_protocol.connect(addr)
 
-    def get_neighbors(self, only_direct: bool = False) -> Dict[str, Any]:
+    def get_neighbors(self, only_direct: bool = False) -> dict[str, Any]:
         """
         Return the neighbors of the node.
 

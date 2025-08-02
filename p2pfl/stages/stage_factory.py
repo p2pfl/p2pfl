@@ -18,8 +18,6 @@
 
 """Stage factory."""
 
-from typing import Type
-
 from p2pfl.stages.stage import Stage
 
 
@@ -27,7 +25,7 @@ class StageFactory:
     """Factory class to create stages. Main goal: Avoid cyclic imports."""
 
     @staticmethod
-    def get_stage(stage_name: str) -> Type[Stage]:
+    def get_stage(stage_name: str) -> type[Stage]:
         """Return the stage class."""
         if stage_name == "StartLearningStage":
             from p2pfl.stages.base_node.start_learning_stage import StartLearningStage

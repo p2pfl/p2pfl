@@ -88,7 +88,7 @@ class ProtobuffClient(ABC):
 
         """
         # Log
-        package_type = "message" if msg.HasField("message") else "weights"
+        package_type = "message" if not msg.HasField("weights") else "weights"
         package_size = len(msg.SerializeToString())
         round_num = msg.round if msg.round >= 0 else None  # Pass None for negative rounds, the logger will handle it
 
@@ -109,7 +109,7 @@ class ProtobuffClient(ABC):
         temporal_connection: bool = False,
         raise_error: bool = False,
         disconnect_on_error: bool = True,
-    ) -> None:
+    ) -> str:
         """
         Send a message to the neighbor.
 

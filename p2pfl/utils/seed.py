@@ -18,7 +18,6 @@
 """Utils."""
 
 import random
-from typing import Optional
 
 import numpy as np
 
@@ -29,7 +28,7 @@ Module to set seeds of all components of the p2pfl system.
 """
 
 
-def set_seed(seed: Optional[int] = 666, framework: Optional[Framework | str] = None) -> None:
+def set_seed(seed: int | None = 666, framework: Framework | str | None = None) -> None:
     """
     Set the seed for random number generators in Python's `random`, NumPy, PyTorch, JAX, and TensorFlow.
 

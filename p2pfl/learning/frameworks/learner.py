@@ -19,7 +19,6 @@
 """NodeLearning Interface - Template Pattern."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, Optional, Union
 
 import numpy as np
 
@@ -42,9 +41,7 @@ class Learner(ABC, NodeComponent):
 
     """
 
-    def __init__(
-        self, model: Optional[P2PFLModel] = None, data: Optional[P2PFLDataset] = None, aggregator: Optional[Aggregator] = None
-    ) -> None:
+    def __init__(self, model: P2PFLModel | None = None, data: P2PFLDataset | None = None, aggregator: Aggregator | None = None) -> None:
         """Initialize the learner."""
         # (addr) Super
         NodeComponent.__init__(self)
@@ -54,15 +51,15 @@ class Learner(ABC, NodeComponent):
             self.indicate_aggregator(aggregator)
         self.epochs: int = 1  # Default epochs
         # Model and data init (dummy if not)
-        self.__model: Optional[P2PFLModel] = None
+        self.__model: P2PFLModel | None = None
         if model:
             self.set_model(model)
-        self.__data: Optional[P2PFLDataset] = None
+        self.__data: P2PFLDataset | None = None
         if data:
             self.set_data(data)
 
     @allow_no_addr_check
-    def set_model(self, model: Union[P2PFLModel, list[np.ndarray], bytes]) -> None:
+    def set_model(self, model: P2PFLModel | list[np.ndarray] | bytes) -> None:
         """
         Set the model of the learner.
 
@@ -72,7 +69,7 @@ class Learner(ABC, NodeComponent):
         """
         if isinstance(model, P2PFLModel):
             self.__model = model
-        elif isinstance(model, (list, bytes)):
+        elif isinstance(model, list | bytes):
             self.get_model().set_parameters(model)
 
         # Update callbacks with model info
@@ -166,7 +163,7 @@ class Learner(ABC, NodeComponent):
         pass
 
     @abstractmethod
-    def evaluate(self) -> Dict[str, float]:
+    def evaluate(self) -> dict[str, float]:
         """
         Evaluate the model with actual parameters.
 

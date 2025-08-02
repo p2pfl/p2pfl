@@ -18,8 +18,6 @@
 
 """Federated Median (FedMedian) Aggregator."""
 
-from typing import List
-
 import numpy as np
 
 from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
@@ -33,13 +31,13 @@ class FedMedian(Aggregator):
     Paper: https://arxiv.org/pdf/1803.01498v1.pdf
     """
 
-    SUPPORTS_PARTIAL_AGGREGATION: bool = True  # Assuming it can support it
+    SUPPORTS_PARTIAL_AGGREGATION: bool = False
 
     def __init__(self, disable_partial_aggregation: bool = False) -> None:
         """Initialize the aggregator."""
         super().__init__(disable_partial_aggregation=disable_partial_aggregation)
 
-    def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
+    def aggregate(self, models: list[P2PFLModel]) -> P2PFLModel:
         """
         Compute the median of the models.
 
@@ -50,10 +48,9 @@ class FedMedian(Aggregator):
             A P2PFLModel with the aggregated
 
         """
-        raise NotImplementedError("This method is not implemented yet (need to add tests)")
         # Check if there are models to aggregate
         if len(models) == 0:
-            raise NoModelsToAggregateError(f"({self.node_name}) Trying to aggregate models when there are no models")
+            raise NoModelsToAggregateError(f"({self.addr}) Trying to aggregate models when there are no models")
 
         # Total Samples
         total_samples = sum([m.get_num_samples() for m in models])

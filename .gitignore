@@ -163,3 +163,7 @@ junit
 
 # WandB files
 wandb/
+# UV specific
+.uv/
+uv.lock.tmp*
+.uv-cache/

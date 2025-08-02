@@ -18,7 +18,6 @@
 """Test the Ray Actor pool."""
 
 import contextlib
-import time
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -33,37 +32,11 @@ def reset_singletons():
     SuperActorPool._instance = None
 
 
-def test_super_actor_pool_initialization():
-    """Test the initialization of the SuperActorPool class."""
-    pool = SuperActorPool(resources={"num_cpus": 2})
-    assert pool.num_actors > 0
-
-
 def test_super_actor_pool_singleton():
     """Test the singleton behavior of the SuperActorPool class."""
-    pool1 = SuperActorPool(resources={"num_cpus": 2})
-    pool2 = SuperActorPool(resources={"num_cpus": 2})
+    pool1 = SuperActorPool()
+    pool2 = SuperActorPool()
     assert pool1 is pool2
-
-
-def test_create_actor_with_correct_resources():
-    """Test the create_actor method of the SuperActorPool class with the correct."""
-    pool = SuperActorPool(resources={"num_cpus": 2})
-    with patch("p2pfl.learning.frameworks.simulation.actor_pool.VirtualLearnerActor.options") as mock_options:
-        mock_options.return_value.remote.return_value = MagicMock()
-        actor = pool.create_actor()
-        time.sleep(1)  # due to remotes
-        mock_options.assert_called_once_with(num_cpus=2)
-        mock_options.return_value.remote.assert_called_once()
-        assert isinstance(actor, MagicMock)
-
-
-def test_add_actor():
-    """Test the add_actor method of the SuperActorPool class."""
-    pool = SuperActorPool(resources={"num_cpus": 2})
-    initial_num_actors = pool.num_actors
-    pool.add_actor(2)
-    assert pool.num_actors == initial_num_actors + 2
 
 
 def test_flag_future_as_ready():
@@ -76,7 +49,7 @@ def test_flag_future_as_ready():
     4. Check that the future is flagged as ready.
 
     """
-    pool = SuperActorPool(resources={"num_cpus": 2})
+    pool = SuperActorPool()
     pool._reset_addr_to_future_dict("addr1")
     pool._flag_future_as_ready("addr1")
     assert pool._addr_to_future["addr1"]["ready"] is True
@@ -94,7 +67,7 @@ def test_fetch_future_result():
     6. Check that the result is the expected one.
 
     """
-    pool = SuperActorPool(resources={"num_cpus": 2})
+    pool = SuperActorPool()
     pool._reset_addr_to_future_dict("addr1")
     mock_future = MagicMock()
     pool._addr_to_future["addr1"]["future"] = mock_future
@@ -114,7 +87,7 @@ def test_flag_actor_for_removal():
     4. Check that the actor id is in the actor_to_remove dictionary.
 
     """
-    pool = SuperActorPool(resources={"num_cpus": 2})
+    pool = SuperActorPool()
     mock_actor_id = "actor_id_hex"
     pool._flag_actor_for_removal(mock_actor_id)
     assert mock_actor_id in pool.actor_to_remove
@@ -131,29 +104,11 @@ def test_check_and_remove_actor_from_pool():
     5. Check that the result is True.
 
     """
-    pool = SuperActorPool(resources={"num_cpus": 2})
+    pool = SuperActorPool()
     mock_actor = MagicMock()
     mock_actor._actor_id.hex.return_value = "actor_id_hex"
     pool._flag_actor_for_removal("actor_id_hex")
     result = pool._check_and_remove_actor_from_pool(mock_actor)
-    assert result is False
-
-
-def test_check_actor_fits_in_pool():
-    """
-    Test the _check_actor_fits_in_pool method of the SuperActorPool class.
-
-    1. Create a SuperActorPool instance.
-    2. Set the number of actors to 10.
-    3. Mock the pool_size_from_resources function to return 5.
-    4. Call the _check_actor_fits_in_pool method.
-    5. Check that the result is True.
-
-    """
-    pool = SuperActorPool(resources={"num_cpus": 2})
-    pool.num_actors = 10
-    with patch("p2pfl.learning.frameworks.simulation.utils.pool_size_from_resources", return_value=5):
-        result = pool._check_actor_fits_in_pool()
     assert result is False
 
 
@@ -168,7 +123,7 @@ def test_submit_learner_job_with_idle_actor():
     5. Check that the submit method was called with the correct arguments.
 
     """
-    pool = SuperActorPool(resources={"num_cpus": 2})
+    pool = SuperActorPool()
     pool._idle_actors = [MagicMock()]
     mock_fn = MagicMock()
     mock_learner = MagicMock()
@@ -191,7 +146,7 @@ def test_submit_learner_job_with_no_idle_actor():
     5. Check that the job was added to the pending submits.
 
     """
-    pool = SuperActorPool(resources={"num_cpus": 2})
+    pool = SuperActorPool()
     pool._idle_actors = []
     mock_fn = MagicMock()
     mock_learner = MagicMock()
@@ -213,16 +168,18 @@ def test_process_unordered_future():
     5. Check that the future was processed correctly.
 
     """
-    pool = SuperActorPool(resources={"num_cpus": 2})
+    pool = SuperActorPool()
     mock_future = MagicMock()
     mock_actor = MagicMock()
     mock_addr = "addr1"
     pool._future_to_actor[mock_future] = (0, mock_actor, mock_addr)
     pool._reset_addr_to_future_dict(mock_addr)
 
-    with patch("ray.wait", return_value=([mock_future], [])), patch.object(
-        pool, "_check_actor_fits_in_pool", return_value=True
-    ), patch.object(pool, "_check_and_remove_actor_from_pool", return_value=True), patch.object(pool, "_return_actor") as mock_return_actor:
+    with (
+        patch("ray.wait", return_value=([mock_future], [])),
+        patch.object(pool, "_check_and_remove_actor_from_pool", return_value=True),
+        patch.object(pool, "_return_actor") as mock_return_actor,
+    ):
         pool.process_unordered_future()
 
     mock_return_actor.assert_called_once_with(mock_actor)
@@ -241,7 +198,7 @@ def test_get_learner_result():
     6. Check that the result is the expected one.
 
     """
-    pool = SuperActorPool(resources={"num_cpus": 2})
+    pool = SuperActorPool()
     pool._reset_addr_to_future_dict("addr1")
     mock_future = MagicMock()
     pool._addr_to_future["addr1"]["future"] = mock_future

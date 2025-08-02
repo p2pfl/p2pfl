@@ -19,7 +19,7 @@ network:
 # Defines experiment settings
 experiment:
   name: "my_experiment"
-  rounds: 4
+  rounds: 10
   epochs: 1
   trainset_size: 4
   seed: 666
@@ -53,12 +53,12 @@ experiment:
     params: {}  
     # Learning algorithm parameters (algorithm-specific)
     #compression:
-    ptq:
-      dtype: "int8"
-    topk:
-      k: 0.1
-    zlib:
-      level: 6
+    #ptq:
+    #  dtype: "int8"
+    #topk:
+    #  k: 0.1
+    #zlib:
+    #  level: 6
 
 
   # Aggregation algorithm configuration
@@ -66,15 +66,6 @@ experiment:
     package: "p2pfl.learning.aggregators.fedavg"
     aggregator: "FedAvg"
     params: {}  # Aggregator parameters (algorithm-specific)
-
-    # Uncomment and adjust this for aggregator transforms
-    #transforms:
-    #  package: "p2pfl.examples.mnist.transforms"
-    #  function: "normalize_transform"
-    #  params:
-    #    mean: 0.1307
-    #    std: 0.3081
-
 
 # General experiment settings
 settings:
@@ -106,8 +97,6 @@ settings:
   training:
     vote_timeout: 60
     aggregation_timeout: 300
-  web:
-    resource_monitor_period: 1
 
 # Profiling configuration
 profiling:

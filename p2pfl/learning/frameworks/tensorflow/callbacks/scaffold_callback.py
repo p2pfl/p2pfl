@@ -18,7 +18,7 @@
 
 """Callback for SCAFFOLD operations (Keras)."""
 
-from typing import Any, Optional
+from typing import Any
 
 import tensorflow as tf  # type: ignore
 from keras import callbacks  # type: ignore
@@ -50,7 +50,7 @@ class ScaffoldOptimizerWrapper(Optimizer):
     def apply_gradients(self, grads_and_vars, name=None, **kwargs):
         """Apply gradients with SCAFFOLD adjustments."""
         adjustment = []
-        for (grad, var), c_i_var, c_var in zip(grads_and_vars, self.c_i, self.c):
+        for (grad, var), c_i_var, c_var in zip(grads_and_vars, self.c_i, self.c, strict=False):
             if grad is not None:
                 adjusted_grad = grad + self.eta_l * (c_i_var - c_var)
                 adjustment.append((adjusted_grad, var))
@@ -79,7 +79,7 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
         self.c_i: list[tf.Variable] = []
         self.c: list[tf.Variable] = []
         self.initial_model_params: list[tf.Variable] = []
-        self.saved_lr: Optional[float] = None
+        self.saved_lr: float | None = None
         self.K: int = 0
         self.additional_info: dict[str, Any] = {}
 
@@ -88,7 +88,7 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
         """Return the name of the callback."""
         return "scaffold"
 
-    def on_train_begin(self, logs: Optional[dict[str, Any]] = None) -> None:
+    def on_train_begin(self, logs: dict[str, Any] | None = None) -> None:
         """Initialize control variates and replace the optimizer with custom one."""
         optimizer = self.model.optimizer
         if hasattr(optimizer, "learning_rate"):
@@ -120,7 +120,7 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
             eta_l=self.saved_lr,
         )  # type: ignore
 
-    def on_train_batch_end(self, batch: Any, logs: Optional[dict[str, Any]] = None) -> None:
+    def on_train_batch_end(self, batch: Any, logs: dict[str, Any] | None = None) -> None:
         """
         Increment the local step counter after each batch.
 
@@ -131,7 +131,7 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
         """
         self.K += 1
 
-    def on_train_end(self, logs: Optional[dict[str, Any]] = None) -> None:
+    def on_train_end(self, logs: dict[str, Any] | None = None) -> None:
         """
         Update local control variate (c_i) and compute deltas.
 
@@ -152,8 +152,8 @@ class SCAFFOLDCallback(callbacks.Callback, P2PFLCallback):
             c_i_var.assign_add(adjustment)
 
         # Compute delta y_i and delta c_i
-        delta_y_i = [y_i_param - x_g_param for y_i_param, x_g_param in zip(y_i, x_g)]
-        delta_c_i = [c_i_new.numpy() - c_i_old for c_i_new, c_i_old in zip(self.c_i, previous_c_i)]
+        delta_y_i = [y_i_param - x_g_param for y_i_param, x_g_param in zip(y_i, x_g, strict=False)]
+        delta_c_i = [c_i_new.numpy() - c_i_old for c_i_new, c_i_old in zip(self.c_i, previous_c_i, strict=False)]
 
         self.additional_info["delta_y_i"] = delta_y_i
         self.additional_info["delta_c_i"] = delta_c_i

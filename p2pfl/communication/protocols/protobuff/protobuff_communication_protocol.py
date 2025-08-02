@@ -19,9 +19,10 @@
 
 import random
 from abc import abstractmethod
+from collections.abc import Callable
 from datetime import datetime
 from functools import wraps
-from typing import Any, Callable, Optional, Union
+from typing import Any
 
 from p2pfl.communication.commands.command import Command
 from p2pfl.communication.commands.message.heartbeat_command import HeartbeatCommand
@@ -64,7 +65,7 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
 
     def __init__(
         self,
-        commands: Optional[list[Command]] = None,
+        commands: list[Command] | None = None,
     ) -> None:
         """Initialize the GRPC communication protocol."""
         # (addr) Super
@@ -72,7 +73,7 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
         # Neighbors
         self._neighbors = Neighbors(self.bluid_client)
         # Gossip
-        self._gossiper = Gossiper(self._neighbors)
+        self._gossiper = Gossiper(self._neighbors, self.build_msg)
         # GRPC
         self._server = self.build_server(self._gossiper, self._neighbors, commands)
         # Hearbeat
@@ -121,7 +122,7 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
         self._server.stop()
 
     @allow_no_addr_check
-    def add_command(self, cmds: Union[Command, list[Command]]) -> None:
+    def add_command(self, cmds: Command | list[Command]) -> None:
         """
         Add a command to the communication protocol.
 
@@ -155,7 +156,7 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
         """
         self._neighbors.remove(nei, disconnect_msg=disconnect_msg)
 
-    def build_msg(self, cmd: str, args: Optional[list[str]] = None, round: Optional[int] = None) -> node_pb2.RootMessage:
+    def build_msg(self, cmd: str, args: list[str] | None = None, round: int | None = None, direct: bool = False) -> node_pb2.RootMessage:
         """
         Build a RootMessage to send to the neighbors.
 
@@ -163,6 +164,7 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
             cmd: Command of the message.
             args: Arguments of the message.
             round: Round of the message.
+            direct: If direct message.
 
         Returns:
             RootMessage to send.
@@ -172,26 +174,36 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
             round = -1
         if args is None:
             args = []
-        hs = hash(str(cmd) + str(args) + str(datetime.now()) + str(random.randint(0, 100000)))
         args = [str(a) for a in args]
 
-        return node_pb2.RootMessage(
-            source=self.addr,
-            round=round,
-            cmd=cmd,
-            message=node_pb2.Message(
-                ttl=Settings.gossip.TTL,
-                hash=hs,
-                args=args,
-            ),
-        )
+        if direct:
+            return node_pb2.RootMessage(
+                source=self.addr,
+                round=round,
+                cmd=cmd,
+                direct_message=node_pb2.DirectMessage(
+                    args=args,
+                ),
+            )
+        else:
+            hs = hash(str(cmd) + str(args) + str(datetime.now()) + str(random.randint(0, 100000)))
+            return node_pb2.RootMessage(
+                source=self.addr,
+                round=round,
+                cmd=cmd,
+                gossip_message=node_pb2.GossipMessage(
+                    ttl=Settings.gossip.TTL,
+                    hash=hs,
+                    args=args,
+                ),
+            )
 
     def build_weights(
         self,
         cmd: str,
         round: int,
         serialized_model: bytes,
-        contributors: Optional[list[str]] = None,
+        contributors: list[str] | None = None,
         weight: int = 1,
     ) -> node_pb2.RootMessage:
         """
@@ -225,7 +237,7 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
     def send(
         self,
         nei: str,
-        msg: Union[node_pb2.RootMessage],
+        msg: node_pb2.RootMessage,
         raise_error: bool = False,
         remove_on_error: bool = True,
     ) -> None:
@@ -248,7 +260,7 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
                 raise e
 
     @running
-    def broadcast(self, msg: node_pb2.RootMessage, node_list: Optional[list[str]] = None) -> None:
+    def broadcast(self, msg: node_pb2.RootMessage, node_list: list[str] | None = None) -> None:
         """
         Broadcast a message to all neighbors.
 
@@ -290,8 +302,8 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
         early_stopping_fn: Callable[[], bool],
         get_candidates_fn: Callable[[], list[str]],
         status_fn: Callable[[], Any],
-        model_fn: Callable[[str], Any],
-        period: Optional[float] = None,
+        model_fn: Callable[[str], tuple[Any, str, int, list[str]]],
+        period: float | None = None,
         create_connection: bool = False,
     ) -> None:
         """

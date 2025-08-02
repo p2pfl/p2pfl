@@ -28,14 +28,19 @@ message RootMessage {
     optional int32 round = 2;
     string cmd = 3;
     oneof payload_type {
-        Message message = 4;
-        Weights weights = 5;
+        GossipMessage gossip_message = 4;
+        DirectMessage direct_message = 5;
+        Weights weights = 6;
     }
 }
 
-message Message {
+message GossipMessage {
     int32 ttl = 1;
     int64 hash = 2;
+    repeated string args = 3;
+}
+
+message DirectMessage {
     repeated string args = 3;
 }
 
@@ -50,7 +55,8 @@ message HandShakeRequest {
 }
 
 message ResponseMessage {
-    optional string error = 1; 
+    optional string response = 1; 
+    optional string error = 2; 
 }
 
 service NodeServices {

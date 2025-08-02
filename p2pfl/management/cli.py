@@ -19,8 +19,9 @@
 """CLI for the p2pfl platform."""
 
 import os
+import sys
 from glob import glob
-from typing import Annotated, Dict, TypedDict
+from typing import Annotated, TypedDict
 
 import typer
 import yaml
@@ -58,6 +59,9 @@ logo = r"""[italic]
 ####
 # CLI Commands
 ####
+
+if len(sys.argv) > 1 and sys.argv[1] == "help":
+    sys.argv[1] = "--help"
 
 console = Console()
 app = typer.Typer(
@@ -97,7 +101,7 @@ class ExampleInfo(TypedDict):
     path: str
 
 
-def __get_available_examples() -> Dict[str, ExampleInfo]:
+def __get_available_examples() -> dict[str, ExampleInfo]:
     """Get all the available yaml examples and their descriptions."""
     examples = {}
     # Find all yaml files in examples subdirectories
