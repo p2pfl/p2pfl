@@ -113,6 +113,27 @@ class DifferentialPrivacyCompressor(TensorCompressor):
     - If previous_params is provided: computes update = params - previous_params
     """
 
+    def _get_noise_mechanism(
+        self,
+        noise_type: str,
+        clip_norm: float,
+        epsilon: float,
+        delta: float,
+        vec_len: int
+    ) -> tuple[dp.Measurement, float]:
+        """Factory function to create an OpenDP noise mechanism."""
+        if noise_type == "laplace":
+            scale = clip_norm / epsilon
+            space = dp.vector_domain(dp.atom_domain(T=float, nan=False), vec_len), dp.l1_distance(T=float)
+            mech = space >> dp.m.then_laplace(scale=scale)
+        elif noise_type == "gaussian":
+            scale = clip_norm * np.sqrt(2 * np.log(1.25 / delta)) / epsilon
+            space = dp.vector_domain(dp.atom_domain(T=float, nan=False), vec_len), dp.l2_distance(T=float)
+            mech = space >> dp.m.then_gaussian(scale=scale)
+        else:
+            raise ValueError("The parameter 'noise_type' must be 'gaussian' or 'laplace'")
+        return mech, scale    
+
     def apply_strategy(
         self,
         params: list[np.ndarray],
@@ -121,6 +142,7 @@ class DifferentialPrivacyCompressor(TensorCompressor):
         delta: float = 1e-5,
         previous_params: list[np.ndarray] | None = None,
         noise_type: str = "gaussian",
+        stability_constant: float = 1e-6,
     ) -> tuple[list[np.ndarray], dict]:
         """
         Apply differential privacy to model parameters.
@@ -137,11 +159,16 @@ class DifferentialPrivacyCompressor(TensorCompressor):
                 data points in the dataset. This parameter is only used for Gaussian noise.
             previous_params: Previous round parameters (if None, treats params as update)
             noise_type: Type of noise to add ("gaussian" or "laplace")
+            stability_constant: A small constant to avoid division by zero when clipping.
 
         Returns:
             Tuple of (dp_params, dp_info) where dp_info contains privacy parameters
 
         """
+        # Handle empty input
+        if not params:
+            return [], {"dp_applied": False}
+
         # State machine: determine if we need to compute update
         if previous_params is None:
             # No previous params - treat input as update directly
@@ -160,34 +187,26 @@ class DifferentialPrivacyCompressor(TensorCompressor):
 
         # Step 2: Clip if necessary
         if total_norm > clip_norm:
-            clip_factor = clip_norm / (total_norm + 1e-6) # Add epsilon for stability
-            clipped_params = [p * clip_factor for p in update_params]
+            clip_factor = clip_norm / (total_norm + stability_constant)
+            clipped_flat_update = flat_update * clip_factor
         else:
-            clipped_params = [p.copy() for p in update_params]
+            clipped_flat_update = flat_update.copy()
 
-        # Step 3: Add calibrated noise
-        if noise_type == "laplace":
-            # For Laplace, use L1 distance and calibrate scale for (epsilon)-DP
-            scale = clip_norm / epsilon
-            distance_metric = dp.l1_distance(T=float)
-            noise_mechanism = dp.m.then_laplace
-        elif noise_type == "gaussian":
-            # For Gaussian, use L2 distance and calibrate scale for (epsilon, delta)-DP
-            scale = clip_norm * np.sqrt(2 * np.log(1.25 / delta)) / epsilon
-            distance_metric = dp.l2_distance(T=float)
-            noise_mechanism = dp.m.then_gaussian
-        else:
-            raise ValueError("The parameter `noise_type` must be 'gaussian' or 'laplace'")
+        # Step 3: Get noise mechanism and add noise
+        mech, scale = self._get_noise_mechanism(
+            noise_type, clip_norm, epsilon, delta, clipped_flat_update.size
+        )
+        noisy_flat_update = mech(clipped_flat_update.tolist())
 
+        # Unflatten the noisy update
         noisy_updates = []
-        for param in clipped_params:
-            # Define the measurement space for this specific parameter vector
-            space = dp.vector_domain(dp.atom_domain(T=float, nan=False), param.size), distance_metric
-            # Build the final mechanism by applying the chosen noise function
-            mech = space >> noise_mechanism(scale=scale)
-            # Apply the mechanism to the flattened parameter vector
-            noisy_flat_param = mech(param.flatten().tolist())
-            noisy_updates.append(np.array(noisy_flat_param).reshape(param.shape))  
+        current_pos = 0
+        for p in update_params:
+            shape = p.shape
+            size = p.size
+            dtype = p.dtype
+            noisy_updates.append(np.array(noisy_flat_update[current_pos : current_pos + size], dtype=dtype).reshape(shape))
+            current_pos += size
 
         # Step 4: If we computed update, add it back to previous params
         if computed_update and previous_params is not None:
