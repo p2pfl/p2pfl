@@ -46,7 +46,7 @@ from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.learning.frameworks.learner_factory import LearnerFactory
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.learning.frameworks.simulation import try_init_learner_with_ray
-from p2pfl.management.logger import logger
+from p2pfl.management.logger import WANDB_AVAILABLE, logger
 from p2pfl.node_state import NodeState
 from p2pfl.settings import Settings
 from p2pfl.stages.workflows import LearningWorkflow
@@ -401,6 +401,27 @@ class Node:
     def __start_learning(self, rounds: int, epochs: int, trainset_size: int, experiment_name: str) -> None:
         # Set seed
         try:
+            # Initialize experiment with metadata
+            self.state.set_experiment(
+                experiment_name,
+                rounds,
+                dataset_name=getattr(self.learner.get_data(), "dataset_name", None),
+                model_name=self.learner.get_model().__class__.__name__,
+                aggregator_name=self.aggregator.__class__.__name__,
+                framework_name=self.learner.get_model().get_framework(),
+                node_addr=self.addr,
+                learning_rate=getattr(self.learner, "learning_rate", None),
+                batch_size=getattr(self.learner, "batch_size", None),
+                epochs_per_round=epochs,
+            )
+
+            # Set up wandb logging only if wandb is available
+            if WANDB_AVAILABLE:
+                logger.connect(run_name=experiment_name, experiment=self.state.experiment)
+            else:
+                logger.info(self.addr, "WandB not available or disabled. Experiment will be logged locally only.")
+
+            # Run learning workflow
             self.learning_workflow.run(
                 rounds=rounds,
                 epochs=epochs,
@@ -412,19 +433,21 @@ class Node:
                 aggregator=self.aggregator,
                 generator=random.Random(Settings.general.SEED),
             )
+
         except Exception as e:
             logger.error(self.addr, f"Error {type(e).__name__}: {e}\n{traceback.format_exc()}")
             self.stop()
 
     def __stop_learning(self) -> None:
         logger.info(self.addr, "Stopping learning")
-        # Leraner
+        # Learner
         self.learner.interrupt_fit()
         # Aggregator
         self.aggregator.clear()
         # State
         self.state.clear()
         logger.experiment_finished(self.addr)
+        logger.finish()
         # Try to free wait locks
         with contextlib.suppress(Exception):
             self.state.wait_votes_ready_lock.release()

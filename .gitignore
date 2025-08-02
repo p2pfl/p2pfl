@@ -161,6 +161,8 @@ junit
 .ruff_cache
 .vscode
 
+# WandB files
+wandb/
 # UV specific
 .uv/
 uv.lock.tmp*

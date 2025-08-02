@@ -38,6 +38,10 @@ class Experiment:
         self.exp_name = exp_name
         self.total_rounds = total_rounds
         self.round = 0
+        self.dataset_name = None
+        self.model_name = None
+        self.aggregator_name = None
+        self.framework_name = None
 
     def increase_round(self) -> None:
         """

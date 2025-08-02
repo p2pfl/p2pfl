@@ -45,6 +45,7 @@ tensorflow = [
     "types-tensorflow>=2.17.0.20240820,<3",
 ]
 flax = ["flax>=0.10.0,<0.11"]
+wandb = ["wandb>=0.20.1,<0.21"]
 
 [project.urls]
 Homepage = "https://p2pfl.com"
