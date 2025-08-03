@@ -18,6 +18,7 @@
 
 """Check if wandb is available and properly configured."""
 
+import contextlib
 import importlib.util
 import os
 
@@ -47,9 +48,16 @@ def is_wandb_configured() -> bool:
     try:
         import wandb
 
-        # Check if API key is available through environment variable or wandb settings
-        api_key = wandb.api.api_key
-        return api_key is not None and api_key != ""
+        # Check if API key is available through environment variable
+        api_key = os.environ.get("WANDB_API_KEY")
+        if api_key and api_key != "":
+            return True
+
+        # Try to get from wandb settings if available
+        with contextlib.suppress(AttributeError, Exception):
+            api_key = wandb.api.api_key  # type: ignore
+            return api_key is not None and api_key != ""
+        return False
     except Exception:
         return False
 

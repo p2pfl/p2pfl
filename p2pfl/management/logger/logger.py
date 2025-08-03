@@ -129,7 +129,7 @@ class P2PFLogger:
         stream_handler.setFormatter(cmd_formatter)
         self._logger.addHandler(stream_handler)  # not async
 
-    def connect(self, **kwargs):
+    def connect(self, **kwargs: Any) -> None:
         """
         Establish connection/setup for the logger.
 

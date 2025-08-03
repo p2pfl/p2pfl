@@ -46,7 +46,7 @@ class LoggerDecorator(P2PFLogger):
         """
         self._p2pfl_logger = logger() if callable(logger) else logger
 
-    def connect(self, **kwargs):
+    def connect(self, **kwargs: Any) -> None:
         """
         Establish connection/setup for the logger.
 

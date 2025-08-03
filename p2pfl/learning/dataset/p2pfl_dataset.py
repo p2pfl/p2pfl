@@ -105,7 +105,7 @@ class P2PFLDataset:
         train_split_name: str = "train",
         test_split_name: str = "test",
         batch_size: int = 1,
-        dataset_name: Optional[str] = None,
+        dataset_name: str | None = None,
     ):
         """
         Initialize the P2PFLDataset object.

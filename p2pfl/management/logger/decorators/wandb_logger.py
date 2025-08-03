@@ -18,12 +18,13 @@
 
 """WandB Logger Decorator."""
 
+import contextlib
 import os
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 try:
     import wandb
-    from wandb.sdk.wandb_run import Run
+    from wandb.sdk.wandb_run import Run  # type: ignore
 
     WANDB_AVAILABLE = True
 except ImportError:
@@ -38,15 +39,15 @@ from p2pfl.management.logger.logger import P2PFLogger
 class WandbLogger(LoggerDecorator):
     """WandB Logger Decorator that can be configured at runtime."""
 
-    _run: Optional["Run"] = None
+    _run: "Run" | None = None
 
     def __init__(self, p2pflogger: P2PFLogger):
         """Initialize the WandbLogger decorator."""
         super().__init__(p2pflogger)
         self._project: str = "p2pfl"  # Default project
-        self._entity: Optional[str] = None
-        self._config: Dict[str, Any] = {}
-        self._run_name: Optional[str] = None
+        self._entity: str | None = None
+        self._config: dict[str, Any] = {}
+        self._run_name: str | None = None
         self._wandb_enabled: bool = WANDB_AVAILABLE
 
         if WANDB_AVAILABLE:
@@ -54,7 +55,7 @@ class WandbLogger(LoggerDecorator):
         else:
             super().debug("WandbLogger", "WandB not available. Logging will be disabled for WandB.")
 
-    def connect(self, **kwargs):
+    def connect(self, **kwargs: Any) -> None:
         """
         Connect and setup WandB logging.
 
@@ -107,7 +108,7 @@ class WandbLogger(LoggerDecorator):
         if WandbLogger._run is None:
             self._init_wandb(mode=mode)
 
-    def _init_wandb(self, mode: Optional[Literal["online", "offline", "disabled"]] = None) -> None:
+    def _init_wandb(self, mode: Literal["online", "offline", "disabled"] | None = None) -> None:
         """Initialize a wandb run."""
         if not WANDB_AVAILABLE:
             return
@@ -120,7 +121,7 @@ class WandbLogger(LoggerDecorator):
             if mode is None:
                 mode = self._determine_wandb_mode()
 
-            WandbLogger._run = wandb.init(
+            WandbLogger._run = wandb.init(  # type: ignore
                 project=self._project,
                 name=self._run_name,
                 config=self._config,
@@ -150,7 +151,13 @@ class WandbLogger(LoggerDecorator):
         """
         # Check if API key is configured
         try:
-            api_key = wandb.api.api_key
+            # Try to get API key from environment or wandb settings
+            api_key = os.environ.get("WANDB_API_KEY")
+            if not api_key:
+                # Try to get from wandb settings if available
+                with contextlib.suppress(AttributeError, Exception):
+                    api_key = wandb.api.api_key  # type: ignore
+
             if api_key is None or api_key == "":
                 # No API key configured, use offline mode in CI/non-interactive environments
                 if os.getenv("CI") or not os.isatty(0):
@@ -165,7 +172,7 @@ class WandbLogger(LoggerDecorator):
 
         return "online"
 
-    def log_metric(self, addr: str, metric: str, value: float, step: Optional[int] = None, round: Optional[int] = None) -> None:
+    def log_metric(self, addr: str, metric: str, value: float, step: int | None = None, round: int | None = None) -> None:
         """Log a metric to wandb."""
         # Ensure W&B is initialized and enabled
         if not self._wandb_enabled or WandbLogger._run is None:
@@ -175,9 +182,9 @@ class WandbLogger(LoggerDecorator):
             log_dict = {f"{addr}/{metric}": value}
 
             if step is not None:
-                wandb.log(log_dict, step=round)
+                wandb.log(log_dict, step=round)  # type: ignore
             else:
-                wandb.log(log_dict)
+                wandb.log(log_dict)  # type: ignore
         except Exception as e:
             super().warning(addr, f"Failed to log to W&B: {e}")
 
@@ -187,7 +194,7 @@ class WandbLogger(LoggerDecorator):
         """Finish the wandb run."""
         if self._wandb_enabled and WandbLogger._run is not None:
             try:
-                wandb.finish()
+                wandb.finish()  # type: ignore
             except Exception as e:
                 super().warning("WandbLogger", f"Failed to finish WandB run: {e}")
             WandbLogger._run = None
