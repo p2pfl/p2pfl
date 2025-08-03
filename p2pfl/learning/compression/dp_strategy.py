@@ -87,7 +87,6 @@ import opendp.prelude as dp
 
 from p2pfl.learning.compression.base_compression_strategy import TensorCompressor
 
-
 # Allows you to use features added by the community
 dp.enable_features('contrib')
 
@@ -121,7 +120,7 @@ class DifferentialPrivacyCompressor(TensorCompressor):
         delta: float,
         vec_len: int
     ) -> tuple[dp.Measurement, float]:
-        """Factory function to create an OpenDP noise mechanism."""
+        """Create an OpenDP noise mechanism."""
         if noise_type == "laplace":
             scale = clip_norm / epsilon
             space = dp.vector_domain(dp.atom_domain(T=float, nan=False), vec_len), dp.l1_distance(T=float)
@@ -132,7 +131,7 @@ class DifferentialPrivacyCompressor(TensorCompressor):
             mech = space >> dp.m.then_gaussian(scale=scale)
         else:
             raise ValueError("The parameter 'noise_type' must be 'gaussian' or 'laplace'")
-        return mech, scale    
+        return mech, scale
 
     def apply_strategy(
         self,

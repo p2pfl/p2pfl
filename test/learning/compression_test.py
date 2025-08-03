@@ -24,13 +24,13 @@ import zlib
 import numpy as np
 import pytest
 
+from p2pfl.learning.compression.dp_strategy import DifferentialPrivacyCompressor
 from p2pfl.learning.compression.lra_strategy import LowRankApproximation
 from p2pfl.learning.compression.lzma_strategy import LZMACompressor
 from p2pfl.learning.compression.manager import CompressionManager
 from p2pfl.learning.compression.quantization_strategy import PTQuantization
 from p2pfl.learning.compression.topk_strategy import TopKSparsification
 from p2pfl.learning.compression.zlib_strategy import ZlibCompressor
-from p2pfl.learning.compression.dp_strategy import DifferentialPrivacyCompressor
 
 ####
 # PTQuantization
@@ -378,7 +378,8 @@ def dp_compressor():
 
 def test_dp_basic_sanity(dp_compressor):
     """
-    Sanity Check for DifferentialPrivacyCompressor:
+    Sanity Check for DifferentialPrivacyCompressor.
+
     - Code does not crash.
     - Output shapes match input shapes.
     - 'dp_applied' flag in metadata is True.
@@ -417,7 +418,8 @@ def test_dp_basic_sanity(dp_compressor):
 
 def test_dp_clipping_when_needed(dp_compressor):
     """
-    Test that updates with norm > clip_norm are clipped:
+    Test that updates with norm > clip_norm are clipped.
+
     - original_norm should be greater than clip_norm
     - was_clipped flag must be True
     """
@@ -444,7 +446,8 @@ def test_dp_clipping_when_needed(dp_compressor):
 
 def test_dp_no_clipping_when_not_needed(dp_compressor):
     """
-    Test that updates with norm <= clip_norm are not clipped:
+    Test that updates with norm <= clip_norm are not clipped.
+
     - original_norm should be less than or equal to clip_norm
     - was_clipped flag must be False
     """
@@ -471,7 +474,8 @@ def test_dp_no_clipping_when_not_needed(dp_compressor):
 
 def test_dp_noise_addition(dp_compressor):
     """
-    Test that noise is actually added:
+    Test that noise is actually added.
+
     - Without clipping (clip_norm large), output must differ from input due to noise.
     """
     # Fix random seed for reproducibility
@@ -499,7 +503,8 @@ def test_dp_noise_addition(dp_compressor):
 
 def test_dp_empty_params(dp_compressor):
     """
-    Test handling of empty parameter list:
+    Test handling of empty parameter list.
+
     - Input [] must return [] without errors.
     """
     dp_params, info = dp_compressor.apply_strategy(
