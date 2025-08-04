@@ -503,23 +503,18 @@ def test_dp_noise_addition(dp_compressor):
 
 def test_dp_empty_params(dp_compressor):
     """
-    Test handling of empty parameter list.
+    Test that an empty parameter list raises a ValueError.
 
-    - Input [] must return [] without errors.
+    - Input [] must raise a ValueError.
     """
-    dp_params, info = dp_compressor.apply_strategy(
-        params=[],
-        clip_norm=1.0,
-        epsilon=0.5,
-        delta=1e-5,
-        noise_type="gaussian"
-    )
-
-    # No crash, dp_params is empty list
-    assert isinstance(dp_params, list), "Expected dp_params to be a list"
-    assert dp_params == [], "Expected dp_params to be [] when input is empty"
-    # Optionally, dp_applied should be False since there was nothing to do
-    assert info.get("dp_applied", False) is False, "Expected dp_applied=False for empty input"
+    with pytest.raises(ValueError, match="must not be empty"):
+        dp_compressor.apply_strategy(
+            params=[],
+            clip_norm=1.0,
+            epsilon=0.5,
+            delta=1e-5,
+            noise_type="gaussian"
+        )
 
 
 ###

@@ -30,7 +30,6 @@ dependencies = [
     "protobuf>=5.29.1",
     "pyyaml>=6.0.2,<7",
     "click==8.1.8",
-    "opendp>=0.13.0",
 ]
 
 [project.optional-dependencies]
@@ -46,6 +45,7 @@ tensorflow = [
     "types-tensorflow>=2.17.0.20240820,<3",
 ]
 flax = ["flax>=0.10.0,<0.11"]
+dp = ["opendp>=0.13.0"]
 
 [project.urls]
 Homepage = "https://p2pfl.com"

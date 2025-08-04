@@ -82,8 +82,12 @@ Refs:
 
 """
 
+try:
+    import opendp.prelude as dp
+except ImportError as err:
+    raise ImportError("Please install with `pip install p2pfl[dp]`") from err
+
 import numpy as np
-import opendp.prelude as dp
 
 from p2pfl.learning.compression.base_compression_strategy import TensorCompressor
 
@@ -166,7 +170,7 @@ class DifferentialPrivacyCompressor(TensorCompressor):
         """
         # Handle empty input
         if not params:
-            return [], {"dp_applied": False}
+            raise ValueError("DifferentialPrivacyCompressor: list 'params' must not be empty")
 
         # State machine: determine if we need to compute update
         if previous_params is None:
