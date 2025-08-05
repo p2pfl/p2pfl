@@ -18,19 +18,16 @@
 
 """WandB Logger Decorator."""
 
-import contextlib
 import os
-from typing import Any, Literal
+from typing import Any
 
 try:
     import wandb
     from wandb.sdk.wandb_run import Run  # type: ignore
 
-    WANDB_AVAILABLE = True
 except ImportError:
     wandb = None  # type: ignore
     Run = None  # type: ignore
-    WANDB_AVAILABLE = False
 
 from p2pfl.management.logger.decorators.logger_decorator import LoggerDecorator
 from p2pfl.management.logger.logger import P2PFLogger
@@ -39,7 +36,7 @@ from p2pfl.management.logger.logger import P2PFLogger
 class WandbLogger(LoggerDecorator):
     """WandB Logger Decorator that can be configured at runtime."""
 
-    _run: "Run" | None = None
+    _run: Run | None = None
 
     def __init__(self, p2pflogger: P2PFLogger):
         """Initialize the WandbLogger decorator."""
@@ -48,12 +45,14 @@ class WandbLogger(LoggerDecorator):
         self._entity: str | None = None
         self._config: dict[str, Any] = {}
         self._run_name: str | None = None
-        self._wandb_enabled: bool = WANDB_AVAILABLE
+        # Check if WandB is disabled via environment variable
+        wandb_disabled = os.getenv("WANDB_DISABLED", "false").lower()
+        self._wandb_enabled = wandb_disabled not in ("true", "1", "yes")
 
-        if WANDB_AVAILABLE:
+        if self._wandb_enabled:
             self._init_wandb()
         else:
-            super().debug("WandbLogger", "WandB not available. Logging will be disabled for WandB.")
+            super().debug("WandbLogger", "WandB not available or disabled. Logging will be disabled for WandB.")
 
     def connect(self, **kwargs: Any) -> None:
         """
@@ -65,7 +64,6 @@ class WandbLogger(LoggerDecorator):
                 - entity: The entity/username (or WANDB_ENTITY env var)
                 - experiment: The p2pfl experiment object
                 - run_name: A short display name for this run
-                - mode: WandB mode ("online", "offline", "disabled")
 
         """
         if not self._wandb_enabled:
@@ -77,7 +75,6 @@ class WandbLogger(LoggerDecorator):
         entity = kwargs.get("entity") or os.environ.get("WANDB_ENTITY")
         experiment = kwargs.get("experiment")
         run_name = kwargs.get("run_name")
-        mode = kwargs.get("mode")
 
         self._project = project
         if entity:
@@ -109,71 +106,29 @@ class WandbLogger(LoggerDecorator):
 
         # Initialize wandb if not already done
         if WandbLogger._run is None:
-            self._init_wandb(mode=mode)
+            self._init_wandb()
 
-    def _init_wandb(self, mode: Literal["online", "offline", "disabled"] | None = None) -> None:
+    def _init_wandb(self) -> None:
         """Initialize a wandb run."""
-        if not WANDB_AVAILABLE:
+        if not self._wandb_enabled:
             return
 
+        # Only create a new run if none exists
         if WandbLogger._run is not None:
             return
 
         try:
-            # Determine wandb mode based on environment and configuration
-            if mode is None:
-                mode = self._determine_wandb_mode()
-
             WandbLogger._run = wandb.init(  # type: ignore
                 project=self._project,
                 name=self._run_name,
                 config=self._config,
-                mode=mode,
             )
-
-            if mode == "disabled":
-                self._wandb_enabled = False
-                super().debug("WandbLogger", "WandB initialized in disabled mode")
-            elif mode == "offline":
-                super().debug("WandbLogger", "WandB initialized in offline mode")
-            else:
-                super().debug("WandbLogger", "WandB initialized in online mode")
+            super().debug("WandbLogger", "WandB initialized successfully")
 
         except Exception as e:
             super().warning("WandbLogger", f"Failed to initialize WandB: {e}. Disabling WandB logging.")
             WandbLogger._run = None
             self._wandb_enabled = False
-
-    def _determine_wandb_mode(self) -> Literal["online", "offline", "disabled"]:
-        """
-        Determine the appropriate wandb mode based on environment and configuration.
-
-        Returns:
-            Literal["online", "offline", "disabled"]: The wandb mode
-
-        """
-        # Check if API key is configured
-        try:
-            # Try to get API key from environment or wandb settings
-            api_key = os.environ.get("WANDB_API_KEY")
-            if not api_key:
-                # Try to get from wandb settings if available
-                with contextlib.suppress(AttributeError, Exception):
-                    api_key = wandb.api.api_key  # type: ignore
-
-            if api_key is None or api_key == "":
-                # No API key configured, use offline mode in CI/non-interactive environments
-                if os.getenv("CI") or not os.isatty(0):
-                    return "offline"
-                else:
-                    return "disabled"
-        except Exception:
-            if os.getenv("CI") or not os.isatty(0):
-                return "offline"
-            else:
-                return "disabled"
-
-        return "online"
 
     def log_metric(self, addr: str, metric: str, value: float, step: int | None = None, round: int | None = None) -> None:
         """Log a metric to wandb."""

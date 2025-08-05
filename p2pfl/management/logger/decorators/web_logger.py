@@ -98,7 +98,11 @@ class WebP2PFLogger(LoggerDecorator):
         super().__init__(p2pflogger)
         self._p2pfl_web_services: P2pflWebServices | None = None
 
-    def connect(self, **kwargs):
+        # Auto-connect if environment variables are set
+        if os.environ.get("WEB_LOGGER_URL") and os.environ.get("WEB_LOGGER_KEY"):
+            self.connect()
+
+    def connect(self, **kwargs: Any) -> None:
         """
         Connect to the web services.
 
