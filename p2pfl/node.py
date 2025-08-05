@@ -405,13 +405,12 @@ class Node:
             self.state.set_experiment(
                 experiment_name,
                 rounds,
-                dataset_name=getattr(self.learner.get_data(), "dataset_name", None),
+                dataset_name=self.learner.get_data().dataset_name,
                 model_name=self.learner.get_model().__class__.__name__,
                 aggregator_name=self.aggregator.__class__.__name__,
                 framework_name=self.learner.get_model().get_framework(),
-                node_addr=self.addr,
-                learning_rate=getattr(self.learner, "learning_rate", None),
-                batch_size=getattr(self.learner, "batch_size", None),
+                learning_rate=self.learner.get_model().get_model().lr_rate,
+                batch_size=self.learner.get_data().batch_size,
                 epochs_per_round=epochs,
             )
 

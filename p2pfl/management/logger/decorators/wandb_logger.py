@@ -92,6 +92,9 @@ class WandbLogger(LoggerDecorator):
                 "model_name": experiment.model_name,
                 "aggregator_name": experiment.aggregator_name,
                 "framework_name": experiment.framework_name,
+                "batch_size": experiment.batch_size,
+                "learning_rate": experiment.learning_rate,
+                "epochs_per_round": experiment.epochs_per_round,
             }
             experiment_config = {k: v for k, v in experiment_config.items() if v is not None}
             self._config.update(experiment_config)

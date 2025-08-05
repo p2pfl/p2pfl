@@ -92,21 +92,46 @@ class NodeState:
         """Get the actual experiment name."""
         return self.experiment.exp_name if self.experiment is not None else None
 
-    def set_experiment(self, exp_name: str, total_rounds: int, **kwargs) -> None:
+    def set_experiment(
+        self,
+        exp_name: str,
+        total_rounds: int,
+        dataset_name: str | None = None,
+        model_name: str | None = None,
+        aggregator_name: str | None = None,
+        framework_name: str | None = None,
+        learning_rate: float | None = None,
+        batch_size: int | None = None,
+        epochs_per_round: int | None = None,
+    ) -> None:
         """
         Start a new experiment.
 
-        Attributes:
+        Args:
             exp_name: The name of the experiment.
             total_rounds: The total rounds of the experiment.
-            **kwargs: Additional experiment attributes to set.
+            dataset_name: The name of the dataset.
+            model_name: The name of the model.
+            aggregator_name: The name of the aggregator.
+            framework_name: The name of the framework.
+            learning_rate: The learning rate.
+            batch_size: The batch size.
+            epochs_per_round: The number of epochs per round.
 
         """
         self.status = "Learning"
         if self.experiment is None:
-            self.experiment = Experiment(exp_name, total_rounds)
-        for key, value in kwargs.items():
-            setattr(self.experiment, key, value)
+            self.experiment = Experiment(
+                exp_name,
+                total_rounds,
+                dataset_name=dataset_name,
+                model_name=model_name,
+                aggregator_name=aggregator_name,
+                framework_name=framework_name,
+                learning_rate=learning_rate,
+                batch_size=batch_size,
+                epochs_per_round=epochs_per_round,
+            )
         logger.experiment_started(self.addr, self.experiment)  # TODO: Improve changes on the experiment
 
     def increase_round(self) -> None:

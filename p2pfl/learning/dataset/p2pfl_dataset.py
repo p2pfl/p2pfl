@@ -252,6 +252,7 @@ class P2PFLDataset:
                 train_split_name=self._train_split_name,
                 test_split_name=self._test_split_name,
                 batch_size=self.batch_size,
+                dataset_name=self.dataset_name,
             )
             for i in range(num_partitions)
         ]
