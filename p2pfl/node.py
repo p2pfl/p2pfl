@@ -409,7 +409,7 @@ class Node:
                 model_name=self.learner.get_model().__class__.__name__,
                 aggregator_name=self.aggregator.__class__.__name__,
                 framework_name=self.learner.get_model().get_framework(),
-                learning_rate=getattr(self.learner.get_model().get_model(), 'lr_rate', None),
+                learning_rate=getattr(self.learner.get_model().get_model(), "lr_rate", None),
                 batch_size=self.learner.get_data().batch_size,
                 epochs_per_round=epochs,
             )

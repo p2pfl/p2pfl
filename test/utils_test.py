@@ -185,17 +185,18 @@ def test_node_component_methods():
     component.set_addr(addr)
     assert component.example_method() == addr
 
+
 def test_wandb_logger_initialization():
     """Test WandbLogger initialization."""
     from p2pfl.management.logger.decorators.wandb_logger import WandbLogger
     from p2pfl.management.logger.logger import P2PFLogger
-    
+
     # Create a mock logger
     mock_logger = MagicMock(spec=P2PFLogger)
-    
+
     # Test initialization
     wandb_logger = WandbLogger(mock_logger)
-    
+
     # Check default values
     assert wandb_logger._project == "p2pfl"
     assert wandb_logger._entity is None
@@ -207,14 +208,14 @@ def test_wandb_logger_connect():
     """Test WandbLogger connect method."""
     from p2pfl.management.logger.decorators.wandb_logger import WandbLogger
     from p2pfl.management.logger.logger import P2PFLogger
-    
+
     # Create a mock logger
     mock_logger = MagicMock(spec=P2PFLogger)
-    
+
     # Test connect with project and entity
     wandb_logger = WandbLogger(mock_logger)
     wandb_logger.connect(project="test_project", entity="test_entity")
-    
+
     assert wandb_logger._project == "test_project"
     assert wandb_logger._entity == "test_entity"
 
@@ -223,7 +224,7 @@ def test_wandb_logger_connect_with_experiment():
     """Test WandbLogger connect method with experiment object."""
     from p2pfl.management.logger.decorators.wandb_logger import WandbLogger
     from p2pfl.management.logger.logger import P2PFLogger
-    
+
     # Create a mock experiment object
     mock_experiment = MagicMock()
     mock_experiment.exp_name = "test_experiment"
@@ -235,14 +236,14 @@ def test_wandb_logger_connect_with_experiment():
     mock_experiment.batch_size = 32
     mock_experiment.learning_rate = 0.01
     mock_experiment.epochs_per_round = 1
-    
+
     # Create a mock logger
     mock_logger = MagicMock(spec=P2PFLogger)
-    
+
     # Test connect with experiment
     wandb_logger = WandbLogger(mock_logger)
     wandb_logger.connect(experiment=mock_experiment)
-    
+
     assert wandb_logger._run_name == "test_experiment"
     assert "exp_name" in wandb_logger._config
     assert wandb_logger._config["exp_name"] == "test_experiment"
@@ -252,15 +253,13 @@ def test_wandb_logger_log_metric():
     """Test WandbLogger log_metric method."""
     from p2pfl.management.logger.decorators.wandb_logger import WandbLogger
     from p2pfl.management.logger.logger import P2PFLogger
-    
+
     # Create a mock logger
     mock_logger = MagicMock(spec=P2PFLogger)
-    
+
     # Test log_metric calls the parent logger
     wandb_logger = WandbLogger(mock_logger)
     wandb_logger.log_metric("test_addr", "test_metric", 0.5, step=1, round=1)
-    
+
     # Should call parent logger
     mock_logger.log_metric.assert_called_once_with("test_addr", "test_metric", 0.5, step=1, round=1)
-
-

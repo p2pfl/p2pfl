@@ -72,7 +72,7 @@ class StartLearningStage(Stage):
                 model_name=learner.get_model().__class__.__name__,
                 aggregator_name=aggregator.__class__.__name__,
                 framework_name=learner.get_model().get_framework(),
-                learning_rate=getattr(learner.get_model().get_model(), 'lr_rate', None),
+                learning_rate=getattr(learner.get_model().get_model(), "lr_rate", None),
                 batch_size=learner.get_data().batch_size,
                 epochs_per_round=epochs,
             )

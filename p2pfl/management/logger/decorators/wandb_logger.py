@@ -41,47 +41,63 @@ class WandbLogger(LoggerDecorator):
     def __init__(self, p2pflogger: P2PFLogger):
         """Initialize the WandbLogger decorator."""
         super().__init__(p2pflogger)
-        self._project: str = "p2pfl"  # Default project
-        self._entity: str | None = None
-        self._config: dict[str, Any] = {}
-        self._run_name: str | None = None
-        # Check if WandB is disabled via environment variable
-        wandb_disabled = os.getenv("WANDB_DISABLED", "false").lower()
-        self._wandb_enabled = wandb_disabled not in ("true", "1", "yes")
+        self._wandb_enabled: bool = wandb is not None
+        self.connect()
 
-        if self._wandb_enabled:
-            self._init_wandb()
-        else:
-            super().debug("WandbLogger", "WandB not available or disabled. Logging will be disabled for WandB.")
-
-    def connect(self, **kwargs: Any) -> None:
+    def connect(
+        self,
+        wandb_api_key: str | None = None,
+        wandb_project: str | None = None,
+        wandb_entity: str | None = None,
+        wandb_run_name: str | None = None,
+        wandb_tags: list[str] | str | None = None,
+        wandb_notes: str | None = None,
+        wandb_group: str | None = None,
+        experiment: Any | None = None,
+        **kwargs: Any,
+    ) -> None:
         """
         Connect and setup WandB logging.
 
         Args:
-            **kwargs: Connection parameters. Expected keys:
-                - project: The project name (or WANDB_PROJECT env var, default: "p2pfl")
-                - entity: The entity/username (or WANDB_ENTITY env var)
-                - experiment: The p2pfl experiment object
-                - run_name: A short display name for this run
+            wandb_api_key: The API key (or WANDB_API_KEY env var)
+            wandb_project: The project name (or WANDB_PROJECT env var, default: "p2pfl")
+            wandb_entity: The entity/username (or WANDB_ENTITY env var)
+            wandb_run_name: A short display name for this run (or WANDB_RUN_NAME env var)
+            wandb_tags: List of tags for this run (or WANDB_TAGS env var as comma-separated)
+            wandb_notes: Notes about this run (or WANDB_NOTES env var)
+            wandb_group: Group for this run (or WANDB_RUN_GROUP env var)
+            experiment: The p2pfl experiment object
+            **kwargs: Additional parameters (for compatibility)
 
         """
-        if not self._wandb_enabled:
-            super().debug("WandbLogger", "WandB not available or disabled. Skipping WandB setup.")
+        # Skip if already connected
+        if WandbLogger._run is not None:
+            super().debug("WandbLogger", "WandB already connected, skipping initialization")
             return
 
-        # Get parameters from kwargs or environment variables
-        project = kwargs.get("project") or os.environ.get("WANDB_PROJECT") or "p2pfl"
-        entity = kwargs.get("entity") or os.environ.get("WANDB_ENTITY")
-        experiment = kwargs.get("experiment")
-        run_name = kwargs.get("run_name")
+        # Get parameters from function args or environment variables
+        api_key = wandb_api_key or os.environ.get("WANDB_API_KEY")
+        project = wandb_project or os.environ.get("WANDB_PROJECT")
+        entity = wandb_entity or os.environ.get("WANDB_ENTITY")
+        run_name = wandb_run_name or os.environ.get("WANDB_RUN_NAME")
+        notes = wandb_notes or os.environ.get("WANDB_NOTES")
+        group = wandb_group or os.environ.get("WANDB_RUN_GROUP")
 
-        self._project = project
-        if entity:
-            self._entity = entity
+        # Handle tags (can be list or comma-separated string)
+        tags = wandb_tags or os.environ.get("WANDB_TAGS")
+        if isinstance(tags, str):
+            tags_list: list[str] | None = [tag.strip() for tag in tags.split(",") if tag.strip()]
+        elif isinstance(tags, list):
+            tags_list = tags
+        else:
+            tags_list = None
 
-        if experiment and WandbLogger._run is not None:
-            self._run_name = experiment.exp_name
+        # Extract experiment config if provided
+        config = {}
+        if experiment:
+            if not run_name:
+                run_name = experiment.exp_name
             experiment_config = {
                 "exp_name": experiment.exp_name,
                 "total_rounds": experiment.total_rounds,
@@ -94,23 +110,18 @@ class WandbLogger(LoggerDecorator):
                 "epochs_per_round": experiment.epochs_per_round,
             }
             experiment_config = {k: v for k, v in experiment_config.items() if v is not None}
-            self._config.update(experiment_config)
+            config.update(experiment_config)
 
-            WandbLogger._run.config.update(experiment_config)  # type: ignore
-            WandbLogger._run.name = experiment.exp_name
-
-            super().debug("WandbLogger", f"W&B run initialized with config: {experiment_config}")
-
-        elif run_name:
-            self._run_name = run_name
-
-        # Initialize wandb if not already done
-        if WandbLogger._run is None:
-            self._init_wandb()
-
-    def _init_wandb(self) -> None:
-        """Initialize a wandb run."""
+        # Check if wandb is available (imported successfully)
         if not self._wandb_enabled:
+            if project is not None or entity is not None:
+                super().warning("WandbLogger", "WandB library not installed but project or entity provided. Install wandb to enable logging.")
+            return
+
+        # Check if API key is available
+        if api_key is None and "WANDB_API_KEY" not in os.environ:
+            if project is not None or entity is not None:
+                super().warning("WandbLogger", "WandB project or entity provided but no API key found. Disabling WandB logging.")
             return
 
         # Only create a new run if none exists
@@ -118,12 +129,30 @@ class WandbLogger(LoggerDecorator):
             return
 
         try:
-            WandbLogger._run = wandb.init(  # type: ignore
-                project=self._project,
-                name=self._run_name,
-                config=self._config,
-            )
-            super().debug("WandbLogger", "WandB initialized successfully")
+            # Set API key if provided
+            if api_key:
+                os.environ["WANDB_API_KEY"] = api_key
+
+            # Prepare init parameters
+            init_params: dict[str, Any] = {
+                "project": project or "p2pfl",  # Default project name
+                "config": config or {},
+            }
+
+            # Add optional parameters if provided
+            if entity:
+                init_params["entity"] = entity
+            if run_name:
+                init_params["name"] = run_name
+            if tags_list:
+                init_params["tags"] = tags_list
+            if notes:
+                init_params["notes"] = notes
+            if group:
+                init_params["group"] = group
+
+            WandbLogger._run = wandb.init(**init_params)  # type: ignore
+            super().debug("WandbLogger", f"WandB initialized successfully with project '{init_params['project']}'")
 
         except Exception as e:
             super().warning("WandbLogger", f"Failed to initialize WandB: {e}. Disabling WandB logging.")
@@ -132,8 +161,8 @@ class WandbLogger(LoggerDecorator):
 
     def log_metric(self, addr: str, metric: str, value: float, step: int | None = None, round: int | None = None) -> None:
         """Log a metric to wandb."""
-        # Ensure W&B is initialized and enabled
-        if not self._wandb_enabled or WandbLogger._run is None:
+        # Ensure W&B is initialized
+        if WandbLogger._run is None:
             return super().log_metric(addr, metric, value, step=step, round=round)
 
         try:
@@ -150,7 +179,7 @@ class WandbLogger(LoggerDecorator):
 
     def finish(self) -> None:
         """Finish the wandb run."""
-        if self._wandb_enabled and WandbLogger._run is not None:
+        if WandbLogger._run is not None:
             try:
                 wandb.finish()  # type: ignore
             except Exception as e:

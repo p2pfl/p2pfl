@@ -97,10 +97,7 @@ class WebP2PFLogger(LoggerDecorator):
         """Initialize the logger."""
         super().__init__(p2pflogger)
         self._p2pfl_web_services: P2pflWebServices | None = None
-
-        # Auto-connect if environment variables are set
-        if os.environ.get("WEB_LOGGER_URL") and os.environ.get("WEB_LOGGER_KEY"):
-            self.connect()
+        self.connect()
 
     def connect(self, **kwargs: Any) -> None:
         """
@@ -115,17 +112,14 @@ class WebP2PFLogger(LoggerDecorator):
         if self._p2pfl_web_services is not None:
             raise Exception("Web services already connected.")
 
-        # Get parameters from kwargs or environment variables
-        url = kwargs.get("url") or os.environ.get("WEB_LOGGER_URL")
-        key = kwargs.get("key") or os.environ.get("WEB_LOGGER_KEY")
+        # Get params
+        url = kwargs.get("p2pfl_web_url") or os.environ.get("P2PFL_WEB_LOGGER_URL")
+        key = kwargs.get("p2pfl_web_key") or os.environ.get("P2PFL_WEB_LOGGER_KEY")
 
-        if not url:
-            raise ValueError("Web logger URL is required. Set via 'url' parameter or WEB_LOGGER_URL environment variable.")
-        if not key:
-            raise ValueError("Web logger API key is required. Set via 'key' parameter or WEB_LOGGER_KEY environment variable.")
-
-        self._p2pfl_web_services = P2pflWebServices(url, key)
-        self.add_handler(P2pflWebLogHandler(self._p2pfl_web_services))
+        # If params, connect
+        if url is not None or key is not None:
+            self._p2pfl_web_services = P2pflWebServices(str(url), str(key))
+            self.add_handler(P2pflWebLogHandler(self._p2pfl_web_services))
 
     def log_metric(self, addr: str, metric: str, value: float, step: int | None = None, round: int | None = None) -> None:
         """
