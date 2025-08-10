@@ -184,7 +184,3 @@ def test_node_component_methods():
     addr = "test_address"
     component.set_addr(addr)
     assert component.example_method() == addr
-
-
-# WandB logger tests removed - cannot be meaningfully tested without actual WandB tokens
-# The logger functionality is integration tested when used with actual experiments

@@ -47,8 +47,6 @@ class General:
     """Disable Ray for local testing."""
     RESOURCE_MONITOR_PERIOD: int = 10
     """Period (seconds) to send resource monitor information."""
-    DISABLE_WANDB: bool = False
-    """Disable WandB for local testing."""
 
 
 @dataclass
