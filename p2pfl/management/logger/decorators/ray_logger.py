@@ -96,6 +96,10 @@ class RayP2PFLogger(P2PFLogger):
         """Cleanup the logger."""
         ray.get(self.ray_actor.cleanup.remote())
 
+    def finish(self) -> None:
+        """Finish the current experiment."""
+        ray.get(self.ray_actor.finish.remote())
+
     def set_level(self, level: int | str) -> None:
         """
         Set the logger level.

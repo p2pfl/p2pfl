@@ -414,9 +414,6 @@ class Node:
                 epochs_per_round=epochs,
             )
 
-            # Set up wandb logging
-            logger.connect(run_name=experiment_name, experiment=self.state.experiment)
-
             # Run learning workflow
             self.learning_workflow.run(
                 rounds=rounds,

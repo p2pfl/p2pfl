@@ -300,9 +300,8 @@ class P2PFLogger:
         try:
             experiment = self._nodes[addr]["Experiment"]
         except KeyError:
-            # print(f"Node {addr} not registered.")
+            # Node not registered, skip logging
             return
-            raise NodeNotRegistered(f"Node {addr} not registered.") from None
 
         # Get Round
         if round is None:
@@ -382,7 +381,7 @@ class P2PFLogger:
             # Unregister the node
             self._nodes.pop(node)
         else:
-            raise Exception(f"Node {node} not registered.")
+            self.warning("SYSTEM", f"Attempted to unregister node {node} that was not registered.")
 
     ######
     # Node Status

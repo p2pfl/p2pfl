@@ -79,6 +79,34 @@ class Experiment:
         else:
             setattr(self, param_name, param_val)
 
+    def to_dict(self, exclude_none: bool = True) -> dict:
+        """
+        Convert the experiment to a dictionary.
+
+        Args:
+            exclude_none: If True, exclude fields with None values.
+
+        Returns:
+            Dictionary representation of the experiment.
+
+        """
+        config = {
+            "exp_name": self.exp_name,
+            "total_rounds": self.total_rounds,
+            "round": self.round,
+            "dataset_name": self.dataset_name,
+            "model_name": self.model_name,
+            "aggregator_name": self.aggregator_name,
+            "framework_name": self.framework_name,
+            "batch_size": self.batch_size,
+            "learning_rate": self.learning_rate,
+            "epochs_per_round": self.epochs_per_round,
+        }
+
+        if exclude_none:
+            return {k: v for k, v in config.items() if v is not None}
+        return config
+
     def __str__(self):
         """Return the string representation of the experiment."""
         metadata_str = ""
