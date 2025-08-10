@@ -111,9 +111,10 @@ class DifferentialPrivacyCompressor(TensorCompressor):
     2. Works with any ML framework
     3. Typically has less accuracy loss (noise added once vs. many times)
 
-    The compressor acts as a state machine:
-    - If previous_params is None: treats input as model update directly
-    - If previous_params is provided: computes update = params - previous_params
+    Note:
+    The `params` argument is expected to be the *model update* (delta)
+    after local training, not the full set of model weights.
+
     """
 
     def _get_noise_mechanism(
@@ -143,7 +144,6 @@ class DifferentialPrivacyCompressor(TensorCompressor):
         clip_norm: float = 1.0,
         epsilon: float = 3.0,
         delta: float = 1e-5,
-        previous_params: list[np.ndarray] | None = None,
         noise_type: str = "gaussian",
         stability_constant: float = 1e-6,
     ) -> tuple[list[np.ndarray], dict]:
@@ -151,7 +151,7 @@ class DifferentialPrivacyCompressor(TensorCompressor):
         Apply differential privacy to model parameters.
 
         Args:
-            params: Current model parameters
+            params: Model update (delta) after local training
             clip_norm: Maximum L2 norm for clipping (C)
             epsilon: The privacy budget (ε). Lower values correspond
                 to stronger privacy guarantees. Represents the maximum "information leakage"
@@ -160,7 +160,6 @@ class DifferentialPrivacyCompressor(TensorCompressor):
                 It represents the probability that the privacy guarantee of epsilon
                 is broken. It should be less than 1/N, where N is the number of
                 data points in the dataset. This parameter is only used for Gaussian noise.
-            previous_params: Previous round parameters (if None, treats params as update)
             noise_type: Type of noise to add ("gaussian" or "laplace")
             stability_constant: A small constant to avoid division by zero when clipping.
 
@@ -172,20 +171,8 @@ class DifferentialPrivacyCompressor(TensorCompressor):
         if not params:
             raise ValueError("DifferentialPrivacyCompressor: list 'params' must not be empty")
 
-        # State machine: determine if we need to compute update
-        if previous_params is None:
-            # No previous params - treat input as update directly
-            update_params = params
-            computed_update = False
-        else:
-            # Previous params provided - compute update
-            update_params = []
-            for current, previous in zip(params, previous_params, strict=False):
-                update_params.append(current - previous)
-            computed_update = True
-
         # Step 1: Compute global L2 norm across all parameters
-        flat_update = np.concatenate([p.flatten() for p in update_params])
+        flat_update = np.concatenate([p.flatten() for p in params])
         total_norm = np.linalg.norm(flat_update)
 
         # Step 2: Clip if necessary
@@ -202,22 +189,14 @@ class DifferentialPrivacyCompressor(TensorCompressor):
         noisy_flat_update = mech(clipped_flat_update.tolist())
 
         # Unflatten the noisy update
-        noisy_updates = []
+        dp_params = []
         current_pos = 0
-        for p in update_params:
+        for p in params:
             shape = p.shape
             size = p.size
             dtype = p.dtype
-            noisy_updates.append(np.array(noisy_flat_update[current_pos : current_pos + size], dtype=dtype).reshape(shape))
+            dp_params.append(np.array(noisy_flat_update[current_pos : current_pos + size], dtype=dtype).reshape(shape))
             current_pos += size
-
-        # Step 4: If we computed update, add it back to previous params
-        if computed_update and previous_params is not None:
-            dp_params = []
-            for dp_update, previous in zip(noisy_updates, previous_params, strict=False):
-                dp_params.append(previous + dp_update)
-        else:
-            dp_params = noisy_updates
 
         # Prepare info for privacy accounting
         dp_info = {
@@ -228,8 +207,7 @@ class DifferentialPrivacyCompressor(TensorCompressor):
             "noise_type": noise_type,
             "noise_scale": scale,
             "original_norm": float(total_norm),
-            "was_clipped": bool(total_norm > clip_norm),
-            "computed_update": computed_update,
+            "was_clipped": bool(total_norm > clip_norm)
         }
 
         return dp_params, dp_info

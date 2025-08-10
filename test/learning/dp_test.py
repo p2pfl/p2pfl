@@ -19,23 +19,32 @@
 """Tests for Differential Privacy."""
 
 import contextlib
+from typing import Any
 
 import numpy as np
 import pytest
 from datasets import DatasetDict, load_dataset  # type: ignore
 
-from p2pfl.experiment import Experiment
+from p2pfl.communication.protocols.protobuff.memory import MemoryCommunicationProtocol
 from p2pfl.learning.compression.dp_strategy import DifferentialPrivacyCompressor
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-from p2pfl.learning.frameworks.learner_factory import LearnerFactory
-from p2pfl.management.logger import logger
+from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
+from p2pfl.node import Node
 from p2pfl.settings import Settings
+from p2pfl.utils.utils import wait_to_finish
 
 with contextlib.suppress(ImportError):
     from p2pfl.examples.mnist.model.mlp_tensorflow import model_build_fn as model_build_fn_tensorflow
 
 with contextlib.suppress(ImportError):
     from p2pfl.examples.mnist.model.mlp_pytorch import model_build_fn as model_build_fn_torch
+
+
+# Set seed
+SEED = 42
+np.random.seed(SEED)
+Settings.general.SEED = SEED
+
 
 ###
 # Differential Privacy Compressor tests
@@ -189,7 +198,7 @@ def test_dp_empty_params(dp_compressor):
 
 
 @pytest.mark.parametrize("build_model_fn", [model_build_fn_torch, model_build_fn_tensorflow])  # TODO: Flax
-def test_learner_train(build_model_fn):
+def test_learner_train(build_model_fn) -> None:
     """Test DifferentialPrivacyCompressor convergence on a tiny dataset."""
     # Dataset
     dataset = P2PFLDataset(
@@ -201,36 +210,49 @@ def test_learner_train(build_model_fn):
         )
     )
 
+    # Two equal-sized partitions (one per node)
+    partitions = dataset.generate_partitions(2, RandomIIDPartitionStrategy(), seed=SEED)
+
     # DP Compressor
-    compressor = DifferentialPrivacyCompressor()
+    dp_config = {
+        "dp": {
+            "clip_norm": 1.0,
+            "epsilon": 3.0,
+            "delta": 1e-5,
+            "noise_type": "gaussian",
+        }
+    }
 
     # Create the model
-    p2pfl_model = build_model_fn(compression=compressor)
+    model1 = build_model_fn(compression=dp_config)
+    model2 = model1.build_copy(compression=dp_config)
 
-    # Dont care about the seed
-    Settings.general.seed = None
+    n1 = Node(model1, partitions[0], protocol=MemoryCommunicationProtocol())
+    n2 = Node(model2, partitions[1], protocol=MemoryCommunicationProtocol())
+    n1.start()
+    n2.start()
 
-    node_name = "unknown-node"
-    with contextlib.suppress(Exception):
-        logger.register_node(node_name)
-    experiment = Experiment(exp_name="test_experiment-torch", total_rounds=1)
-    logger.experiment_started(node_name, experiment)
-    # Learner
-    learner = LearnerFactory.create_learner(p2pfl_model)()
-    learner.set_addr(node_name)
-    learner.set_model(p2pfl_model)
-    learner.set_data(dataset)
+    n2.connect(n1.addr)
 
-    # Train
-    learner.set_epochs(3)
-    learner.fit()
+    n1.set_start_learning(rounds=3, epochs=3)
+    wait_to_finish([n1, n2], timeout=260)
 
     # Test
-    result = learner.evaluate()
-    metrics = {k: v for k, v in result.items() if "loss" not in k}
-    compile_metrics = result.get("compile_metrics", {})
+    result = n1.learner.evaluate()
+    metrics: dict[str, float] = {
+        k: v for k, v in result.items() if "loss" not in k and isinstance(v, int | float)
+    }
+    compile_metrics: dict | Any = result.get("compile_metrics", {})
     if isinstance(compile_metrics, dict):
-        metrics.update(compile_metrics)
+        metrics.update(
+            {k: v for k, v in compile_metrics.items() if isinstance(v, int | float)}
+        )
+
+    n1.stop()
+    n2.stop()
+
+    assert metrics, "No evaluation metrics returned"
+    assert all(np.isfinite(list(metrics.values()))), f"Non-finite values: {metrics}"
 
     assert any(v > 0.5 for v in metrics.values()), (
         f"Expected at least one metric > 0.5, got {metrics}"
