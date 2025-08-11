@@ -93,13 +93,13 @@ def run_from_yaml(yaml_path: str, debug: bool = False) -> None:
     if profiling.get("measure_time", False):
         start_time = time.time()
 
-    ######################
-    # P2PFL Web Services #
-    ######################
+    ###################
+    # Remote Loggers  #
+    ###################
 
-    web_logger = config.get("web_logger", {})
-    if web_logger.get("enabled", False):
-        logger.connect_web(web_logger.get("url"), web_logger.get("token"))
+    remote_loggers = config.get("remote_loggers", {})
+    if remote_loggers:
+        logger.connect(**remote_loggers)
 
     ###########
     # Dataset #

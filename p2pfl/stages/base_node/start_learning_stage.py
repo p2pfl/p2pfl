@@ -65,7 +65,17 @@ class StartLearningStage(Stage):
 
         # Init
         with state.start_thread_lock:
-            state.set_experiment(experiment_name, rounds)
+            state.set_experiment(
+                experiment_name,
+                rounds,
+                dataset_name=learner.get_data().dataset_name,
+                model_name=learner.get_model().__class__.__name__,
+                aggregator_name=aggregator.__class__.__name__,
+                framework_name=learner.get_model().get_framework(),
+                learning_rate=getattr(learner.get_model().get_model(), "lr_rate", None),
+                batch_size=learner.get_data().batch_size,
+                epochs_per_round=epochs,
+            )
             learner.set_epochs(epochs)
         begin = time.time()
 

@@ -401,6 +401,20 @@ class Node:
     def __start_learning(self, rounds: int, epochs: int, trainset_size: int, experiment_name: str) -> None:
         # Set seed
         try:
+            # Initialize experiment with metadata
+            self.state.set_experiment(
+                experiment_name,
+                rounds,
+                dataset_name=self.learner.get_data().dataset_name,
+                model_name=self.learner.get_model().__class__.__name__,
+                aggregator_name=self.aggregator.__class__.__name__,
+                framework_name=self.learner.get_model().get_framework(),
+                learning_rate=getattr(self.learner.get_model().get_model(), "lr_rate", None),
+                batch_size=self.learner.get_data().batch_size,
+                epochs_per_round=epochs,
+            )
+
+            # Run learning workflow
             self.learning_workflow.run(
                 rounds=rounds,
                 epochs=epochs,
@@ -412,19 +426,21 @@ class Node:
                 aggregator=self.aggregator,
                 generator=random.Random(Settings.general.SEED),
             )
+
         except Exception as e:
             logger.error(self.addr, f"Error {type(e).__name__}: {e}\n{traceback.format_exc()}")
             self.stop()
 
     def __stop_learning(self) -> None:
         logger.info(self.addr, "Stopping learning")
-        # Leraner
+        # Learner
         self.learner.interrupt_fit()
         # Aggregator
         self.aggregator.clear()
         # State
         self.state.clear()
         logger.experiment_finished(self.addr)
+        logger.finish()
         # Try to free wait locks
         with contextlib.suppress(Exception):
             self.state.wait_votes_ready_lock.release()
