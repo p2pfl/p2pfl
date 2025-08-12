@@ -24,6 +24,7 @@ import numpy as np
 import pytest
 from datasets import DatasetDict, load_dataset  # type: ignore
 
+from p2pfl.examples.mnist.model.mlp_generator_factory import ModelType, get_model_builder
 from p2pfl.experiment import Experiment
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
@@ -313,8 +314,8 @@ def __test_flax_export_strategy():
     assert y.shape == (1,)
 
 
-@pytest.mark.parametrize("build_model_fn", [model_build_fn_torch, model_build_fn_tensorflow])  # TODO: Flax
-def test_learner_train(build_model_fn):
+@pytest.mark.parametrize("model_type", [ModelType.PYTORCH, ModelType.TENSORFLOW])  # TODO: Flax
+def test_learner_train(model_type):
     """Test the training and testing of the learner."""
     # Dataset
     dataset = P2PFLDataset(
@@ -327,6 +328,7 @@ def test_learner_train(build_model_fn):
     )
 
     # Create the model
+    build_model_fn = get_model_builder(model_type)
     p2pfl_model = build_model_fn()
 
     # Dont care about the seed
