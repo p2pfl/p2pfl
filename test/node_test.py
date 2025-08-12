@@ -85,7 +85,7 @@ def log_test_start_and_end(request):
 @pytest.mark.parametrize("model_build_fn", [model_build_fn_pytorch, model_build_fn_tensorflow])
 def test_convergence(x, model_build_fn):
     """Test convergence (on learning) of two nodes."""
-    n, r = x
+    n, rounds = x
 
     Settings.general.SEED = 777
     Settings.heartbeat.TIMEOUT = 20
@@ -107,49 +107,67 @@ def test_convergence(x, model_build_fn):
         time.sleep(0.1)
     wait_convergence(nodes, n - 1, only_direct=False)
 
-    # Start Learning
-    nodes[0].set_start_learning(rounds=r, epochs=1)
+    try:
+        # Start Learning
+        exp_name = nodes[0].set_start_learning(rounds=rounds, epochs=1)
 
-    # Wait
-    wait_to_finish(nodes, timeout=240)
+        # Wait
+        wait_to_finish(nodes, timeout=240)
 
-    # Check if execution is correct
-    for node in nodes:
-        # History
-        history = node.learning_workflow.history
-        assert history[0] == "StartLearningStage"
-        history = history[1:]
-        # Pattern
-        stage_pattern = ["VoteTrainSetStage", ["TrainStage", "WaitAggregatedModelsStage"], "GossipModelStage", "RoundFinishedStage"]
-        # Get batches (len(stage_pattern))
-        assert int(len(history) / len(stage_pattern)) == r
-        # Check pattern
-        for i in range(r):
-            for gt, st in zip(stage_pattern, history[i * len(stage_pattern) : (i + 1) * len(stage_pattern)], strict=False):
-                if isinstance(gt, list):
-                    assert st in gt
-                else:
-                    assert st == gt
+        # Check if execution is correct
+        for node in nodes:
+            # History
+            history = node.learning_workflow.history
+            assert history[0] == "StartLearningStage"
+            history = history[1:]
+            # Pattern
+            stage_pattern = ["VoteTrainSetStage", ["TrainStage", "WaitAggregatedModelsStage"], "GossipModelStage", "RoundFinishedStage"]
+            # Get batches (len(stage_pattern))
+            assert int(len(history) / len(stage_pattern)) == rounds
+            # Check pattern
+            for i in range(rounds):
+                for gt, st in zip(stage_pattern, history[i * len(stage_pattern) : (i + 1) * len(stage_pattern)], strict=False):
+                    if isinstance(gt, list):
+                        assert st in gt
+                    else:
+                        assert st == gt
 
-    check_equal_models(nodes)
+        check_equal_models(nodes)
 
-    # Get accuracies
-    framework = nodes[0].get_model().get_framework()
-    if framework == Framework.PYTORCH.value:
-        accuracy_name = "test_metric"
-    elif framework == Framework.TENSORFLOW.value:
-        accuracy_name = "compile_metrics"
-    else:
-        raise ValueError(f"Framwork {framework} not known")
-    logger.get_global_logs().values()
-    accuracies = [metrics[accuracy_name] for metrics in list(logger.get_global_logs().values())[0].values()]
-    # Get last round accuracies
-    last_round_accuracies = [acc for node_acc in accuracies for r, acc in node_acc if r == 2]  # 2 bc of the validation before the round 1
-    # Assert that the accuracies are higher than 0.5
-    assert all(acc > 0.5 for acc in last_round_accuracies)
+        # Get accuracies
+        framework = nodes[0].get_model().get_framework()
+        if framework == Framework.PYTORCH.value:
+            accuracy_name = "test_metric"
+        elif framework == Framework.TENSORFLOW.value:
+            accuracy_name = "compile_metrics"
+        else:
+            raise ValueError(f"Framwork {framework} not known")
 
-    # Stop Nodes
-    [n.stop() for n in nodes]
+        # Select logs for this experiment
+        global_logs = logger.get_global_logs()
+        exp_logs = global_logs.get(exp_name)
+        if exp_logs is None:
+            # fallback: try first available experiment
+            exp_logs = next(iter(global_logs.values()), {})
+
+        # collect per-node accuracy time series
+        accuracies = []
+        for node_metrics in exp_logs.values():
+            if accuracy_name in node_metrics and isinstance(node_metrics[accuracy_name], list | tuple):
+                accuracies.append(node_metrics[accuracy_name])
+        if not accuracies:
+            pytest.fail(f"No '{accuracy_name}' metrics found in experiment logs for exp={exp_name}")
+
+        # determine last round index dynamically (max round index across nodes)
+        last_round_idx = max(max(idx for idx, _ in node_acc) for node_acc in accuracies if node_acc)
+        last_round_accuracies = [acc for node_acc in accuracies for idx, acc in node_acc if idx == last_round_idx]
+
+        assert last_round_accuracies, "No accuracy values found for the last round"
+        assert all(acc > 0.5 for acc in last_round_accuracies), f"Expected all accuracies > 0.5, got {last_round_accuracies}"
+
+    finally:
+        # Stop Nodes
+        [n.stop() for n in nodes]
 
 
 # DISABLED! NOT IMPLEMENTED BY RAY/TF
