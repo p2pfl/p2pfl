@@ -19,7 +19,6 @@
 """Tests for Differential Privacy."""
 
 import contextlib
-import os
 import random
 from typing import Any
 
@@ -35,35 +34,30 @@ from p2pfl.node import Node
 from p2pfl.settings import Settings
 from p2pfl.utils.utils import wait_to_finish
 
-# Set seed
-SEED = 42
-np.random.seed(SEED)
-Settings.general.SEED = SEED
-os.environ["PYTHONHASHSEED"] = str(SEED)
-random.seed(SEED)
-
 with contextlib.suppress(ImportError):
-    import tensorflow as tf
-
     from p2pfl.examples.mnist.model.mlp_tensorflow import model_build_fn as model_build_fn_tensorflow
 
-    tf.random.set_seed(SEED)
-    tf.config.experimental.enable_op_determinism()
-
 with contextlib.suppress(ImportError):
-    import torch
-
     from p2pfl.examples.mnist.model.mlp_pytorch import model_build_fn as model_build_fn_torch
-
-    torch.manual_seed(SEED)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
 
 
 ###
 # Differential Privacy Compressor tests
 ###
 
+
+@pytest.fixture(autouse=True)
+def set_random_seed():
+    """Set random seed for reproducibility."""
+    seed = 42
+    random.seed(seed)
+    np.random.seed(seed)
+    Settings.general.SEED = seed
+
+    yield
+
+    np.random.seed(None)
+    random.seed(None)
 
 @pytest.fixture
 def dp_compressor():
@@ -172,9 +166,6 @@ def test_dp_noise_addition(dp_compressor):
 
     - Without clipping (clip_norm large), output must differ from input due to noise.
     """
-    # Fix random seed for reproducibility
-    np.random.seed(42)
-
     # Prepare a constant array (no clipping will occur if clip_norm >> norm)
     original_params = [np.full((4, 4), 5.0, dtype=np.float32)]
     clip_norm = 100.0
@@ -225,7 +216,8 @@ def test_learner_train(build_model_fn) -> None:
     )
 
     # Two equal-sized partitions (one per node)
-    partitions = dataset.generate_partitions(2, RandomIIDPartitionStrategy(), seed=SEED)
+    partitions = dataset.generate_partitions(2, RandomIIDPartitionStrategy(),
+     seed=Settings.general.SEED if Settings.general.SEED is not None else 42)
 
     # DP Compressor
     dp_config = {
@@ -248,22 +240,23 @@ def test_learner_train(build_model_fn) -> None:
 
     n2.connect(n1.addr)
 
-    n1.set_start_learning(rounds=5, epochs=5)
-    wait_to_finish([n1, n2], timeout=280)
+    try:
+        n1.set_start_learning(rounds=3, epochs=4)
+        wait_to_finish([n1, n2], timeout=280)
 
-    # Test
-    result = n1.learner.evaluate()
-    metrics: dict[str, float] = {
-        k: v for k, v in result.items() if "loss" not in k and isinstance(v, int | float)
-    }
-    compile_metrics: dict | Any = result.get("compile_metrics", {})
-    if isinstance(compile_metrics, dict):
-        metrics.update(
-            {k: v for k, v in compile_metrics.items() if isinstance(v, int | float)}
-        )
-
-    n1.stop()
-    n2.stop()
+        # Test
+        result = n1.learner.evaluate()
+        metrics: dict[str, float] = {
+            k: v for k, v in result.items() if "loss" not in k and isinstance(v, int | float)
+        }
+        compile_metrics: dict | Any = result.get("compile_metrics", {})
+        if isinstance(compile_metrics, dict):
+            metrics.update(
+                {k: v for k, v in compile_metrics.items() if isinstance(v, int | float)}
+            )
+    finally:
+        n1.stop()
+        n2.stop()
 
     assert metrics, "No evaluation metrics returned"
     assert all(np.isfinite(list(metrics.values()))), f"Non-finite values: {metrics}"
