@@ -35,7 +35,17 @@ from p2pfl.management.metric_storage import GlobalLogsType, LocalLogsType
 class RayP2PFLoggerActor(LoggerDecorator):
     """Actor to add remote logging capabilities to a logger class."""
 
-    pass
+    def connect(self, **kwargs):
+        """
+        Establish connection/setup for the logger.
+
+        Delegates to the wrapped logger's connect method.
+
+        Args:
+            **kwargs: Connection parameters specific to each logger type.
+
+        """
+        self._p2pfl_logger.connect(**kwargs)
 
 
 class RayP2PFLogger(P2PFLogger):
@@ -70,20 +80,25 @@ class RayP2PFLogger(P2PFLogger):
         instance.ray_actor = actor
         return instance
 
-    def connect_web(self, url: str, key: str) -> None:
+    def connect(self, **kwargs):
         """
-        Connect to the web services.
+        Establish connection/setup for the logger.
+
+        Delegates to the remote actor's connect method.
 
         Args:
-            url: The URL of the web services.
-            key: The API key.
+            **kwargs: Connection parameters specific to each logger type.
 
         """
-        ray.get(self.ray_actor.connect_web.remote(url, key))
+        ray.get(self.ray_actor.connect.remote(**kwargs))
 
     def cleanup(self) -> None:
         """Cleanup the logger."""
         ray.get(self.ray_actor.cleanup.remote())
+
+    def finish(self) -> None:
+        """Finish the current experiment."""
+        ray.get(self.ray_actor.finish.remote())
 
     def set_level(self, level: int | str) -> None:
         """

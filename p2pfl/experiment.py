@@ -17,27 +17,38 @@
 #
 """Experiment class."""
 
+from dataclasses import dataclass
 
+
+@dataclass
 class Experiment:
     """
     Class to represent an experiment.
 
     Attributes:
-        exp_name(str): The name of the experiment.
-        total_rounds(int): The total rounds of the experiment.
-        round(int): The current round.
-
-    Args:
         exp_name: The name of the experiment.
         total_rounds: The total rounds of the experiment.
+        round: The current round.
+        dataset_name: The name of the dataset.
+        model_name: The name of the model.
+        aggregator_name: The name of the aggregator.
+        framework_name: The name of the framework.
+        learning_rate: The learning rate.
+        batch_size: The batch size.
+        epochs_per_round: The number of epochs per round.
 
     """
 
-    def __init__(self, exp_name: str, total_rounds: int):
-        """Initialize the experiment."""
-        self.exp_name = exp_name
-        self.total_rounds = total_rounds
-        self.round = 0
+    exp_name: str
+    total_rounds: int
+    round: int = 0
+    dataset_name: str | None = None
+    model_name: str | None = None
+    aggregator_name: str | None = None
+    framework_name: str | None = None
+    learning_rate: float | None = None
+    batch_size: int | None = None
+    epochs_per_round: int | None = None
 
     def increase_round(self) -> None:
         """
@@ -68,6 +79,50 @@ class Experiment:
         else:
             setattr(self, param_name, param_val)
 
+    def to_dict(self, exclude_none: bool = True) -> dict:
+        """
+        Convert the experiment to a dictionary.
+
+        Args:
+            exclude_none: If True, exclude fields with None values.
+
+        Returns:
+            Dictionary representation of the experiment.
+
+        """
+        config = {
+            "exp_name": self.exp_name,
+            "total_rounds": self.total_rounds,
+            "round": self.round,
+            "dataset_name": self.dataset_name,
+            "model_name": self.model_name,
+            "aggregator_name": self.aggregator_name,
+            "framework_name": self.framework_name,
+            "batch_size": self.batch_size,
+            "learning_rate": self.learning_rate,
+            "epochs_per_round": self.epochs_per_round,
+        }
+
+        if exclude_none:
+            return {k: v for k, v in config.items() if v is not None}
+        return config
+
     def __str__(self):
         """Return the string representation of the experiment."""
-        return f"Experiment(exp_name={self.exp_name}, total_rounds={self.total_rounds}, " f"round={self.round})"
+        metadata_str = ""
+        if self.dataset_name:
+            metadata_str += f", dataset_name={self.dataset_name}"
+        if self.model_name:
+            metadata_str += f", model_name={self.model_name}"
+        if self.aggregator_name:
+            metadata_str += f", aggregator_name={self.aggregator_name}"
+        if self.framework_name:
+            metadata_str += f", framework_name={self.framework_name}"
+        if self.learning_rate:
+            metadata_str += f", learning_rate={self.learning_rate}"
+        if self.batch_size:
+            metadata_str += f", batch_size={self.batch_size}"
+        if self.epochs_per_round:
+            metadata_str += f", epochs_per_round={self.epochs_per_round}"
+
+        return f"Experiment(exp_name={self.exp_name}, total_rounds={self.total_rounds}, round={self.round}{metadata_str})"
