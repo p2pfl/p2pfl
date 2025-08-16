@@ -25,7 +25,7 @@ from typing import Any
 
 from p2pfl.experiment import Experiment
 from p2pfl.management.logger.decorators.logger_decorator import LoggerDecorator
-from p2pfl.management.logger.logger import NodeNotRegistered, P2PFLogger
+from p2pfl.management.logger.logger import P2PFLogger
 from p2pfl.management.p2pfl_web_services import P2pflWebServices
 
 #########################################

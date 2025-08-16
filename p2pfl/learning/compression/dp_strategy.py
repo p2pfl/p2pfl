@@ -82,9 +82,17 @@ Refs:
 
 """
 
+try:
+    import opendp.prelude as dp
+except ImportError as err:
+    raise ImportError("Please install with `pip install p2pfl[dp]`") from err
+
 import numpy as np
 
 from p2pfl.learning.compression.base_compression_strategy import TensorCompressor
+
+# Allows you to use features added by the community
+dp.enable_features("contrib")
 
 
 class DifferentialPrivacyCompressor(TensorCompressor):
@@ -103,82 +111,96 @@ class DifferentialPrivacyCompressor(TensorCompressor):
     2. Works with any ML framework
     3. Typically has less accuracy loss (noise added once vs. many times)
 
-    The compressor acts as a state machine:
-    - If previous_params is None: treats input as model update directly
-    - If previous_params is provided: computes update = params - previous_params
+    Note:
+    The `params` argument is expected to be the *model update* (delta)
+    after local training, not the full set of model weights.
+
     """
+
+    def _get_noise_mechanism(
+        self, noise_type: str, clip_norm: float, epsilon: float, delta: float, vec_len: int
+    ) -> tuple[dp.Measurement, float]:
+        """Create an OpenDP noise mechanism."""
+        if noise_type == "laplace":
+            scale = clip_norm / epsilon
+            space = dp.vector_domain(dp.atom_domain(T=float, nan=False), vec_len), dp.l1_distance(T=float)
+            mech = space >> dp.m.then_laplace(scale=scale)
+        elif noise_type == "gaussian":
+            scale = clip_norm * np.sqrt(2 * np.log(1.25 / delta)) / epsilon
+            space = dp.vector_domain(dp.atom_domain(T=float, nan=False), vec_len), dp.l2_distance(T=float)
+            mech = space >> dp.m.then_gaussian(scale=scale)
+        else:
+            raise ValueError("The parameter 'noise_type' must be 'gaussian' or 'laplace'")
+        return mech, scale
 
     def apply_strategy(
         self,
         params: list[np.ndarray],
         clip_norm: float = 1.0,
-        noise_multiplier: float = 1.0,
-        previous_params: list[np.ndarray] | None = None,
+        epsilon: float = 3.0,
+        delta: float = 1e-5,
+        noise_type: str = "gaussian",
+        stability_constant: float = 1e-6,
     ) -> tuple[list[np.ndarray], dict]:
         """
         Apply differential privacy to model parameters.
 
         Args:
-            params: Current model parameters
+            params: Model update (delta) after local training
             clip_norm: Maximum L2 norm for clipping (C)
-            noise_multiplier: Noise scale relative to clip_norm (σ = C * noise_multiplier)
-            previous_params: Previous round parameters (if None, treats params as update)
+            epsilon: The privacy budget (ε). Lower values correspond
+                to stronger privacy guarantees. Represents the maximum "information leakage"
+                allowed for a single data point. A typical value is between 0.1 and 10.0.
+            delta: The privacy budget (δ), typically a small number (e.g., 1e-5).
+                It represents the probability that the privacy guarantee of epsilon
+                is broken. It should be less than 1/N, where N is the number of
+                data points in the dataset. This parameter is only used for Gaussian noise.
+            noise_type: Type of noise to add ("gaussian" or "laplace")
+            stability_constant: A small constant to avoid division by zero when clipping.
 
         Returns:
             Tuple of (dp_params, dp_info) where dp_info contains privacy parameters
 
         """
-        # State machine: determine if we need to compute update
-        if previous_params is None:
-            # No previous params - treat input as update directly
-            update_params = params
-            computed_update = False
-        else:
-            # Previous params provided - compute update
-            update_params = []
-            for current, previous in zip(params, previous_params, strict=False):
-                update_params.append(current - previous)
-            computed_update = True
+        # Handle empty input
+        if not params:
+            raise ValueError("DifferentialPrivacyCompressor: list 'params' must not be empty")
 
         # Step 1: Compute global L2 norm across all parameters
-        total_norm = 0.0
-        for param in update_params:
-            total_norm += np.sum(param**2)
-        total_norm = np.sqrt(total_norm)
+        flat_update = np.concatenate([p.flatten() for p in params])
+        total_norm = np.linalg.norm(flat_update)
 
         # Step 2: Clip if necessary
-        clipped_params = []
         if total_norm > clip_norm:
-            clip_factor = clip_norm / total_norm
-            for param in update_params:
-                clipped_params.append(param * clip_factor)
+            clip_factor = clip_norm / (total_norm + stability_constant)
+            clipped_flat_update = flat_update * clip_factor
         else:
-            clipped_params = [p.copy() for p in update_params]
+            clipped_flat_update = flat_update.copy()
 
-        # Step 3: Add Gaussian noise
-        noise_scale = clip_norm * noise_multiplier
-        noisy_updates = []
-        for param in clipped_params:
-            noise = np.random.normal(0, noise_scale, param.shape).astype(param.dtype)
-            noisy_updates.append(param + noise)
+        # Step 3: Get noise mechanism and add noise
+        mech, scale = self._get_noise_mechanism(noise_type, clip_norm, epsilon, delta, clipped_flat_update.size)
+        noisy_flat_update = mech(clipped_flat_update.tolist())
 
-        # Step 4: If we computed update, add it back to previous params
-        if computed_update and previous_params is not None:
-            dp_params = []
-            for dp_update, previous in zip(noisy_updates, previous_params, strict=False):
-                dp_params.append(previous + dp_update)
-        else:
-            dp_params = noisy_updates
+        # Unflatten the noisy update
+        dp_params = []
+        current_pos = 0
+        for p in params:
+            shape = p.shape
+            size = p.size
+            dtype = p.dtype
+            dp_params.append(np.array(noisy_flat_update[current_pos : current_pos + size], dtype=dtype).reshape(shape))
+            current_pos += size
 
         # Prepare info for privacy accounting
         dp_info = {
             "dp_applied": True,
             "clip_norm": clip_norm,
-            "noise_multiplier": noise_multiplier,
-            "noise_scale": noise_scale,
+            "epsilon": epsilon,
+            "delta": delta if noise_type == "gaussian" else None,
+            "noise_type": noise_type,
+            "noise_scale": scale,
             "original_norm": float(total_norm),
-            "was_clipped": total_norm > clip_norm,
-            "computed_update": computed_update,
+            "was_clipped": bool(total_norm > clip_norm),
         }
 
         return dp_params, dp_info
