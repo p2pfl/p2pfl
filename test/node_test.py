@@ -147,20 +147,26 @@ def test_convergence(x, model_build_fn):
         global_logs = logger.get_global_logs()
         exp_logs = global_logs.get(exp_name)
         if exp_logs is None:
-            # fallback: try first available experiment
-            exp_logs = next(iter(global_logs.values()), {})
+            # raise: experiment logs not found
+            raise ValueError(f"Experiment logs not found for exp={exp_name}")
 
         # collect per-node accuracy time series
-        accuracies = []
-        for node_metrics in exp_logs.values():
-            if accuracy_name in node_metrics and isinstance(node_metrics[accuracy_name], list | tuple):
-                accuracies.append(node_metrics[accuracy_name])
+        accuracies = [
+            node_metrics[accuracy_name]
+            for node_metrics in exp_logs.values()
+            if accuracy_name in node_metrics and isinstance(node_metrics[accuracy_name], list | tuple)
+        ]
         if not accuracies:
             pytest.fail(f"No '{accuracy_name}' metrics found in experiment logs for exp={exp_name}")
 
         # determine last round index dynamically (max round index across nodes)
-        last_round_idx = max(max(idx for idx, _ in node_acc) for node_acc in accuracies if node_acc)
-        last_round_accuracies = [acc for node_acc in accuracies for idx, acc in node_acc if idx == last_round_idx]
+        # Flatten all (idx, acc) pairs and find max index, then collect corresponding accuracies
+        all_entries = [(idx, acc) for node_acc in accuracies for idx, acc in node_acc]
+        if not all_entries:
+            pytest.fail("No accuracy entries found in any node's metrics")
+
+        last_round_idx = max(idx for idx, _ in all_entries)
+        last_round_accuracies = [acc for idx, acc in all_entries if idx == last_round_idx]
 
         assert last_round_accuracies, "No accuracy values found for the last round"
         assert all(acc > 0.5 for acc in last_round_accuracies), f"Expected all accuracies > 0.5, got {last_round_accuracies}"

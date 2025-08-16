@@ -92,7 +92,7 @@ import numpy as np
 from p2pfl.learning.compression.base_compression_strategy import TensorCompressor
 
 # Allows you to use features added by the community
-dp.enable_features('contrib')
+dp.enable_features("contrib")
 
 
 class DifferentialPrivacyCompressor(TensorCompressor):
@@ -118,12 +118,7 @@ class DifferentialPrivacyCompressor(TensorCompressor):
     """
 
     def _get_noise_mechanism(
-        self,
-        noise_type: str,
-        clip_norm: float,
-        epsilon: float,
-        delta: float,
-        vec_len: int
+        self, noise_type: str, clip_norm: float, epsilon: float, delta: float, vec_len: int
     ) -> tuple[dp.Measurement, float]:
         """Create an OpenDP noise mechanism."""
         if noise_type == "laplace":
@@ -183,9 +178,7 @@ class DifferentialPrivacyCompressor(TensorCompressor):
             clipped_flat_update = flat_update.copy()
 
         # Step 3: Get noise mechanism and add noise
-        mech, scale = self._get_noise_mechanism(
-            noise_type, clip_norm, epsilon, delta, clipped_flat_update.size
-        )
+        mech, scale = self._get_noise_mechanism(noise_type, clip_norm, epsilon, delta, clipped_flat_update.size)
         noisy_flat_update = mech(clipped_flat_update.tolist())
 
         # Unflatten the noisy update
@@ -207,7 +200,7 @@ class DifferentialPrivacyCompressor(TensorCompressor):
             "noise_type": noise_type,
             "noise_scale": scale,
             "original_norm": float(total_norm),
-            "was_clipped": bool(total_norm > clip_norm)
+            "was_clipped": bool(total_norm > clip_norm),
         }
 
         return dp_params, dp_info

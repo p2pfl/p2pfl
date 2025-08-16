@@ -59,10 +59,12 @@ def set_random_seed():
     np.random.seed(None)
     random.seed(None)
 
+
 @pytest.fixture
 def dp_compressor():
     """Create a DifferentialPrivacyCompressor instance."""
     return DifferentialPrivacyCompressor()
+
 
 def test_dp_basic_sanity(dp_compressor):
     """
@@ -73,19 +75,10 @@ def test_dp_basic_sanity(dp_compressor):
     - 'dp_applied' flag in metadata is True.
     """
     # Prepare simple parameters: two arrays of different shapes
-    original_params = [
-        np.ones((3, 4), dtype=np.float32),
-        np.zeros((2, 2), dtype=np.float32)
-    ]
+    original_params = [np.ones((3, 4), dtype=np.float32), np.zeros((2, 2), dtype=np.float32)]
 
     # Apply DP strategy with example privacy settings
-    dp_params, info = dp_compressor.apply_strategy(
-        params=original_params,
-        clip_norm=1.0,
-        epsilon=4.0,
-        delta=1e-5,
-        noise_type="gaussian"
-    )
+    dp_params, info = dp_compressor.apply_strategy(params=original_params, clip_norm=1.0, epsilon=4.0, delta=1e-5, noise_type="gaussian")
 
     # 1) Ensure we got a list of numpy arrays back
     assert isinstance(dp_params, list), "Expected a list of arrays as output"
@@ -117,17 +110,11 @@ def test_dp_clipping_when_needed(dp_compressor):
     clip_norm = 1.0
 
     dp_params, info = dp_compressor.apply_strategy(
-        params=original_params,
-        clip_norm=clip_norm,
-        epsilon=4.0,
-        delta=1e-5,
-        noise_type="gaussian"
+        params=original_params, clip_norm=clip_norm, epsilon=4.0, delta=1e-5, noise_type="gaussian"
     )
 
     # 1) original_norm should exceed clip_norm
-    assert info["original_norm"] > clip_norm, (
-        f"Expected original_norm > {clip_norm}, got {info['original_norm']}"
-    )
+    assert info["original_norm"] > clip_norm, f"Expected original_norm > {clip_norm}, got {info['original_norm']}"
     # 2) was_clipped must be True
     assert info["was_clipped"] is True, "Expected was_clipped to be True when original_norm > clip_norm"
 
@@ -145,17 +132,11 @@ def test_dp_no_clipping_when_not_needed(dp_compressor):
     clip_norm = 10.0
 
     dp_params, info = dp_compressor.apply_strategy(
-        params=original_params,
-        clip_norm=clip_norm,
-        epsilon=4.0,
-        delta=1e-5,
-        noise_type="gaussian"
+        params=original_params, clip_norm=clip_norm, epsilon=4.0, delta=1e-5, noise_type="gaussian"
     )
 
     # 1) original_norm should not exceed clip_norm
-    assert info["original_norm"] <= clip_norm, (
-        f"Expected original_norm <= {clip_norm}, got {info['original_norm']}"
-    )
+    assert info["original_norm"] <= clip_norm, f"Expected original_norm <= {clip_norm}, got {info['original_norm']}"
     # 2) was_clipped must be False
     assert info["was_clipped"] is False, "Expected was_clipped to be False when original_norm <= clip_norm"
 
@@ -171,19 +152,14 @@ def test_dp_noise_addition(dp_compressor):
     clip_norm = 100.0
 
     dp_params, info = dp_compressor.apply_strategy(
-        params=original_params,
-        clip_norm=clip_norm,
-        epsilon=4.0,
-        delta=1e-5,
-        noise_type="gaussian"
+        params=original_params, clip_norm=clip_norm, epsilon=4.0, delta=1e-5, noise_type="gaussian"
     )
 
     # Ensure DP was applied
     assert info.get("dp_applied", False) is True, "Expected noise to be applied (dp_applied=True)"
 
     # The output must differ from the input because of added noise
-    assert not np.array_equal(dp_params[0], original_params[0]), \
-        "Expected dp_params to differ from original_params due to noise"
+    assert not np.array_equal(dp_params[0], original_params[0]), "Expected dp_params to differ from original_params due to noise"
 
 
 def test_dp_empty_params(dp_compressor):
@@ -193,13 +169,7 @@ def test_dp_empty_params(dp_compressor):
     - Input [] must raise a ValueError.
     """
     with pytest.raises(ValueError, match="must not be empty"):
-        dp_compressor.apply_strategy(
-            params=[],
-            clip_norm=1.0,
-            epsilon=4.0,
-            delta=1e-5,
-            noise_type="gaussian"
-        )
+        dp_compressor.apply_strategy(params=[], clip_norm=1.0, epsilon=4.0, delta=1e-5, noise_type="gaussian")
 
 
 @pytest.mark.parametrize("build_model_fn", [model_build_fn_torch, model_build_fn_tensorflow])  # TODO: Flax
@@ -216,14 +186,15 @@ def test_learner_train(build_model_fn) -> None:
     )
 
     # Two equal-sized partitions (one per node)
-    partitions = dataset.generate_partitions(2, RandomIIDPartitionStrategy(),
-     seed=Settings.general.SEED if Settings.general.SEED is not None else 42)
+    partitions = dataset.generate_partitions(
+        2, RandomIIDPartitionStrategy(), seed=Settings.general.SEED if Settings.general.SEED is not None else 42
+    )
 
     # DP Compressor
     dp_config = {
         "dp": {
             "clip_norm": 1.0,
-            "epsilon": 10.0, # increased epsilon for stability
+            "epsilon": 10.0,  # increased epsilon for stability
             "delta": 1e-5,
             "noise_type": "gaussian",
         }
@@ -246,14 +217,10 @@ def test_learner_train(build_model_fn) -> None:
 
         # Test
         result = n1.learner.evaluate()
-        metrics: dict[str, float] = {
-            k: v for k, v in result.items() if "loss" not in k and isinstance(v, int | float)
-        }
+        metrics: dict[str, float] = {k: v for k, v in result.items() if "loss" not in k and isinstance(v, int | float)}
         compile_metrics: dict | Any = result.get("compile_metrics", {})
         if isinstance(compile_metrics, dict):
-            metrics.update(
-                {k: v for k, v in compile_metrics.items() if isinstance(v, int | float)}
-            )
+            metrics.update({k: v for k, v in compile_metrics.items() if isinstance(v, int | float)})
     finally:
         n1.stop()
         n2.stop()
@@ -261,6 +228,4 @@ def test_learner_train(build_model_fn) -> None:
     assert metrics, "No evaluation metrics returned"
     assert all(np.isfinite(list(metrics.values()))), f"Non-finite values: {metrics}"
 
-    assert any(v > 0.4 for v in metrics.values()), (
-        f"Expected at least one metric > 0.4, got {metrics}"
-    )
+    assert any(v > 0.4 for v in metrics.values()), f"Expected at least one metric > 0.4, got {metrics}"
