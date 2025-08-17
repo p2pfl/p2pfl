@@ -10,7 +10,7 @@ web_logger:
 network:
   package: "p2pfl.communication.protocols.protobuff.memory"
   protocol: "MemoryCommunicationProtocol"
-  nodes: 4
+  nodes: 8
   topology: "star"   # Network topology: "line", "ring", "star", "full", null for custom
   additional_connections:
   #  - [0, 2]              # Connect node 0 to Node 2 (indices)
@@ -37,13 +37,13 @@ experiment:
       params: {}
     partitioning:
       package: "p2pfl.learning.dataset.partition_strategies"
-      strategy: "RandomIIDPartitionStrategy" # DirichletPartitionStrategy
+      strategy: "DirichletPartitionStrategy" # DirichletPartitionStrategy
       reduced_dataset: false  # For testing purposes
       reduction_factor: 10
 
       params: # Partitioning parameters (strategy-specific)
         # Dirichlet example
-        alpha: 0.1
+        alpha: 0.3
         min_partition_size: 5
         self_balancing: false
 
@@ -63,8 +63,8 @@ experiment:
 
   # Aggregation algorithm configuration
   aggregator:
-    package: "p2pfl.learning.aggregators.fedavg"
-    aggregator: "FedAvg"
+    package: "p2pfl.learning.aggregators.fedopt"
+    aggregator: "FedAdagrad"
     params: {}  # Aggregator parameters (algorithm-specific)
     # Optional transforms for preprocessing
     transforms:

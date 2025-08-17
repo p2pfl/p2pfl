@@ -175,5 +175,63 @@ def list_examples() -> None:
     console.print(table)
 
 
+@app.command(name="run-variations")
+def run_variations(
+    yaml_path: str,
+    aggregators: Annotated[list[str] | None, typer.Option(help="List of aggregator classes")] = None,
+    seeds: Annotated[list[int] | None, typer.Option(help="List of random seeds")] = None,
+    nodes: Annotated[list[int] | None, typer.Option(help="Number of nodes")] = None,
+    rounds: Annotated[list[int] | None, typer.Option(help="Number of rounds")] = None,
+    epochs: Annotated[list[int] | None, typer.Option(help="Number of epochs per round")] = None,
+    topologies: Annotated[list[str] | None, typer.Option(help="Network topologies")] = None,
+    partitioning: Annotated[list[str] | None, typer.Option(help="Dataset partitioning strategies")] = None,
+    models: Annotated[list[str] | None, typer.Option(help="Model packages/architectures")] = None,
+    batch_sizes: Annotated[list[int] | None, typer.Option(help="Batch sizes")] = None,
+    param: Annotated[list[str] | None, typer.Option(help="Custom parameter in format 'path.to.param=value1,value2'")] = None,
+    output_dir: Annotated[str | None, typer.Option(help="Base directory for results (default: results/variations)")] = None,
+    skip_existing: Annotated[bool, typer.Option(help="Skip experiments with existing results")] = True,
+    force: Annotated[bool, typer.Option(help="Force re-run all experiments, ignoring existing results")] = False,
+    full_param_names: Annotated[bool, typer.Option(help="Use full parameter paths in folder names")] = False,
+) -> None:
+    """
+    Run experiments with parameter variations for grid search and hyperparameter optimization.
+
+    Examples:
+        # Run with different aggregators and seeds
+        p2pfl run-variations config.yaml --aggregators FedAvg FedMedian --seeds 42 123
+
+        # Run with different network configurations
+        p2pfl run-variations config.yaml --nodes 5 10 20 --topologies star ring full
+
+        # Run with custom parameters using dot notation
+        p2pfl run-variations config.yaml --param experiment.dataset.batch_size=32,64,128
+
+    """
+    from p2pfl.utils.run_variations import run_variations_experiment
+
+    # Prepare arguments for the run_variations function
+    result = run_variations_experiment(
+        yaml_path=yaml_path,
+        aggregators=aggregators,
+        seeds=seeds,
+        nodes=nodes,
+        rounds=rounds,
+        epochs=epochs,
+        topologies=topologies,
+        partitioning=partitioning,
+        models=models,
+        batch_sizes=batch_sizes,
+        custom_params=param,
+        output_dir=output_dir,
+        skip_existing=skip_existing,
+        force=force,
+        full_param_names=full_param_names,
+        console=console,
+    )
+
+    if result != 0:
+        raise typer.Exit(code=result)
+
+
 if __name__ == "__main__":
     app()
