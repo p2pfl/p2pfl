@@ -350,7 +350,7 @@ def run_variations_experiment(
     output_base_dir.mkdir(parents=True, exist_ok=True)
 
     # Build parameter variations
-    variations = {}
+    variations: dict[str, Any] = {}
 
     # Standard parameters
     if aggregators:
