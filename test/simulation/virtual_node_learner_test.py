@@ -100,9 +100,10 @@ def test_fit():
     virtual_learner = VirtualNodeLearner(learner)
     virtual_learner.set_addr("test_addr")
     model = MagicMock(spec=P2PFLModel)
-    with patch.object(SuperActorPool, "submit_learner_job") as mock_submit_learner_job, patch.object(
-        SuperActorPool, "get_learner_result", return_value=("test_addr", model)
-    ) as mock_get_learner_result:
+    with (
+        patch.object(SuperActorPool, "submit_learner_job") as mock_submit_learner_job,
+        patch.object(SuperActorPool, "get_learner_result", return_value=("test_addr", model)) as mock_get_learner_result,
+    ):
         result = virtual_learner.fit()
         mock_submit_learner_job.assert_called_once()
         mock_get_learner_result.assert_called_once_with("test_addr", None)
@@ -127,9 +128,10 @@ def test_evaluate():
     virtual_learner = VirtualNodeLearner(learner)
     virtual_learner.set_addr("test_addr")
     evaluation_result = {"accuracy": 0.9}
-    with patch.object(SuperActorPool, "submit_learner_job") as mock_submit_learner_job, patch.object(
-        SuperActorPool, "get_learner_result", return_value=("test_addr", evaluation_result)
-    ) as mock_get_learner_result:
+    with (
+        patch.object(SuperActorPool, "submit_learner_job") as mock_submit_learner_job,
+        patch.object(SuperActorPool, "get_learner_result", return_value=("test_addr", evaluation_result)) as mock_get_learner_result,
+    ):
         result = virtual_learner.evaluate()
         mock_submit_learner_job.assert_called_once()
         mock_get_learner_result.assert_called_once_with("test_addr", None)

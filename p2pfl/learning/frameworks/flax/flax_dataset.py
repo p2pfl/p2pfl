@@ -18,7 +18,8 @@
 
 """Flax Dataset export strategy."""
 
-from typing import Any, Generator, Optional, Tuple
+from collections.abc import Generator
+from typing import Any
 
 import jax.numpy as jnp
 from datasets import Dataset  # type: ignore
@@ -33,10 +34,10 @@ class FlaxExportStrategy(DataExportStrategy):
     @staticmethod
     def export(
         data: Dataset,
-        batch_size: Optional[int] = None,
+        batch_size: int | None = None,
         num_workers: int = 0,
         **kwargs,
-    ) -> Generator[Tuple[jnp.ndarray, jnp.ndarray], Any, None]:
+    ) -> Generator[tuple[jnp.ndarray, jnp.ndarray], Any, None]:
         """
         Export the data using the JAX/Flax strategy.
 
@@ -55,7 +56,7 @@ class FlaxExportStrategy(DataExportStrategy):
         # TODO: fix dataloader .with_format(type="jax", ...) with custom collate_fn
         torch_loader = DataLoader(data.with_format(type="torch", output_all_columns=True), batch_size=batch_size, num_workers=num_workers)
 
-        def jax_batch_generator() -> Generator[Tuple[jnp.ndarray, jnp.ndarray], Any, None]:
+        def jax_batch_generator() -> Generator[tuple[jnp.ndarray, jnp.ndarray], Any, None]:
             for batch in torch_loader:
                 features = jnp.array(batch["image"].numpy())
                 labels = jnp.array(batch["label"].numpy())

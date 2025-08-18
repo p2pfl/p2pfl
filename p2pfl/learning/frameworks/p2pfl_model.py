@@ -19,7 +19,7 @@
 """P2PFL model abstraction."""
 
 import copy
-from typing import Any, Optional, Union
+from typing import Any
 
 import numpy as np
 
@@ -45,11 +45,11 @@ class P2PFLModel:
     def __init__(
         self,
         model: Any,
-        params: Optional[Union[list[np.ndarray], bytes]] = None,
-        num_samples: Optional[int] = None,
-        contributors: Optional[list[str]] = None,
-        additional_info: Optional[dict[str, Any]] = None,
-        compression: Optional[dict[str, dict[str, Any]]] = None,
+        params: list[np.ndarray] | bytes | None = None,
+        num_samples: int | None = None,
+        contributors: list[str] | None = None,
+        additional_info: dict[str, Any] | None = None,
+        compression: dict[str, dict[str, Any]] | None = None,
     ) -> None:
         """Initialize the model."""
         self.model = model
@@ -73,7 +73,7 @@ class P2PFLModel:
         """Get the model."""
         return self.model
 
-    def encode_parameters(self, params: Optional[list[np.ndarray]] = None) -> bytes:
+    def encode_parameters(self, params: list[np.ndarray] | None = None) -> bytes:
         """
         Encode the parameters of the model.
 
@@ -109,7 +109,7 @@ class P2PFLModel:
         """
         raise NotImplementedError
 
-    def set_parameters(self, params: Union[list[np.ndarray], bytes]) -> None:
+    def set_parameters(self, params: list[np.ndarray] | bytes) -> None:
         """
         Set the parameters of the model.
 
@@ -133,7 +133,7 @@ class P2PFLModel:
         """
         self.additional_info[callback] = info
 
-    def get_info(self, callback: Optional[str] = None) -> Any:
+    def get_info(self, callback: str | None = None) -> Any:
         """
         Get additional information from the learner state.
 

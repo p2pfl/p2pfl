@@ -20,7 +20,7 @@
 
 import os
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 from p2pfl.utils.singleton import SingletonMeta
 
@@ -33,7 +33,7 @@ from p2pfl.utils.singleton import SingletonMeta
 class General:
     """General system settings."""
 
-    SEED: Optional[int] = None
+    SEED: int | None = None
     """Seed for random number generation."""
     GRPC_TIMEOUT: float = 10.0
     """Maximum time (seconds) to wait for a gRPC request."""

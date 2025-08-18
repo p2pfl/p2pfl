@@ -19,7 +19,7 @@
 """Transmission compression manager."""
 
 import pickle
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 
@@ -49,8 +49,8 @@ class CompressionManager:
         # Init
         registry = CompressionManager.get_registry()
         applied_techniques = []
-        byte_compressor: Optional[ByteCompressor] = None
-        encoder_key: Optional[str] = None
+        byte_compressor: ByteCompressor | None = None
+        encoder_key: str | None = None
 
         # apply techniques in sequence
         for name, fn_params in techniques.items():

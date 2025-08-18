@@ -20,7 +20,6 @@
 
 import logging
 import traceback
-from typing import Dict, Optional, Tuple
 
 import lightning as L
 import torch
@@ -54,13 +53,11 @@ class LightningLearner(Learner):
 
     """
 
-    def __init__(
-        self, model: Optional[P2PFLModel] = None, data: Optional[P2PFLDataset] = None, aggregator: Optional[Aggregator] = None
-    ) -> None:
+    def __init__(self, model: P2PFLModel | None = None, data: P2PFLDataset | None = None, aggregator: Aggregator | None = None) -> None:
         """Initialize the learner."""
         super().__init__(model, data, aggregator)
-        self.__trainer: Optional[Trainer] = None
-        self.experiment: Optional[Experiment] = None
+        self.__trainer: Trainer | None = None
+        self.experiment: Experiment | None = None
 
         # Start logging
         # To avoid GPU/TPU printings
@@ -71,7 +68,7 @@ class LightningLearner(Learner):
         self.logger = FederatedLogger(addr)
         return super().set_addr(addr)
 
-    def __get_pt_model_data(self, train: bool = True) -> Tuple[L.LightningModule, DataLoader]:
+    def __get_pt_model_data(self, train: bool = True) -> tuple[L.LightningModule, DataLoader]:
         # Get Model
         pt_model = self.get_model().get_model()
         if not isinstance(pt_model, L.LightningModule):
@@ -123,7 +120,7 @@ class LightningLearner(Learner):
             self.__trainer.should_stop = True
             self.__trainer = None
 
-    def evaluate(self) -> Dict[str, float]:
+    def evaluate(self) -> dict[str, float]:
         """
         Evaluate the model with actual parameters.
 

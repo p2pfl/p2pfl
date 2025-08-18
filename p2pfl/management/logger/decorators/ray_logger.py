@@ -19,7 +19,8 @@
 
 import datetime
 import logging
-from typing import Any, Callable, Dict, List, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 import ray
 
@@ -34,7 +35,17 @@ from p2pfl.management.metric_storage import GlobalLogsType, LocalLogsType
 class RayP2PFLoggerActor(LoggerDecorator):
     """Actor to add remote logging capabilities to a logger class."""
 
-    pass
+    def connect(self, **kwargs):
+        """
+        Establish connection/setup for the logger.
+
+        Delegates to the wrapped logger's connect method.
+
+        Args:
+            **kwargs: Connection parameters specific to each logger type.
+
+        """
+        self._p2pfl_logger.connect(**kwargs)
 
 
 class RayP2PFLogger(P2PFLogger):
@@ -69,22 +80,27 @@ class RayP2PFLogger(P2PFLogger):
         instance.ray_actor = actor
         return instance
 
-    def connect_web(self, url: str, key: str) -> None:
+    def connect(self, **kwargs):
         """
-        Connect to the web services.
+        Establish connection/setup for the logger.
+
+        Delegates to the remote actor's connect method.
 
         Args:
-            url: The URL of the web services.
-            key: The API key.
+            **kwargs: Connection parameters specific to each logger type.
 
         """
-        ray.get(self.ray_actor.connect_web.remote(url, key))
+        ray.get(self.ray_actor.connect.remote(**kwargs))
 
     def cleanup(self) -> None:
         """Cleanup the logger."""
         ray.get(self.ray_actor.cleanup.remote())
 
-    def set_level(self, level: Union[int, str]) -> None:
+    def finish(self) -> None:
+        """Finish the current experiment."""
+        ray.get(self.ray_actor.finish.remote())
+
+    def set_level(self, level: int | str) -> None:
         """
         Set the logger level.
 
@@ -185,7 +201,7 @@ class RayP2PFLogger(P2PFLogger):
         """
         ray.get(self.ray_actor.critical.remote(node, message))
 
-    def log_metric(self, addr: str, metric: str, value: float, step: Optional[int] = None, round: Optional[int] = None) -> None:
+    def log_metric(self, addr: str, metric: str, value: float, step: int | None = None, round: int | None = None) -> None:
         """
         Log a metric.
 
@@ -279,7 +295,7 @@ class RayP2PFLogger(P2PFLogger):
         """
         ray.get(self.ray_actor.experiment_updated.remote(node, experiment))
 
-    def get_nodes(self) -> Dict[str, Dict[Any, Any]]:
+    def get_nodes(self) -> dict[str, dict[Any, Any]]:
         """
         Get the registered nodes.
 
@@ -302,11 +318,11 @@ class RayP2PFLogger(P2PFLogger):
     def get_messages(
         self,
         direction: str = "all",  # "all", "sent", or "received"
-        node: Optional[str] = None,
-        cmd: Optional[str] = None,
-        round_num: Optional[int] = None,
-        limit: Optional[int] = None,
-    ) -> List[MessageEntryType]:
+        node: str | None = None,
+        cmd: str | None = None,
+        round_num: int | None = None,
+        limit: int | None = None,
+    ) -> list[MessageEntryType]:
         """
         Get communication messages with optional filtering.
 
@@ -331,8 +347,8 @@ class RayP2PFLogger(P2PFLogger):
         source_dest: str,
         package_type: str,
         package_size: int,
-        round_num: Optional[int] = None,
-        additional_info: Optional[Dict[str, Any]] = None,
+        round_num: int | None = None,
+        additional_info: dict[str, Any] | None = None,
     ) -> None:
         """
         Log a communication event.
@@ -362,7 +378,7 @@ class RayP2PFLogger(P2PFLogger):
             )
         )
 
-    def get_system_metrics(self) -> Dict[datetime.datetime, Dict[str, float]]:
+    def get_system_metrics(self) -> dict[datetime.datetime, dict[str, float]]:
         """
         Get the system metrics.
 

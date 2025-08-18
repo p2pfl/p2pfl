@@ -19,7 +19,6 @@
 
 from concurrent import futures
 from os.path import isfile
-from typing import Optional
 
 import grpc
 
@@ -48,7 +47,7 @@ class GrpcServer(ProtobuffServer):
         self,
         gossiper: Gossiper,
         neighbors: Neighbors,
-        commands: Optional[list[Command]] = None,
+        commands: list[Command] | None = None,
     ) -> None:
         """Initialize the GRPC server."""
         # Super
@@ -85,9 +84,11 @@ class GrpcServer(ProtobuffServer):
         node_pb2_grpc.add_NodeServicesServicer_to_server(self, self.__server)
         try:
             if Settings.ssl.USE_SSL and isfile(Settings.ssl.SERVER_KEY) and isfile(Settings.ssl.SERVER_CRT):
-                with open(Settings.ssl.SERVER_KEY) as key_file, open(Settings.ssl.SERVER_CRT) as crt_file, open(
-                    Settings.ssl.CA_CRT
-                ) as ca_file:
+                with (
+                    open(Settings.ssl.SERVER_KEY) as key_file,
+                    open(Settings.ssl.SERVER_CRT) as crt_file,
+                    open(Settings.ssl.CA_CRT) as ca_file,
+                ):
                     private_key = key_file.read().encode()
                     certificate_chain = crt_file.read().encode()
                     root_certificates = ca_file.read().encode()

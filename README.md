@@ -9,7 +9,7 @@
 ![GitHub stars](https://img.shields.io/github/stars/p2pfl/p2pfl)
 ![GitHub activity](https://img.shields.io/github/commit-activity/m/p2pfl/p2pfl)
 [![Coverage badge](https://img.shields.io/badge/dynamic/json?color=brightgreen&label=coverage&query=%24.message&url=https%3A%2F%2Fraw.githubusercontent.com%2Fp2pfl%2Fp2pfl%2Fpython-coverage-comment-action-data%2Fendpoint.json)](https://htmlpreview.github.io/?/blob/python-coverage-comment-action-data/htmlcov/index.html)
-[![Slack](https://img.shields.io/badge/Chat-Slack-red)](https://join.slack.com/t/p2pfl/shared_invite/zt-2lbqvfeqt-FkutD1LCZ86yK5tP3Duztw)
+[![Slack](https://img.shields.io/badge/Chat-Slack-red)](https://join.slack.com/t/p2pfl/shared_invite/zt-38xyec0k7-tLPbNx873Pm~N4aoqIyjRw)
 
 P2PFL is a general-purpose open-source library designed for the execution (simulated and in real environments) of Decentralized Federated Learning systems, specifically making use of P2P networks and the gossip protocols.
 
@@ -42,15 +42,23 @@ pip install "p2pfl[torch]"
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/p2pfl/p2pfl/tree/develop?quickstart=1)
 
-#### 🐍 Python (using Poetry)
+#### 🐍 Python (using UV)
 
 ```bash
 git clone https://github.com/p2pfl/p2pfl.git
 cd p2pfl
-poetry install -E torch 
+uv sync --all-extras
 ```
 
-> **Note:** Use the extras (`-E`) flag to install specific dependencies (e.g., `-E torch`). Use `--no-dev` to exclude development dependencies.
+> **Note:** The above command installs all dependencies (PyTorch, TensorFlow, and Ray). If you only need specific frameworks, you can use:
+> - `uv sync` - Install only core dependencies
+> - `uv sync --extra torch` - Install with PyTorch support
+> - `uv sync --extra tensorflow` - Install with TensorFlow support
+> - `uv sync --extra ray` - Install with Ray support
+> 
+> Use `--no-dev` to exclude development dependencies.
+
+> **⚠️ Important for Ray users:** If you're using Ray, we recommend activating the virtual environment traditionally instead of using `uv run` to avoid dependency issues with Ray workers. See the [installation guide](https://p2pfl.github.io/p2pfl/installation.html#working-with-traditional-virtual-environment-activation) for details.
 
 #### 🐳 Docker
 
@@ -78,7 +86,7 @@ Connect with us and stay updated:
 
 * [**GitHub Issues:**](/issues) - For reporting bugs and requesting features.
 * [**Google Group:**](https://groups.google.com/g/p2pfl) - For discussions and announcements.
-* [**Slack:**](https://join.slack.com/t/p2pfl/shared_invite/zt-2lbqvfeqt-FkutD1LCZ86yK5tP3Duztw) - For real-time conversations and support.
+* [**Slack:**](https://join.slack.com/t/p2pfl/shared_invite/zt-38xyec0k7-tLPbNx873Pm~N4aoqIyjRw) - For real-time conversations and support.
 
 ## ⭐ Star History
 

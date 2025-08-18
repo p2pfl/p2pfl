@@ -17,7 +17,7 @@
 #
 """Train stage."""
 
-from typing import Any, List, Optional, Set, Type, Union
+from typing import Any
 
 from p2pfl.communication.commands.message.metrics_command import MetricsCommand
 from p2pfl.communication.commands.message.models_agregated_command import ModelsAggregatedCommand
@@ -42,12 +42,12 @@ class TrainStage(Stage):
 
     @staticmethod
     def execute(
-        state: Optional[NodeState] = None,
-        communication_protocol: Optional[CommunicationProtocol] = None,
-        learner: Optional[Learner] = None,
-        aggregator: Optional[Aggregator] = None,
+        state: NodeState | None = None,
+        communication_protocol: CommunicationProtocol | None = None,
+        learner: Learner | None = None,
+        aggregator: Aggregator | None = None,
         **kwargs,
-    ) -> Union[Type["Stage"], None]:
+    ) -> type["Stage"] | None:
         """Execute the stage."""
         if state is None or communication_protocol is None or aggregator is None or learner is None:
             raise Exception("Invalid parameters on TrainStage.")
@@ -137,7 +137,7 @@ class TrainStage(Stage):
         def early_stopping_fn():
             return state.round is None
 
-        def get_candidates_fn() -> List[str]:
+        def get_candidates_fn() -> list[str]:
             candidates = set(state.train_set) - {state.addr}
             return [n for n in candidates if len(TrainStage.__get_remaining_nodes(n, state)) != 0]
 
@@ -188,12 +188,12 @@ class TrainStage(Stage):
         )
 
     @staticmethod
-    def __get_aggregated_models(node: str, state: NodeState) -> List[str]:
+    def __get_aggregated_models(node: str, state: NodeState) -> list[str]:
         try:
             return state.models_aggregated[node]
         except KeyError:
             return []
 
     @staticmethod
-    def __get_remaining_nodes(node: str, state: NodeState) -> Set[str]:
+    def __get_remaining_nodes(node: str, state: NodeState) -> set[str]:
         return set(state.train_set) - set(TrainStage.__get_aggregated_models(node, state))

@@ -20,7 +20,8 @@
 
 import datetime
 import logging
-from typing import Any, Callable, Dict, List, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 from p2pfl.experiment import Experiment
 from p2pfl.management.logger.logger import P2PFLogger
@@ -45,22 +46,27 @@ class LoggerDecorator(P2PFLogger):
         """
         self._p2pfl_logger = logger() if callable(logger) else logger
 
-    def connect_web(self, url: str, key: str) -> None:
+    def connect(self, **kwargs: Any) -> None:
         """
-        Connect to the web services.
+        Establish connection/setup for the logger.
+
+        Delegates to the wrapped logger's connect method.
 
         Args:
-            url: The URL of the web services.
-            key: The API key.
+            **kwargs: Connection parameters specific to each logger type.
 
         """
-        self._p2pfl_logger.connect_web(url, key)
+        self._p2pfl_logger.connect(**kwargs)
 
     def cleanup(self) -> None:
         """Cleanup the logger."""
         self._p2pfl_logger.cleanup()
 
-    def set_level(self, level: Union[int, str]) -> None:
+    def finish(self) -> None:
+        """Pass the finish call to the wrapped logger."""
+        self._p2pfl_logger.finish()
+
+    def set_level(self, level: int | str) -> None:
         """
         Set the logger level.
 
@@ -199,7 +205,7 @@ class LoggerDecorator(P2PFLogger):
         """
         self._p2pfl_logger.experiment_finished(node)
 
-    def get_nodes(self) -> Dict[str, Dict[Any, Any]]:
+    def get_nodes(self) -> dict[str, dict[Any, Any]]:
         """
         Get the registered nodes.
 
@@ -227,8 +233,8 @@ class LoggerDecorator(P2PFLogger):
         source_dest: str,
         package_type: str,
         package_size: int,
-        round_num: Optional[int] = None,
-        additional_info: Optional[Dict[str, Any]] = None,
+        round_num: int | None = None,
+        additional_info: dict[str, Any] | None = None,
     ) -> None:
         """
         Log a communication event.
@@ -258,11 +264,11 @@ class LoggerDecorator(P2PFLogger):
     def get_messages(
         self,
         direction: str = "all",
-        node: Optional[str] = None,
-        cmd: Optional[str] = None,
-        round_num: Optional[int] = None,
-        limit: Optional[int] = None,
-    ) -> List[MessageEntryType]:
+        node: str | None = None,
+        cmd: str | None = None,
+        round_num: int | None = None,
+        limit: int | None = None,
+    ) -> list[MessageEntryType]:
         """
         Get communication messages with optional filtering.
 
@@ -279,7 +285,7 @@ class LoggerDecorator(P2PFLogger):
         """
         return self._p2pfl_logger.get_messages(direction=direction, node=node, cmd=cmd, round_num=round_num, limit=limit)
 
-    def get_system_metrics(self) -> Dict[datetime.datetime, Dict[str, float]]:
+    def get_system_metrics(self) -> dict[datetime.datetime, dict[str, float]]:
         """
         Get the system metrics.
 

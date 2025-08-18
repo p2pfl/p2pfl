@@ -17,8 +17,6 @@
 
 """Memory client."""
 
-from typing import Optional
-
 from p2pfl.communication.protocols.exceptions import CommunicationError, NeighborNotConnectedError
 from p2pfl.communication.protocols.protobuff.client import ProtobuffClient
 from p2pfl.communication.protocols.protobuff.memory.singleton_dict import SingletonDict
@@ -42,7 +40,7 @@ class MemoryClient(ProtobuffClient):
         super().__init__(self_addr, nei_addr)
 
         # In-memory
-        self.stub: Optional[ProtobuffServer] = None
+        self.stub: ProtobuffServer | None = None
 
     ####
     # Connection

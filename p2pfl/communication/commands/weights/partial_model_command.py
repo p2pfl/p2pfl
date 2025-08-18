@@ -18,7 +18,7 @@
 
 """PartialModelCommand command."""
 
-from typing import Callable, List, Optional
+from collections.abc import Callable
 
 from p2pfl.communication.commands.command import Command
 from p2pfl.communication.commands.message.models_agregated_command import ModelsAggregatedCommand
@@ -58,9 +58,9 @@ class PartialModelCommand(Command):
         self,
         source: str,
         round: int,
-        weights: Optional[bytes] = None,
-        contributors: Optional[List[str]] = None,  # TIPO ESTA MAL (NECESARIO CASTEARLO AL LLAMAR)
-        num_samples: Optional[int] = None,
+        weights: bytes | None = None,
+        contributors: list[str] | None = None,  # TIPO ESTA MAL (NECESARIO CASTEARLO AL LLAMAR)
+        num_samples: int | None = None,
         **kwargs,
     ) -> None:
         """Execute the command."""

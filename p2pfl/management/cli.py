@@ -19,8 +19,9 @@
 """CLI for the p2pfl platform."""
 
 import os
+import sys
 from glob import glob
-from typing import Annotated, Dict, TypedDict
+from typing import Annotated, TypedDict
 
 import typer
 import yaml
@@ -59,6 +60,9 @@ logo = r"""[italic]
 # CLI Commands
 ####
 
+if len(sys.argv) > 1 and sys.argv[1] == "help":
+    sys.argv[1] = "--help"
+
 console = Console()
 app = typer.Typer(
     rich_markup_mode="rich",
@@ -68,17 +72,81 @@ app = typer.Typer(
 
 @app.command()
 def login(
-    token: Annotated[str, typer.Option(help="🔑 Your API token")] = "",
-) -> None:  # prompt="🔑 Enter your API token"
+    url: Annotated[str | None, typer.Option(help="The P2PFL Web Services URL")] = None,
+    token: Annotated[str | None, typer.Option(help="Your API token")] = None,
+) -> None:
     """
-    Authenticate with the p2pfl platform using your API token.
+    Authenticate with the P2PFL Web Services platform.
+
+    This command will set the necessary environment variables for web logging.
 
     Args:
+        url: The P2PFL Web Services URL.
         token: Your API token.
 
     """
-    console.print(":sweat_smile: [bold yellow]Not implemented yet![/bold yellow] \n:rocket: Comming soon!")
-    # console.print(f"Authenticating with token: {token}...")
+    # Show the logo first
+    console.print(logo)
+
+    # Interactive prompts if not provided via command line
+    if url is None:
+        url = typer.prompt("🌐 Enter P2PFL Web Services URL")
+
+    if token is None:
+        token = typer.prompt("🔑 Enter your API token", hide_input=True)
+
+    # Validate inputs
+    if not url:
+        console.print(
+            Panel(
+                ":x: [bold red]Error:[/bold red] URL cannot be empty.",
+                title="[bold red]Invalid Input[/bold red]",
+            )
+        )
+        raise typer.Exit(code=1)
+
+    if not token:
+        console.print(
+            Panel(
+                ":x: [bold red]Error:[/bold red] Token cannot be empty.",
+                title="[bold red]Invalid Input[/bold red]",
+            )
+        )
+        raise typer.Exit(code=1)
+
+    # Set environment variables
+    os.environ["P2PFL_WEB_LOGGER_URL"] = url
+    os.environ["P2PFL_WEB_LOGGER_KEY"] = token
+
+    # Save to a .env file for persistence (optional)
+    env_file = os.path.join(os.path.expanduser("~"), ".p2pfl_env")
+    try:
+        with open(env_file, "w") as f:
+            f.write(f"P2PFL_WEB_LOGGER_URL={url}\n")
+            f.write(f"P2PFL_WEB_LOGGER_KEY={token}\n")
+
+        console.print(
+            Panel(
+                f":white_check_mark: [bold green]Successfully authenticated![/bold green]\n\n"
+                f"[dim]Environment variables set:[/dim]\n"
+                f"  • P2PFL_WEB_LOGGER_URL={url}\n"
+                f"  • P2PFL_WEB_LOGGER_KEY=[hidden]\n\n"
+                f"[dim]Configuration saved to: {env_file}[/dim]",
+                title="[bold green]Authentication Successful[/bold green]",
+            )
+        )
+
+        console.print("\n:information_source: [dim]To use these credentials in future sessions, run:[/dim]")
+        console.print(f"[bold cyan]source {env_file}[/bold cyan]")
+
+    except Exception as e:
+        console.print(
+            Panel(
+                f":warning: [bold yellow]Warning:[/bold yellow] Could not save configuration file: {e}\n"
+                f"Environment variables have been set for this session only.",
+                title="[bold yellow]Partial Success[/bold yellow]",
+            )
+        )
 
 
 @app.command()
@@ -97,7 +165,7 @@ class ExampleInfo(TypedDict):
     path: str
 
 
-def __get_available_examples() -> Dict[str, ExampleInfo]:
+def __get_available_examples() -> dict[str, ExampleInfo]:
     """Get all the available yaml examples and their descriptions."""
     examples = {}
     # Find all yaml files in examples subdirectories

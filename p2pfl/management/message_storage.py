@@ -19,7 +19,7 @@
 
 import datetime
 from threading import Lock
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Define the storage structure types
 MessageEntryType = dict[str, Any]  # Individual message entry with details
@@ -52,7 +52,7 @@ class MessageStorage:
 
     def __init__(self, disable_locks: bool = False) -> None:
         """Initialize the message storage."""
-        self.messages: List[MessageEntryType] = []
+        self.messages: list[MessageEntryType] = []
         self.lock = Lock() if not disable_locks else None
 
     def add_message(
@@ -63,8 +63,8 @@ class MessageStorage:
         source_dest: str,
         package_type: str,
         package_size: int,
-        round_num: Optional[int] = None,
-        additional_info: Optional[Dict[str, Any]] = None,
+        round_num: int | None = None,
+        additional_info: dict[str, Any] | None = None,
     ) -> None:
         """
         Add a message entry to the storage.
@@ -122,12 +122,12 @@ class MessageStorage:
 
     def get_messages(
         self,
-        node: Optional[str] = None,
-        direction: Optional[str] = None,
-        cmd: Optional[str] = None,
-        round_num: Optional[int] = None,
-        limit: Optional[int] = None,
-    ) -> List[MessageEntryType]:
+        node: str | None = None,
+        direction: str | None = None,
+        cmd: str | None = None,
+        round_num: int | None = None,
+        limit: int | None = None,
+    ) -> list[MessageEntryType]:
         """
         Get messages with optional filtering.
 
@@ -185,8 +185,8 @@ class MessageStorage:
                 self.lock.release()
 
     def get_sent_messages(
-        self, node: Optional[str] = None, cmd: Optional[str] = None, round_num: Optional[int] = None, limit: Optional[int] = None
-    ) -> List[MessageEntryType]:
+        self, node: str | None = None, cmd: str | None = None, round_num: int | None = None, limit: int | None = None
+    ) -> list[MessageEntryType]:
         """
         Get sent messages with optional filtering.
 
@@ -203,8 +203,8 @@ class MessageStorage:
         return self.get_messages(node=node, direction="sent", cmd=cmd, round_num=round_num, limit=limit)
 
     def get_received_messages(
-        self, node: Optional[str] = None, cmd: Optional[str] = None, round_num: Optional[int] = None, limit: Optional[int] = None
-    ) -> List[MessageEntryType]:
+        self, node: str | None = None, cmd: str | None = None, round_num: int | None = None, limit: int | None = None
+    ) -> list[MessageEntryType]:
         """
         Get received messages with optional filtering.
 

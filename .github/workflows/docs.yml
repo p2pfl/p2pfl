@@ -13,6 +13,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -20,17 +26,17 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install poetry
-          python -m poetry lock
-          python -m poetry install --all-extras
+          uv lock
+          uv sync --all-extras
 
       - name: Generate documentation
         run: |
+          source .venv/bin/activate
           cd docs
-          python -m poetry run make clean
+          make clean
           rm -fr source/modules
-          python -m poetry run sphinx-apidoc -M -e -f -o source/modules ../p2pfl
-          python -m poetry run make html
+          sphinx-apidoc -M -e -f -o source/modules ../p2pfl
+          make html
           touch ./build/html/.nojekyll
 
       - name: Deploy to GitHub Pages
