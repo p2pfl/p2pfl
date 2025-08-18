@@ -18,7 +18,7 @@ matplotlib = "^3.8.3"
 psutil = "^5.9.8"
 numpy = ">=1.20,<2.0"
 torch = {version = "^2.2.1", optional = true}
-torchvision = {version = "^0.17.1", optional = true}
+torchvision = "^0.22.1"
 torchmetrics = "^1.7.3"
 lightning = "^2.5.2"
 xgboost = "^3.0.2"
@@ -34,6 +34,7 @@ tqdm = "^4.67.0"
 protobuf = ">=5.29.1"
 pyyaml = "^6.0.2"
 scikit-learn = "^1.7.0"
+gradio = "^4.44.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

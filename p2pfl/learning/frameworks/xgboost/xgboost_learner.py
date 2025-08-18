@@ -23,6 +23,7 @@ from typing import Dict, Optional, Tuple, Union
 import numpy as np
 import xgboost as xgb
 from sklearn.exceptions import NotFittedError
+from sklearn.metrics import f1_score
 
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
@@ -131,6 +132,9 @@ class XGBoostLearner(Learner):
         if np.issubdtype(y_test.dtype, np.integer):
             accuracy = float(np.mean(preds == y_test))
             results['accuracy'] = accuracy
+            # Calcular F1 score
+            f1 = f1_score(y_test, preds, average='weighted')
+            results['f1'] = float(f1)
         else:
             mse = float(np.mean((preds - y_test) ** 2))
             results['mse'] = mse
