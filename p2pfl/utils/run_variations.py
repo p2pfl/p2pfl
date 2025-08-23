@@ -472,9 +472,9 @@ def run_variations_experiment(
         console.print("-" * 50)
 
     # Summary
-    console.print(f"\n{'='*50}")
+    console.print(f"\n{'=' * 50}")
     console.print("SUMMARY")
-    console.print(f"{'='*50}")
+    console.print(f"{'=' * 50}")
     console.print(f"Total experiments: {len(combinations)}")
     console.print(f"Completed: {completed}")
     console.print(f"Skipped: {skipped}")

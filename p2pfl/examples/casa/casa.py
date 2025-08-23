@@ -24,15 +24,14 @@
 
 import argparse
 import time
-import uuid
 
 import matplotlib.pyplot as plt
 
 from p2pfl.communication.protocols.protobuff.grpc import GrpcCommunicationProtocol
 from p2pfl.communication.protocols.protobuff.memory import MemoryCommunicationProtocol
-from p2pfl.learning.aggregators.scaffold import Scaffold
+from p2pfl.examples.casa.model.lstm_tensorflow import model_build_fn  # type: ignore
+from p2pfl.examples.casa.transforms import get_casa_transforms  # Import the transforms
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
-from p2pfl.learning.dataset.partition_strategies import RandomIIDPartitionStrategy
 from p2pfl.management.logger import logger
 from p2pfl.node import Node
 from p2pfl.settings import Settings
@@ -41,19 +40,13 @@ from p2pfl.utils.utils import set_standalone_settings, wait_convergence, wait_to
 
 
 def __parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="P2PFL MNIST experiment using the Web Logger.")
+    parser = argparse.ArgumentParser(description="P2PFL CASA experiment using the Web Logger.")
     parser.add_argument("--nodes", type=int, help="The number of nodes.", default=2)
     parser.add_argument("--rounds", type=int, help="The number of rounds.", default=2)
     parser.add_argument("--epochs", type=int, help="The number of epochs.", default=1)
     parser.add_argument("--show_metrics", action="store_true", help="Show metrics.", default=True)
     parser.add_argument("--measure_time", action="store_true", help="Measure time.", default=False)
-    parser.add_argument("--token", type=str, help="The API token for the Web Logger.", default="")
     parser.add_argument("--protocol", type=str, help="The protocol to use.", default="grpc", choices=["grpc", "unix", "memory"])
-    parser.add_argument("--framework", type=str, help="The framework to use.", default="pytorch", choices=["pytorch", "tensorflow", "flax"])
-    parser.add_argument("--aggregator", type=str, help="The aggregator to use.", default="fedavg", choices=["fedavg", "scaffold"])
-    parser.add_argument("--profiling", action="store_true", help="Enable profiling.", default=False)
-    parser.add_argument("--reduced_dataset", action="store_true", help="Use a reduced dataset just for testing.", default=False)
-    parser.add_argument("--use_scaffold", action="store_true", help="Use the Scaffold aggregator.", default=False)
     parser.add_argument("--seed", type=int, help="The seed to use.", default=666)
     parser.add_argument("--batch_size", type=int, help="The batch size for training.", default=128)
     parser.add_argument(
@@ -70,16 +63,13 @@ def __parse_args() -> argparse.Namespace:
     return args
 
 
-def mnist(
+def casa(
     n: int,
     r: int,
     e: int,
     show_metrics: bool = True,
     measure_time: bool = False,
     protocol: str = "grpc",
-    framework: str = "pytorch",
-    aggregator: str = "fedavg",
-    reduced_dataset: bool = False,
     topology: TopologyType = TopologyType.LINE,
     batch_size: int = 128,
 ) -> None:
@@ -93,7 +83,6 @@ def mnist(
         show_metrics: Show metrics.
         measure_time: Measure time.
         protocol: The protocol to use.
-        framework: The framework to use.
         aggregator: The aggregator to use.
         reduced_dataset: Use a reduced dataset just for testing.
         topology: The network topology (star, full, line, ring).
@@ -106,41 +95,26 @@ def mnist(
     # Check settings
     if n > Settings.gossip.TTL:
         raise ValueError(
-            "For in-line topology TTL must be greater than the number of nodes.Otherwise, some messages will not be delivered."
+            "For in-line topology TTL must be greater than the number of nodes. Otherwise, some messages will not be delivered."
         )
-
-    # Imports
-    if framework == "tensorflow":
-        from p2pfl.examples.mnist.model.mlp_tensorflow import model_build_fn  # type: ignore
-
-        model_fn = model_build_fn  # type: ignore
-    elif framework == "pytorch":
-        from p2pfl.examples.mnist.model.mlp_pytorch import model_build_fn  # type: ignore
-
-        model_fn = model_build_fn  # type: ignore
-    else:
-        raise ValueError(f"Framework {args.framework} not added on this example.")
-
-    # Data
-    data = P2PFLDataset.from_huggingface("p2pfl/MNIST")
-    data.set_batch_size(batch_size)
-    partitions = data.generate_partitions(
-        n * 50 if reduced_dataset else n,
-        RandomIIDPartitionStrategy,  # type: ignore
-    )
 
     # Node Creation
     nodes = []
     for i in range(n):
         address = f"node-{i}" if protocol == "memory" else f"unix:///tmp/p2pfl-{i}.sock" if protocol == "unix" else "127.0.0.1"
 
+        # Data
+        data_dir = None if n == 1 else f"casa{i + 1}"  # Use different data directories for each node if more than one node
+        data = P2PFLDataset.from_huggingface("p2pfl/casa", data_dir=data_dir)
+        data.set_batch_size(batch_size)
+        data.set_transforms(get_casa_transforms())  # Apply the transforms to format the data
+
         # Nodes
         node = Node(
-            model_fn(),
-            partitions[i],
+            model_build_fn(),
+            data,
             protocol=MemoryCommunicationProtocol() if protocol == "memory" else GrpcCommunicationProtocol(),
             addr=address,
-            aggregator=Scaffold() if aggregator == "scaffold" else None,
         )
         node.start()
         nodes.append(node)
@@ -212,42 +186,18 @@ if __name__ == "__main__":
 
     set_standalone_settings()
 
-    if args.profiling:
-        import os  # noqa: I001
-        import yappi  # type: ignore
-
-        # Start profiler
-        yappi.start()
-
-    # Set logger
-    if args.token != "":
-        logger.connect_web("http://localhost:3000/api/v1", args.token)
-
     # Seed
     if args.seed is not None:
         Settings.general.SEED = args.seed
 
     # Launch experiment
-    try:
-        mnist(
-            args.nodes,
-            args.rounds,
-            args.epochs,
-            show_metrics=args.show_metrics,
-            measure_time=args.measure_time,
-            protocol=args.protocol,
-            framework=args.framework,
-            aggregator=args.aggregator,
-            reduced_dataset=args.reduced_dataset,
-            topology=args.topology,
-            batch_size=args.batch_size,
-        )
-    finally:
-        if args.profiling:
-            # Stop profiler
-            yappi.stop()
-            # Save stats
-            profile_dir = os.path.join("profile", "mnist", str(uuid.uuid4()))
-            os.makedirs(profile_dir, exist_ok=True)
-            for thread in yappi.get_thread_stats():
-                yappi.get_func_stats(ctx_id=thread.id).save(f"{profile_dir}/{thread.name}-{thread.id}.pstat", type="pstat")
+    casa(
+        args.nodes,
+        args.rounds,
+        args.epochs,
+        show_metrics=args.show_metrics,
+        measure_time=args.measure_time,
+        protocol=args.protocol,
+        topology=args.topology,
+        batch_size=args.batch_size,
+    )
