@@ -221,7 +221,7 @@ if __name__ == "__main__":
 
     # Set logger
     if args.token != "":
-        logger.connect_web("http://localhost:3000/api/v1", args.token)
+        logger.connect(p2pfl_web_url="http://localhost:3000/api/v1", p2pfl_web_key=args.token)
 
     # Seed
     if args.seed is not None:

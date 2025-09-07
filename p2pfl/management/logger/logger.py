@@ -129,16 +129,18 @@ class P2PFLogger:
         stream_handler.setFormatter(cmd_formatter)
         self._logger.addHandler(stream_handler)  # not async
 
-    def connect_web(self, url: str, key: str) -> None:
+    def connect(self, **kwargs: Any) -> None:
         """
-        Connect to the web services.
+        Establish connection/setup for the logger.
+
+        This method should be overridden by loggers that require connection setup.
+        By default, it does nothing.
 
         Args:
-            url: The URL of the web services.
-            key: The API key.
+            **kwargs: Connection parameters specific to each logger type.
 
         """
-        raise NotImplementedError("Web Services not implemented.")
+        pass
 
     def cleanup(self) -> None:
         """Cleanup the logger."""
@@ -149,6 +151,15 @@ class P2PFLogger:
         # Remove handlers from the logger
         for handler in self._logger.handlers:
             self._logger.removeHandler(handler)
+
+    def finish(self) -> None:
+        """
+        Finish any logging activities, like closing a W&B run.
+
+        This method is a placeholder and is meant to be implemented by a decorator.
+        By default, it does nothing.
+        """
+        pass
 
     ######
     # Application logging
@@ -289,9 +300,8 @@ class P2PFLogger:
         try:
             experiment = self._nodes[addr]["Experiment"]
         except KeyError:
-            # print(f"Node {addr} not registered.")
+            # Node not registered, skip logging
             return
-            raise NodeNotRegistered(f"Node {addr} not registered.") from None
 
         # Get Round
         if round is None:
@@ -371,7 +381,7 @@ class P2PFLogger:
             # Unregister the node
             self._nodes.pop(node)
         else:
-            raise Exception(f"Node {node} not registered.")
+            self.warning("SYSTEM", f"Attempted to unregister node {node} that was not registered.")
 
     ######
     # Node Status
