@@ -11,8 +11,8 @@ remote_loggers:
 network:
   package: "p2pfl.communication.protocols.protobuff.memory"
   protocol: "MemoryCommunicationProtocol"
-  nodes: 10
-  topology: "full"   # Network topology: "line", "ring", "star", "full", null for custom
+  nodes: 8
+  topology: "ring"   # Network topology: "line", "ring", "star", "full", null for custom
   additional_connections:
     - [0, 2]              # Connect node 0 to Node 2 (indices)
     - [1, 3]              # Connect node 1 to Node 3 (indices)
@@ -37,15 +37,11 @@ experiment:
     #  function: "XX"
     partitioning:
       package: "p2pfl.learning.dataset.partition_strategies"
-      strategy: "RandomIIDPartitionStrategy" # DirichletPartitionStrategy
+      strategy: "RandomIIDPartitionStrategy" 
       reduced_dataset: false  # For testing purposes
       reduction_factor: 10
 
-      params: # Partitioning parameters (strategy-specific)
-        # Dirichlet example
-        alpha: 0.1
-        min_partition_size: 5
-        self_balancing: false
+      params: {} # No parameters needed for random partitioning
 
   # Learning algorithm configuration
   model:

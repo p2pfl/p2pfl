@@ -89,16 +89,103 @@ def wait_convergence(
     while True:
         begin = time.time()
         if all(len(n.get_neighbors(only_direct=only_direct)) == n_neis for n in nodes):
+            if debug:
+                _print_connectivity_matrix(nodes, only_direct, final=True)
             break
         if debug:
-            logger.info(
-                "Waiting for convergence",
-                str([list(n.get_neighbors(only_direct=only_direct).keys()) for n in nodes]),
-            )
-        time.sleep(0.1)
+            _print_connectivity_matrix(nodes, only_direct, final=False)
+        time.sleep(1)
         acum += time.time() - begin
         if acum > wait:
             raise AssertionError()
+
+
+def _print_connectivity_matrix(
+    nodes: list[Node | CommunicationProtocol],
+    only_direct: bool = False,
+    final: bool = False,
+) -> None:
+    """
+    Print a visual connectivity matrix showing node connections.
+
+    Args:
+        nodes: List of nodes.
+        only_direct: Only direct neighbors.
+        final: Whether this is the final converged state.
+
+    """
+    n = len(nodes)
+
+    # Build connectivity matrix
+    matrix = [[0 for _ in range(n)] for _ in range(n)]
+
+    for i, node in enumerate(nodes):
+        neighbors = node.get_neighbors(only_direct=only_direct)
+        for j, other_node in enumerate(nodes):
+            if i != j and other_node.addr in neighbors:
+                matrix[i][j] = 1
+
+    # Build complete visualization as a single string
+    output_lines = []
+
+    # Print header
+    if final:
+        output_lines.append("=" * 50)
+        output_lines.append("CONVERGENCE ACHIEVED - Final Network Topology")
+        output_lines.append("=" * 50)
+    else:
+        output_lines.append("-" * 50)
+        output_lines.append("Waiting for convergence - Current Network State")
+        output_lines.append("-" * 50)
+
+    # Print node addresses for reference
+    output_lines.append("Node Addresses:")
+    for i, node in enumerate(nodes):
+        addr_display = node.addr if len(str(node.addr)) < 20 else f"...{str(node.addr)[-17:]}"
+        output_lines.append(f"  Node {i}: {addr_display}")
+
+    # Print connectivity matrix with visual formatting
+    output_lines.append("\nConnectivity Matrix:")
+    output_lines.append("    " + "".join(f" {i:2}" for i in range(n)))
+    output_lines.append("   +" + "---" * n + "+")
+
+    for i in range(n):
+        row_str = f"{i:2} |"
+        for j in range(n):
+            if i == j:
+                row_str += " · "  # Self-connection (diagonal)
+            elif matrix[i][j] == 1:
+                row_str += " ■ "  # Connected
+            else:
+                row_str += " □ "  # Not connected
+        row_str += f"| ({sum(matrix[i])} connections)"
+        output_lines.append(row_str)
+
+    output_lines.append("   +" + "---" * n + "+")
+
+    # Print summary statistics
+    total_connections = sum(sum(row) for row in matrix)
+    output_lines.append("\nSummary:")
+    output_lines.append(f"  Total nodes: {n}")
+    output_lines.append(f"  Total connections: {total_connections}")
+    output_lines.append(f"  Average connections per node: {total_connections/n:.1f}")
+
+    # Check convergence status
+    connections_per_node = [sum(row) for row in matrix]
+    if all(c == connections_per_node[0] for c in connections_per_node):
+        output_lines.append(f"  Status: Uniform topology ({connections_per_node[0]} connections each)")
+    else:
+        output_lines.append(f"  Status: Non-uniform (range: {min(connections_per_node)}-{max(connections_per_node)})")
+
+    output_lines.append("=" * 50 if final else "-" * 50)
+    output_lines.append("")  # Add blank line for readability
+
+    # Log the complete visualization with proper format
+    matrix_display = "\n".join(output_lines)
+    if final:
+        logger.info("Network Convergence", matrix_display)
+    else:
+        logger.info("Waiting for convergence", matrix_display)
 
 
 def full_connection(node: Node, nodes: list[Node]) -> None:
@@ -140,7 +227,7 @@ def wait_to_finish(nodes: list[Node], timeout=3600, debug=False) -> None:
         time.sleep(1)
         elapsed = time.time() - start
         if elapsed > timeout:
-            raise TimeoutError(f"Timeout waiting for nodes to finish (elapsed: {int(elapsed//60)} minutes {int(elapsed%60)} seconds)")
+            raise TimeoutError(f"Timeout waiting for nodes to finish (elapsed: {int(elapsed // 60)} minutes {int(elapsed % 60)} seconds)")
 
 
 def check_equal_models(nodes: list[Node]) -> None:

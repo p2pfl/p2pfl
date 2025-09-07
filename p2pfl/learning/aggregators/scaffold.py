@@ -135,5 +135,5 @@ class Scaffold(Aggregator):
         """
         info = model.get_info("scaffold")
         if not all(key in info for key in self.REQUIRED_INFO_KEYS):
-            raise ValueError(f"Model is missing required info keys: {self.REQUIRED_INFO_KEYS}" f"Model info keys: {info.keys()}")
+            raise ValueError(f"Model is missing required info keys: {self.REQUIRED_INFO_KEYS}Model info keys: {info.keys()}")
         return info

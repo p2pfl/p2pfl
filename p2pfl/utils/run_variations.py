@@ -39,33 +39,56 @@ from p2pfl.management.launch_from_yaml import run_from_yaml
 from p2pfl.management.logger import logger
 
 
-def generate_experiment_id(config: dict[str, Any], variation_params: dict[str, Any]) -> str:
+def generate_experiment_id(variation_params: dict[str, Any], use_short_names: bool = True) -> str:
     """
     Generate a unique identifier for an experiment configuration.
 
     Args:
-        config: The full configuration dictionary
         variation_params: The parameters that are being varied
+        use_short_names: Whether to use abbreviated parameter names in the identifier
 
     Returns:
-        A unique string identifier
+        A unique string identifier including all varied parameters
 
     """
     # Create a deterministic string representation of the variation parameters
     param_str = json.dumps(variation_params, sort_keys=True)
-    # Use first 8 chars of hash for brevity
-    param_hash = hashlib.md5(param_str.encode()).hexdigest()[:8]
+    # Use first 6 chars of hash for uniqueness (in case of very long names)
+    param_hash = hashlib.md5(param_str.encode()).hexdigest()[:6]
 
-    # Create a human-readable part from key parameters
+    # Create a human-readable part from ALL parameters
     parts = []
     for key, value in sorted(variation_params.items()):
-        key_short = key.split(".")[-1]  # Get last part of dot notation
-        value_str = value if isinstance(value, str) else str(value)
+        # Get meaningful name from the parameter path
+        if use_short_names:
+            key_parts = key.split(".")
+            # Use last 2 parts for long paths, else last part
+            key_short = "_".join(key_parts[-2:]) if len(key_parts) > 2 else key_parts[-1]
+        else:
+            # Use full parameter path with dots replaced by underscores
+            key_short = key.replace(".", "_")
+
+        # Format the value appropriately
+        if isinstance(value, bool):
+            value_str = "T" if value else "F"
+        elif isinstance(value, float):
+            # Format floats to avoid too many decimals
+            value_str = f"{value:.4g}".replace(".", "p")
+        elif isinstance(value, str):
+            # Truncate long strings and remove special chars
+            value_str = value[:15].replace("/", "-").replace(" ", "")
+        else:
+            value_str = str(value)
+
         parts.append(f"{key_short}_{value_str}")
 
-    readable_part = "_".join(parts[:3])  # Limit to 3 params for readability
+    # Join all parts - no limit on number of parameters
+    readable_part = "_".join(parts)
 
-    return f"{readable_part}_{param_hash}"
+    # If the name is too long (>200 chars), truncate and add hash
+    readable_part = readable_part[:194] + f"_{param_hash}" if len(readable_part) > 200 else f"{readable_part}_{param_hash}"
+
+    return readable_part
 
 
 def set_nested_value(config: dict[str, Any], path: str, value: Any) -> None:
@@ -247,7 +270,8 @@ def parse_custom_params(param_strings: list[str]) -> dict[str, list[Any]]:
         for value in values_str.split(","):
             # Try to parse as number
             try:
-                if "." in value:
+                # First try as float (handles scientific notation like 1e-9)
+                if "." in value or "e" in value.lower():
                     values.append(float(value))
                 else:
                     values.append(int(value))
@@ -265,8 +289,203 @@ def parse_custom_params(param_strings: list[str]) -> dict[str, list[Any]]:
     return custom_params
 
 
+def run_variations_experiment(
+    yaml_path: str,
+    aggregators: list[str] | None = None,
+    seeds: list[int] | None = None,
+    nodes: list[int] | None = None,
+    rounds: list[int] | None = None,
+    epochs: list[int] | None = None,
+    topologies: list[str] | None = None,
+    partitioning: list[str] | None = None,
+    models: list[str] | None = None,
+    batch_sizes: list[int] | None = None,
+    custom_params: list[str] | None = None,
+    output_dir: str | None = None,
+    skip_existing: bool = True,
+    force: bool = False,
+    full_param_names: bool = False,
+    console=None,
+) -> int:
+    """
+    Run experiments with parameter variations.
+
+    Args:
+        yaml_path: Path to the base YAML configuration file
+        aggregators: List of aggregator classes
+        seeds: List of random seeds
+        nodes: Number of nodes
+        rounds: Number of rounds
+        epochs: Number of epochs per round
+        topologies: Network topologies
+        partitioning: Dataset partitioning strategies
+        models: Model packages/architectures
+        batch_sizes: Batch sizes
+        custom_params: Custom parameters in format 'path.to.param=value1,value2'
+        output_dir: Base directory for results
+        skip_existing: Skip experiments with existing results
+        force: Force re-run all experiments
+        full_param_names: Use full parameter paths in folder names
+        console: Rich console for output (optional)
+
+    Returns:
+        0 if successful, 1 if there were failures
+
+    """
+    # Use print if no console provided
+    if console is None:
+        console = type("Console", (), {"print": print})()
+
+    # Load base configuration
+    with open(yaml_path) as f:
+        base_config = yaml.safe_load(f)
+
+    # Set output directory
+    if output_dir:
+        output_base_dir = Path(output_dir)
+    else:
+        yaml_name = Path(yaml_path).stem
+        output_base_dir = Path("results") / "variations" / yaml_name
+
+    output_base_dir.mkdir(parents=True, exist_ok=True)
+
+    # Build parameter variations
+    variations: dict[str, Any] = {}
+
+    # Standard parameters
+    if aggregators:
+        # Create a special handling for aggregators to ensure package and name stay paired
+        aggregator_packages = {
+            "FedAvg": "p2pfl.learning.aggregators.fedavg",
+            "FedMedian": "p2pfl.learning.aggregators.fedmedian",
+            "Scaffold": "p2pfl.learning.aggregators.scaffold",
+            "FedAdagrad": "p2pfl.learning.aggregators.fedopt",
+            "FedYogi": "p2pfl.learning.aggregators.fedopt",
+            "FedProx": "p2pfl.learning.aggregators.fedprox",
+            "FedAdam": "p2pfl.learning.aggregators.fedopt",
+            "Krum": "p2pfl.learning.aggregators.krum",
+        }
+        # We'll handle aggregator variations specially after creating combinations
+        variations["_aggregator_config"] = [
+            {"name": agg, "package": aggregator_packages.get(agg, f"p2pfl.learning.aggregators.{agg.lower()}")} for agg in aggregators
+        ]
+
+    if seeds:
+        variations["experiment.seed"] = seeds
+
+    if nodes:
+        variations["network.nodes"] = nodes
+
+    if rounds:
+        variations["experiment.rounds"] = rounds
+
+    if epochs:
+        variations["experiment.epochs"] = epochs
+
+    if topologies:
+        variations["network.topology"] = topologies
+
+    if partitioning:
+        variations["experiment.dataset.partitioning.strategy"] = partitioning
+
+    if models:
+        variations["experiment.model.package"] = models
+
+    if batch_sizes:
+        variations["experiment.dataset.batch_size"] = batch_sizes
+
+    # Custom parameters
+    if custom_params:
+        custom_params_parsed = parse_custom_params(custom_params)
+        variations.update(custom_params_parsed)
+
+    # Generate all combinations
+    combinations: list[dict[str, Any]] = []
+    if not variations:
+        console.print("No variations specified. Running single experiment with base configuration.")
+        combinations = [{}]
+    else:
+        # Create list of (param_path, values) tuples
+        param_items = list(variations.items())
+        param_names = [item[0] for item in param_items]
+        param_values = [item[1] for item in param_items]
+
+        # Generate cartesian product
+        for values in itertools.product(*param_values):
+            combo = dict(zip(param_names, values, strict=False))
+
+            # Handle special case for aggregator config
+            if "_aggregator_config" in combo:
+                agg_config = combo.pop("_aggregator_config")
+                combo["experiment.aggregator.aggregator"] = agg_config["name"]
+                combo["experiment.aggregator.package"] = agg_config["package"]
+
+            combinations.append(combo)
+
+    console.print(f"Total number of experiments to run: {len(combinations)}")
+    console.print(f"Output directory: {output_base_dir}")
+    console.print("-" * 50)
+
+    # Run experiments
+    completed = 0
+    skipped = 0
+    failed = 0
+
+    for i, variation_params in enumerate(combinations, 1):
+        console.print(f"\nExperiment {i}/{len(combinations)}")
+        console.print(f"Parameters: {variation_params}")
+
+        # Create config for this variation
+        config = copy.deepcopy(base_config)
+
+        # Apply variations
+        for param_path, value in variation_params.items():
+            set_nested_value(config, param_path, value)
+
+        # Generate experiment ID and results directory
+        exp_id = generate_experiment_id(variation_params, use_short_names=not full_param_names)
+        results_dir = output_base_dir / exp_id
+
+        # Check if already exists
+        if not force and skip_existing and check_results_exist(results_dir):
+            console.print(f"Results already exist in {results_dir}. Skipping.")
+            skipped += 1
+            continue
+
+        try:
+            console.print(f"Running experiment: {exp_id}")
+            console.print(f"Results directory: {results_dir}")
+
+            # Reset logger state before running the experiment
+            logger.reset()
+
+            run_single_experiment(config, results_dir)
+            completed += 1
+
+        except Exception as e:
+            console.print(f"ERROR: Experiment failed: {e}")
+            failed += 1
+            if not force:
+                console.print("Stopping due to error. Use --force to continue despite errors.")
+                break
+
+        console.print("-" * 50)
+
+    # Summary
+    console.print(f"\n{'=' * 50}")
+    console.print("SUMMARY")
+    console.print(f"{'=' * 50}")
+    console.print(f"Total experiments: {len(combinations)}")
+    console.print(f"Completed: {completed}")
+    console.print(f"Skipped: {skipped}")
+    console.print(f"Failed: {failed}")
+    console.print(f"Results saved in: {output_base_dir}")
+
+    return 0 if failed == 0 else 1
+
+
 def main() -> int:
-    """Execute the main function for running experiments with variations."""
+    """Execute the main function for running experiments with variations (CLI entry point)."""
     parser = argparse.ArgumentParser(
         description="Run P2PFL experiments with parameter variations",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -303,155 +522,30 @@ Examples:
     # Execution options
     parser.add_argument("--skip-existing", action="store_true", default=True, help="Skip experiments with existing results (default: True)")
     parser.add_argument("--force", action="store_true", help="Force re-run all experiments, ignoring existing results")
+    parser.add_argument(
+        "--full-param-names", action="store_true", help="Use full parameter paths in folder names (default: use abbreviated names)"
+    )
 
     args = parser.parse_args()
 
-    # Load base configuration
-    with open(args.yaml_path) as f:
-        base_config = yaml.safe_load(f)
-
-    # Set output directory
-    if args.output_dir:
-        output_base_dir = Path(args.output_dir)
-    else:
-        yaml_name = Path(args.yaml_path).stem
-        output_base_dir = Path("results") / "variations" / yaml_name
-
-    output_base_dir.mkdir(parents=True, exist_ok=True)
-
-    # Build parameter variations
-    variations = {}
-
-    # Standard parameters
-    if args.aggregators:
-        # Create a special handling for aggregators to ensure package and name stay paired
-        aggregator_packages = {
-            "FedAvg": "p2pfl.learning.aggregators.fedavg",
-            "FedMedian": "p2pfl.learning.aggregators.fedmedian",
-            "Scaffold": "p2pfl.learning.aggregators.scaffold",
-            "FedAdagrad": "p2pfl.learning.aggregators.fedadagrad",
-            "FedAdam": "p2pfl.learning.aggregators.fedadam",
-            "FedProx": "p2pfl.learning.aggregators.fedprox",
-            "FedYogi": "p2pfl.learning.aggregators.fedyogi",
-            "Krum": "p2pfl.learning.aggregators.krum",
-        }
-        # We'll handle aggregator variations specially after creating combinations
-        variations["_aggregator_config"] = [
-            {"name": agg, "package": aggregator_packages.get(agg, f"p2pfl.learning.aggregators.{agg.lower()}")} for agg in args.aggregators
-        ]
-
-    if args.seeds:
-        variations["experiment.seed"] = args.seeds
-
-    if args.nodes:
-        variations["network.nodes"] = args.nodes
-
-    if args.rounds:
-        variations["experiment.rounds"] = args.rounds
-
-    if args.epochs:
-        variations["experiment.epochs"] = args.epochs
-
-    if args.topologies:
-        variations["network.topology"] = args.topologies
-
-    if args.partitioning:
-        variations["experiment.dataset.partitioning.strategy"] = args.partitioning
-
-    if args.models:
-        variations["experiment.model.package"] = args.models
-
-    if args.batch_sizes:
-        variations["experiment.dataset.batch_size"] = args.batch_sizes
-
-    # Custom parameters
-    if args.custom_params:
-        custom_params = parse_custom_params(args.custom_params)
-        variations.update(custom_params)
-
-    # Generate all combinations
-    combinations: list[dict[str, Any]] = []
-    if not variations:
-        print("No variations specified. Running single experiment with base configuration.")
-        combinations = [{}]
-    else:
-        # Create list of (param_path, values) tuples
-        param_items = list(variations.items())
-        param_names = [item[0] for item in param_items]
-        param_values = [item[1] for item in param_items]
-
-        # Generate cartesian product
-        for values in itertools.product(*param_values):
-            combo = dict(zip(param_names, values, strict=False))
-
-            # Handle special case for aggregator config
-            if "_aggregator_config" in combo:
-                agg_config = combo.pop("_aggregator_config")
-                combo["experiment.aggregator.aggregator"] = agg_config["name"]
-                combo["experiment.aggregator.package"] = agg_config["package"]
-
-            combinations.append(combo)
-
-    print(f"Total number of experiments to run: {len(combinations)}")
-    print(f"Output directory: {output_base_dir}")
-    print("-" * 50)
-
-    # Run experiments
-    completed = 0
-    skipped = 0
-    failed = 0
-
-    for i, variation_params in enumerate(combinations, 1):
-        print(f"\nExperiment {i}/{len(combinations)}")
-        print(f"Parameters: {variation_params}")
-
-        # Create config for this variation
-        config = copy.deepcopy(base_config)
-
-        # Apply variations
-        for param_path, value in variation_params.items():
-            set_nested_value(config, param_path, value)
-
-        # Generate experiment ID and results directory
-        exp_id = generate_experiment_id(config, variation_params)
-        results_dir = output_base_dir / exp_id
-
-        # Check if already exists
-        if not args.force and args.skip_existing and check_results_exist(results_dir):
-            print(f"Results already exist in {results_dir}. Skipping.")
-            skipped += 1
-            continue
-
-        try:
-            print(f"Running experiment: {exp_id}")
-            print(f"Results directory: {results_dir}")
-
-            # Reset logger state before running the experiment
-            logger.reset()
-
-            run_single_experiment(config, results_dir)
-            completed += 1
-
-        except Exception as e:
-            print(f"ERROR: Experiment failed: {e}")
-            failed += 1
-            if not args.force:
-                print("Stopping due to error. Use --force to continue despite errors.")
-                break
-
-        print("-" * 50)
-
-    # Summary
-    print(f"\n{'='*50}")
-    print("SUMMARY")
-    print(f"{'='*50}")
-    print(f"Total experiments: {len(combinations)}")
-    print(f"Completed: {completed}")
-    print(f"Skipped: {skipped}")
-    print(f"Failed: {failed}")
-    print(f"Results saved in: {output_base_dir}")
-
-    return 0 if failed == 0 else 1
+    # Call the main function with parsed arguments
+    return run_variations_experiment(
+        yaml_path=args.yaml_path,
+        aggregators=args.aggregators,
+        seeds=args.seeds,
+        nodes=args.nodes,
+        rounds=args.rounds,
+        epochs=args.epochs,
+        topologies=args.topologies,
+        partitioning=args.partitioning,
+        models=args.models,
+        batch_sizes=args.batch_sizes,
+        custom_params=args.custom_params,
+        output_dir=args.output_dir,
+        skip_existing=args.skip_existing,
+        force=args.force,
+        full_param_names=args.full_param_names,
+    )
 
 
 if __name__ == "__main__":
