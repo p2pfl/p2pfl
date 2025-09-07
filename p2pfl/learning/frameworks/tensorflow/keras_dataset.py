@@ -55,7 +55,8 @@ class KerasExportStrategy(DataExportStrategy):
         label_cols = list(data[0].keys())[-1:]
 
         print(
-            f"Getting columns by order: {columns}, label_cols: {label_cols}. If need different ones, implement your own KerasExportStrategy or a custom transform."
+            f"Getting columns by order: {columns}, label_cols: {label_cols}. "
+            "If need different ones, implement your own KerasExportStrategy or a custom transform."
         )
 
         # Export Keras dataset

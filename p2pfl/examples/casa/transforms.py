@@ -21,6 +21,9 @@ CASA transforms for P2PFL datasets.
 This module contains transformation functions for CASA datasets.
 """
 
+from collections.abc import Callable
+from typing import Any
+
 import numpy as np
 
 
@@ -57,6 +60,6 @@ def casa_transforms(examples):
     return {"features": X, "labels": Y}
 
 
-def get_casa_transforms():
+def get_casa_transforms() -> dict[str, Callable[[Any], dict[str, Any]]]:
     """Export transforms for CASA dataset."""
     return {"train": casa_transforms, "test": casa_transforms}

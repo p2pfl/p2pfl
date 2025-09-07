@@ -37,7 +37,7 @@ experiment:
       params: {}
     partitioning:
       package: "p2pfl.learning.dataset.partition_strategies"
-      strategy: "DirichletPartitionStrategy" # DirichletPartitionStrategy
+      strategy: "RandomIIDPartitionStrategy" # DirichletPartitionStrategy
       reduced_dataset: false  # For testing purposes
       reduction_factor: 10
 
@@ -63,8 +63,8 @@ experiment:
 
   # Aggregation algorithm configuration
   aggregator:
-    package: "p2pfl.learning.aggregators.fedopt"
-    aggregator: "FedAdagrad"
+    package: "p2pfl.learning.aggregators.fedavg"
+    aggregator: "FedAvg"
     params: {}  # Aggregator parameters (algorithm-specific)
     # Optional transforms for preprocessing
     transforms:

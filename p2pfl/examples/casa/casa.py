@@ -16,21 +16,28 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""Example of a P2PFL MNIST experiment, using a MLP model and a MnistFederatedDM."""
-
-# source .venv/bin/activate  # Or .venv\Scripts\activate on Windows
-# snakeviz _MainThread-0.pstat
-# gprof2dot -f pstats Gossiper-10.pstat | dot -Tpng -o output.png && open output.png
+"""Example IoT casa dataset for Human Daily Activity Recognition (HDAR)."""
 
 import argparse
 import time
+from pathlib import Path
 
 import matplotlib.pyplot as plt
+import pandas as pd
+import tqdm
 
 from p2pfl.communication.protocols.protobuff.grpc import GrpcCommunicationProtocol
 from p2pfl.communication.protocols.protobuff.memory import MemoryCommunicationProtocol
 from p2pfl.examples.casa.model.lstm_tensorflow import model_build_fn  # type: ignore
 from p2pfl.examples.casa.transforms import get_casa_transforms  # Import the transforms
+from p2pfl.learning.aggregators.fedavg import FedAvg
+from p2pfl.learning.aggregators.fedmedian import FedMedian
+from p2pfl.learning.aggregators.fedopt.fedadagrad import FedAdagrad
+from p2pfl.learning.aggregators.fedopt.fedadam import FedAdam
+from p2pfl.learning.aggregators.fedopt.fedyogi import FedYogi
+from p2pfl.learning.aggregators.fedprox import FedProx
+from p2pfl.learning.aggregators.krum import Krum
+from p2pfl.learning.aggregators.scaffold import Scaffold
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.management.logger import logger
 from p2pfl.node import Node
@@ -54,13 +61,100 @@ def __parse_args() -> argparse.Namespace:
         type=str,
         choices=[t.value for t in TopologyType],
         default="line",
-        help="The network topology (star, full, line, ring).",
+        help="The network topology (star, full, line, , random3).",
+    )
+    parser.add_argument("--save_csv", action="store_true", help="Save results to CSV files.", default=True)
+    parser.add_argument("--output_dir", type=str, help="Directory to save CSV results.", default="results/casa")
+    parser.add_argument(
+        "--aggregator",
+        type=str,
+        choices=["fedavg", "fedprox", "fedmedian", "krum", "scaffold", "fedadam", "fedadagrad", "fedyogi"],
+        default="fedavg",
+        help="The aggregation algorithm to use.",
     )
     args = parser.parse_args()
     # parse topology to TopologyType enum
     args.topology = TopologyType(args.topology)
 
     return args
+
+
+def save_experiment_results(output_dir: Path, start_time: float | None = None) -> None:
+    """
+    Save experiment results to CSV files.
+
+    Args:
+        output_dir: Directory to save results
+        start_time: Start time of the experiment for execution time calculation
+
+    """
+    # Create output directory
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Save message logs
+    all_msgs = logger.get_messages(direction="all")
+    if all_msgs:
+        try:
+            pandas_msgs = pd.DataFrame(all_msgs)
+            msg_csv_path = output_dir / "messages.csv"
+            pandas_msgs.to_csv(msg_csv_path, index=False)
+            print(f"Saved messages log to: {msg_csv_path}")
+        except Exception as e:
+            print(f"Error saving messages log: {e}")
+
+    # Save global metrics
+    global_metrics_data = logger.get_global_logs()
+    if global_metrics_data:
+        flattened_global_metrics = []
+        try:
+            for exp, nodes in global_metrics_data.items():
+                for node, metrics in nodes.items():
+                    for metric_name, values in metrics.items():
+                        for round_num, value in values:
+                            flattened_global_metrics.append(
+                                {"experiment": exp, "node": node, "metric": metric_name, "round": round_num, "value": value}
+                            )
+
+            if flattened_global_metrics:
+                pandas_global_metrics = pd.DataFrame(flattened_global_metrics)
+                global_metrics_csv_path = output_dir / "global_metrics.csv"
+                pandas_global_metrics.to_csv(global_metrics_csv_path, index=False)
+                print(f"Saved global metrics log to: {global_metrics_csv_path}")
+        except Exception as e:
+            print(f"Error saving global metrics: {e}")
+
+    # Save system metrics
+    system_metrics_data = logger.get_system_metrics()
+    if system_metrics_data:
+        flattened_system_metrics = []
+        try:
+            for timestamp, sys_metrics in system_metrics_data.items():
+                for sys_metric_name, sys_value in sys_metrics.items():
+                    flattened_system_metrics.append(
+                        {"timestamp": timestamp.strftime("%Y-%m-%d %H:%M:%S.%f"), "metric_name": sys_metric_name, "metric_value": sys_value}
+                    )
+
+            if flattened_system_metrics:
+                pandas_system_metrics = pd.DataFrame(flattened_system_metrics)
+                system_metrics_csv_path = output_dir / "system_resources.csv"
+                pandas_system_metrics.to_csv(system_metrics_csv_path, index=False)
+                print(f"Saved system resource metrics log to: {system_metrics_csv_path}")
+        except Exception as e:
+            print(f"Error saving system resource metrics: {e}")
+
+    # Save execution time if start_time is provided
+    if start_time is not None:
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"\nTotal execution time: {execution_time:.4f} seconds")
+
+        time_csv_path = output_dir / "execution_time.csv"
+        try:
+            time_df = pd.DataFrame({"Execution Time (s)": [f"{execution_time:.4f}"]})
+            time_df.to_csv(time_csv_path, index=False)
+            print(f"Saved execution time to: {time_csv_path}")
+        except Exception as e:
+            print(f"Error saving execution time: {e}")
 
 
 def casa(
@@ -72,9 +166,12 @@ def casa(
     protocol: str = "grpc",
     topology: TopologyType = TopologyType.LINE,
     batch_size: int = 128,
+    save_csv: bool = False,
+    output_dir: str = "results/casa",
+    aggregator: str = "fedavg",
 ) -> None:
     """
-    P2PFL MNIST experiment.
+    P2PFL CASA experiment.
 
     Args:
         n: The number of nodes.
@@ -83,36 +180,58 @@ def casa(
         show_metrics: Show metrics.
         measure_time: Measure time.
         protocol: The protocol to use.
-        aggregator: The aggregator to use.
-        reduced_dataset: Use a reduced dataset just for testing.
         topology: The network topology (star, full, line, ring).
         batch_size: The batch size for training.
+        save_csv: Save results to CSV files.
+        output_dir: Directory to save CSV results.
+        aggregator: The aggregation algorithm to use.
 
     """
     if measure_time:
         start_time = time.time()
 
     # Check settings
-    if n > Settings.gossip.TTL:
+    if n > Settings.gossip.TTL and topology == TopologyType.LINE:
         raise ValueError(
             "For in-line topology TTL must be greater than the number of nodes. Otherwise, some messages will not be delivered."
         )
+
+    # Select aggregator
+    aggregator_map = {
+        "fedavg": FedAvg,
+        "fedprox": FedProx,
+        "fedmedian": FedMedian,
+        "krum": Krum,
+        "scaffold": Scaffold,
+        "fedadam": FedAdam,
+        "fedadagrad": FedAdagrad,
+        "fedyogi": FedYogi,
+    }
+
+    aggregator_class = aggregator_map.get(aggregator.lower(), FedAvg)
+    print(f"Using aggregator: {aggregator_class.__name__}")
+
+    # Data creation
+    print("Creating data for each node...")
+    node_data = []
+    for i in tqdm.tqdm(range(n)):
+        # Data
+        data_dir = None if n == 1 else f"casa{i + 1}"  # Use different data directories for each node if more than one node
+        data = P2PFLDataset.from_huggingface("p2pfl/casa", data_dir=data_dir)
+        data.set_batch_size(batch_size)
+        data.set_transforms(get_casa_transforms())  # Apply the transforms to format the data
+        node_data.append(data)
 
     # Node Creation
     nodes = []
     for i in range(n):
         address = f"node-{i}" if protocol == "memory" else f"unix:///tmp/p2pfl-{i}.sock" if protocol == "unix" else "127.0.0.1"
 
-        # Data
-        data_dir = None if n == 1 else f"casa{i + 1}"  # Use different data directories for each node if more than one node
-        data = P2PFLDataset.from_huggingface("p2pfl/casa", data_dir=data_dir)
-        data.set_batch_size(batch_size)
-        data.set_transforms(get_casa_transforms())  # Apply the transforms to format the data
-
         # Nodes
         node = Node(
             model_build_fn(),
-            data,
+            node_data[i],
+            aggregator=aggregator_class(),
             protocol=MemoryCommunicationProtocol() if protocol == "memory" else GrpcCommunicationProtocol(),
             addr=address,
         )
@@ -123,13 +242,13 @@ def casa(
         adjacency_matrix = TopologyFactory.generate_matrix(topology, len(nodes))
         TopologyFactory.connect_nodes(adjacency_matrix, nodes)
 
-        wait_convergence(nodes, n - 1, only_direct=False, wait=60)  # type: ignore
+        wait_convergence(nodes, n - 1, only_direct=False, wait=160, debug=True)  # type: ignore
 
         if r < 1:
             raise ValueError("Skipping training, amount of round is less than 1")
 
         # Start Learning
-        nodes[0].set_start_learning(rounds=r, epochs=e)
+        nodes[0].set_start_learning(rounds=r, epochs=e, trainset_size=n // 2)
 
         # Wait and check
         wait_to_finish(nodes, timeout=60 * 60)  # 1 hour
@@ -179,12 +298,21 @@ def casa(
         if measure_time:
             print("--- %s seconds ---" % (time.time() - start_time))
 
+        # Save CSV results if requested
+        if save_csv:
+            output_path = Path(output_dir)
+            save_experiment_results(output_path, start_time if measure_time else None)
+
 
 if __name__ == "__main__":
     # Parse args
     args = __parse_args()
 
     set_standalone_settings()
+    Settings.training.RAY_ACTOR_POOL_SIZE = 4
+    Settings.heartbeat.TIMEOUT = 120
+    Settings.gossip.TTL = args.nodes  # ensure all messages arrive
+    Settings.training.AGGREGATION_TIMEOUT = 300
 
     # Seed
     if args.seed is not None:
@@ -200,4 +328,7 @@ if __name__ == "__main__":
         protocol=args.protocol,
         topology=args.topology,
         batch_size=args.batch_size,
+        save_csv=args.save_csv,
+        output_dir=args.output_dir,
+        aggregator=args.aggregator,
     )

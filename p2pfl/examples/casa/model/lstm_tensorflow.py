@@ -18,10 +18,9 @@
 
 """LSTM model on TensorFlow Keras for CASA."""
 
-import tensorflow as tf  # type: ignore
-from tensorflow.keras.models import Sequential  # type: ignore
 from tensorflow.keras.layers import LSTM, Dense  # type: ignore
 from tensorflow.keras.losses import SparseCategoricalCrossentropy  # type: ignore
+from tensorflow.keras.models import Sequential  # type: ignore
 from tensorflow.keras.optimizers import Adam  # type: ignore
 
 from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel
@@ -34,7 +33,13 @@ from p2pfl.utils.seed import set_seed
 
 
 def create_lstm_model(
-    lstm_units=100, hidden_sizes=None, out_channels=10, input_shape=(1, 36), lr_rate=0.001, trainable_layers=None, **kwargs
+    lstm_units: int = 100,
+    hidden_sizes: list[int] | None = None,
+    out_channels: int = 10,
+    input_shape: tuple[int, int] = (1, 36),
+    lr_rate: float = 0.001,
+    trainable_layers: list[int] | None = None,
+    **kwargs,
 ):
     """
     Create a Sequential LSTM model for CASA time-series classification.
