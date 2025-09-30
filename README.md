@@ -31,11 +31,11 @@
 | p2pfl/communication/protocols/protobuff/gossiper.py                           |      111 |       14 |     87% |118, 126, 151-153, 201-202, 217-229 |
 | p2pfl/communication/protocols/protobuff/grpc/\_\_init\_\_.py                  |       14 |        0 |    100% |           |
 | p2pfl/communication/protocols/protobuff/grpc/address.py                       |       52 |       23 |     56% |44-45, 51-54, 67-70, 79-81, 92-94, 98, 103-113 |
-| p2pfl/communication/protocols/protobuff/grpc/client.py                        |       88 |       30 |     66% |67-68, 86, 91, 100-102, 115-116, 125-126, 153-162, 181-184, 188, 191, 198-201, 203, 207 |
+| p2pfl/communication/protocols/protobuff/grpc/client.py                        |       88 |       29 |     67% |67-68, 86, 91, 100-102, 115-116, 125-126, 153-162, 181-184, 191, 198-201, 203, 207 |
 | p2pfl/communication/protocols/protobuff/grpc/server.py                        |       40 |        4 |     90% |100-102, 113 |
 | p2pfl/communication/protocols/protobuff/heartbeater.py                        |       49 |        1 |     98% |        79 |
 | p2pfl/communication/protocols/protobuff/memory/\_\_init\_\_.py                |       14 |        0 |    100% |           |
-| p2pfl/communication/protocols/protobuff/memory/client.py                      |       63 |       12 |     81% |62-63, 76-77, 82-86, 92-93, 100-101, 157 |
+| p2pfl/communication/protocols/protobuff/memory/client.py                      |       63 |       13 |     79% |62-63, 76-77, 82-86, 92-93, 100-101, 135, 157 |
 | p2pfl/communication/protocols/protobuff/memory/server.py                      |       40 |        2 |     95% |  106, 119 |
 | p2pfl/communication/protocols/protobuff/memory/singleton\_dict.py             |        3 |        0 |    100% |           |
 | p2pfl/communication/protocols/protobuff/neighbors.py                          |       61 |        6 |     90% |77-78, 84-86, 163 |
@@ -117,7 +117,7 @@
 | p2pfl/management/logger/decorators/wandb\_logger.py                           |       96 |       82 |     15% |28-30, 42-56, 84-116, 128-174, 179-192, 196-204 |
 | p2pfl/management/logger/decorators/web\_logger.py                             |       93 |       70 |     25% |48-56, 70-72, 83-85, 98-105, 110-126, 144-165, 177-182, 196-211, 239-270, 280-282, 292-294, 303 |
 | p2pfl/management/logger/logger.py                                             |      163 |      115 |     29% |74-85, 105-130, 143, 148-153, 162, 176-179, 189, 202, 213, 224, 235, 246, 257, 270-281, 300-323, 337, 351, 366-369, 380-384, 399, 410-414, 424-425, 435, 445, 477-511, 546-552, 562, 572-580 |
-| p2pfl/management/message\_storage.py                                          |       57 |       44 |     23% |55-56, 84-121, 146-185, 203, 221 |
+| p2pfl/management/message\_storage.py                                          |       57 |       44 |     23% |56-57, 85-122, 147-186, 204, 222 |
 | p2pfl/management/metric\_storage.py                                           |       55 |       36 |     35% |51-52, 76-99, 109, 122, 136, 151, 176-177, 192-213, 223, 236, 250 |
 | p2pfl/management/node\_monitor.py                                             |       34 |       22 |     35% |42-50, 54, 58, 62, 66-76, 80-85 |
 | p2pfl/management/p2pfl\_web\_services.py                                      |       80 |       65 |     19% |52-54, 69-74, 78-80, 91-102, 112, 126-150, 166-192, 207-232, 246-267, 296, 300 |
@@ -136,12 +136,12 @@
 | p2pfl/stages/stage\_factory.py                                                |       23 |        1 |     96% |        57 |
 | p2pfl/stages/workflows.py                                                     |       25 |        1 |     96% |        50 |
 | p2pfl/utils/check\_ray.py                                                     |       13 |        2 |     85% |    30, 48 |
-| p2pfl/utils/node\_component.py                                                |       32 |        0 |    100% |           |
+| p2pfl/utils/node\_component.py                                                |       34 |        0 |    100% |           |
 | p2pfl/utils/seed.py                                                           |       33 |       12 |     64% |57, 59-60, 63-71, 79-80 |
 | p2pfl/utils/singleton.py                                                      |        7 |        0 |    100% |           |
 | p2pfl/utils/topologies.py                                                     |       71 |        4 |     94% |97, 109, 131-132 |
 | p2pfl/utils/utils.py                                                          |      113 |       16 |     86% |96, 100, 126, 137-139, 157-160, 178, 188, 200-201, 221, 230, 253 |
-|                                                                     **TOTAL** | **5253** | **1789** | **66%** |           |
+|                                                                     **TOTAL** | **5255** | **1789** | **66%** |           |
 
 
 ## Setup coverage badge
