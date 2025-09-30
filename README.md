@@ -20,7 +20,7 @@
 | p2pfl/communication/commands/message/stop\_learning\_command.py               |       22 |        7 |     68% |     54-64 |
 | p2pfl/communication/commands/message/vote\_train\_set\_command.py             |       24 |        2 |     92% |     69-74 |
 | p2pfl/communication/commands/weights/\_\_init\_\_.py                          |        0 |        0 |    100% |           |
-| p2pfl/communication/commands/weights/full\_model\_command.py                  |       40 |       13 |     68% |55, 67-68, 77-89 |
+| p2pfl/communication/commands/weights/full\_model\_command.py                  |       40 |       15 |     62% |55, 61-65, 67-68, 77-89 |
 | p2pfl/communication/commands/weights/init\_model\_command.py                  |       44 |       18 |     59% |55-56, 62-66, 70-74, 83-104 |
 | p2pfl/communication/commands/weights/partial\_model\_command.py               |       46 |       16 |     65% |68, 74-78, 82-83, 100-116 |
 | p2pfl/communication/protocols/\_\_init\_\_.py                                 |        0 |        0 |    100% |           |
@@ -35,7 +35,7 @@
 | p2pfl/communication/protocols/protobuff/grpc/server.py                        |       40 |        4 |     90% |100-102, 113 |
 | p2pfl/communication/protocols/protobuff/heartbeater.py                        |       49 |        1 |     98% |        79 |
 | p2pfl/communication/protocols/protobuff/memory/\_\_init\_\_.py                |       14 |        0 |    100% |           |
-| p2pfl/communication/protocols/protobuff/memory/client.py                      |       63 |       13 |     79% |62-63, 76-77, 82-86, 92-93, 100-101, 135, 157 |
+| p2pfl/communication/protocols/protobuff/memory/client.py                      |       63 |       12 |     81% |62-63, 76-77, 82-86, 92-93, 100-101, 157 |
 | p2pfl/communication/protocols/protobuff/memory/server.py                      |       40 |        2 |     95% |  106, 119 |
 | p2pfl/communication/protocols/protobuff/memory/singleton\_dict.py             |        3 |        0 |    100% |           |
 | p2pfl/communication/protocols/protobuff/neighbors.py                          |       61 |        6 |     90% |77-78, 84-86, 163 |
@@ -141,7 +141,7 @@
 | p2pfl/utils/singleton.py                                                      |        7 |        0 |    100% |           |
 | p2pfl/utils/topologies.py                                                     |       71 |        4 |     94% |97, 109, 131-132 |
 | p2pfl/utils/utils.py                                                          |      113 |       16 |     86% |96, 100, 126, 137-139, 157-160, 178, 188, 200-201, 221, 230, 253 |
-|                                                                     **TOTAL** | **5253** | **1788** | **66%** |           |
+|                                                                     **TOTAL** | **5253** | **1789** | **66%** |           |
 
 
 ## Setup coverage badge
