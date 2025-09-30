@@ -1,7 +1,0 @@
-p2pfl.learning.aggregators.fedyogi module
-=========================================
-
-.. automodule:: p2pfl.learning.aggregators.fedyogi
-   :members:
-   :undoc-members:
-   :show-inheritance:

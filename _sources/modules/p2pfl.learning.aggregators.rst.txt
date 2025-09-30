@@ -6,6 +6,14 @@ p2pfl.learning.aggregators package
    :undoc-members:
    :show-inheritance:
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   p2pfl.learning.aggregators.fedopt
+
 Submodules
 ----------
 
@@ -13,11 +21,8 @@ Submodules
    :maxdepth: 4
 
    p2pfl.learning.aggregators.aggregator
-   p2pfl.learning.aggregators.fedadagrad
-   p2pfl.learning.aggregators.fedadam
    p2pfl.learning.aggregators.fedavg
    p2pfl.learning.aggregators.fedmedian
    p2pfl.learning.aggregators.fedprox
-   p2pfl.learning.aggregators.fedyogi
    p2pfl.learning.aggregators.krum
    p2pfl.learning.aggregators.scaffold
