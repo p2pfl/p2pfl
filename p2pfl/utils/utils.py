@@ -168,7 +168,7 @@ def _print_connectivity_matrix(
     output_lines.append("\nSummary:")
     output_lines.append(f"  Total nodes: {n}")
     output_lines.append(f"  Total connections: {total_connections}")
-    output_lines.append(f"  Average connections per node: {total_connections/n:.1f}")
+    output_lines.append(f"  Average connections per node: {total_connections / n:.1f}")
 
     # Check convergence status
     connections_per_node = [sum(row) for row in matrix]

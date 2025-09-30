@@ -36,7 +36,7 @@ class ResNetCIFAR10(L.LightningModule):
         self,
         num_classes: int = 10,
         metric: type[Metric] = Accuracy,
-        lr_rate: float = 0.01,
+        lr_rate: float = 0.001,
     ) -> None:
         """Initialize the ResNet model."""
         super().__init__()
