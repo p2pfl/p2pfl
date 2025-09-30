@@ -3,8 +3,8 @@ p2pfl.stages.base\_node package
 
 .. automodule:: p2pfl.stages.base_node
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------

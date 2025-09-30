@@ -3,8 +3,8 @@ p2pfl package
 
 .. automodule:: p2pfl
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Subpackages
 -----------
@@ -24,7 +24,6 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   p2pfl.cli
    p2pfl.exceptions
    p2pfl.experiment
    p2pfl.node
