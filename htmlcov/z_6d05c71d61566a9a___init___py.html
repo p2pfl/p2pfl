@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Coverage for p2pfl/management/logger/__init__.py: 93%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
-    <link rel="stylesheet" href="style_cb_81f8c14c.css" type="text/css">
+    <link rel="stylesheet" href="style_cb_6b508a39.css" type="text/css">
     <script src="coverage_html_cb_6fb7b396.js" defer></script>
 </head>
 <body class="pyfile">
@@ -54,8 +54,8 @@
             </div>
         </aside>
         <h2>
-            <span class="text">14 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">13<span class="text"> run</span></button>
+            <span class="text">15 statements &nbsp;</span>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">14<span class="text"> run</span></button>
             <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">1<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
         </h2>
@@ -64,8 +64,8 @@
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a id="nextFileLink" class="nav" href="z_078212527ced674d_async_logger_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-11 10:44 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.10.6">coverage.py v7.10.6</a>,
+            created at 2025-09-30 17:40 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -103,25 +103,26 @@
     <p class="run"><span class="n"><a id="t21" href="#t21">21</a></span><span class="t"><span class="key">from</span> <span class="nam">p2pfl</span><span class="op">.</span><span class="nam">management</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">decorators</span><span class="op">.</span><span class="nam">async_logger</span> <span class="key">import</span> <span class="nam">AsyncLogger</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t22" href="#t22">22</a></span><span class="t"><span class="key">from</span> <span class="nam">p2pfl</span><span class="op">.</span><span class="nam">management</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">decorators</span><span class="op">.</span><span class="nam">file_logger</span> <span class="key">import</span> <span class="nam">FileLogger</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t23" href="#t23">23</a></span><span class="t"><span class="key">from</span> <span class="nam">p2pfl</span><span class="op">.</span><span class="nam">management</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">decorators</span><span class="op">.</span><span class="nam">singleton_logger</span> <span class="key">import</span> <span class="nam">SingletonLogger</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t24" href="#t24">24</a></span><span class="t"><span class="key">from</span> <span class="nam">p2pfl</span><span class="op">.</span><span class="nam">management</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">decorators</span><span class="op">.</span><span class="nam">web_logger</span> <span class="key">import</span> <span class="nam">WebP2PFLogger</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t25" href="#t25">25</a></span><span class="t"><span class="key">from</span> <span class="nam">p2pfl</span><span class="op">.</span><span class="nam">management</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">logger</span> <span class="key">import</span> <span class="nam">P2PFLogger</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t26" href="#t26">26</a></span><span class="t"><span class="key">from</span> <span class="nam">p2pfl</span><span class="op">.</span><span class="nam">utils</span><span class="op">.</span><span class="nam">check_ray</span> <span class="key">import</span> <span class="nam">ray_installed</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t27" href="#t27">27</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t28" href="#t28">28</a></span><span class="t"><span class="com"># Check if 'ray' is installed in the Python environment</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t29" href="#t29">29</a></span><span class="t"><span class="key">if</span> <span class="nam">ray_installed</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t30" href="#t30">30</a></span><span class="t">    <span class="key">import</span> <span class="nam">ray</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t31" href="#t31">31</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t32" href="#t32">32</a></span><span class="t">    <span class="key">from</span> <span class="nam">p2pfl</span><span class="op">.</span><span class="nam">management</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">decorators</span><span class="op">.</span><span class="nam">ray_logger</span> <span class="key">import</span> <span class="nam">RayP2PFLogger</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t33" href="#t33">33</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t34" href="#t34">34</a></span><span class="t">    <span class="com"># This is executed multiple times on each python process (unique context)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t35" href="#t35">35</a></span><span class="t">    <span class="key">try</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t36" href="#t36">36</a></span><span class="t">        <span class="nam">logger</span><span class="op">:</span> <span class="nam">P2PFLogger</span> <span class="op">=</span> <span class="nam">RayP2PFLogger</span><span class="op">.</span><span class="nam">from_actor</span><span class="op">(</span><span class="nam">ray</span><span class="op">.</span><span class="nam">get_actor</span><span class="op">(</span><span class="str">"p2pfl_ray_logger"</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t37" href="#t37">37</a></span><span class="t">    <span class="key">except</span> <span class="nam">ValueError</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t38" href="#t38">38</a></span><span class="t">        <span class="nam">logger</span> <span class="op">=</span> <span class="nam">RayP2PFLogger</span><span class="op">(</span><span class="key">lambda</span><span class="op">:</span> <span class="nam">WebP2PFLogger</span><span class="op">(</span><span class="nam">FileLogger</span><span class="op">(</span><span class="nam">P2PFLogger</span><span class="op">(</span><span class="nam">disable_locks</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t39" href="#t39">39</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t40" href="#t40">40</a></span><span class="t"><span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t41" href="#t41">41</a></span><span class="t">    <span class="com"># This is only executed once, when the module is first imported</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t42" href="#t42">42</a></span><span class="t">    <span class="nam">logger</span> <span class="op">=</span> <span class="nam">SingletonLogger</span><span class="op">(</span><span class="nam">WebP2PFLogger</span><span class="op">(</span><span class="nam">FileLogger</span><span class="op">(</span><span class="nam">AsyncLogger</span><span class="op">(</span><span class="nam">P2PFLogger</span><span class="op">(</span><span class="nam">disable_locks</span><span class="op">=</span><span class="key">False</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t24" href="#t24">24</a></span><span class="t"><span class="key">from</span> <span class="nam">p2pfl</span><span class="op">.</span><span class="nam">management</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">decorators</span><span class="op">.</span><span class="nam">wandb_logger</span> <span class="key">import</span> <span class="nam">WandbLogger</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t25" href="#t25">25</a></span><span class="t"><span class="key">from</span> <span class="nam">p2pfl</span><span class="op">.</span><span class="nam">management</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">decorators</span><span class="op">.</span><span class="nam">web_logger</span> <span class="key">import</span> <span class="nam">WebP2PFLogger</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t26" href="#t26">26</a></span><span class="t"><span class="key">from</span> <span class="nam">p2pfl</span><span class="op">.</span><span class="nam">management</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">logger</span> <span class="key">import</span> <span class="nam">P2PFLogger</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t27" href="#t27">27</a></span><span class="t"><span class="key">from</span> <span class="nam">p2pfl</span><span class="op">.</span><span class="nam">utils</span><span class="op">.</span><span class="nam">check_ray</span> <span class="key">import</span> <span class="nam">ray_installed</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t28" href="#t28">28</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t29" href="#t29">29</a></span><span class="t"><span class="com"># Check if 'ray' is installed in the Python environment</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t30" href="#t30">30</a></span><span class="t"><span class="key">if</span> <span class="nam">ray_installed</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t31" href="#t31">31</a></span><span class="t">    <span class="key">import</span> <span class="nam">ray</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t32" href="#t32">32</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t33" href="#t33">33</a></span><span class="t">    <span class="key">from</span> <span class="nam">p2pfl</span><span class="op">.</span><span class="nam">management</span><span class="op">.</span><span class="nam">logger</span><span class="op">.</span><span class="nam">decorators</span><span class="op">.</span><span class="nam">ray_logger</span> <span class="key">import</span> <span class="nam">RayP2PFLogger</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t34" href="#t34">34</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t35" href="#t35">35</a></span><span class="t">    <span class="com"># This is executed multiple times on each python process (unique context)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t36" href="#t36">36</a></span><span class="t">    <span class="key">try</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t37" href="#t37">37</a></span><span class="t">        <span class="nam">logger</span><span class="op">:</span> <span class="nam">P2PFLogger</span> <span class="op">=</span> <span class="nam">RayP2PFLogger</span><span class="op">.</span><span class="nam">from_actor</span><span class="op">(</span><span class="nam">ray</span><span class="op">.</span><span class="nam">get_actor</span><span class="op">(</span><span class="str">"p2pfl_ray_logger"</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t38" href="#t38">38</a></span><span class="t">    <span class="key">except</span> <span class="nam">ValueError</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t39" href="#t39">39</a></span><span class="t">        <span class="nam">logger</span> <span class="op">=</span> <span class="nam">RayP2PFLogger</span><span class="op">(</span><span class="key">lambda</span><span class="op">:</span> <span class="nam">WandbLogger</span><span class="op">(</span><span class="nam">WebP2PFLogger</span><span class="op">(</span><span class="nam">FileLogger</span><span class="op">(</span><span class="nam">P2PFLogger</span><span class="op">(</span><span class="nam">disable_locks</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t40" href="#t40">40</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t41" href="#t41">41</a></span><span class="t"><span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t42" href="#t42">42</a></span><span class="t">    <span class="com"># This is only executed once, when the module is first imported</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t43" href="#t43">43</a></span><span class="t">    <span class="nam">logger</span> <span class="op">=</span> <span class="nam">SingletonLogger</span><span class="op">(</span><span class="nam">WandbLogger</span><span class="op">(</span><span class="nam">WebP2PFLogger</span><span class="op">(</span><span class="nam">FileLogger</span><span class="op">(</span><span class="nam">AsyncLogger</span><span class="op">(</span><span class="nam">P2PFLogger</span><span class="op">(</span><span class="nam">disable_locks</span><span class="op">=</span><span class="key">False</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -130,8 +131,8 @@
             <a class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a class="nav" href="z_078212527ced674d_async_logger_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-11 10:44 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.10.6">coverage.py v7.10.6</a>,
+            created at 2025-09-30 17:40 +0000
         </p>
     </div>
 </footer>

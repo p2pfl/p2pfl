@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Coverage for p2pfl/learning/aggregators/krum.py: 0%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
-    <link rel="stylesheet" href="style_cb_81f8c14c.css" type="text/css">
+    <link rel="stylesheet" href="style_cb_6b508a39.css" type="text/css">
     <script src="coverage_html_cb_6fb7b396.js" defer></script>
 </head>
 <body class="pyfile">
@@ -60,12 +60,12 @@
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
         </h2>
         <p class="text">
-            <a id="prevFileLink" class="nav" href="z_d203b6d1153f5331_fedyogi_py.html">&#xab; prev</a> &nbsp; &nbsp;
+            <a id="prevFileLink" class="nav" href="z_d203b6d1153f5331_fedprox_py.html">&#xab; prev</a> &nbsp; &nbsp;
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a id="nextFileLink" class="nav" href="z_d203b6d1153f5331_scaffold_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-11 10:44 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.10.6">coverage.py v7.10.6</a>,
+            created at 2025-09-30 17:40 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -155,7 +155,7 @@
     <p class="mis show_mis"><span class="n"><a id="t73" href="#t73">73</a></span><span class="t">                <span class="key">if</span> <span class="nam">i</span> <span class="op">!=</span> <span class="nam">j</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t74" href="#t74">74</a></span><span class="t">                    <span class="com"># Calculate L2 distance between models i and j</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t75" href="#t75">75</a></span><span class="t">                    <span class="nam">distance</span> <span class="op">=</span> <span class="num">0.0</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t76" href="#t76">76</a></span><span class="t">                    <span class="key">for</span> <span class="nam">layer_i</span><span class="op">,</span> <span class="nam">layer_j</span> <span class="key">in</span> <span class="nam">zip</span><span class="op">(</span><span class="nam">model_params</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span><span class="op">,</span> <span class="nam">model_params</span><span class="op">[</span><span class="nam">j</span><span class="op">]</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t76" href="#t76">76</a></span><span class="t">                    <span class="key">for</span> <span class="nam">layer_i</span><span class="op">,</span> <span class="nam">layer_j</span> <span class="key">in</span> <span class="nam">zip</span><span class="op">(</span><span class="nam">model_params</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span><span class="op">,</span> <span class="nam">model_params</span><span class="op">[</span><span class="nam">j</span><span class="op">]</span><span class="op">,</span> <span class="nam">strict</span><span class="op">=</span><span class="key">False</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t77" href="#t77">77</a></span><span class="t">                        <span class="com"># Compute L2 norm of the difference</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t78" href="#t78">78</a></span><span class="t">                        <span class="nam">distance</span> <span class="op">+=</span> <span class="nam">float</span><span class="op">(</span><span class="nam">np</span><span class="op">.</span><span class="nam">linalg</span><span class="op">.</span><span class="nam">norm</span><span class="op">(</span><span class="nam">layer_i</span> <span class="op">-</span> <span class="nam">layer_j</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t79" href="#t79">79</a></span><span class="t">                    <span class="nam">distance_sum</span> <span class="op">+=</span> <span class="nam">distance</span>&nbsp;</span><span class="r"></span></p>
@@ -187,12 +187,12 @@
 <footer>
     <div class="content">
         <p>
-            <a class="nav" href="z_d203b6d1153f5331_fedyogi_py.html">&#xab; prev</a> &nbsp; &nbsp;
+            <a class="nav" href="z_d203b6d1153f5331_fedprox_py.html">&#xab; prev</a> &nbsp; &nbsp;
             <a class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a class="nav" href="z_d203b6d1153f5331_scaffold_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-11 10:44 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.10.6">coverage.py v7.10.6</a>,
+            created at 2025-09-30 17:40 +0000
         </p>
     </div>
 </footer>

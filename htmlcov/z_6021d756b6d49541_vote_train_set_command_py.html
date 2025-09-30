@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Coverage for p2pfl/communication/commands/message/vote_train_set_command.py: 92%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
-    <link rel="stylesheet" href="style_cb_81f8c14c.css" type="text/css">
+    <link rel="stylesheet" href="style_cb_6b508a39.css" type="text/css">
     <script src="coverage_html_cb_6fb7b396.js" defer></script>
 </head>
 <body class="pyfile">
@@ -64,8 +64,8 @@
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a id="nextFileLink" class="nav" href="z_e5b52f91f0345465_full_model_command_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-11 10:44 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.10.6">coverage.py v7.10.6</a>,
+            created at 2025-09-30 17:40 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -149,9 +149,9 @@
     <p class="run"><span class="n"><a id="t67" href="#t67">67</a></span><span class="t">                    <span class="nam">self</span><span class="op">.</span><span class="nam">state</span><span class="op">.</span><span class="nam">wait_votes_ready_lock</span><span class="op">.</span><span class="nam">release</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t68" href="#t68">68</a></span><span class="t">            <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t69" href="#t69">69</a></span><span class="t">                <span class="nam">logger</span><span class="op">.</span><span class="nam">error</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t70" href="#t70">70</a></span><span class="t">                    <span class="nam">self</span><span class="op">.</span><span class="nam">state</span><span class="op">.</span><span class="nam">addr</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t71" href="#t71">71</a></span><span class="t">                    <span class="fst">f"</span><span class="fst">Vote received in a late round. Ignored. </span><span class="op">{</span><span class="nam">round</span><span class="op">}</span><span class="fst"> != </span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">state</span><span class="op">.</span><span class="nam">round</span><span class="op">}</span><span class="fst"> / </span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">state</span><span class="op">.</span><span class="nam">round</span><span class="op">+</span><span class="num">1</span><span class="op">}</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t72" href="#t72">72</a></span><span class="t">                <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis mis2 show_mis"><span class="n"><a id="t70" href="#t70">70</a></span><span class="t">                    <span class="nam">self</span><span class="op">.</span><span class="nam">state</span><span class="op">.</span><span class="nam">addr</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis mis2 show_mis"><span class="n"><a id="t71" href="#t71">71</a></span><span class="t">                    <span class="fst">f"</span><span class="fst">Vote received in a late round. Ignored. </span><span class="op">{</span><span class="nam">round</span><span class="op">}</span><span class="fst"> != </span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">state</span><span class="op">.</span><span class="nam">round</span><span class="op">}</span><span class="fst"> / </span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">state</span><span class="op">.</span><span class="nam">round</span> <span class="op">+</span> <span class="num">1</span><span class="op">}</span><span class="fst">"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis mis2 show_mis"><span class="n"><a id="t72" href="#t72">72</a></span><span class="t">                <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t73" href="#t73">73</a></span><span class="t">        <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t74" href="#t74">74</a></span><span class="t">            <span class="nam">logger</span><span class="op">.</span><span class="nam">error</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">state</span><span class="op">.</span><span class="nam">addr</span><span class="op">,</span> <span class="str">"Vote received when learning is not running"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </main>
@@ -162,8 +162,8 @@
             <a class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a class="nav" href="z_e5b52f91f0345465_full_model_command_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-11 10:44 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.10.6">coverage.py v7.10.6</a>,
+            created at 2025-09-30 17:40 +0000
         </p>
     </div>
 </footer>
