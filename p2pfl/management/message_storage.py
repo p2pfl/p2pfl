@@ -35,6 +35,7 @@ class MessageStorage:
     Format:
 
     .. code-block:: python
+
         [
             {
                 "timestamp": datetime.datetime,

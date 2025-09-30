@@ -28,9 +28,11 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+
+"""Sphinx configuration file for p2pfl documentation."""
+
 import os
 import sys
-
 from importlib.metadata import version as get_version
 
 sys.path.insert(0, os.path.abspath("../../p2pfl"))
@@ -47,7 +49,7 @@ html_logo = "logo.png"
 
 
 # The full version, including alpha/beta/rc tags
-release = get_version('p2pfl')
+release = get_version("p2pfl")
 version = release
 
 
@@ -64,19 +66,19 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
     "sphinx.ext.todo",
-    'sphinxcontrib.mermaid',
+    "sphinxcontrib.mermaid",
     "sphinx_design",
     "sphinx_autodoc_typehints",
 ]
 
 # Autodoc options
 autodoc_default_options = {
-    'members': True,
-    'undoc-members': True,
-    'private-members': False,
-    'special-members': False,
-    'inherited-members': False,
-    'show-inheritance': True,
+    "members": True,
+    "undoc-members": True,
+    "private-members": False,
+    "special-members": False,
+    "inherited-members": False,
+    "show-inheritance": True,
 }
 
 # Type hints configuration (using sphinx-autodoc-typehints extension v3.2.0)
@@ -117,7 +119,7 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-#exclude_patterns = []
+# exclude_patterns = []
 
 
 # -- Options for HTML output -------------------------------------------------

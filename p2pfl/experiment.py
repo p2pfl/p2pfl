@@ -25,7 +25,7 @@ class Experiment:
     """
     Class to represent an experiment.
 
-    Attributes:
+    Args:
         exp_name: The name of the experiment.
         total_rounds: The total rounds of the experiment.
         round: The current round.
