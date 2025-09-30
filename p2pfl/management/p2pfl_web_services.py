@@ -124,7 +124,8 @@ class P2pflWebServices:
         """
         # get node id
         if node not in self.node_id:
-            raise ValueError(f"Node {node} not registered")
+            print(f"P2pflWebServices Warning: Node {node} not registered, skipping log")
+            return
         node_id = self.node_id[node]
 
         # Send request
@@ -163,7 +164,8 @@ class P2pflWebServices:
         """
         # get node id
         if node not in self.node_id:
-            raise ValueError(f"Node {node} not registered")
+            print(f"P2pflWebServices Warning: Node {node} not registered, skipping local metric")
+            return
         node_id = self.node_id[node]
 
         # get experiment id
@@ -203,7 +205,8 @@ class P2pflWebServices:
         """
         # get node id
         if node not in self.node_id:
-            raise ValueError(f"Node {node} not registered")
+            print(f"P2pflWebServices Warning: Node {node} not registered, skipping global metric")
+            return
         node_id = self.node_id[node]
 
         # get experiment id
@@ -241,7 +244,8 @@ class P2pflWebServices:
         """
         # get node id
         if node not in self.node_id:
-            raise ValueError(f"Node {node} not registered")
+            print(f"P2pflWebServices Warning: Node {node} not registered, skipping system metric")
+            return
         node_id = self.node_id[node]
 
         # Send request
