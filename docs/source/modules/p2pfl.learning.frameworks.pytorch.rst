@@ -3,8 +3,8 @@ p2pfl.learning.frameworks.pytorch package
 
 .. automodule:: p2pfl.learning.frameworks.pytorch
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Subpackages
 -----------

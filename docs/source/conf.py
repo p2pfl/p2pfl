@@ -31,7 +31,7 @@
 import os
 import sys
 
-import pkg_resources
+from importlib.metadata import version as get_version
 
 sys.path.insert(0, os.path.abspath("../../p2pfl"))
 
@@ -47,7 +47,8 @@ html_logo = "logo.png"
 
 
 # The full version, including alpha/beta/rc tags
-release = pkg_resources.get_distribution('p2pfl').version
+release = get_version('p2pfl')
+version = release
 
 
 # -- General configuration ---------------------------------------------------
@@ -62,10 +63,10 @@ extensions = [
     "sphinx.ext.githubpages",
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
-    "sphinx_autodoc_typehints",
     "sphinx.ext.todo",
     'sphinxcontrib.mermaid',
-    "sphinx_design"
+    "sphinx_design",
+    "sphinx_autodoc_typehints",
 ]
 
 # Autodoc options
@@ -77,6 +78,35 @@ autodoc_default_options = {
     'inherited-members': False,
     'show-inheritance': True,
 }
+
+# Type hints configuration (using sphinx-autodoc-typehints extension v3.2.0)
+autodoc_typehints = "description"  # Show type hints in parameter descriptions
+autodoc_typehints_description_target = "documented"  # Only add type hints to documented parameters
+typehints_fully_qualified = False  # Use short type names (e.g., 'str' instead of 'builtins.str')
+always_document_param_types = True  # Always document parameter types
+
+# Mock imports for packages that are not needed for documentation
+autodoc_mock_imports = [
+    "grpc_tools",
+    "grpc",
+    "google",
+    "google.protobuf",
+    "tensorflow",
+    "torch",
+    "torchvision",
+    "torchmetrics",
+    "lightning",
+    "keras",
+    "flax",
+    "optax",
+    "opendp",
+    "wandb",
+    "ray",
+    "jax",
+    "pytorch_lightning",
+    "p2pfl.communication.protocols.protobuff.proto.node_pb2",
+    "p2pfl.communication.protocols.protobuff.proto.node_pb2_grpc",
+]
 
 # Todos
 todo_include_todos = True

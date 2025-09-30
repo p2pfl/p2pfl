@@ -3,8 +3,8 @@ p2pfl.learning.frameworks.tensorflow.callbacks package
 
 .. automodule:: p2pfl.learning.frameworks.tensorflow.callbacks
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------

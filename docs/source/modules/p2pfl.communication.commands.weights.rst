@@ -3,8 +3,8 @@ p2pfl.communication.commands.weights package
 
 .. automodule:: p2pfl.communication.commands.weights
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------
