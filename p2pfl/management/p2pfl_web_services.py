@@ -29,7 +29,6 @@ Communication with P2PFL Web Services (via REST API).
 """
 
 import datetime
-from typing import Dict, Optional
 
 import requests
 
@@ -72,10 +71,10 @@ class P2pflWebServices:
         if not url.startswith("https://"):
             print("P2pflWebServices Warning: Connection must be over https, traffic will not be encrypted")
         self.__key = key
-        self.node_id: Dict[str, int] = {}
+        self.node_id: dict[str, int] = {}
         # TODO: Check connection
 
-    def __build_headers(self) -> Dict[str, str]:
+    def __build_headers(self) -> dict[str, str]:
         headers = {"Content-Type": "application/json"}
         headers["x-api-key"] = self.__key
         return headers
@@ -125,7 +124,8 @@ class P2pflWebServices:
         """
         # get node id
         if node not in self.node_id:
-            raise ValueError(f"Node {node} not registered")
+            print(f"P2pflWebServices Warning: Node {node} not registered, skipping log")
+            return
         node_id = self.node_id[node]
 
         # Send request
@@ -164,7 +164,8 @@ class P2pflWebServices:
         """
         # get node id
         if node not in self.node_id:
-            raise ValueError(f"Node {node} not registered")
+            print(f"P2pflWebServices Warning: Node {node} not registered, skipping local metric")
+            return
         node_id = self.node_id[node]
 
         # get experiment id
@@ -204,7 +205,8 @@ class P2pflWebServices:
         """
         # get node id
         if node not in self.node_id:
-            raise ValueError(f"Node {node} not registered")
+            print(f"P2pflWebServices Warning: Node {node} not registered, skipping global metric")
+            return
         node_id = self.node_id[node]
 
         # get experiment id
@@ -242,7 +244,8 @@ class P2pflWebServices:
         """
         # get node id
         if node not in self.node_id:
-            raise ValueError(f"Node {node} not registered")
+            print(f"P2pflWebServices Warning: Node {node} not registered, skipping system metric")
+            return
         node_id = self.node_id[node]
 
         # Send request
@@ -272,8 +275,8 @@ class P2pflWebServices:
         source_dest: str,
         package_type: str,
         package_size: int,
-        round_num: Optional[int] = None,
-        additional_info: Optional[dict] = None,
+        round_num: int | None = None,
+        additional_info: dict | None = None,
     ) -> None:
         """
         Send a communication log to the web services.

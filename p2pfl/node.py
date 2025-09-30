@@ -23,7 +23,7 @@ import random
 import threading
 import time
 import traceback
-from typing import Any, Dict, Optional
+from typing import Any
 
 from p2pfl.communication.commands.message.metrics_command import MetricsCommand
 from p2pfl.communication.commands.message.model_initialized_command import ModelInitializedCommand
@@ -93,9 +93,9 @@ class Node:
         model: P2PFLModel,
         data: P2PFLDataset,
         addr: str = "",
-        learner: Optional[Learner] = None,
-        aggregator: Optional[Aggregator] = None,
-        protocol: Optional[CommunicationProtocol] = None,
+        learner: Learner | None = None,
+        aggregator: Aggregator | None = None,
+        protocol: CommunicationProtocol | None = None,
         **kwargs,
     ) -> None:
         """Initialize a node."""
@@ -162,7 +162,7 @@ class Node:
         # Connect
         return self._communication_protocol.connect(addr)
 
-    def get_neighbors(self, only_direct: bool = False) -> Dict[str, Any]:
+    def get_neighbors(self, only_direct: bool = False) -> dict[str, Any]:
         """
         Return the neighbors of the node.
 
@@ -401,6 +401,20 @@ class Node:
     def __start_learning(self, rounds: int, epochs: int, trainset_size: int, experiment_name: str) -> None:
         # Set seed
         try:
+            # Initialize experiment with metadata
+            self.state.set_experiment(
+                experiment_name,
+                rounds,
+                dataset_name=self.learner.get_data().dataset_name,
+                model_name=self.learner.get_model().__class__.__name__,
+                aggregator_name=self.aggregator.__class__.__name__,
+                framework_name=self.learner.get_model().get_framework(),
+                learning_rate=getattr(self.learner.get_model().get_model(), "lr_rate", None),
+                batch_size=self.learner.get_data().batch_size,
+                epochs_per_round=epochs,
+            )
+
+            # Run learning workflow
             self.learning_workflow.run(
                 rounds=rounds,
                 epochs=epochs,
@@ -412,19 +426,21 @@ class Node:
                 aggregator=self.aggregator,
                 generator=random.Random(Settings.general.SEED),
             )
+
         except Exception as e:
             logger.error(self.addr, f"Error {type(e).__name__}: {e}\n{traceback.format_exc()}")
             self.stop()
 
     def __stop_learning(self) -> None:
         logger.info(self.addr, "Stopping learning")
-        # Leraner
+        # Learner
         self.learner.interrupt_fit()
         # Aggregator
         self.aggregator.clear()
         # State
         self.state.clear()
         logger.experiment_finished(self.addr)
+        logger.finish()
         # Try to free wait locks
         with contextlib.suppress(Exception):
             self.state.wait_votes_ready_lock.release()

@@ -20,7 +20,6 @@
 import os
 import socket
 from ipaddress import ip_address
-from typing import Optional
 
 
 class AddressParser:
@@ -34,9 +33,9 @@ class AddressParser:
 
     def __init__(self, address: str):
         """Initialize the address parser."""
-        self.host: Optional[str] = None
-        self.port: Optional[int] = None
-        self.is_v6: Optional[bool] = None
+        self.host: str | None = None
+        self.port: int | None = None
+        self.is_v6: bool | None = None
         self.unix_domain = False
         self.__parse_address(address)
 

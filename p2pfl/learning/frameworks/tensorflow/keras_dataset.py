@@ -18,8 +18,6 @@
 
 """Keras dataset export strategy."""
 
-from typing import List, Optional
-
 import tensorflow as tf  # type: ignore
 from datasets import Dataset  # type: ignore
 
@@ -33,9 +31,7 @@ class KerasExportStrategy(DataExportStrategy):
     @staticmethod
     def export(
         data: Dataset,
-        batch_size: Optional[int] = None,
-        columns: Optional[List[str]] = None,
-        label_cols: Optional[List[str]] = None,
+        batch_size: int | None = None,
         **kwargs,
     ) -> tf.data.Dataset:
         """
@@ -45,20 +41,23 @@ class KerasExportStrategy(DataExportStrategy):
             data: The Hugging Face Dataset to export. Transforms should already be applied to the dataset via set_transform.
             batch_size: The batch size for the TensorFlow Dataset.
             seed: The seed for the TensorFlow Dataset.
-            columns: The columns to include in the TensorFlow Dataset.
-            label_cols: The columns to use as labels.
             **kwargs: Additional keyword arguments.
 
         Returns:
             A TensorFlow Dataset.
 
         """
-        if label_cols is None:
-            label_cols = ["label"]
-        if columns is None:
-            columns = ["image"]
         if not batch_size:
             batch_size = Settings.training.DEFAULT_BATCH_SIZE
+
+        # Get the columns
+        columns = list(data[0].keys())[:-1]
+        label_cols = list(data[0].keys())[-1:]
+
+        print(
+            f"Getting columns by order: {columns}, label_cols: {label_cols}. "
+            "If need different ones, implement your own KerasExportStrategy or a custom transform."
+        )
 
         # Export Keras dataset
         return data.to_tf_dataset(

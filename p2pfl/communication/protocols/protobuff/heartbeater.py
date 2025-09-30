@@ -20,7 +20,7 @@
 
 import threading
 import time
-from typing import Callable, Optional
+from collections.abc import Callable
 
 from p2pfl.communication.protocols.protobuff.neighbors import Neighbors
 from p2pfl.communication.protocols.protobuff.proto import node_pb2
@@ -83,8 +83,8 @@ class Heartbeater(threading.Thread, NodeComponent):
 
     def __heartbeater(
         self,
-        period: Optional[float] = None,
-        timeout: Optional[float] = None,
+        period: float | None = None,
+        timeout: float | None = None,
     ) -> None:
         if period is None:
             period = Settings.heartbeat.PERIOD

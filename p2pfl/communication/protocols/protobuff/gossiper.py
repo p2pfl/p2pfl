@@ -21,7 +21,8 @@
 import random
 import threading
 import time
-from typing import Any, Callable, List, Optional
+from collections.abc import Callable
+from typing import Any
 
 from p2pfl.communication.commands.message.pre_send_model_command import PreSendModelCommand
 from p2pfl.communication.protocols.protobuff.client import ProtobuffClient
@@ -39,8 +40,8 @@ class Gossiper(threading.Thread, NodeComponent):
         self,
         neighbors: Neighbors,
         build_msg: Callable[..., node_pb2.RootMessage],
-        period: Optional[float] = None,
-        messages_per_period: Optional[int] = None,
+        period: float | None = None,
+        messages_per_period: int | None = None,
     ) -> None:
         """Initialize the gossiper."""
         if period is None:
@@ -169,7 +170,7 @@ class Gossiper(threading.Thread, NodeComponent):
     def gossip_weights(
         self,
         early_stopping_fn: Callable[[], bool],
-        get_candidates_fn: Callable[[], List[str]],
+        get_candidates_fn: Callable[[], list[str]],
         status_fn: Callable[[], Any],
         model_fn: Callable[[str], tuple[Any, str, int, list[str]]],  # TODO: this can be simplified
         period: float,
@@ -246,7 +247,7 @@ class Gossiper(threading.Thread, NodeComponent):
 
                 # Send model
                 if presend_response != "true":
-                    logger.info(
+                    logger.debug(
                         self.addr, f"Avoiding concurrent model sending to {client.nei_addr}. Msg: {command_name} | Hash: {model_hashes}"
                     )
                     continue

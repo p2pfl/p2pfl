@@ -18,8 +18,6 @@
 
 """In-Memory implementation of the `CommunicationProtocol`."""
 
-from typing import Optional
-
 from p2pfl.communication.commands.command import Command
 from p2pfl.communication.protocols.protobuff.memory.client import MemoryClient
 from p2pfl.communication.protocols.protobuff.memory.server import MemoryServer
@@ -30,7 +28,7 @@ from p2pfl.utils.node_component import allow_no_addr_check
 class MemoryCommunicationProtocol(ProtobuffCommunicationProtocol):
     """GRPC communication protocol."""
 
-    def __init__(self, commands: Optional[list[Command]] = None) -> None:
+    def __init__(self, commands: list[Command] | None = None) -> None:
         """Initialize the GRPC communication protocol."""
         # Super
         super().__init__(commands)

@@ -18,7 +18,6 @@
 """GRPC client."""
 
 from os.path import isfile
-from typing import Optional
 
 import grpc
 
@@ -44,8 +43,8 @@ class GrpcClient(ProtobuffClient):
         super().__init__(self_addr, nei_addr)
 
         # GRPC
-        self.channel: Optional[grpc.Channel] = None
-        self.stub: Optional[node_pb2_grpc.NodeServicesStub] = None
+        self.channel: grpc.Channel | None = None
+        self.stub: node_pb2_grpc.NodeServicesStub | None = None
 
     ####
     # Connection
@@ -71,9 +70,11 @@ class GrpcClient(ProtobuffClient):
         try:
             # Create channel (ssl or not)
             if Settings.ssl.USE_SSL and isfile(Settings.ssl.SERVER_CRT):
-                with open(Settings.ssl.CLIENT_KEY) as key_file, open(Settings.ssl.CLIENT_CRT) as crt_file, open(
-                    Settings.ssl.CA_CRT
-                ) as ca_file:
+                with (
+                    open(Settings.ssl.CLIENT_KEY) as key_file,
+                    open(Settings.ssl.CLIENT_CRT) as crt_file,
+                    open(Settings.ssl.CA_CRT) as ca_file,
+                ):
                     private_key = key_file.read().encode()
                     certificate_chain = crt_file.read().encode()
                     root_certificates = ca_file.read().encode()

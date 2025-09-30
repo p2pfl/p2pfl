@@ -19,7 +19,7 @@
 """Actor pool for distributed computing using Ray."""
 
 import threading
-from typing import Any, Dict, Optional, Set, Tuple
+from typing import Any
 
 import ray
 from ray.util.actor_pool import ActorPool
@@ -45,7 +45,7 @@ class VirtualLearnerActor:
         logger.debug(self.__class__.__name__, f"Manually terminating {self.__class__.__name__}")
         ray.actor.exit_actor()
 
-    def fit(self, addr: str, learner: Learner) -> Tuple[str, P2PFLModel]:
+    def fit(self, addr: str, learner: Learner) -> tuple[str, P2PFLModel]:
         """Fit the model."""
         try:
             model = learner.fit()
@@ -55,7 +55,7 @@ class VirtualLearnerActor:
 
         return addr, model
 
-    def evaluate(self, addr: str, learner: Learner) -> Tuple[str, Dict[str, float]]:
+    def evaluate(self, addr: str, learner: Learner) -> tuple[str, dict[str, float]]:
         """Evaluate the model."""
         try:
             results = learner.evaluate()
@@ -98,7 +98,7 @@ class SuperActorPool(ActorPool):
                 cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, amount_actors: Optional[int] = None):
+    def __init__(self, amount_actors: int | None = None):
         """
         Initialize SuperActorPool.
 
@@ -124,7 +124,7 @@ class SuperActorPool(ActorPool):
             # and its status (i.e. whether it is ready or not)
             self._addr_to_future: dict[str, dict[str, Any]] = {}
             # a set of actor ids to be removed
-            self.actor_to_remove: Set[str] = set()
+            self.actor_to_remove: set[str] = set()
 
             self.lock = threading.RLock()
             # Mark as initialized
@@ -190,7 +190,7 @@ class SuperActorPool(ActorPool):
             self.num_actors += num_actors
             logger.info("ActorPool", f"Created {num_actors} actors")
 
-    def submit(self, fn: Any, value: Tuple[str, Learner]) -> None:
+    def submit(self, fn: Any, value: tuple[str, Learner]) -> None:
         """
         Submit a task to an idle actor in the pool.
 
@@ -211,7 +211,7 @@ class SuperActorPool(ActorPool):
         else:
             logger.error("ActorPool", "Actor should have been removed from pool but wasn't")
 
-    def submit_learner_job(self, actor_fn: Any, job: Tuple[str, Learner]) -> None:
+    def submit_learner_job(self, actor_fn: Any, job: tuple[str, Learner]) -> None:
         """
         Submit a learner job to the pool, handling pending submits if no idle actors are available.
 
@@ -267,7 +267,7 @@ class SuperActorPool(ActorPool):
             return False
         return self._addr_to_future[addr]["ready"]  # type: ignore
 
-    def _fetch_future_result(self, addr: str) -> Tuple[Any, Any]:
+    def _fetch_future_result(self, addr: str) -> tuple[Any, Any]:
         """
         Fetch the result of a future associated with the given address.
 
@@ -322,7 +322,7 @@ class SuperActorPool(ActorPool):
                 return False
             return True
 
-    def process_unordered_future(self, timeout: Optional[float] = None) -> None:
+    def process_unordered_future(self, timeout: float | None = None) -> None:
         """
         Process the next unordered future result from the pool.
 
@@ -348,7 +348,7 @@ class SuperActorPool(ActorPool):
                     self._return_actor(actor)  # type: ignore
                 self._flag_future_as_ready(addr)
 
-    def get_learner_result(self, addr: str, timeout: Optional[float]) -> Tuple[Any, Any]:
+    def get_learner_result(self, addr: str, timeout: float | None) -> tuple[Any, Any]:
         """
         Retrieve the learner result associated with the given address.
 

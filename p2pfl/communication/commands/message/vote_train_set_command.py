@@ -68,7 +68,7 @@ class VoteTrainSetCommand(Command):
             else:
                 logger.error(
                     self.state.addr,
-                    f"Vote received in a late round. Ignored. {round} != {self.state.round} / {self.state.round+1}",
+                    f"Vote received in a late round. Ignored. {round} != {self.state.round} / {self.state.round + 1}",
                 )
         else:
             logger.error(self.state.addr, "Vote received when learning is not running")

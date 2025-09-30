@@ -18,8 +18,6 @@
 
 """Federated Median (FedMedian) Aggregator."""
 
-from typing import List
-
 import numpy as np
 
 from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
@@ -39,7 +37,7 @@ class FedMedian(Aggregator):
         """Initialize the aggregator."""
         super().__init__(disable_partial_aggregation=disable_partial_aggregation)
 
-    def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
+    def aggregate(self, models: list[P2PFLModel]) -> P2PFLModel:
         """
         Compute the median of the models.
 

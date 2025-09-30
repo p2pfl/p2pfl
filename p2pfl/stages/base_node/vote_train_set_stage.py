@@ -20,7 +20,6 @@
 import math
 import random
 import time
-from typing import Dict, List, Optional, Type, Union
 
 from p2pfl.communication.commands.message.vote_train_set_command import VoteTrainSetCommand
 from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
@@ -41,12 +40,12 @@ class VoteTrainSetStage(Stage):
 
     @staticmethod
     def execute(
-        trainset_size: Optional[int] = None,
-        state: Optional[NodeState] = None,
-        communication_protocol: Optional[CommunicationProtocol] = None,
-        generator: Optional[random.Random] = None,
+        trainset_size: int | None = None,
+        state: NodeState | None = None,
+        communication_protocol: CommunicationProtocol | None = None,
+        generator: random.Random | None = None,
         **kwargs,
-    ) -> Union[Type["Stage"], None]:
+    ) -> type["Stage"] | None:
         """Execute the stage."""
         if state is None or communication_protocol is None or trainset_size is None or generator is None:
             raise Exception("Invalid parameters on VoteTrainSetStage.")
@@ -90,7 +89,7 @@ class VoteTrainSetStage(Stage):
         samples = min(trainset_size, len(candidates))
         nodes_voted = generator.sample(candidates, samples)
         weights = [math.floor(generator.randint(0, 1000) / (i + 1)) for i in range(samples)]
-        votes = list(zip(nodes_voted, weights))
+        votes = list(zip(nodes_voted, weights, strict=False))
 
         # Adding votes
         state.train_set_votes_lock.acquire()
@@ -109,7 +108,7 @@ class VoteTrainSetStage(Stage):
         )
 
     @staticmethod
-    def __aggregate_votes(trainset_size: int, state: NodeState, communication_protocol: CommunicationProtocol) -> List[str]:
+    def __aggregate_votes(trainset_size: int, state: NodeState, communication_protocol: CommunicationProtocol) -> list[str]:
         logger.debug(state.addr, "⏳ Waiting other node votes.")
 
         # Get time
@@ -146,7 +145,7 @@ class VoteTrainSetStage(Stage):
                         f"Timeout for vote aggregation. Missing votes from {missing_votes}",
                     )
 
-                results: Dict[str, int] = {}
+                results: dict[str, int] = {}
                 for node_vote in list(nc_votes.values()):
                     for i in range(len(node_vote)):
                         k = list(node_vote.keys())[i]
@@ -174,10 +173,10 @@ class VoteTrainSetStage(Stage):
 
     @staticmethod
     def __validate_train_set(
-        train_set: List[str],
+        train_set: list[str],
         state: NodeState,
         communication_protocol: CommunicationProtocol,
-    ) -> List[str]:
+    ) -> list[str]:
         # Verify if node set is valid
         # (can happend that a node was down when the votes were being processed)
         for tsn in train_set:

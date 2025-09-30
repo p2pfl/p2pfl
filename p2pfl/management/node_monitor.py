@@ -21,7 +21,6 @@
 import datetime
 import threading
 import time
-from typing import Dict
 
 import psutil  # type: ignore
 
@@ -44,7 +43,7 @@ class NodeMonitor(threading.Thread):
         self.period = Settings.general.RESOURCE_MONITOR_PERIOD
         self.running = True
         # Logs
-        self.logs: Dict[datetime.datetime, Dict[str, float]] = {}
+        self.logs: dict[datetime.datetime, dict[str, float]] = {}
         # Super
         super().__init__()
         self.name = "resource-monitor-thread"
@@ -54,7 +53,7 @@ class NodeMonitor(threading.Thread):
         """Set the report function."""
         self.report_fn = report_fn
 
-    def get_logs(self) -> Dict[datetime.datetime, Dict[str, float]]:
+    def get_logs(self) -> dict[datetime.datetime, dict[str, float]]:
         """Get the logs."""
         return self.logs
 
@@ -76,7 +75,7 @@ class NodeMonitor(threading.Thread):
                     self.report_fn(key, value, time_now)
             time.sleep(self.period)
 
-    def __report_system_resources(self) -> Dict[str, float]:
+    def __report_system_resources(self) -> dict[str, float]:
         """Report the system resources."""
         res = {}
         # CPU

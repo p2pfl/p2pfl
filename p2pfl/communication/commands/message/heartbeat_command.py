@@ -18,8 +18,6 @@
 
 """Heartbeat command."""
 
-from typing import Optional
-
 from p2pfl.communication.commands.command import Command
 from p2pfl.communication.protocols.protobuff.heartbeater import Heartbeater, heartbeater_cmd_name
 
@@ -36,7 +34,7 @@ class HeartbeatCommand(Command):
         """Get the command name."""
         return heartbeater_cmd_name
 
-    def execute(self, source: str, round: int, time: Optional[str] = None, **kwargs) -> None:
+    def execute(self, source: str, round: int, time: str | None = None, **kwargs) -> None:
         """
         Execute the command.
 

@@ -18,7 +18,7 @@
 
 """Lightning Logger for P2PFL."""
 
-from typing import Any, Optional
+from typing import Any
 
 from pytorch_lightning.loggers.logger import Logger
 
@@ -53,7 +53,7 @@ class FederatedLogger(Logger):
         """Log hyperparameters."""
         pass
 
-    def log_metrics(self, metrics: dict[str, float], step: Optional[int] = None) -> None:
+    def log_metrics(self, metrics: dict[str, float], step: int | None = None) -> None:
         """Log metrics (in a pytorch format)."""
         for k, v in metrics.items():
             P2PLogger.log_metric(self.__addr, k, v, step=step)

@@ -18,8 +18,6 @@
 
 """Simple MLP on PyTorch Lightning for MNIST."""
 
-from typing import Tuple
-
 from flax import linen as nn
 
 from p2pfl.learning.frameworks.flax.flax_model import FlaxModel
@@ -34,7 +32,7 @@ from p2pfl.learning.frameworks.flax.flax_model import FlaxModel
 class MLP(nn.Module):
     """Multilayer Perceptron (MLP) for MNIST classification using Flax."""
 
-    hidden_sizes: Tuple[int, int] = (256, 128)
+    hidden_sizes: tuple[int, int] = (256, 128)
     out_channels: int = 10
 
     @nn.compact

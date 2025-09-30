@@ -19,7 +19,7 @@
 
 import contextlib
 import time
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import numpy as np
 import pytest
@@ -39,10 +39,10 @@ class P2PFLModelMock(P2PFLModel):
     def __init__(
         self,
         model: Any,
-        params: Optional[Union[List[np.ndarray], bytes]] = None,
-        num_samples: Optional[int] = None,
-        contributors: Optional[List[str]] = None,
-        aditional_info: Optional[Dict[str, str]] = None,
+        params: list[np.ndarray] | bytes | None = None,
+        num_samples: int | None = None,
+        contributors: list[str] | None = None,
+        aditional_info: dict[str, str] | None = None,
     ) -> None:
         """Initialize the model."""
         self.params = params
@@ -61,7 +61,7 @@ class P2PFLModelMock(P2PFLModel):
         """Build a copy of the model."""
         return P2PFLModelMock(None, **kwargs)
 
-    def get_contributors(self) -> List[str]:
+    def get_contributors(self) -> list[str]:
         """Get the contributors."""
         return self.contributors
 

@@ -1,16 +1,17 @@
 description: "Example of using P2PFL with the CIFAR-10 dataset, a collection of 32x32 color images in 10 classes."
 
-# Web logger configuration
-web_logger:
-  enabled: false
-  url: ""
-  token: ""
+# Remote loggers configuration (optional)
+remote_loggers:
+  # wandb_api_key: "your-api-key"
+  # wandb_project: "p2pfl-cifar10"
+  # p2pfl_web_url: "https://your-server.com"
+  # p2pfl_web_key: "your-api-key"
 
 # Defines network setup
 network:
   package: "p2pfl.communication.protocols.protobuff.memory"
   protocol: "MemoryCommunicationProtocol"
-  nodes: 4
+  nodes: 8
   topology: "star"   # Network topology: "line", "ring", "star", "full", null for custom
   additional_connections:
   #  - [0, 2]              # Connect node 0 to Node 2 (indices)
@@ -23,7 +24,7 @@ experiment:
   epochs: 1
   trainset_size: 4
   seed: 666
-  wait_timeout: 120  # Timeout in minutes for wait_to_finish
+  wait_timeout: 300  # Timeout in minutes for wait_to_finish
 
   # Dataset settings
   dataset:
@@ -43,7 +44,7 @@ experiment:
 
       params: # Partitioning parameters (strategy-specific)
         # Dirichlet example
-        alpha: 0.1
+        alpha: 0.3
         min_partition_size: 5
         self_balancing: false
 

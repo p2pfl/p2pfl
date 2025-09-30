@@ -19,7 +19,7 @@
 """Callback for SCAFFOLD operations (PyTorch Lighting)."""
 
 import copy
-from typing import Any, Optional
+from typing import Any
 
 import lightning as pl
 import numpy as np
@@ -42,7 +42,7 @@ class SCAFFOLDCallback(Callback, P2PFLCallback):
         self.c_i: list[torch.Tensor] = []
         self.c: list[torch.Tensor] = []
         self.initial_model_params: list[torch.Tensor] = []
-        self.saved_lr: Optional[float] = None
+        self.saved_lr: float | None = None
         self.K: int = 0
         self.additional_info: dict[str, Any] = {}
 
@@ -104,7 +104,7 @@ class SCAFFOLDCallback(Callback, P2PFLCallback):
             raise AttributeError("Learning rate has not been set.")
 
         eta_l = self.saved_lr
-        for param, c_i_param, c_param in zip(self._get_parameters(pl_module), self.c_i, self.c):
+        for param, c_i_param, c_param in zip(self._get_parameters(pl_module), self.c_i, self.c, strict=False):
             if param.grad is not None:
                 param.grad += eta_l * (c_i_param - c_param)
         self.K += 1
@@ -125,13 +125,13 @@ class SCAFFOLDCallback(Callback, P2PFLCallback):
         x_g = self.initial_model_params  # global model at the beginning of the training
         previous_c_i = [c.clone() for c in self.c_i]
 
-        for idx, (c_i, x, y) in enumerate(zip(self.c_i, x_g, y_i)):
+        for idx, (c_i, x, y) in enumerate(zip(self.c_i, x_g, y_i, strict=False)):
             adjustment = (x - y) / (self.K * self.saved_lr)
             self.c_i[idx] = c_i + adjustment
 
         # Compute delta y_i and delta c_i
-        delta_y_i = [y - x for y, x in zip(y_i, x_g)]
-        delta_c_i = [c_new - c_old for c_new, c_old in zip(self.c_i, previous_c_i)]
+        delta_y_i = [y - x for y, x in zip(y_i, x_g, strict=False)]
+        delta_c_i = [c_new - c_old for c_new, c_old in zip(self.c_i, previous_c_i, strict=False)]
 
         delta_y_i_np = [dyi.detach().cpu().numpy() for dyi in delta_y_i]  # to numpy for transmission
         delta_c_i_np = [dci.detach().cpu().numpy() for dci in delta_c_i]
@@ -145,6 +145,6 @@ class SCAFFOLDCallback(Callback, P2PFLCallback):
     def _set_parameters(self, pl_module: pl.LightningModule, parameters: list[np.ndarray]) -> None:
         """Set model parameters from a list of numpy arrays."""
         state_dict = pl_module.state_dict()
-        for (name, _), param in zip(state_dict.items(), parameters):
+        for (name, _), param in zip(state_dict.items(), parameters, strict=False):
             state_dict[name] = torch.from_numpy(param).to(pl_module.device)
         pl_module.load_state_dict(state_dict)

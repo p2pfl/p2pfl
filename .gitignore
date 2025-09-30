@@ -1,4 +1,5 @@
 ignore/
+results*/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -15,8 +16,8 @@ test.py
 # Profiling
 profile/
 
-# Mnist
-MNIST/
+# MNIST dataset folder (root level only)
+/MNIST/
 
 # Logs
 *.log
@@ -160,3 +161,10 @@ Pipfile.lock
 junit
 .ruff_cache
 .vscode
+
+# WandB files
+wandb/
+# UV specific
+.uv/
+uv.lock.tmp*
+.uv-cache/

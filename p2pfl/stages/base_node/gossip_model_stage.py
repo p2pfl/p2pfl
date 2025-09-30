@@ -17,7 +17,7 @@
 #
 """Gossip model stage."""
 
-from typing import Any, List, Optional, Type, Union
+from typing import Any
 
 from p2pfl.communication.commands.weights.full_model_command import FullModelCommand
 from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
@@ -39,12 +39,12 @@ class GossipModelStage(Stage):
 
     @staticmethod
     def execute(
-        state: Optional[NodeState] = None,
-        communication_protocol: Optional[CommunicationProtocol] = None,
-        aggregator: Optional[Aggregator] = None,
-        learner: Optional[Learner] = None,
+        state: NodeState | None = None,
+        communication_protocol: CommunicationProtocol | None = None,
+        aggregator: Aggregator | None = None,
+        learner: Learner | None = None,
         **kwargs,
-    ) -> Union[Type["Stage"], None]:
+    ) -> type["Stage"] | None:
         """Execute the stage."""
         if state is None or aggregator is None or communication_protocol is None or learner is None:
             raise Exception("Invalid parameters on GossipModelStage.")
@@ -66,7 +66,7 @@ class GossipModelStage(Stage):
         def candidate_condition(node: str) -> bool:
             return state.nei_status[node] < fixed_round
 
-        def get_candidates_fn() -> List[str]:
+        def get_candidates_fn() -> list[str]:
             return [n for n in communication_protocol.get_neighbors(only_direct=True) if candidate_condition(n)]
 
         def status_fn() -> Any:

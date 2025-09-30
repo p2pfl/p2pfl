@@ -18,7 +18,7 @@
 
 """FullModelCommand."""
 
-from typing import Callable, Optional
+from collections.abc import Callable
 
 from p2pfl.communication.commands.command import Command
 from p2pfl.learning.aggregators.aggregator import Aggregator
@@ -47,7 +47,7 @@ class FullModelCommand(Command):
         self,
         source: str,
         round: int,
-        weights: Optional[bytes] = None,
+        weights: bytes | None = None,
         **kwargs,
     ) -> None:
         """Execute the command."""

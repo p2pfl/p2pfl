@@ -18,8 +18,8 @@
 
 """PyTorch dataset integration."""
 
+from collections.abc import Callable, Generator
 from pathlib import Path
-from typing import Callable, Generator, Optional, Union
 
 import torchvision.datasets as datasets
 from datasets import Dataset, DatasetDict  # type: ignore
@@ -33,7 +33,7 @@ class TorchvisionDatasetFactory:
     """Factory class for loading PyTorch Vision datasets in P2PFL."""
 
     @staticmethod
-    def get_mnist(cache_dir: Union[str, Path], train: bool = True, download: bool = True) -> P2PFLDataset:
+    def get_mnist(cache_dir: str | Path, train: bool = True, download: bool = True) -> P2PFLDataset:
         """
         Get the MNIST dataset from PytorchVision.
 
@@ -78,7 +78,7 @@ class PyTorchExportStrategy(DataExportStrategy):
     @staticmethod
     def export(
         data: Dataset,
-        batch_size: Optional[int] = None,
+        batch_size: int | None = None,
         num_workers: int = 0,
         **kwargs,
     ) -> DataLoader:

@@ -18,7 +18,7 @@
 
 """FedProx Callback for PyTorch Lightning."""
 
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 import lightning as L
 import torch
@@ -41,8 +41,8 @@ class FedProxCallback(Callback, P2PFLCallback):
     def __init__(self) -> None:
         """Initialize the FedProxCallback."""
         super().__init__()
-        self.proximal_mu: Optional[float] = None
-        self.initial_params: Optional[List[torch.Tensor]] = None
+        self.proximal_mu: float | None = None
+        self.initial_params: list[torch.Tensor] | None = None
 
     @staticmethod
     def get_name() -> str:
@@ -90,12 +90,11 @@ class FedProxCallback(Callback, P2PFLCallback):
                 )
                 return
 
-            for model_param, initial_param in zip(model_params, self.initial_params):
+            for model_param, initial_param in zip(model_params, self.initial_params, strict=False):
                 if model_param.grad is not None:
                     if model_param.data.shape != initial_param.shape:
                         print(
-                            f"FedProxCallback: Shape mismatch. Model: {model_param.data.shape}, "
-                            f"Initial: {initial_param.shape}. Skipping."
+                            f"FedProxCallback: Shape mismatch. Model: {model_param.data.shape}, Initial: {initial_param.shape}. Skipping."
                         )
                         continue
 

@@ -19,8 +19,9 @@
 """CLI for the p2pfl platform."""
 
 import os
+import sys
 from glob import glob
-from typing import Annotated, Dict, TypedDict
+from typing import Annotated, TypedDict
 
 import typer
 import yaml
@@ -59,6 +60,9 @@ logo = r"""[italic]
 # CLI Commands
 ####
 
+if len(sys.argv) > 1 and sys.argv[1] == "help":
+    sys.argv[1] = "--help"
+
 console = Console()
 app = typer.Typer(
     rich_markup_mode="rich",
@@ -68,17 +72,81 @@ app = typer.Typer(
 
 @app.command()
 def login(
-    token: Annotated[str, typer.Option(help="🔑 Your API token")] = "",
-) -> None:  # prompt="🔑 Enter your API token"
+    url: Annotated[str | None, typer.Option(help="The P2PFL Web Services URL")] = None,
+    token: Annotated[str | None, typer.Option(help="Your API token")] = None,
+) -> None:
     """
-    Authenticate with the p2pfl platform using your API token.
+    Authenticate with the P2PFL Web Services platform.
+
+    This command will set the necessary environment variables for web logging.
 
     Args:
+        url: The P2PFL Web Services URL.
         token: Your API token.
 
     """
-    console.print(":sweat_smile: [bold yellow]Not implemented yet![/bold yellow] \n:rocket: Comming soon!")
-    # console.print(f"Authenticating with token: {token}...")
+    # Show the logo first
+    console.print(logo)
+
+    # Interactive prompts if not provided via command line
+    if url is None:
+        url = typer.prompt("🌐 Enter P2PFL Web Services URL")
+
+    if token is None:
+        token = typer.prompt("🔑 Enter your API token", hide_input=True)
+
+    # Validate inputs
+    if not url:
+        console.print(
+            Panel(
+                ":x: [bold red]Error:[/bold red] URL cannot be empty.",
+                title="[bold red]Invalid Input[/bold red]",
+            )
+        )
+        raise typer.Exit(code=1)
+
+    if not token:
+        console.print(
+            Panel(
+                ":x: [bold red]Error:[/bold red] Token cannot be empty.",
+                title="[bold red]Invalid Input[/bold red]",
+            )
+        )
+        raise typer.Exit(code=1)
+
+    # Set environment variables
+    os.environ["P2PFL_WEB_LOGGER_URL"] = url
+    os.environ["P2PFL_WEB_LOGGER_KEY"] = token
+
+    # Save to a .env file for persistence (optional)
+    env_file = os.path.join(os.path.expanduser("~"), ".p2pfl_env")
+    try:
+        with open(env_file, "w") as f:
+            f.write(f"P2PFL_WEB_LOGGER_URL={url}\n")
+            f.write(f"P2PFL_WEB_LOGGER_KEY={token}\n")
+
+        console.print(
+            Panel(
+                f":white_check_mark: [bold green]Successfully authenticated![/bold green]\n\n"
+                f"[dim]Environment variables set:[/dim]\n"
+                f"  • P2PFL_WEB_LOGGER_URL={url}\n"
+                f"  • P2PFL_WEB_LOGGER_KEY=[hidden]\n\n"
+                f"[dim]Configuration saved to: {env_file}[/dim]",
+                title="[bold green]Authentication Successful[/bold green]",
+            )
+        )
+
+        console.print("\n:information_source: [dim]To use these credentials in future sessions, run:[/dim]")
+        console.print(f"[bold cyan]source {env_file}[/bold cyan]")
+
+    except Exception as e:
+        console.print(
+            Panel(
+                f":warning: [bold yellow]Warning:[/bold yellow] Could not save configuration file: {e}\n"
+                f"Environment variables have been set for this session only.",
+                title="[bold yellow]Partial Success[/bold yellow]",
+            )
+        )
 
 
 @app.command()
@@ -97,7 +165,7 @@ class ExampleInfo(TypedDict):
     path: str
 
 
-def __get_available_examples() -> Dict[str, ExampleInfo]:
+def __get_available_examples() -> dict[str, ExampleInfo]:
     """Get all the available yaml examples and their descriptions."""
     examples = {}
     # Find all yaml files in examples subdirectories
@@ -169,6 +237,64 @@ def list_examples() -> None:
         table.add_row(name, info["description"])
 
     console.print(table)
+
+
+@app.command(name="run-variations")
+def run_variations(
+    yaml_path: str,
+    aggregators: Annotated[list[str] | None, typer.Option(help="List of aggregator classes")] = None,
+    seeds: Annotated[list[int] | None, typer.Option(help="List of random seeds")] = None,
+    nodes: Annotated[list[int] | None, typer.Option(help="Number of nodes")] = None,
+    rounds: Annotated[list[int] | None, typer.Option(help="Number of rounds")] = None,
+    epochs: Annotated[list[int] | None, typer.Option(help="Number of epochs per round")] = None,
+    topologies: Annotated[list[str] | None, typer.Option(help="Network topologies")] = None,
+    partitioning: Annotated[list[str] | None, typer.Option(help="Dataset partitioning strategies")] = None,
+    models: Annotated[list[str] | None, typer.Option(help="Model packages/architectures")] = None,
+    batch_sizes: Annotated[list[int] | None, typer.Option(help="Batch sizes")] = None,
+    param: Annotated[list[str] | None, typer.Option(help="Custom parameter in format 'path.to.param=value1,value2'")] = None,
+    output_dir: Annotated[str | None, typer.Option(help="Base directory for results (default: results/variations)")] = None,
+    skip_existing: Annotated[bool, typer.Option(help="Skip experiments with existing results")] = True,
+    force: Annotated[bool, typer.Option(help="Force re-run all experiments, ignoring existing results")] = False,
+    full_param_names: Annotated[bool, typer.Option(help="Use full parameter paths in folder names")] = False,
+) -> None:
+    """
+    Run experiments with parameter variations for grid search and hyperparameter optimization.
+
+    Examples:
+        # Run with different aggregators and seeds
+        p2pfl run-variations config.yaml --aggregators FedAvg FedMedian --seeds 42 123
+
+        # Run with different network configurations
+        p2pfl run-variations config.yaml --nodes 5 10 20 --topologies star ring full
+
+        # Run with custom parameters using dot notation
+        p2pfl run-variations config.yaml --param experiment.dataset.batch_size=32,64,128
+
+    """
+    from p2pfl.utils.run_variations import run_variations_experiment
+
+    # Prepare arguments for the run_variations function
+    result = run_variations_experiment(
+        yaml_path=yaml_path,
+        aggregators=aggregators,
+        seeds=seeds,
+        nodes=nodes,
+        rounds=rounds,
+        epochs=epochs,
+        topologies=topologies,
+        partitioning=partitioning,
+        models=models,
+        batch_sizes=batch_sizes,
+        custom_params=param,
+        output_dir=output_dir,
+        skip_existing=skip_existing,
+        force=force,
+        full_param_names=full_param_names,
+        console=console,
+    )
+
+    if result != 0:
+        raise typer.Exit(code=result)
 
 
 if __name__ == "__main__":

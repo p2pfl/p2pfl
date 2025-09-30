@@ -18,7 +18,6 @@
 """Node state."""
 
 import threading
-from typing import Dict, List, Optional
 
 from p2pfl.experiment import Experiment
 from p2pfl.management.logger import logger
@@ -53,17 +52,17 @@ class NodeState:
 
         # Aggregator (move to the aggregator?)
         self.models_aggregated_lock = threading.Lock()
-        self.models_aggregated: Dict[str, List[str]] = {}
+        self.models_aggregated: dict[str, list[str]] = {}
 
         # Other neis state (only round)
-        self.nei_status: Dict[str, int] = {}
+        self.nei_status: dict[str, int] = {}
 
         # Train Set
-        self.train_set: List[str] = []
-        self.train_set_votes: Dict[str, Dict[str, int]] = {}
+        self.train_set: list[str] = []
+        self.train_set_votes: dict[str, dict[str, int]] = {}
 
         # Actual experiment
-        self.experiment: Optional[Experiment] = None
+        self.experiment: Experiment | None = None
 
         # For PreSendModelCommand state
         self.sending_models: dict[str, dict[str, float]] = {}
@@ -79,31 +78,60 @@ class NodeState:
         self.aggregated_model_event.set()
 
     @property
-    def round(self) -> Optional[int]:
+    def round(self) -> int | None:
         """Get the round."""
         return self.experiment.round if self.experiment is not None else None
 
     @property
-    def total_rounds(self) -> Optional[int]:
+    def total_rounds(self) -> int | None:
         """Get the total rounds."""
         return self.experiment.total_rounds if self.experiment is not None else None
 
     @property
-    def exp_name(self) -> Optional[str]:
+    def exp_name(self) -> str | None:
         """Get the actual experiment name."""
         return self.experiment.exp_name if self.experiment is not None else None
 
-    def set_experiment(self, exp_name: str, total_rounds: int) -> None:
+    def set_experiment(
+        self,
+        exp_name: str,
+        total_rounds: int,
+        dataset_name: str | None = None,
+        model_name: str | None = None,
+        aggregator_name: str | None = None,
+        framework_name: str | None = None,
+        learning_rate: float | None = None,
+        batch_size: int | None = None,
+        epochs_per_round: int | None = None,
+    ) -> None:
         """
         Start a new experiment.
 
-        Attributes:
+        Args:
             exp_name: The name of the experiment.
             total_rounds: The total rounds of the experiment.
+            dataset_name: The name of the dataset.
+            model_name: The name of the model.
+            aggregator_name: The name of the aggregator.
+            framework_name: The name of the framework.
+            learning_rate: The learning rate.
+            batch_size: The batch size.
+            epochs_per_round: The number of epochs per round.
 
         """
         self.status = "Learning"
-        self.experiment = Experiment(exp_name, total_rounds)
+        if self.experiment is None:
+            self.experiment = Experiment(
+                exp_name,
+                total_rounds,
+                dataset_name=dataset_name,
+                model_name=model_name,
+                aggregator_name=aggregator_name,
+                framework_name=framework_name,
+                learning_rate=learning_rate,
+                batch_size=batch_size,
+                epochs_per_round=epochs_per_round,
+            )
         logger.experiment_started(self.addr, self.experiment)  # TODO: Improve changes on the experiment
 
     def increase_round(self) -> None:

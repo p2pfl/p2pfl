@@ -175,9 +175,11 @@ def test_process_unordered_future():
     pool._future_to_actor[mock_future] = (0, mock_actor, mock_addr)
     pool._reset_addr_to_future_dict(mock_addr)
 
-    with patch("ray.wait", return_value=([mock_future], [])), patch.object(
-        pool, "_check_and_remove_actor_from_pool", return_value=True
-    ), patch.object(pool, "_return_actor") as mock_return_actor:
+    with (
+        patch("ray.wait", return_value=([mock_future], [])),
+        patch.object(pool, "_check_and_remove_actor_from_pool", return_value=True),
+        patch.object(pool, "_return_actor") as mock_return_actor,
+    ):
         pool.process_unordered_future()
 
     mock_return_actor.assert_called_once_with(mock_actor)
