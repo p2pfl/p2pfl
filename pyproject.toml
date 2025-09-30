@@ -1,6 +1,6 @@
 [project]
 name = "p2pfl"
-version = "0.4.3"
+version = "0.4.4"
 description = "A p2p federated learning framework"
 authors = [{ name = "Pedro Guijas", email = "pguijas@gmail.com" }]
 requires-python = ">=3.10.0, <3.13"

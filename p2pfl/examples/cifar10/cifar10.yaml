@@ -23,7 +23,7 @@ experiment:
   epochs: 1
   trainset_size: 4
   seed: 666
-  wait_timeout: 120  # Timeout in minutes for wait_to_finish
+  wait_timeout: 300  # Timeout in minutes for wait_to_finish
 
   # Dataset settings
   dataset:
