@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           uv lock
-          uv sync --all-extras
+          uv sync --group docs
 
       - name: Generate documentation
         run: |

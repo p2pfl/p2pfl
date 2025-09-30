@@ -2,6 +2,7 @@
 
 from abc import ABCMeta
 from collections.abc import Callable
+from functools import wraps
 from typing import Any
 
 
@@ -25,6 +26,7 @@ class AddrRequiredMeta(ABCMeta):
     def ensure_addr_set(method: Callable[..., Any]) -> Callable[..., Any]:
         """Wrap a method to ensure the addr is set before it is called, unless the method is decorated with @allow_no_addr_check."""
 
+        @wraps(method)
         def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
             if hasattr(method, "__no_addr_check__"):
                 # Method is marked as exempt, allow execution without addr check
