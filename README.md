@@ -31,7 +31,7 @@
 | p2pfl/communication/protocols/protobuff/gossiper.py                           |      111 |       14 |     87% |118, 126, 151-153, 201-202, 217-229 |
 | p2pfl/communication/protocols/protobuff/grpc/\_\_init\_\_.py                  |       14 |        0 |    100% |           |
 | p2pfl/communication/protocols/protobuff/grpc/address.py                       |       52 |       23 |     56% |44-45, 51-54, 67-70, 79-81, 92-94, 98, 103-113 |
-| p2pfl/communication/protocols/protobuff/grpc/client.py                        |       88 |       29 |     67% |67-68, 86, 91, 100-102, 115-116, 125-126, 153-162, 181-184, 191, 198-201, 203, 207 |
+| p2pfl/communication/protocols/protobuff/grpc/client.py                        |       88 |       30 |     66% |67-68, 86, 91, 100-102, 115-116, 125-126, 153-162, 181-184, 188, 191, 198-201, 203, 207 |
 | p2pfl/communication/protocols/protobuff/grpc/server.py                        |       40 |        4 |     90% |100-102, 113 |
 | p2pfl/communication/protocols/protobuff/heartbeater.py                        |       49 |        1 |     98% |        79 |
 | p2pfl/communication/protocols/protobuff/memory/\_\_init\_\_.py                |       14 |        0 |    100% |           |
@@ -141,7 +141,7 @@
 | p2pfl/utils/singleton.py                                                      |        7 |        0 |    100% |           |
 | p2pfl/utils/topologies.py                                                     |       71 |        4 |     94% |97, 109, 131-132 |
 | p2pfl/utils/utils.py                                                          |      113 |       16 |     86% |96, 100, 126, 137-139, 157-160, 178, 188, 200-201, 221, 230, 253 |
-|                                                                     **TOTAL** | **5255** | **1789** | **66%** |           |
+|                                                                     **TOTAL** | **5255** | **1790** | **66%** |           |
 
 
 ## Setup coverage badge
