@@ -49,6 +49,10 @@ class LearnerFactory:
             from p2pfl.learning.frameworks.flax.flax_learner import FlaxLearner
 
             return FlaxLearner
+        elif framework == Framework.XGBOOST.value:
+            from p2pfl.learning.frameworks.xgboost.xgboost_learner import XGBoostLearner
+
+            return XGBoostLearner
         else:
             logger.error("LearnerFactory", f"Unsupported framework: {framework}")
             raise ValueError(f"Unsupported framework: {framework}")
