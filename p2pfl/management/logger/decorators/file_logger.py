@@ -80,9 +80,7 @@ class FileLogger(LoggerDecorator):
 
         log_filename = f"{Settings.general.LOG_DIR}/run-{run_id}.log"
 
-        file_handler = RotatingFileHandler(
-            log_filename, maxBytes=1000000, backupCount=3, encoding="utf-8"
-        )  # Forcing utf-8 encoding to prevent charmap errors on Windows
+        file_handler = RotatingFileHandler(log_filename, maxBytes=1000000, backupCount=3, encoding="utf-8") # Forcing utf-8 encoding to prevent charmap errors on Windows
         file_formatter = logging.Formatter(
             "[ %(asctime)s | %(node)s | %(levelname)s ] %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",

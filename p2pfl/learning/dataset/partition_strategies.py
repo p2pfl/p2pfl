@@ -189,12 +189,12 @@ class DirichletPartitionStrategy(DataPartitionStrategy):
             alpha = [alpha] * num_partitions
         elif isinstance(alpha, list):
             if len(alpha) != num_partitions:
-                raise ValueError("If passing alpha as a List, it needs to be of length of equal to num_partitions.")
+                raise ValueError("If passing alpha as a List, it needs to be of length of equal to " "num_partitions.")
             alpha = [float(a) for a in alpha]
         else:
             raise ValueError("The given alpha format is not supported.")
         if not all(a > 0 for a in alpha):
-            raise ValueError(f"Alpha values should be strictly greater than zero. Instead it'd be converted to {alpha}")
+            raise ValueError(f"Alpha values should be strictly greater than zero. " f"Instead it'd be converted to {alpha}")
         return alpha
 
     @classmethod

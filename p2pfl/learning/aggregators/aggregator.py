@@ -166,7 +166,7 @@ class Aggregator(NodeComponent):
                     models_added = str(len(self.get_aggregated_models()))
                     logger.info(
                         self.addr,
-                        f"🧩 Model added ({models_added}/{str(len(self.__train_set))}) from {str(model.get_contributors())}",
+                        f"🧩 Model added ({models_added}/{ str(len(self.__train_set))}) from {str(model.get_contributors())}",
                     )
                     # logger.debug(self.addr, f"Models added: {self.get_aggregated_models()}")
 

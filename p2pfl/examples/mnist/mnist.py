@@ -106,7 +106,7 @@ def mnist(
     # Check settings
     if n > Settings.gossip.TTL:
         raise ValueError(
-            "For in-line topology TTL must be greater than the number of nodes.Otherwise, some messages will not be delivered."
+            "For in-line topology TTL must be greater than the number of nodes." "Otherwise, some messages will not be delivered."
         )
 
     # Imports

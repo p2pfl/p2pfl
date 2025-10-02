@@ -17,18 +17,25 @@
 #
 
 """Federated Averaging (FedAvg) Aggregator."""
+import json
+import os
+from typing import Optional, Tuple
 
-
+import numpy as np
 
 from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregateError
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.learning.frameworks.xgboost.xgboost_model import XGBoostModel
 
+
 # TODO: añadir mención a flower
 
 
 class FedXgbCyclic(Aggregator):
-    """Paper: https://arxiv.org/abs/1602.05629."""
+    """
+
+    Paper: https://arxiv.org/abs/1602.05629.
+    """
 
     SUPPORTS_PARTIAL_AGGREGATION: bool = True
 
@@ -37,7 +44,9 @@ class FedXgbCyclic(Aggregator):
         super().__init__(disable_partial_aggregation=disable_partial_aggregation)
 
     def aggregate(self, models: list[XGBoostModel]) -> P2PFLModel:
-        """Cyclic aggregation: solo un cliente participa por ronda, el modelo se pasa secuencialmente."""
+        """
+        Cyclic aggregation: solo un cliente participa por ronda, el modelo se pasa secuencialmente.
+        """
         if len(models) == 0:
             raise NoModelsToAggregateError(f"({self.addr}) Trying to aggregate models when there is no models")
 

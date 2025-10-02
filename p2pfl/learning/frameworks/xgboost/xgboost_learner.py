@@ -17,8 +17,8 @@
 #
 
 """XGBoost Learner for P2PFL."""
-
 import os
+from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
 import xgboost as xgb
@@ -28,10 +28,12 @@ from sklearn.metrics import f1_score
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.frameworks import Framework
+from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
 from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
-from p2pfl.learning.frameworks.xgboost.xgboost_dataset import XGBoostExportStrategy
+from p2pfl.learning.frameworks.xgboost.xgboost_model import XGBoostModel
 from p2pfl.utils.node_component import allow_no_addr_check
+from p2pfl.learning.frameworks.xgboost.xgboost_dataset import XGBoostExportStrategy
 
 
 class XGBoostLearner(Learner):
@@ -42,28 +44,35 @@ class XGBoostLearner(Learner):
         model: Wrapped XGBoostModel instance.
         data: P2PFLDataset for train/eval split.
         aggregator: Aggregator to use for model updates.
-
     """
 
+    def interrupt_fit(self) -> None:
+        pass
+
     def __init__(
-        self, model: P2PFLModel | None = None, data: P2PFLDataset | None = None, aggregator: Aggregator | None = None
+            self,
+            model: Optional[P2PFLModel] = None,
+            data: Optional[P2PFLDataset] = None,
+            aggregator: Optional[Aggregator] = None
     ) -> None:
-        """Initialize the XGBoost learner."""
         super().__init__(model=model, data=data, aggregator=aggregator)
         # self.__model = model
 
-    def __get_xgb_model_data(self, train: bool = True) -> tuple[xgb.XGBModel, np.ndarray, np.ndarray]:
+    def __get_xgb_model_data(self, train: bool = True) -> Tuple[xgb.XGBModel, np.ndarray, np.ndarray]:
         # Get Model
         xgb_model = self.get_model().get_model()
         if not isinstance(xgb_model, xgb.XGBModel):
             raise ValueError("The model must be an XGBoost model")
         # Get Data
-        X, y = self.get_data().export(XGBoostExportStrategy, train=train)
+        X, y = self.get_data().export(XGBoostExportStrategy, train=train
+        )
         return xgb_model, X, y
 
     @allow_no_addr_check
     def fit(self) -> P2PFLModel:
-        """Fit the XGBoost sklearn model on training data for the configured number of epochs."""
+        """
+        Fit the XGBoost sklearn model on training data for the configured number of epochs.
+        """
         model, X_train, y_train = self.__get_xgb_model_data(train=True)
         # prepare callbacks
         xgb_callbacks = []
@@ -82,9 +91,13 @@ class XGBoostLearner(Learner):
                 xgb_model=previous_model_file,  # Load previous model if exists
             )
             os.remove(previous_model_file)  # Clean up the temporary file after training
-        except (NotFittedError, Exception):
+        except (NotFittedError, Exception) as e:
             # If no previous model exists or there's an error, start fresh
-            model.fit(X_train, y_train, verbose=True)
+            model.fit(
+                X_train,
+                y_train,
+                verbose=True
+            )
 
         self.get_model().set_contribution([self.addr], self.get_data().get_num_samples(train=True))
         # store callback info back to model
@@ -93,7 +106,9 @@ class XGBoostLearner(Learner):
 
     @allow_no_addr_check
     def interrupt_fit(self) -> None:
-        """Interrupting an in-progress XGBoost training is not supported via sklearn API."""
+        """
+        Interrupting an in-progress XGBoost training is not supported via sklearn API.
+        """
         # Placeholder: XGBoost sklearn does not support interrupt; could set a flag for custom callback
         raise NotImplementedError("Interrupting XGBoost sklearn fit is not supported")
 
@@ -102,10 +117,12 @@ class XGBoostLearner(Learner):
     #     self.__model = model
 
     @allow_no_addr_check
-    def evaluate(self) -> dict[str, float]:
-        """Evaluate the model on test data, returning metrics."""
+    def evaluate(self) -> Dict[str, float]:
+        """
+        Evaluate the model on test data, returning metrics.
+        """
         model, X_test, y_test = self.__get_xgb_model_data(train=False)
-        results: dict[str, float] = {}
+        results: Dict[str, float] = {}
         try:
             preds = model.predict(X_test)
         except NotFittedError:
@@ -114,13 +131,13 @@ class XGBoostLearner(Learner):
         # classification vs regression metric
         if np.issubdtype(y_test.dtype, np.integer):
             accuracy = float(np.mean(preds == y_test))
-            results["accuracy"] = accuracy
+            results['accuracy'] = accuracy
             # Calcular F1 score
-            f1 = f1_score(y_test, preds, average="weighted")
-            results["f1"] = float(f1)
+            f1 = f1_score(y_test, preds, average='weighted')
+            results['f1'] = float(f1)
         else:
             mse = float(np.mean((preds - y_test) ** 2))
-            results["mse"] = mse
+            results['mse'] = mse
         return results
 
     @allow_no_addr_check
