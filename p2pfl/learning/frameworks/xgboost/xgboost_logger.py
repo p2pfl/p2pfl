@@ -18,7 +18,8 @@
 
 """XGBoost Callback Logger for P2PFL."""
 
-from typing import Any, Dict, Optional
+from typing import Any
+
 import xgboost as xgb
 
 from p2pfl.management.logger import logger as P2PLogger
@@ -32,22 +33,25 @@ class XGBoostLogger(xgb.callback.TrainingCallback):
 
     Args:
         addr: Address or node identifier for logging.
+
     """
+
     def __init__(self, addr: str) -> None:
+        """Initialize the XGBoost logger."""
         self._addr = addr
 
     def before_training(self, model: xgb.core.Booster) -> None:
-        """Called before training starts."""
+        """Execute before training starts."""
         P2PLogger.info(self._addr, "Starting XGBoost training...")
 
     def after_iteration(
         self,
         model: xgb.core.Booster,
         epoch: int,
-        evals_log: Dict[str, Dict[str, list]],
+        evals_log: dict[str, dict[str, list]],
     ) -> bool:
         """
-        Called after each training iteration.
+        Execute after each training iteration.
 
         Args:
             model: The booster.
@@ -56,6 +60,7 @@ class XGBoostLogger(xgb.callback.TrainingCallback):
 
         Returns:
             False to indicate training should continue.
+
         """
         for data_name, metrics in evals_log.items():
             for metric_name, history in metrics.items():
@@ -66,10 +71,10 @@ class XGBoostLogger(xgb.callback.TrainingCallback):
         return False
 
     def after_training(self, model: xgb.core.Booster) -> None:
-        """Called after training is finished."""
+        """Execute after training is finished."""
         P2PLogger.info(self._addr, "XGBoost training completed.")
 
-    def log_hyperparams(self, params: Dict[str, Any]) -> None:
+    def log_hyperparams(self, params: dict[str, Any]) -> None:
         """Log hyperparameters before training."""
         pass
 

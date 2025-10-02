@@ -108,9 +108,9 @@ def __test_get_set_params_flax():
     # Check that flax to numpy arrays transformation works
     for layer in _flax_params:
         for param in _flax_params[layer]:
-            assert np.array_equal(
-                _flax_params[layer][param], p2pfl_model.model_params[layer][param]
-            ), f"Mismatch found in {layer} - {param}"
+            assert np.array_equal(_flax_params[layer][param], p2pfl_model.model_params[layer][param]), (
+                f"Mismatch found in {layer} - {param}"
+            )
 
     # Modify parameters
     params = p2pfl_model.get_parameters()

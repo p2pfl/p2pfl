@@ -306,9 +306,9 @@ def test_lowrank(threshold: float):
     original_params = [np.random.randn(10, 10) for i in range(3)]
     compressed_parameters, technique_params = technique.apply_strategy(original_params, threshold=threshold)
     assert "lowrank_compressed_state" in technique_params, "Missing compression metadata"
-    assert sum(layer.size for layer in compressed_parameters) < sum(
-        layer.size for layer in original_params
-    ), "compression resulted in more parameters than the original model"
+    assert sum(layer.size for layer in compressed_parameters) < sum(layer.size for layer in original_params), (
+        "compression resulted in more parameters than the original model"
+    )
 
     decompressed_parameters = technique.reverse_strategy(compressed_parameters, technique_params)
     total_original = sum(layer.size for layer in original_params)
