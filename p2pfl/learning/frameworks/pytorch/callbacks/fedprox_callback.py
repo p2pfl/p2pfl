@@ -94,8 +94,7 @@ class FedProxCallback(Callback, P2PFLCallback):
                 if model_param.grad is not None:
                     if model_param.data.shape != initial_param.shape:
                         print(
-                            f"FedProxCallback: Shape mismatch. Model: {model_param.data.shape}, "
-                            f"Initial: {initial_param.shape}. Skipping."
+                            f"FedProxCallback: Shape mismatch. Model: {model_param.data.shape}, Initial: {initial_param.shape}. Skipping."
                         )
                         continue
 

@@ -442,9 +442,9 @@ Examples:
         print("-" * 50)
 
     # Summary
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print("SUMMARY")
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
     print(f"Total experiments: {len(combinations)}")
     print(f"Completed: {completed}")
     print(f"Skipped: {skipped}")

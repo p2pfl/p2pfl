@@ -18,10 +18,9 @@
 
 """XGBoost DMatrix export integration."""
 
-from typing import Optional, Union, List, Tuple, Dict, Generator
 
 import numpy as np
-from datasets import Dataset, DatasetDict
+from datasets import Dataset
 
 from p2pfl.learning.dataset.p2pfl_dataset import DataExportStrategy
 
@@ -31,12 +30,22 @@ class XGBoostExportStrategy(DataExportStrategy):
 
     @staticmethod
     def export(
-        data: Dataset,
-        train: bool = True,
-        label_key: str = None,
-        feature_keys: Optional[List[str]] = None,
-        **kwargs
-    ) -> Tuple[np.ndarray, np.ndarray]:
+        data: Dataset, train: bool = True, label_key: str = None, feature_keys: list[str] | None = None, **kwargs
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Export dataset to numpy arrays for XGBoost.
+
+        Args:
+            data: The dataset to export.
+            train: Whether this is training data.
+            label_key: The key for the label column.
+            feature_keys: List of feature column keys.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Tuple of (features, labels) as numpy arrays.
+
+        """
         # Convert to pandas and then numpy
         df = data.to_pandas()
         if label_key is None:
@@ -45,5 +54,3 @@ class XGBoostExportStrategy(DataExportStrategy):
         X = df[keys].to_numpy()
         y = df[label_key].to_numpy()
         return X, y
-
-

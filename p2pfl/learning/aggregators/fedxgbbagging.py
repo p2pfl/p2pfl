@@ -17,9 +17,9 @@
 #
 
 """Federated Averaging (FedAvg) Aggregator."""
+
 import json
 import os
-from typing import Optional, Tuple
 
 import numpy as np
 
@@ -27,15 +27,11 @@ from p2pfl.learning.aggregators.aggregator import Aggregator, NoModelsToAggregat
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.learning.frameworks.xgboost.xgboost_model import XGBoostModel
 
-
 # TODO: añadir mención a flower
 
 
 class FedXgbBagging(Aggregator):
-    """
-
-    Paper: https://arxiv.org/abs/1602.05629.
-    """
+    """Paper: https://arxiv.org/abs/1602.05629."""
 
     SUPPORTS_PARTIAL_AGGREGATION: bool = True
 
@@ -69,13 +65,13 @@ class FedXgbBagging(Aggregator):
         if global_model == "":
             return models[0]
         # Siempre cargar el JSON del primer modelo
-        with open(global_model, "r") as f:
+        with open(global_model) as f:
             global_model_json = json.load(f)
         os.remove(global_model)  # Remove the file to avoid conflicts
         if len(models) > 1:
             for m in models[1:]:
                 model_file = m.get_file_name()
-                with open(model_file, "r") as f:
+                with open(model_file) as f:
                     current_model_json = json.load(f)
                 os.remove(model_file)
                 global_model_json = aggregate_boosters(global_model_json, current_model_json)
@@ -95,25 +91,17 @@ class FedXgbBagging(Aggregator):
         return returned_model
 
 
-def _get_tree_nums(xgb_model: dict) -> Tuple[int, int]:
+def _get_tree_nums(xgb_model: dict) -> tuple[int, int]:
     # Get the number of trees
-    tree_num = int(
-        xgb_model["learner"]["gradient_booster"]["model"]["gbtree_model_param"][
-            "num_trees"
-        ]
-    )
+    tree_num = int(xgb_model["learner"]["gradient_booster"]["model"]["gbtree_model_param"]["num_trees"])
     # Get the number of parallel trees
-    paral_tree_num = int(
-        xgb_model["learner"]["gradient_booster"]["model"]["gbtree_model_param"][
-            "num_parallel_tree"
-        ]
-    )
+    paral_tree_num = int(xgb_model["learner"]["gradient_booster"]["model"]["gbtree_model_param"]["num_parallel_tree"])
     return tree_num, paral_tree_num
 
 
 def aggregate_boosters(
-        bst_prev: Optional[dict],
-        bst_curr: dict,
+    bst_prev: dict | None,
+    bst_curr: dict,
 ) -> dict:
     """Conduct bagging aggregation for given trees."""
     if not bst_prev:
@@ -122,23 +110,15 @@ def aggregate_boosters(
     tree_num_prev, _ = _get_tree_nums(bst_prev)
     _, paral_tree_num_curr = _get_tree_nums(bst_curr)
 
-    bst_prev["learner"]["gradient_booster"]["model"]["gbtree_model_param"][
-        "num_trees"
-    ] = str(tree_num_prev + paral_tree_num_curr)
-    iteration_indptr = bst_prev["learner"]["gradient_booster"]["model"][
-        "iteration_indptr"
-    ]
-    bst_prev["learner"]["gradient_booster"]["model"]["iteration_indptr"].append(
-        iteration_indptr[-1] + paral_tree_num_curr
-    )
+    bst_prev["learner"]["gradient_booster"]["model"]["gbtree_model_param"]["num_trees"] = str(tree_num_prev + paral_tree_num_curr)
+    iteration_indptr = bst_prev["learner"]["gradient_booster"]["model"]["iteration_indptr"]
+    bst_prev["learner"]["gradient_booster"]["model"]["iteration_indptr"].append(iteration_indptr[-1] + paral_tree_num_curr)
 
     # Aggregate new trees
     trees_curr = bst_curr["learner"]["gradient_booster"]["model"]["trees"]
     for tree_count in range(paral_tree_num_curr):
         trees_curr[tree_count]["id"] = tree_num_prev + tree_count
-        bst_prev["learner"]["gradient_booster"]["model"]["trees"].append(
-            trees_curr[tree_count]
-        )
+        bst_prev["learner"]["gradient_booster"]["model"]["trees"].append(trees_curr[tree_count])
         bst_prev["learner"]["gradient_booster"]["model"]["tree_info"].append(0)
 
     return bst_prev

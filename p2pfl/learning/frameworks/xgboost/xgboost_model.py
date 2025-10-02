@@ -17,12 +17,14 @@
 #
 
 """XGBoost model wrapper for P2PFL."""
+
 import os
-from typing import Any, Dict, List, Optional, Union
+import uuid
+from typing import Any
+
 import numpy as np
 import xgboost as xgb
 from sklearn.exceptions import NotFittedError
-import uuid
 
 from p2pfl.learning.frameworks import Framework
 from p2pfl.learning.frameworks.exceptions import ModelNotMatchingError
@@ -42,29 +44,33 @@ class XGBoostModel(P2PFLModel):
         contributors: List of contributor IDs.
         additional_info: Extra metadata.
         compression: Optional compression settings.
+        id: Model identifier.
+
     """
 
     def __init__(
         self,
         model: xgb.XGBModel,
-        params: Optional[Union[List[np.ndarray], bytes]] = None,
-        num_samples: Optional[int] = None,
-        contributors: Optional[List[str]] = None,
-        additional_info: Optional[Dict[str, Any]] = None,
-        compression: Optional[Dict[str, Dict[str, Any]]] = None,
-        id: Optional[int] = None
+        params: list[np.ndarray] | bytes | None = None,
+        num_samples: int | None = None,
+        contributors: list[str] | None = None,
+        additional_info: dict[str, Any] | None = None,
+        compression: dict[str, dict[str, Any]] | None = None,
+        id: int | None = None,
     ) -> None:
+        """Initialize the XGBoost model wrapper."""
         if not isinstance(model, xgb.XGBModel):
             raise ModelNotMatchingError("Provided model is not an XGBoost sklearn model")
         super().__init__(model, params, num_samples, contributors, additional_info, compression)
         self.id = id if id is not None else 0  # Default ID if not provided
 
-    def get_parameters(self) -> List[np.ndarray]:
+    def get_parameters(self) -> list[np.ndarray]:
         """
         Extract model parameters as numpy arrays.
 
         Returns:
             List of parameter arrays corresponding to each model attribute.
+
         """
         try:
             temp_dir = "temp_xgboost_json"
@@ -79,7 +85,8 @@ class XGBoostModel(P2PFLModel):
 
     def get_file_name(self) -> str:
         """
-        Returns the file name of the model.
+        Get the file name of the model.
+
         This is used to identify the model in federated learning.
         """
         temp_dir = "temp_xgboost_json"
@@ -89,17 +96,19 @@ class XGBoostModel(P2PFLModel):
         try:
             self.model.save_model(file_name)  # Save to JSON for compatibility
             return file_name
-        except NotFittedError:
-            raise NotFittedError("Model is not fitted, cannot get file name.")
+        except NotFittedError as err:
+            raise NotFittedError("Model is not fitted, cannot get file name.") from err
 
-    def set_parameters(self, params: Union[List[np.ndarray], bytes]) -> None:
+    def set_parameters(self, params: list[np.ndarray] | bytes) -> None:
         """
         Set model parameters from numpy arrays or serialized bytes.
 
         Args:
             params: List of ndarrays or serialized bytes.
+
         Raises:
             ModelNotMatchingError: if loading fails.
+
         """
         # If bytes, decode compression first
         if isinstance(params, bytes):
@@ -107,20 +116,14 @@ class XGBoostModel(P2PFLModel):
         if params is None or len(params) == 0:
             pass
         else:
-            params = np.array2string(params[0]).replace("'","")
+            params = np.array2string(params[0]).replace("'", "")
             file_name = params
-            type_of_model = file_name.replace(".json", "").split("_")[-1] # Extract type from filename
-            if type_of_model == "classifier":
-                # Load as XGBClassifier
-                model = xgb.XGBClassifier()
-            else:
-                model = xgb.XGBRegressor()
+            type_of_model = file_name.replace(".json", "").split("_")[-1]  # Extract type from filename
+            model = xgb.XGBClassifier() if type_of_model == "classifier" else xgb.XGBRegressor()
             model.load_model(file_name)  # Load from JSON for compatibility
             self.model = model
             os.remove(file_name)
 
     def get_framework(self) -> str:
-        """
-        Returns the framework name identifier.
-        """
+        """Return the framework name identifier."""
         return Framework.XGBOOST.value
