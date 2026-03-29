@@ -132,6 +132,12 @@ This library supports **P2P Decentralized Federated Learning** with flexibility 
     - `keras`: High-level API for building and training models in TensorFlow.
     - `types-tensorflow`: Type annotations for TensorFlow.
 
-- **Ray**: For distributed computing and orchestration:
+- **XGBoost**: For tree-based federated learning with gradient boosting.
 
-    - `ray`: Framework for scaling distributed applications, useful for coordinating computing resources during training.
+- **Flax**: For JAX/Flax-based models.
+
+- **DP**: For differential privacy support via OpenDP.
+
+- **WandB**: For Weights & Biases experiment tracking.
+
+- **Ray** (Optional): For distributed computing and orchestration. Known issues: [TensorFlow compatibility](common_errors/tensorflow_ray_hang.md), limited Windows support.

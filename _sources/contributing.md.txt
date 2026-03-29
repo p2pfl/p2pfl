@@ -35,7 +35,24 @@ To maintain a high level of code quality, we require all contributions to adhere
 
 * **Type Hinting:**  Use type hints and ensure your code passes [mypy](https://github.com/python/mypy) type checking. Run `mypy -p p2pfl` before submitting.
 
-* **Testing:** Provide comprehensive tests for all new code using [Pytest](https://docs.pytest.org/) and ensure test coverage with [Pytest-cov](https://pytest-cov.readthedocs.io/en/latest/). Run `pytest -v --cov=p2pfl` before submitting.
+* **Testing:** Provide comprehensive tests for all new code using [Pytest](https://docs.pytest.org/) and ensure test coverage with [Pytest-cov](https://pytest-cov.readthedocs.io/en/latest/). For faster development iteration, we recommend running tests in this order:
+
+    1. **Unit tests first** (fast feedback):
+       ```bash
+       pytest -m "not e2e_train"
+       ```
+
+    2. **End-to-end training tests** (comprehensive validation):
+       ```bash
+       pytest -m "e2e_train"
+       ```
+
+    3. **All tests** (before submitting):
+       ```bash
+       pytest
+       ```
+
+    Tests marked with `@pytest.mark.e2e_train` run full federated learning workflows and are slower but validate the complete training pipeline.
 
 * **Documentation:**  Document your code using [Sphinx](https://www.sphinx-doc.org/en/master/).  Pay particular attention to documenting the module you are contributing to.  Refer to the [main components documentation](https://p2pfl.github.io/p2pfl/components.html) for examples and guidance.
 
@@ -63,7 +80,7 @@ Then ensure all of the following commands run successfully:
 ruff format p2pfl
 ruff check p2pfl
 mypy -p p2pfl
-pytest -v --cov=p2pfl
+pytest
 ```
 
 ## 📜 License

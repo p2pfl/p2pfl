@@ -25,6 +25,7 @@ Have questions, need help, or want to contribute? Join our Slack community!
 ## ➕ Additional Resources
 
 - **🌐 [Web Services](p2pfl_ws.md):** Utilize P2PFL's web services for monitoring and managing your federated learning tasks.
+- **⚠️ [Common Errors](common_errors/index.md):** Solutions for common issues and platform-specific problems.
 - **👫 [Contributing](contributing.md):** Join the development effort and contribute to P2PFL.
 
 ```{eval-rst}
@@ -37,6 +38,7 @@ Have questions, need help, or want to contribute? Join our Slack community!
    quickstart
    components/comp-index
    p2pfl_ws
+   common_errors/index
    tutorials/index
    contributing
    api

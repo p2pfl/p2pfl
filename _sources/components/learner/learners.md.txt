@@ -2,24 +2,77 @@
 
 Learners are core components in P2PFL, responsible for managing the local training and evaluation of machine learning models on each node. They act as an intermediary between the P2PFL framework and the specific machine learning library you're using. This abstraction allows P2PFL to be framework-agnostic, providing a consistent interface for training models regardless of the underlying library.
 
-| Framework                               | Learner Class                           |
-|-----------------------------------------|-----------------------------------------|
-| [PyTorch](https://pytorch.org/)         | [`LightningLearner`](#LightningLearner) |
-| [Keras](https://keras.io/)              | [`KerasLearner`](#KerasLearner)         |
-| [Flax](https://flax.readthedocs.io)     | [`FlaxLearner`](#FlaxLearner)           |
+| Framework                               | Learner Class                           | Model Type        |
+|-----------------------------------------|-----------------------------------------|-------------------|
+| [PyTorch](https://pytorch.org/)         | [`LightningLearner`](#LightningLearner) | `WeightBasedModel` |
+| [Keras](https://keras.io/)              | [`KerasLearner`](#KerasLearner)         | `WeightBasedModel` |
+| [Flax](https://flax.readthedocs.io)     | [`FlaxLearner`](#FlaxLearner)           | `WeightBasedModel` |
+| [XGBoost](https://xgboost.readthedocs.io) | [`XGBoostLearner`](#XGBoostLearner)   | `TreeBasedModel`   |
 
 
 ## P2PFLModel
 
-Learners operate on [`P2PFLModel`](#P2PFLModel) instances, which offer a unified way to represent models from different frameworks. This allows learners to interact consistently with models regardless of their origin. A key aspect of this integration is the ability to serialize and deserialize model parameters:
+Learners operate on [`P2PFLModel`](#P2PFLModel) instances, which offer a unified way to represent models from different frameworks. This allows learners to interact consistently with models regardless of their origin.
+
+### Model Hierarchy
+
+P2PFL uses a type-safe model hierarchy to distinguish between different model types and ensure compatibility with appropriate aggregators:
+
+```
+P2PFLModel (ABC)
+├── WeightBasedModel (neural networks)
+│   ├── LightningModel (PyTorch)
+│   ├── KerasModel (TensorFlow/Keras)
+│   └── FlaxModel (Flax/JAX)
+└── TreeBasedModel (tree ensembles)
+    └── XGBoostModel
+```
+
+| Model Type         | Raw Parameter Type                       | Description                              | Compatible Aggregators |
+| :----------------- | :--------------------------------------- | :--------------------------------------- | :--------------------- |
+| `WeightBasedModel` | `list[np.ndarray]` (float32/float64)     | Weight tensors from neural network layers | `WeightAggregator` (FedAvg, FedMedian, etc.), `SequentialLearning` |
+| `TreeBasedModel`   | `dict[str, Any]`                         | Parsed tree structure (XGBoost JSON dict) | `TreeAggregator` (FedXgbBagging), `SequentialLearning` |
+
+The raw types returned by `get_parameters()` differ by model type:
+
+```python
+# WeightBasedModel (e.g., LightningModel)
+params = model.get_parameters()
+# Returns: [np.ndarray(shape=(784, 256), dtype=float32), np.ndarray(shape=(256,), dtype=float32), ...]
+# One array per layer: weights, biases, etc.
+
+# TreeBasedModel (e.g., XGBoostModel)
+params = model.get_parameters()
+# Returns: dict with XGBoost JSON structure
+# {
+#     "learner": {
+#         "gradient_booster": {
+#             "model": {
+#                 "trees": [...],  # List of tree structures
+#                 "tree_info": [...],
+#                 "gbtree_model_param": {"num_trees": "5", ...}
+#             }
+#         }
+#     },
+#     "version": [3, 1, 2]
+# }
+```
+
+> **Important**: Do not inherit directly from `P2PFLModel`. Instead, use `WeightBasedModel` for neural networks or `TreeBasedModel` for tree ensembles to ensure proper aggregator compatibility.
+
+### Parameter Serialization
+
+A key aspect of this integration is the ability to serialize and deserialize model parameters:
 
 ```python
 # Serialize model
-serialized_model = model.encode_parameters()
+serialized_model = model.encode_parameters()  # Returns: bytes
 # Deserialize the parameters
+# For WeightBasedModel: returns tuple[list[np.ndarray], dict]
+# For TreeBasedModel: returns tuple[dict, dict]
 params, info = received_model.decode_parameters(serialized_model)
 # Or directly update the model
-received_model.update_parameters(serialized_model)
+received_model.set_parameters(serialized_model)
 ```
 
 This serialization mechanism is crucial for exchanging model updates during federated learning.
