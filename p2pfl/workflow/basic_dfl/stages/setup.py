@@ -59,7 +59,8 @@ class SetupStage(Stage[BasicDFLContext]):
 
         # Initiator starts the model gossip (no gate — no one has the model yet)
         if ctx.experiment.is_initiator:
-            encoded_model = ctx.learner.get_model().encode_parameters()
+            model = await ctx.learner.aget_model()
+            encoded_model = model.encode_parameters()
             await ctx.cp.broadcast(ctx.cp.build_weights("initial_model", 0, encoded_model))
             self._model_received.set()
 
@@ -111,7 +112,7 @@ class SetupStage(Stage[BasicDFLContext]):
             return
         ctx = self.ctx
         logger.info(ctx.address, f"📥 Initial model received from {source}.")
-        ctx.learner.set_model(weights)
+        await ctx.learner.aset_model(weights)
 
         # Re-gossip using gate (peers are synced, so gate queries will get proper responses)
         payload = ctx.cp.build_weights("initial_model", 0, weights)

@@ -66,9 +66,9 @@ class LearningStage(Stage[BasicDFLContext]):
             # Training node: evaluate, train, gossip, aggregate
             await evaluate_and_broadcast(ctx)
 
-            await learner.fit()
+            model = await learner.fit()
             logger.info(address, "🎓 Training done.")
-            await self._save_aggregation(ctx, model=learner.get_model(), source=address)
+            await self._save_aggregation(ctx, model=model, source=address)
 
             # Gossip partial models
             candidates = self._get_partial_gossiping_candidates(ctx)
@@ -93,7 +93,7 @@ class LearningStage(Stage[BasicDFLContext]):
             # Aggregate
             aggregator = ctx.aggregator
             agg_model = aggregator.aggregate([p.model for p in ctx.peers.values() if p.model is not None])
-            learner.set_model(agg_model)
+            await learner.aset_model(agg_model)
 
         logger.info(address, f"✅ Round {experiment.round} finished.")
         experiment.round += 1
@@ -242,7 +242,8 @@ class LearningStage(Stage[BasicDFLContext]):
         if contributors is None or num_samples is None:
             raise ValueError("Contributors and num_samples are required")
         try:
-            model = ctx.learner.get_model().build_copy(
+            base_model = await ctx.learner.aget_model()
+            model = base_model.build_copy(
                 params=weights,
                 num_samples=num_samples,
                 contributors=list(contributors),
@@ -268,7 +269,7 @@ class LearningStage(Stage[BasicDFLContext]):
         ctx = self.ctx
         try:
             logger.info(ctx.address, "📥 Full model received.")
-            ctx.learner.set_model(weights)
+            await ctx.learner.aset_model(weights)
             self._full_model_ready.set()
         except DecodingParamsError:
             logger.error(ctx.address, "❌ Error decoding parameters.")

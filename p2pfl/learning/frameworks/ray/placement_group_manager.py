@@ -19,6 +19,7 @@
 """Manage Ray placement groups."""
 
 import threading
+import warnings
 
 import ray
 from ray.util.placement_group import PlacementGroup, placement_group, remove_placement_group
@@ -31,13 +32,13 @@ class PlacementGroupManager:
     _lock = threading.Lock()
     _initialized: bool
 
-    def __new__(cls, bundles: list[dict[str, float]] | None = None) -> "PlacementGroupManager":
+    def __new__(cls, bundles: list[dict[str, float]] | None = None, num_actors: int | None = None) -> "PlacementGroupManager":
         """
         Create or return the singleton instance.
 
         Args:
-            bundles: List of resource bundles for the placement group. If None, use all available resources
-                        in one or more bundles.
+            bundles: Explicit resource bundles for the placement group.
+            num_actors: Number of actors — divides resources evenly into per-actor bundles.
 
         Returns:
             The singleton PlacementGroupManager instance.
@@ -49,52 +50,59 @@ class PlacementGroupManager:
                 cls._instance._initialized = False
         return cls._instance
 
-    def __init__(self, bundles: list[dict[str, float]] | None = None) -> None:
+    def __init__(self, bundles: list[dict[str, float]] | None = None, num_actors: int | None = None) -> None:
         """
         Initialize the placement group manager.
 
         Args:
-            bundles: List of resource bundles for the placement group. If None, use all available resources
-                        in one or more bundles.
+            bundles: Explicit resource bundles for the placement group.
+            num_actors: Number of actors — divides resources evenly into per-actor bundles.
 
         """
         if self._initialized:
+            if bundles is not None or num_actors is not None:
+                warnings.warn(
+                    "PlacementGroupManager is a singleton — ignoring bundles/num_actors "
+                    "because it was already initialized. Call shutdown() first to reconfigure.",
+                    stacklevel=2,
+                )
             return
 
-        # If not provided, use all available resources in one bundle by default
-        if bundles is None:
-            available = ray.cluster_resources()
-            # Filter out internal resources
-            filtered = {k: v for k, v in available.items() if not k.startswith("node:") and not k.startswith("object_store")}
+        available = ray.cluster_resources()
+        filtered = {k: v for k, v in available.items() if not k.startswith("node:") and not k.startswith("object_store")}
+        cpu = filtered.pop("CPU", 0)
+        gpu = filtered.pop("GPU", 0)
 
-            bundles = []
-            cpu = filtered.pop("CPU", 0)
-            gpu = filtered.pop("GPU", 0)
-
-            # If GPUs exist, put CPUs and GPUs together
+        if bundles is not None:
+            # Explicit bundles provided — use as-is
+            self.bundles = bundles
+        elif num_actors is not None and num_actors > 0:
+            # Divide resources evenly across actors
+            cpu_per = max(cpu / num_actors, 0.5)
+            bundle: dict[str, float] = {"CPU": cpu_per}
             if gpu > 0:
-                bundles.append({"CPU": cpu, "GPU": gpu})
-            else:
-                if cpu > 0:
-                    bundles.append({"CPU": cpu})
-
-            # Add remaining resources as individual bundles
+                bundle["GPU"] = gpu / num_actors
+            self.bundles = [dict(bundle) for _ in range(num_actors)]
+        else:
+            # Default: single bundle with all resources
+            self.bundles = []
+            if gpu > 0:
+                self.bundles.append({"CPU": cpu, "GPU": gpu})
+            elif cpu > 0:
+                self.bundles.append({"CPU": cpu})
             for res, val in filtered.items():
-                bundles.append({res: val})
+                self.bundles.append({res: val})
 
-        self.bundles = bundles
-        self.pg = placement_group(self.bundles, strategy="PACK")
+        # Strategy: SPREAD for multi-node, PACK for single-node
+        alive_nodes = [n for n in ray.nodes() if n.get("Alive")]
+        strategy = "SPREAD" if len(alive_nodes) > 1 else "PACK"
+
+        self.pg = placement_group(self.bundles, strategy=strategy)
         ray.get(self.pg.ready())
         self._initialized = True
 
     def get_placement_group(self) -> PlacementGroup:
-        """
-        Get the Ray placement group.
-
-        Returns:
-            The Ray placement group.
-
-        """
+        """Get the Ray placement group."""
         return self.pg
 
     def get_bundle_count(self) -> int:
@@ -103,6 +111,7 @@ class PlacementGroupManager:
 
     def shutdown(self) -> None:
         """Remove the placement group and reset the singleton instance."""
-        remove_placement_group(self.pg)
-        self.__class__._instance = None
-        self._initialized = False
+        with self.__class__._lock:
+            remove_placement_group(self.pg)
+            self.__class__._instance = None
+            self._initialized = False
