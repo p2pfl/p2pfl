@@ -124,7 +124,8 @@ class Training:
     """Timeout (seconds) for synchronization waits (node setup, round-init, model readiness)."""
     DEFAULT_BATCH_SIZE: int = 128
     """Default batch size for training."""
-    RAY_ACTOR_POOL_SIZE: int = 1
+    RAY_ACTOR_POOL_SIZE: int = 0
+    """Max concurrent Ray training jobs (0 = auto-detect from available CPUs)."""
 
 
 ###################

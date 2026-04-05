@@ -18,7 +18,9 @@
 
 """Keras dataset export strategy."""
 
-import tensorflow as tf  # type: ignore
+from typing import Any
+
+import numpy as np
 from datasets import Dataset  # type: ignore
 
 from p2pfl.learning.dataset.p2pfl_dataset import DataExportStrategy
@@ -33,18 +35,21 @@ class KerasExportStrategy(DataExportStrategy):
         data: Dataset,
         batch_size: int | None = None,
         **kwargs,
-    ) -> tf.data.Dataset:
+    ) -> tuple[Any, Any, int]:
         """
-        Export the data as a TensorFlow Dataset.
+        Export the data as numpy arrays for Keras.
+
+        Returns a (features, labels, batch_size) tuple. Keras model.fit() and
+        model.evaluate() accept numpy arrays directly, which avoids
+        HuggingFace's to_tf_dataset() that deadlocks on macOS in Ray workers.
 
         Args:
-            data: The Hugging Face Dataset to export. Transforms should already be applied to the dataset via set_transform.
-            batch_size: The batch size for the TensorFlow Dataset.
-            seed: The seed for the TensorFlow Dataset.
+            data: The Hugging Face Dataset to export.
+            batch_size: The batch size for training/evaluation.
             **kwargs: Additional keyword arguments.
 
         Returns:
-            A TensorFlow Dataset.
+            A tuple of (features, labels, batch_size).
 
         """
         if not batch_size:
@@ -54,14 +59,15 @@ class KerasExportStrategy(DataExportStrategy):
         columns = list(data[0].keys())[:-1]
         label_cols = list(data[0].keys())[-1:]
 
-        print(
-            f"Getting columns by order: {columns}, label_cols: {label_cols}. "
-            "If need different ones, implement your own KerasExportStrategy or a custom transform."
-        )
+        # Convert to numpy — avoids to_tf_dataset() which deadlocks on macOS
+        # in Ray workers due to TF internal thread pool conflicts.
+        features = {col: np.array(data[col]) for col in columns}
+        labels = {col: np.array(data[col]) for col in label_cols}
 
-        # Export Keras dataset
-        return data.to_tf_dataset(
-            batch_size=batch_size,
-            columns=columns,
-            label_cols=label_cols,
-        )
+        # Unwrap single-column dicts
+        if len(features) == 1:
+            features = next(iter(features.values()))
+        if len(labels) == 1:
+            labels = next(iter(labels.values()))
+
+        return features, labels, batch_size

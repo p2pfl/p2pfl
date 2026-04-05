@@ -93,7 +93,7 @@ class SetupStage(Stage[BasicDFLContext]):
         """Handle a node_initialized message by registering the peer."""
         self._register_peer(self.ctx, source)
 
-    @on_message("pre_send_initial_model", during={"setup"})
+    @on_message("pre_send_initial_model", during={"setup", "round_init", "learning", "voting"})
     async def handle_pre_send_initial_model(self, source: str, round: int, *args) -> str:
         """Accept the initial model only if not already received."""
         return "false" if self._model_received.is_set() else "true"

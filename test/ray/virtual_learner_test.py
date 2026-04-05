@@ -18,7 +18,7 @@
 """
 Virtual node tests.
 
-These tests mock the Ray actor and placement group to avoid actually running Ray,
+These tests mock WorkerPool and ray to avoid actually running Ray,
 which would fail with MagicMock learners (not serializable).
 """
 
@@ -38,489 +38,376 @@ from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 
 if RAY_INSTALLED:
-    from p2pfl.learning.frameworks.ray.virtual_learner import VirtualLearnerActor, VirtualNodeLearner
+    from p2pfl.learning.frameworks.ray.virtual_learner import VirtualNodeLearner
 
 # Skip all tests in this module if Ray is not installed
 pytestmark = pytest.mark.skipif(not RAY_INSTALLED, reason="Ray is not installed")
 
 
 def create_mock_learner(address: str = "") -> MagicMock:
-    """Create a mock Learner with the address attribute set (required by VirtualNodeLearner)."""
+    """Create a mock Learner with the address attribute set."""
     learner = MagicMock(spec=Learner)
-    learner.address = address  # NodeComponent sets this via metaclass; mocks need it explicitly
+    learner.address = address
     return learner
 
 
 @pytest.fixture
-def mock_ray_components():
-    """Mock VirtualLearnerActor and PlacementGroupManager to avoid Ray initialization."""
-    mock_actor = MagicMock()
-    mock_actor_options = MagicMock()
-    mock_actor_options.remote.return_value = mock_actor
-
-    mock_actor_class = MagicMock()
-    mock_actor_class.options.return_value = mock_actor_options
-
-    mock_pg_manager = MagicMock()
-    mock_pg_manager.get_placement_group.return_value = None
+def mock_worker_pool():
+    """Mock WorkerPool and ray to avoid Ray initialization."""
+    mock_worker = MagicMock()
+    mock_pool = MagicMock()
+    mock_pool.assign_worker.return_value = mock_worker
 
     with (
         patch(
-            "p2pfl.learning.frameworks.ray.virtual_learner.VirtualLearnerActor",
-            mock_actor_class,
-        ),
-        patch(
-            "p2pfl.learning.frameworks.ray.virtual_learner.PlacementGroupManager",
-            return_value=mock_pg_manager,
+            "p2pfl.learning.frameworks.ray.virtual_learner.WorkerPool",
+            return_value=mock_pool,
         ),
         patch("p2pfl.learning.frameworks.ray.virtual_learner.ray") as mock_ray,
     ):
-        # Setup ray.get to return whatever the remote call returns
         mock_ray.get.side_effect = lambda x: x
-        yield {
-            "actor": mock_actor,
-            "actor_class": mock_actor_class,
-            "pg_manager": mock_pg_manager,
-            "ray": mock_ray,
-        }
+        mock_ray.put.side_effect = lambda x: x
+        yield {"worker": mock_worker, "pool": mock_pool, "ray": mock_ray}
 
 
-def test_virtual_node_learner_has_base_attributes(mock_ray_components):
-    """Test that VirtualNodeLearner initializes Learner base attributes."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    assert hasattr(virtual_learner, 'callbacks')
-    assert hasattr(virtual_learner, 'epochs')
-    assert hasattr(virtual_learner, 'steps_per_epoch')
+def test_initialization_registers_with_worker(mock_worker_pool):
+    """Test that VirtualNodeLearner registers the learner with the assigned worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
+
+    mock_worker_pool["pool"].assign_worker.assert_called_once()
+    mock_worker_pool["worker"].register_node.remote.assert_called_once_with(
+        "node-1", learner
+    )
+    assert vl.address == "node-1"
 
 
-def test_virtual_node_learner_initialization(mock_ray_components):
-    """Test the initialization of the VirtualNodeLearner class."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    address = "test_addr"
-    virtual_learner.set_address(address)
-    assert virtual_learner.address == address
-    # Verify actor was created
-    mock_ray_components["actor_class"].options.assert_called_once()
+def test_initialization_uses_id_when_no_address(mock_worker_pool):
+    """Test that VirtualNodeLearner uses str(id(learner)) when address is empty."""
+    learner = create_mock_learner(address="")
+    vl = VirtualNodeLearner(learner)
+
+    call_args = mock_worker_pool["worker"].register_node.remote.call_args
+    node_key = call_args[0][0]
+    assert node_key == str(id(learner))
 
 
-def test_set_model(mock_ray_components):
-    """Test the set_model method uses ray.put for object store transfer."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    virtual_learner.set_address("test_addr")
+def test_set_address_rekeys_on_worker(mock_worker_pool):
+    """Test that set_address calls rekey_node and set_address on worker."""
+    learner = create_mock_learner(address="old-key")
+    vl = VirtualNodeLearner(learner)
+
+    vl.set_address("new-key")
+
+    mock_worker_pool["worker"].rekey_node.remote.assert_called_once_with(
+        "old-key", "new-key"
+    )
+    mock_worker_pool["worker"].set_address.remote.assert_called_once_with(
+        "new-key", "new-key"
+    )
+    assert vl.address == "new-key"
+
+
+def test_set_model_delegates_to_worker(mock_worker_pool):
+    """Test that set_model uses ray.put and delegates to worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
     model = MagicMock(spec=P2PFLModel)
 
-    mock_ref = MagicMock()
-    mock_ray_components["ray"].put.return_value = mock_ref
+    # ray.put side_effect is identity, so ray.put(model) returns model
+    vl.set_model(model)
 
-    virtual_learner.set_model(model)
-
-    # Verify ray.put was called with the model and set_model_ref was called with the ref
-    mock_ray_components["ray"].put.assert_called_once_with(model)
-    mock_ray_components["actor"].set_model_ref.remote.assert_called_once_with(mock_ref)
+    mock_worker_pool["ray"].put.assert_called_with(model)
+    mock_worker_pool["worker"].set_model.remote.assert_called_once_with("node-1", model)
 
 
-def test_get_model(mock_ray_components):
-    """Test the get_model method retrieves via object store ref."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    virtual_learner.set_address("test_addr")
-    model = MagicMock(spec=P2PFLModel)
-
-    mock_model_ref = MagicMock()
-    mock_ray_components["actor"].get_model_ref.remote.return_value = mock_model_ref
-    mock_ray_components["ray"].get.side_effect = lambda x: model if x == mock_model_ref else x
-
-    result = virtual_learner.get_model()
-
-    mock_ray_components["actor"].get_model_ref.remote.assert_called_once()
-    assert result == model
-
-
-def test_set_data(mock_ray_components):
-    """Test the set_data method uses ray.put for object store transfer."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    virtual_learner.set_address("test_addr")
-    data = MagicMock(spec=P2PFLDataset)
-
-    mock_ref = MagicMock()
-    mock_ray_components["ray"].put.return_value = mock_ref
-
-    virtual_learner.set_data(data)
-
-    # Verify ray.put was called with the data and set_data_ref was called with the ref
-    mock_ray_components["ray"].put.assert_called_once_with(data)
-    mock_ray_components["actor"].set_data_ref.remote.assert_called_once_with(mock_ref)
-
-
-def test_set_model_uses_ray_put(mock_ray_components):
-    """Test that set_model uses ray.put for object store transfer."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    virtual_learner.set_address("test_addr")
-    model = MagicMock(spec=P2PFLModel)
-
-    mock_ref = MagicMock()
-    mock_ray_components["ray"].put.return_value = mock_ref
-
-    virtual_learner.set_model(model)
-
-    mock_ray_components["ray"].put.assert_called_once_with(model)
-    mock_ray_components["actor"].set_model_ref.remote.assert_called_once_with(mock_ref)
-
-
-def test_get_model_uses_object_store(mock_ray_components):
-    """Test that get_model retrieves via object store ref."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    virtual_learner.set_address("test_addr")
+def test_get_model_delegates_to_worker(mock_worker_pool):
+    """Test that get_model calls worker.get_model and resolves the object ref."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
     model = MagicMock(spec=P2PFLModel)
 
     mock_model_ref = MagicMock()
-    mock_ray_components["actor"].get_model_ref.remote.return_value = mock_model_ref
-    mock_ray_components["ray"].get.side_effect = lambda x: model if x == mock_model_ref else x
+    mock_worker_pool["worker"].get_model.remote.return_value = mock_model_ref
+    mock_worker_pool["ray"].get.side_effect = lambda x: model if x == mock_model_ref else x
 
-    result = virtual_learner.get_model()
+    result = vl.get_model()
 
-    mock_ray_components["actor"].get_model_ref.remote.assert_called_once()
+    mock_worker_pool["worker"].get_model.remote.assert_called_once_with("node-1")
     assert result == model
 
 
-def test_set_data_uses_ray_put(mock_ray_components):
-    """Test that set_data uses ray.put for object store transfer."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    virtual_learner.set_address("test_addr")
+def test_set_data_delegates_to_worker(mock_worker_pool):
+    """Test that set_data uses ray.put and delegates to worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
     data = MagicMock(spec=P2PFLDataset)
 
-    mock_ref = MagicMock()
-    mock_ray_components["ray"].put.return_value = mock_ref
+    vl.set_data(data)
 
-    virtual_learner.set_data(data)
-
-    mock_ray_components["ray"].put.assert_called_once_with(data)
-    mock_ray_components["actor"].set_data_ref.remote.assert_called_once_with(mock_ref)
+    mock_worker_pool["ray"].put.assert_called_with(data)
+    mock_worker_pool["worker"].set_data.remote.assert_called_once_with("node-1", data)
 
 
-def test_get_data(mock_ray_components):
-    """Test the get_data method of the VirtualNodeLearner class."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    virtual_learner.set_address("test_addr")
+def test_get_data_delegates_to_worker(mock_worker_pool):
+    """Test that get_data delegates to worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
     data = MagicMock(spec=P2PFLDataset)
 
-    mock_ray_components["actor"].get_data.remote.return_value = data
+    mock_worker_pool["worker"].get_data.remote.return_value = data
 
-    result = virtual_learner.get_data()
+    result = vl.get_data()
 
-    mock_ray_components["actor"].get_data.remote.assert_called_once()
+    mock_worker_pool["worker"].get_data.remote.assert_called_once_with("node-1")
     assert result == data
 
 
-def test_set_epochs(mock_ray_components):
-    """Test the set_epochs method of the VirtualNodeLearner class."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    virtual_learner.set_address("test_addr")
-    epochs = 10
+def test_set_epochs_delegates(mock_worker_pool):
+    """Test that set_epochs delegates to worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
 
-    virtual_learner.set_epochs(epochs)
+    vl.set_epochs(10)
 
-    mock_ray_components["actor"].set_epochs.remote.assert_called_once_with(epochs)
+    mock_worker_pool["worker"].set_epochs.remote.assert_called_once_with("node-1", 10)
 
 
-@pytest.mark.asyncio
-async def test_fit(mock_ray_components):
-    """Test the fit method of the VirtualNodeLearner class."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    virtual_learner.set_address("test_addr")
+def test_get_epochs_delegates(mock_worker_pool):
+    """Test that get_epochs delegates to worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
 
-    # Mock the async remote call
-    mock_ray_components["actor"].fit.remote = AsyncMock()
+    mock_worker_pool["worker"].get_epochs.remote.return_value = 5
 
-    await virtual_learner.fit()
+    result = vl.get_epochs()
 
-    mock_ray_components["actor"].fit.remote.assert_called_once()
+    mock_worker_pool["worker"].get_epochs.remote.assert_called_once_with("node-1")
+    assert result == 5
 
 
-@pytest.mark.asyncio
-async def test_interrupt_fit(mock_ray_components):
-    """Test that interrupt_fit cancels the pending fit task."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    virtual_learner.set_address("test_addr")
+def test_set_steps_per_epoch_delegates(mock_worker_pool):
+    """Test that set_steps_per_epoch delegates to worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
 
-    mock_ref = MagicMock()
-    virtual_learner._pending_fit_ref = mock_ref
+    vl.set_steps_per_epoch(100)
 
-    await virtual_learner.interrupt_fit()
-
-    mock_ray_components["ray"].cancel.assert_called_once_with(mock_ref, force=False)
-    assert virtual_learner._pending_fit_ref is None
+    mock_worker_pool["worker"].set_steps_per_epoch.remote.assert_called_once_with("node-1", 100)
 
 
-@pytest.mark.asyncio
-async def test_interrupt_fit_no_pending(mock_ray_components):
-    """Test that interrupt_fit is a no-op when no fit is running."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    virtual_learner.set_address("test_addr")
+def test_get_steps_per_epoch_delegates(mock_worker_pool):
+    """Test that get_steps_per_epoch delegates to worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
 
-    await virtual_learner.interrupt_fit()
+    mock_worker_pool["worker"].get_steps_per_epoch.remote.return_value = 50
 
-    mock_ray_components["ray"].cancel.assert_not_called()
+    result = vl.get_steps_per_epoch()
 
-
-@pytest.mark.asyncio
-async def test_evaluate(mock_ray_components):
-    """Test the evaluate method of the VirtualNodeLearner class."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    virtual_learner.set_address("test_addr")
-    evaluation_result = {"accuracy": 0.9}
-
-    # Mock the async remote call
-    mock_ray_components["actor"].evaluate.remote = AsyncMock(return_value=evaluation_result)
-
-    result = await virtual_learner.evaluate()
-
-    mock_ray_components["actor"].evaluate.remote.assert_called_once()
-    assert result == evaluation_result
+    mock_worker_pool["worker"].get_steps_per_epoch.remote.assert_called_once_with("node-1")
+    assert result == 50
 
 
-def test_configure_batches_settings(mock_ray_components):
-    """Test that configure sends all settings in one remote call."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    virtual_learner.set_address("test_addr")
+def test_configure_delegates(mock_worker_pool):
+    """Test that configure delegates to worker with kwargs."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
 
-    virtual_learner.configure(epochs=10, steps_per_epoch=100)
+    vl.configure(epochs=10, steps_per_epoch=100)
 
-    mock_ray_components["actor"].configure.remote.assert_called_once_with(
-        epochs=10, steps_per_epoch=100
+    mock_worker_pool["worker"].configure.remote.assert_called_once_with(
+        "node-1", epochs=10, steps_per_epoch=100
     )
 
 
-def test_placement_group_manager_shutdown_resets_singleton(mock_ray_components):
-    """Test that shutdown resets the singleton so a new instance can be created."""
-    from unittest.mock import patch, MagicMock
+def test_indicate_aggregator_delegates(mock_worker_pool):
+    """Test that indicate_aggregator delegates to worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
+    aggregator = MagicMock()
 
-    with patch("p2pfl.learning.frameworks.ray.placement_group_manager.ray") as mock_ray, \
-         patch("p2pfl.learning.frameworks.ray.placement_group_manager.placement_group") as mock_pg, \
-         patch("p2pfl.learning.frameworks.ray.placement_group_manager.remove_placement_group") as mock_remove:
-        mock_ray.cluster_resources.return_value = {"CPU": 4}
-        mock_pg_obj = MagicMock()
-        mock_pg_obj.ready.return_value = MagicMock()
-        mock_pg.return_value = mock_pg_obj
-        mock_ray.get.return_value = None
+    vl.indicate_aggregator(aggregator)
 
-        from p2pfl.learning.frameworks.ray.placement_group_manager import PlacementGroupManager
-        PlacementGroupManager._instance = None
-
-        mgr1 = PlacementGroupManager()
-        assert mgr1._initialized is True
-
-        mgr1.shutdown()
-        assert PlacementGroupManager._instance is None
-
-        mgr2 = PlacementGroupManager()
-        assert mgr2._initialized is True
-        assert mgr2 is not mgr1
+    mock_worker_pool["worker"].indicate_aggregator.remote.assert_called_once_with("node-1", aggregator)
 
 
-def test_virtual_learner_actor_has_all_learner_methods():
-    """Test that VirtualLearnerActor has delegates for all public Learner methods."""
-    import inspect
-    from p2pfl.learning.frameworks.learner import Learner
-    from p2pfl.learning.frameworks.ray.virtual_learner import VirtualLearnerActor
+def test_update_callbacks_with_model_info_delegates(mock_worker_pool):
+    """Test that update_callbacks_with_model_info delegates to worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
 
-    learner_methods = {
-        name for name, _ in inspect.getmembers(Learner, predicate=inspect.isfunction)
-        if not name.startswith("_")
-    }
+    vl.update_callbacks_with_model_info()
 
-    actor_cls = VirtualLearnerActor
-    if hasattr(actor_cls, '__ray_actor_class__'):
-        actor_cls = actor_cls.__ray_actor_class__
-    actor_methods = {
-        name for name, _ in inspect.getmembers(actor_cls, predicate=callable)
-        if not name.startswith("_")
-    }
-
-    missing = learner_methods - actor_methods
-    assert not missing, f"VirtualLearnerActor is missing delegates for: {missing}"
+    mock_worker_pool["worker"].update_callbacks_with_model_info.remote.assert_called_once_with("node-1")
 
 
-def test_explicit_actor_methods_not_overwritten_by_delegates():
-    """Test that explicit methods on VirtualLearnerActor are not overwritten by _with_learner_delegates."""
-    from p2pfl.learning.frameworks.ray.virtual_learner import VirtualLearnerActor
+def test_add_callback_info_to_model_delegates(mock_worker_pool):
+    """Test that add_callback_info_to_model delegates to worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
 
-    actor_cls = VirtualLearnerActor
-    if hasattr(actor_cls, '__ray_actor_class__'):
-        actor_cls = actor_cls.__ray_actor_class__
+    vl.add_callback_info_to_model()
 
-    # These methods are explicitly defined on the actor class and must NOT be
-    # replaced by the generic delegate (they have custom ray.put logic).
-    for method_name in ("fit", "train_on_batch", "configure"):
-        method = actor_cls.__dict__[method_name]
-        # The delegate creates generic lambdas; explicit methods have distinct source.
-        # A simple check: the explicit fit/train_on_batch contain 'ray.put' in source.
-        import inspect
-        source = inspect.getsource(method)
-        if method_name in ("fit", "train_on_batch"):
-            assert "ray.put" in source, (
-                f"VirtualLearnerActor.{method_name} was overwritten by delegate — "
-                f"missing ray.put in source"
-            )
-        elif method_name == "configure":
-            assert "set_epochs" in source, (
-                f"VirtualLearnerActor.{method_name} was overwritten by delegate — "
-                f"missing set_epochs in source"
-            )
+    mock_worker_pool["worker"].add_callback_info_to_model.remote.assert_called_once_with("node-1")
 
 
-def test_placement_group_manager_per_actor_bundles():
-    """Test that num_actors divides resources into per-actor bundles."""
-    from unittest.mock import patch, MagicMock
-    from p2pfl.learning.frameworks.ray.placement_group_manager import PlacementGroupManager
+def test_get_framework_delegates(mock_worker_pool):
+    """Test that get_framework delegates to worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
 
-    with patch("p2pfl.learning.frameworks.ray.placement_group_manager.ray") as mock_ray, \
-         patch("p2pfl.learning.frameworks.ray.placement_group_manager.placement_group") as mock_pg, \
-         patch("p2pfl.learning.frameworks.ray.placement_group_manager.remove_placement_group"):
-        mock_ray.cluster_resources.return_value = {"CPU": 8, "GPU": 2}
-        mock_ray.nodes.return_value = [{"NodeID": "node1", "Alive": True}]
-        mock_pg_obj = MagicMock()
-        mock_pg_obj.ready.return_value = MagicMock()
-        mock_pg.return_value = mock_pg_obj
-        mock_ray.get.return_value = None
+    mock_worker_pool["worker"].get_framework.remote.return_value = "pytorch"
 
-        PlacementGroupManager._instance = None
-        mgr = PlacementGroupManager(num_actors=4)
+    result = vl.get_framework()
 
-        assert len(mgr.bundles) == 4
-        for bundle in mgr.bundles:
-            assert bundle["CPU"] == 2.0
-            assert bundle["GPU"] == 0.5
-
-        mock_pg.assert_called_once_with(mgr.bundles, strategy="PACK")
-        mgr.shutdown()
-
-
-def test_placement_group_manager_spread_multi_node():
-    """Test that multi-node clusters use SPREAD strategy."""
-    from unittest.mock import patch, MagicMock
-    from p2pfl.learning.frameworks.ray.placement_group_manager import PlacementGroupManager
-
-    with patch("p2pfl.learning.frameworks.ray.placement_group_manager.ray") as mock_ray, \
-         patch("p2pfl.learning.frameworks.ray.placement_group_manager.placement_group") as mock_pg, \
-         patch("p2pfl.learning.frameworks.ray.placement_group_manager.remove_placement_group"):
-        mock_ray.cluster_resources.return_value = {"CPU": 16, "GPU": 4}
-        mock_ray.nodes.return_value = [{"NodeID": "n1", "Alive": True}, {"NodeID": "n2", "Alive": True}]
-        mock_pg_obj = MagicMock()
-        mock_pg_obj.ready.return_value = MagicMock()
-        mock_pg.return_value = mock_pg_obj
-        mock_ray.get.return_value = None
-
-        PlacementGroupManager._instance = None
-        mgr = PlacementGroupManager(num_actors=4)
-
-        mock_pg.assert_called_once_with(mgr.bundles, strategy="SPREAD")
-        mgr.shutdown()
+    mock_worker_pool["worker"].get_framework.remote.assert_called_once_with("node-1")
+    assert result == "pytorch"
 
 
 @pytest.mark.asyncio
-async def test_aset_model_uses_ray_put(mock_ray_components):
-    """Test that aset_model uses ray.put and awaits the remote call."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    virtual_learner.set_address("test_addr")
-    model = MagicMock(spec=P2PFLModel)
-
-    mock_ref = MagicMock()
-    mock_ray_components["ray"].put.return_value = mock_ref
-    mock_ray_components["actor"].set_model_ref.remote = AsyncMock()
-
-    await virtual_learner.aset_model(model)
-
-    mock_ray_components["ray"].put.assert_called_with(model)
-    mock_ray_components["actor"].set_model_ref.remote.assert_called_once_with(mock_ref)
-
-
-@pytest.mark.asyncio
-async def test_aget_model_returns_model(mock_ray_components):
-    """Test that aget_model awaits actor and resolves ref."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    virtual_learner.set_address("test_addr")
+async def test_fit_delegates_to_worker(mock_worker_pool):
+    """Test that fit delegates to worker and resolves the model ref."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
     model = MagicMock(spec=P2PFLModel)
 
     mock_model_ref = MagicMock()
-    mock_ray_components["actor"].get_model_ref.remote = AsyncMock(return_value=mock_model_ref)
-    mock_ray_components["ray"].get.side_effect = lambda x: model if x == mock_model_ref else x
+    mock_worker_pool["worker"].fit.remote = AsyncMock(return_value=mock_model_ref)
+    mock_worker_pool["ray"].get.side_effect = lambda x: model if x == mock_model_ref else x
 
-    result = await virtual_learner.aget_model()
+    result = await vl.fit()
 
+    mock_worker_pool["worker"].fit.remote.assert_called_once_with("node-1")
     assert result == model
 
 
 @pytest.mark.asyncio
-async def test_fit_returns_model_directly(mock_ray_components):
-    """Test that fit returns the model without a separate get_model call."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    virtual_learner.set_address("test_addr")
-    model = MagicMock(spec=P2PFLModel)
+async def test_evaluate_delegates_to_worker(mock_worker_pool):
+    """Test that evaluate delegates to worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
+    evaluation_result = {"accuracy": 0.9}
 
-    mock_model_ref = MagicMock()
-    mock_ray_components["actor"].fit.remote = AsyncMock(return_value=mock_model_ref)
-    mock_ray_components["ray"].get.side_effect = lambda x: model if x == mock_model_ref else x
+    mock_worker_pool["worker"].evaluate.remote = AsyncMock(return_value=evaluation_result)
 
-    result = await virtual_learner.fit()
+    result = await vl.evaluate()
 
-    assert result == model
-    mock_ray_components["actor"].get_model_ref.remote.assert_not_called()
+    mock_worker_pool["worker"].evaluate.remote.assert_called_once_with("node-1")
+    assert result == evaluation_result
 
 
 @pytest.mark.asyncio
-async def test_train_on_batch_returns_model_directly(mock_ray_components):
-    """Test that train_on_batch returns the model without a separate get_model call."""
-    learner = create_mock_learner()
-    virtual_learner = VirtualNodeLearner(learner)
-    virtual_learner.set_address("test_addr")
+async def test_train_on_batch_delegates(mock_worker_pool):
+    """Test that train_on_batch delegates to worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
     model = MagicMock(spec=P2PFLModel)
 
     mock_model_ref = MagicMock()
-    mock_ray_components["actor"].train_on_batch.remote = AsyncMock(return_value=mock_model_ref)
-    mock_ray_components["ray"].get.side_effect = lambda x: model if x == mock_model_ref else x
+    mock_worker_pool["worker"].train_on_batch.remote = AsyncMock(return_value=mock_model_ref)
+    mock_worker_pool["ray"].get.side_effect = lambda x: model if x == mock_model_ref else x
 
-    result = await virtual_learner.train_on_batch()
+    result = await vl.train_on_batch()
 
+    mock_worker_pool["worker"].train_on_batch.remote.assert_called_once_with("node-1")
     assert result == model
 
 
-def test_placement_group_manager_default_unchanged():
-    """Test that default behavior (no num_actors) is unchanged."""
-    from unittest.mock import patch, MagicMock
-    from p2pfl.learning.frameworks.ray.placement_group_manager import PlacementGroupManager
+@pytest.mark.asyncio
+async def test_interrupt_fit_is_noop(mock_worker_pool):
+    """Test that interrupt_fit is a no-op (logs only)."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
 
-    with patch("p2pfl.learning.frameworks.ray.placement_group_manager.ray") as mock_ray, \
-         patch("p2pfl.learning.frameworks.ray.placement_group_manager.placement_group") as mock_pg, \
-         patch("p2pfl.learning.frameworks.ray.placement_group_manager.remove_placement_group"):
-        mock_ray.cluster_resources.return_value = {"CPU": 8}
-        mock_ray.nodes.return_value = [{"NodeID": "node1", "Alive": True}]
-        mock_pg_obj = MagicMock()
-        mock_pg_obj.ready.return_value = MagicMock()
-        mock_pg.return_value = mock_pg_obj
-        mock_ray.get.return_value = None
+    # Should not raise
+    await vl.interrupt_fit()
 
-        PlacementGroupManager._instance = None
-        mgr = PlacementGroupManager()
 
-        assert len(mgr.bundles) == 1
-        assert mgr.bundles[0]["CPU"] == 8
-        mock_pg.assert_called_once_with(mgr.bundles, strategy="PACK")
-        mgr.shutdown()
+@pytest.mark.asyncio
+async def test_aset_model_async(mock_worker_pool):
+    """Test async aset_model delegates to worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
+    model = MagicMock(spec=P2PFLModel)
+
+    mock_worker_pool["worker"].set_model.remote = AsyncMock()
+
+    await vl.aset_model(model)
+
+    mock_worker_pool["ray"].put.assert_called_with(model)
+    mock_worker_pool["worker"].set_model.remote.assert_called_once_with("node-1", model)
+
+
+@pytest.mark.asyncio
+async def test_aget_model_async(mock_worker_pool):
+    """Test async aget_model delegates to worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
+    model = MagicMock(spec=P2PFLModel)
+
+    mock_model_ref = MagicMock()
+    mock_worker_pool["worker"].get_model.remote = AsyncMock(return_value=mock_model_ref)
+    mock_worker_pool["ray"].get.side_effect = lambda x: model if x == mock_model_ref else x
+
+    result = await vl.aget_model()
+
+    mock_worker_pool["worker"].get_model.remote.assert_called_once_with("node-1")
+    assert result == model
+
+
+@pytest.mark.asyncio
+async def test_aset_data_async(mock_worker_pool):
+    """Test async aset_data delegates to worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
+    data = MagicMock(spec=P2PFLDataset)
+
+    mock_worker_pool["worker"].set_data.remote = AsyncMock()
+
+    await vl.aset_data(data)
+
+    mock_worker_pool["ray"].put.assert_called_with(data)
+    mock_worker_pool["worker"].set_data.remote.assert_called_once_with("node-1", data)
+
+
+@pytest.mark.asyncio
+async def test_aset_address_async(mock_worker_pool):
+    """Test async aset_address rekeys on worker."""
+    learner = create_mock_learner(address="old-key")
+    vl = VirtualNodeLearner(learner)
+
+    mock_worker_pool["worker"].rekey_node.remote = AsyncMock()
+    mock_worker_pool["worker"].set_address.remote = AsyncMock()
+
+    result = await vl.aset_address("new-key")
+
+    mock_worker_pool["worker"].rekey_node.remote.assert_called_once_with("old-key", "new-key")
+    mock_worker_pool["worker"].set_address.remote.assert_called_once_with("new-key", "new-key")
+    assert result == "new-key"
+    assert vl.address == "new-key"
+
+
+@pytest.mark.asyncio
+async def test_aconfigure_async(mock_worker_pool):
+    """Test async aconfigure delegates to worker."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
+
+    mock_worker_pool["worker"].configure.remote = AsyncMock()
+
+    await vl.aconfigure(epochs=5, steps_per_epoch=50)
+
+    mock_worker_pool["worker"].configure.remote.assert_called_once_with(
+        "node-1", epochs=5, steps_per_epoch=50
+    )
+
+
+def test_has_base_attributes(mock_worker_pool):
+    """Test that VirtualNodeLearner has required base attributes."""
+    learner = create_mock_learner(address="node-1")
+    vl = VirtualNodeLearner(learner)
+
+    assert hasattr(vl, "callbacks")
+    assert hasattr(vl, "epochs")
+    assert hasattr(vl, "steps_per_epoch")

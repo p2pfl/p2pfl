@@ -117,19 +117,18 @@ class TestLearnerWrapping:
 
         from unittest.mock import patch, MagicMock as MM
 
-        mock_actor = MM()
-        mock_actor_options = MM()
-        mock_actor_options.remote.return_value = mock_actor
-        mock_actor_class = MM()
-        mock_actor_class.options.return_value = mock_actor_options
+        mock_worker = MM()
+        mock_pool = MM()
+        mock_pool.assign_worker.return_value = mock_worker
 
         with patch(
-            "p2pfl.learning.frameworks.ray.virtual_learner.VirtualLearnerActor",
-            mock_actor_class,
+            "p2pfl.learning.frameworks.ray.virtual_learner.WorkerPool",
+            return_value=mock_pool,
         ), patch(
-            "p2pfl.learning.frameworks.ray.virtual_learner.PlacementGroupManager",
-            return_value=MM(get_placement_group=MM(return_value=None)),
-        ):
+            "p2pfl.learning.frameworks.ray.virtual_learner.ray",
+        ) as mock_ray:
+            mock_ray.get.side_effect = lambda x: x
+            mock_ray.put.side_effect = lambda x: x
             learner = MM(spec=Learner)
             learner.address = ""
             wrapped = try_init_learner_with_ray(learner)

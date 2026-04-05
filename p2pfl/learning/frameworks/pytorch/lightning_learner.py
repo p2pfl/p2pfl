@@ -22,6 +22,7 @@ import logging
 import traceback
 
 import lightning as L
+import numpy as np
 import torch
 from lightning import Trainer
 from torch.utils.data import DataLoader
@@ -39,7 +40,6 @@ from p2pfl.utils.check_ray import ray_installed
 from p2pfl.utils.seed import set_seed
 from p2pfl.workflow.engine.experiment import Experiment
 
-torch.set_num_threads(1)
 
 
 class LightningLearner(Learner):
@@ -58,10 +58,20 @@ class LightningLearner(Learner):
         super().__init__(model, data, aggregator)
         self.__trainer: Trainer | None = None
         self.experiment: Experiment | None = None
+        self._batch_dataloader = None
+        self._batch_iter = None
+        self._batch_optimizer = None
 
         # Start logging
         # To avoid GPU/TPU printings
         logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
+
+    def set_model(self, model: P2PFLModel | list[np.ndarray] | bytes) -> None:
+        """Set the model, resetting cached batch training state."""
+        self._batch_dataloader = None
+        self._batch_iter = None
+        self._batch_optimizer = None
+        super().set_model(model)
 
     def set_address(self, address: str) -> str:
         """Set the address of the node."""
@@ -117,14 +127,67 @@ class LightningLearner(Learner):
             raise e
 
     async def train_on_batch(self) -> P2PFLModel:
-        """
-        Train the model on the next batch manually.
+        """Train the model on the next batch using raw PyTorch.
 
-        Raises:
-            NotImplementedError: PyTorch Lightning does not support batch training yet.
-
+        Maintains a DataLoader iterator across calls. Each call processes
+        one batch and returns the updated model. When the iterator is
+        exhausted it wraps around.
         """
-        raise NotImplementedError("PyTorch Lightning does not support batch training yet")
+        try:
+            set_seed(Settings.general.SEED, self.get_framework())
+            pt_model = self.get_model().get_model()
+            if not isinstance(pt_model, L.LightningModule):
+                raise ValueError("The model must be a PyTorch Lightning model")
+
+            # Initialize DataLoader, iterator, and optimizer on first call
+            if not hasattr(self, '_batch_dataloader') or self._batch_dataloader is None:
+                self._batch_dataloader = self.get_data().export(PyTorchExportStrategy, train=True)
+                self._batch_iter = iter(self._batch_dataloader)
+                optim_result = pt_model.configure_optimizers()
+                # Handle dict return: {"optimizer": ..., "lr_scheduler": ...}
+                if isinstance(optim_result, dict):
+                    self._batch_optimizer = optim_result["optimizer"]
+                elif isinstance(optim_result, tuple):
+                    self._batch_optimizer = optim_result[0]
+                    if isinstance(self._batch_optimizer, list):
+                        self._batch_optimizer = self._batch_optimizer[0]
+                elif isinstance(optim_result, list):
+                    self._batch_optimizer = optim_result[0]
+                else:
+                    self._batch_optimizer = optim_result
+
+            try:
+                batch = next(self._batch_iter)
+            except StopIteration:
+                self._batch_iter = iter(self._batch_dataloader)
+                batch = next(self._batch_iter)
+
+            # Manual training step (bypass self.log since there's no Trainer)
+            pt_model.train()
+            self._batch_optimizer.zero_grad()
+            original_log = pt_model.log
+            pt_model.log = lambda *args, **kwargs: None
+            try:
+                loss = pt_model.training_step(batch, 0)
+            finally:
+                pt_model.log = original_log
+            loss.backward()
+            self._batch_optimizer.step()
+
+            self.get_model().last_training_loss = float(loss.item())
+            self.get_model().set_contribution(
+                [self.address], self.get_data().get_num_samples()
+            )
+            self.add_callback_info_to_model()
+
+            return self.get_model()
+
+        except Exception as e:
+            logger.error(
+                self.address,
+                f"Error in train_on_batch: {e}",
+            )
+            raise e
 
     async def interrupt_fit(self) -> None:
         """Interrupt the fit."""
