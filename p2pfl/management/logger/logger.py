@@ -551,9 +551,12 @@ class P2PFLogger:
         if round_num is not None and round_num >= 0:
             message += f" (round {round_num})"
 
+        # Skip heartbeat messages entirely when excluded (both logging and storage)
+        if cmd == "beat" and Settings.heartbeat.EXCLUDE_BEAT_LOGS:
+            return
+
         # Log the message at debug level
-        if cmd != "beat" or (not Settings.heartbeat.EXCLUDE_BEAT_LOGS and cmd == "beat"):
-            self.debug(node, message)
+        self.debug(node, message)
 
         # Get actual round number for storage (default to 0 if None)
         storage_round = 0 if round_num is None or round_num < 0 else round_num

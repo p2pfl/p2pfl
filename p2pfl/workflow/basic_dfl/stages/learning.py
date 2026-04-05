@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import asyncio
+import gc
 from typing import TYPE_CHECKING
 
 from p2pfl.learning.frameworks.exceptions import DecodingParamsError, ModelNotMatchingError
@@ -48,6 +49,7 @@ class LearningStage(Stage[BasicDFLContext]):
         """Evaluate, train, gossip, aggregate, and advance the round."""
         ctx = self.ctx
         self._models_complete.clear()
+        self._full_model_ready.clear()
 
         address = ctx.address
         learner = ctx.learner
@@ -69,6 +71,7 @@ class LearningStage(Stage[BasicDFLContext]):
             model = await learner.fit()
             logger.info(address, "🎓 Training done.")
             await self._save_aggregation(ctx, model=model, source=address)
+            del model  # peer.model holds the reference; free this copy for GC
 
             # Gossip partial models
             candidates = self._get_partial_gossiping_candidates(ctx)
@@ -92,8 +95,15 @@ class LearningStage(Stage[BasicDFLContext]):
 
             # Aggregate
             aggregator = ctx.aggregator
-            agg_model = aggregator.aggregate([p.model for p in ctx.peers.values() if p.model is not None])
+            pending_models = [p.model for p in ctx.peers.values() if p.model is not None]
+            agg_model = aggregator.aggregate(pending_models)
+            del pending_models  # drop list before setting model to reduce peak memory
             await learner.aset_model(agg_model)
+            # Free model copies held in peer state to reclaim memory
+            for p in ctx.peers.values():
+                p.model = None
+            del agg_model
+            gc.collect()
 
         logger.info(address, f"✅ Round {experiment.round} finished.")
         experiment.round += 1
@@ -248,6 +258,7 @@ class LearningStage(Stage[BasicDFLContext]):
                 num_samples=num_samples,
                 contributors=list(contributors),
             )
+            del base_model  # Free the temporary model copy from Ray
             await self._save_aggregation(ctx, model, source)
         except DecodingParamsError:
             logger.error(ctx.address, "❌ Error decoding parameters.")
@@ -256,7 +267,7 @@ class LearningStage(Stage[BasicDFLContext]):
         except Exception as e:
             logger.error(ctx.address, f"❌ Unknown error adding model: {e}")
 
-    @on_message("add_model", weights=True, during={"learning"})
+    @on_message("add_model", weights=True, during={"learning", "round_init"})
     async def handle_add_model(
         self,
         source: str,
@@ -267,6 +278,13 @@ class LearningStage(Stage[BasicDFLContext]):
     ) -> None:
         """Handle an add_model message containing a full model from a peer."""
         ctx = self.ctx
+        # No round equality check here: training nodes advance their round before
+        # gossiping the full model, so the sender's round is legitimately ahead of
+        # the receiver (non-training node) which is still waiting.
+        # Skip duplicate full models — only the first one per round matters
+        if self._full_model_ready.is_set():
+            logger.debug(ctx.address, f"⏭️ Ignoring duplicate add_model from {source} (already have full model)")
+            return
         try:
             logger.info(ctx.address, "📥 Full model received.")
             await ctx.learner.aset_model(weights)

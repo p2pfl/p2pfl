@@ -121,6 +121,9 @@ class ProtobuffCommunicationProtocol(CommunicationProtocol):
         await self._heartbeater.stop()
         await self._gossiper.stop()
 
+        # Cancel in-flight message processing tasks and clear buffers
+        await self._server.cleanup_tasks()
+
         # Clear neighbors and stop the server
         await self._neighbors.clear_neighbors()
         await self._server.stop()

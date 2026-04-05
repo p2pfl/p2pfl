@@ -30,6 +30,7 @@ from p2pfl.management.logger.decorators.logger_decorator import LoggerDecorator
 from p2pfl.management.logger.logger import P2PFLogger
 from p2pfl.management.message_storage import MessageEntryType
 from p2pfl.management.metric_storage import GlobalLogsType, LocalLogsType
+from p2pfl.settings import Settings
 
 if TYPE_CHECKING:
     from p2pfl.workflow.engine.experiment import Experiment
@@ -383,6 +384,10 @@ class RayP2PFLogger(P2PFLogger):
             additional_info: Additional information as a dictionary.
 
         """
+        # Skip heartbeats early to avoid unnecessary Ray RPC overhead
+        if cmd == "beat" and Settings.heartbeat.EXCLUDE_BEAT_LOGS:
+            return
+
         # Forward the call to the Ray actor
         self.ray_actor.log_communication.remote(
             node=node,

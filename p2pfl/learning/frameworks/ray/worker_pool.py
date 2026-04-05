@@ -18,7 +18,8 @@
 """WorkerPool singleton for managing FrameworkWorkerActor lifecycle."""
 
 import threading
-from dataclasses import dataclass
+import weakref
+from dataclasses import dataclass, field
 from typing import Any
 
 import ray
@@ -36,7 +37,24 @@ class _Registration:
     """Record of a node registration for crash recovery."""
 
     node_id: str
-    learner: Any  # Learner instance — kept for re-registration
+    _learner_ref: Any = field(repr=False)  # weakref to Learner — avoids pinning model weights in memory
+
+    @property
+    def learner(self) -> Any | None:
+        """Dereference the weak reference, returning None if collected."""
+        ref = self._learner_ref
+        if ref is None:
+            return None
+        return ref() if isinstance(ref, weakref.ref) else ref
+
+    @staticmethod
+    def create(node_id: str, learner: Any) -> "_Registration":
+        """Create a registration, using a weakref if the learner supports it."""
+        try:
+            ref = weakref.ref(learner)
+        except TypeError:
+            ref = learner  # Some objects can't be weakly referenced
+        return _Registration(node_id=node_id, _learner_ref=ref)
 
 
 class WorkerPool:
@@ -167,7 +185,7 @@ class WorkerPool:
         """Track a node registration for crash recovery."""
         idx = self._worker_index(worker)
         if idx is not None:
-            self._registrations[idx].append(_Registration(node_id=node_id, learner=learner))
+            self._registrations[idx].append(_Registration.create(node_id=node_id, learner=learner))
 
     def unregister_node(self, worker, node_id: str) -> None:
         """Remove a node registration record."""
@@ -216,11 +234,15 @@ class WorkerPool:
         new_worker = FrameworkWorkerActor.options(**opts).remote(max_concurrent)
         self._workers[worker_index] = new_worker
 
-        # Replay registrations
+        # Replay registrations (skip any whose learner was garbage-collected)
         self._registrations[worker_index] = []
         for reg in old_registrations:
+            learner = reg.learner
+            if learner is None:
+                logger.warning("WorkerPool", f"Skipping re-registration of '{reg.node_id}': learner was garbage-collected")
+                continue
             try:
-                ray.get(new_worker.register_node.remote(reg.node_id, reg.learner))
+                ray.get(new_worker.register_node.remote(reg.node_id, learner))
                 self._registrations[worker_index].append(reg)
                 logger.info("WorkerPool", f"Re-registered node '{reg.node_id}' after worker recovery")
             except Exception as e:

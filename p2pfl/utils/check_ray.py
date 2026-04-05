@@ -20,6 +20,7 @@
 
 import importlib
 import os
+from typing import Any
 
 from p2pfl.settings import Settings
 
@@ -37,12 +38,18 @@ def ray_installed() -> bool:
 
             # If ray not initialized, initialize it
             if not ray.is_initialized():
-                init_kwargs = {
+                import sys
+
+                init_kwargs: dict[str, Any] = {
                     "namespace": "p2pfl",
                     "include_dashboard": False,
                     "logging_level": Settings.general.LOG_LEVEL,
                     "logging_config": ray.LoggingConfig(encoding="TEXT", log_level=Settings.general.LOG_LEVEL),
                 }
+                # On macOS, limit object store to avoid mmap size errors
+                if sys.platform == "darwin":
+                    init_kwargs["object_store_memory"] = 500 * 1024 * 1024  # 500 MB
+
                 ray.init(**init_kwargs)
             return True
         except (AttributeError, TypeError, RuntimeError) as e:

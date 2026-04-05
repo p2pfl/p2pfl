@@ -33,6 +33,9 @@ from p2pfl.settings import Settings
 from p2pfl.utils.node_component import NodeComponent
 
 
+_GOSSIP_PENDING_MAX = 500  # Drop oldest gossip messages when queue exceeds this size
+
+
 class Gossiper(NodeComponent):
     """Async-compatible Gossiper that spreads messages and models to neighbors."""
 
@@ -84,10 +87,16 @@ class Gossiper(NodeComponent):
             self._task.cancel()
             with contextlib.suppress(asyncio.CancelledError):
                 await self._task
+        # Free queued messages to release protobuf memory
+        async with self._pending_msgs_lock:
+            self._pending_msgs.clear()
 
     async def add_message(self, msg: node_pb2.RootMessage) -> None:
         """Queue a message to be gossiped to all direct neighbors."""
         async with self._pending_msgs_lock:
+            # Evict oldest messages when queue is full
+            if len(self._pending_msgs) >= _GOSSIP_PENDING_MAX:
+                self._pending_msgs = self._pending_msgs[-(_GOSSIP_PENDING_MAX // 2) :]
             neighbors = [
                 v[0] for addr, v in self._neighbors.get_all(only_direct=True).items() if addr != self.address and addr != msg.source
             ]

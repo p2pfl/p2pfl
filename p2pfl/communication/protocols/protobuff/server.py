@@ -94,6 +94,13 @@ class ProtobuffServer(ABC, node_pb2_grpc.NodeServicesServicer, NodeComponent):
         """Stop the server."""
         pass
 
+    async def cleanup_tasks(self) -> None:
+        """Cancel all background tasks and clear the pending message buffer."""
+        for task in self._background_tasks:
+            task.cancel()
+        self._background_tasks.clear()
+        self._pending_msgs_buffer.clear()
+
     @abstractmethod
     async def wait_for_termination(self) -> None:
         """Wait for termination."""
@@ -155,7 +162,8 @@ class ProtobuffServer(ABC, node_pb2_grpc.NodeServicesServicer, NodeComponent):
 
         # Log
         package_type = "message" if request.HasField("gossip_message") else "weights"
-        package_size = len(request.SerializeToString())
+        # Estimate size without full serialization to avoid multi-MB temporary allocations
+        package_size = request.ByteSize()
         # Pass None for negative rounds, the logger will handle it
         round_num = request.round if request.round >= 0 else None
         logger.log_communication(

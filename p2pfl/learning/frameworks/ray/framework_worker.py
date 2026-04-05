@@ -23,6 +23,7 @@ Replaces the 1-actor-per-node pattern to avoid redundant framework loading.
 """
 
 import asyncio
+import gc
 import os
 import time
 import traceback
@@ -40,6 +41,10 @@ from p2pfl.management.logger import logger
 
 # Warn when process RSS exceeds this fraction of total system memory
 _MEMORY_WARN_THRESHOLD = 0.8
+# Pause new training when RSS exceeds this fraction (backpressure)
+_MEMORY_BACKPRESSURE_THRESHOLD = 0.9
+_BACKPRESSURE_POLL_INTERVAL = 2.0  # seconds
+_BACKPRESSURE_MAX_WAIT = 30.0  # seconds
 
 
 @dataclass
@@ -99,30 +104,53 @@ class FrameworkWorkerActor:
         if node_id in self._registry:
             self._registry[node_id].last_used = time.time()
 
-    def _check_memory(self, node_id: str) -> None:
-        """Log warning if process memory exceeds threshold."""
+    async def _check_memory(self, node_id: str) -> None:
+        """Apply backpressure if memory exceeds threshold, otherwise warn."""
         try:
             import psutil
+        except ImportError:
+            return
 
+        waited = 0.0
+        while True:
             process = psutil.Process()
             rss = process.memory_info().rss
-            available = psutil.virtual_memory().total
-            usage_pct = rss / available
-            if usage_pct > _MEMORY_WARN_THRESHOLD:
-                # Find LRU node (excluding current)
-                lru_node = min(
-                    ((nid, slot) for nid, slot in self._registry.items() if nid != node_id),
-                    key=lambda x: x[1].last_used,
-                    default=None,
-                )
-                lru_info = f" LRU node: {lru_node[0]}" if lru_node else ""
+            total = psutil.virtual_memory().total
+            usage_pct = rss / total
+
+            if usage_pct <= _MEMORY_WARN_THRESHOLD:
+                return
+
+            if usage_pct > _MEMORY_BACKPRESSURE_THRESHOLD:
+                if waited >= _BACKPRESSURE_MAX_WAIT:
+                    logger.warning(
+                        node_id,
+                        f"Memory backpressure timeout after {_BACKPRESSURE_MAX_WAIT:.0f}s "
+                        f"({usage_pct:.0%} used), proceeding anyway",
+                    )
+                    return
                 logger.warning(
                     node_id,
-                    f"Memory pressure: {rss / 1024**2:.0f}MB "
-                    f"({usage_pct:.0%} of {available / 1024**2:.0f}MB).{lru_info}",
+                    f"Memory backpressure: {rss / 1024**2:.0f}MB "
+                    f"({usage_pct:.0%}), pausing training...",
                 )
-        except ImportError:
-            pass  # psutil not available
+                await asyncio.sleep(_BACKPRESSURE_POLL_INTERVAL)
+                waited += _BACKPRESSURE_POLL_INTERVAL
+                continue
+
+            # Between warn and backpressure threshold — warn and proceed
+            lru_node = min(
+                ((nid, slot) for nid, slot in self._registry.items() if nid != node_id),
+                key=lambda x: x[1].last_used,
+                default=None,
+            )
+            lru_info = f" LRU node: {lru_node[0]}" if lru_node else ""
+            logger.warning(
+                node_id,
+                f"Memory pressure: {rss / 1024**2:.0f}MB "
+                f"({usage_pct:.0%} of {total / 1024**2:.0f}MB).{lru_info}",
+            )
+            return
 
     def get_memory_stats(self) -> dict:
         """Return memory usage stats for monitoring."""
@@ -177,6 +205,27 @@ class FrameworkWorkerActor:
         self._touch(new_id)
         logger.debug(new_id, f"Rekeyed from '{old_id}' in framework worker actor")
 
+    def rekey_and_set_address(self, old_id: str, new_id: str) -> str:
+        """Atomically rekey a node and set its address in one RPC.
+
+        Combines rekey_node + set_address to avoid inconsistent state if
+        one of two separate RPCs were to fail.
+
+        Args:
+            old_id: The current node identifier.
+            new_id: The new node identifier / address.
+
+        Returns:
+            The new address.
+
+        """
+        slot = self._registry.pop(old_id)
+        self._registry[new_id] = slot
+        self._touch(new_id)
+        result = self._get_learner(new_id).set_address(new_id)
+        logger.debug(new_id, f"Rekeyed from '{old_id}' and set address in framework worker actor")
+        return result
+
     # --- Model / data operations ---
 
     def set_model(self, node_id: str, model: P2PFLModel | Any) -> None:
@@ -190,19 +239,21 @@ class FrameworkWorkerActor:
         self._touch(node_id)
         self._get_learner(node_id).set_model(model)
 
-    def get_model(self, node_id: str) -> ray.ObjectRef:
-        """Get the model from a node's learner, returned via ray.put().
+    def get_model(self, node_id: str) -> P2PFLModel:
+        """Get the model from a node's learner.
+
+        Ray automatically places the return value in the object store,
+        so explicit ray.put() is unnecessary.
 
         Args:
             node_id: The target node.
 
         Returns:
-            ObjectRef to the model in the Ray object store.
+            The model instance.
 
         """
         self._touch(node_id)
-        model = self._get_learner(node_id).get_model()
-        return ray.put(model)
+        return self._get_learner(node_id).get_model()
 
     def set_data(self, node_id: str, data: P2PFLDataset) -> None:
         """Set the dataset on a node's learner.
@@ -362,7 +413,7 @@ class FrameworkWorkerActor:
 
     # --- Async training operations (guarded by semaphore) ---
 
-    async def fit(self, node_id: str) -> ray.ObjectRef:
+    async def fit(self, node_id: str) -> P2PFLModel:
         """Fit the model with batch-level interleaving.
 
         Uses train_on_batch() in a loop, acquiring/releasing the semaphore
@@ -373,12 +424,12 @@ class FrameworkWorkerActor:
             node_id: The target node.
 
         Returns:
-            ObjectRef to the fitted model.
+            The fitted model (Ray places the return value in the object store automatically).
 
         """
         try:
             self._touch(node_id)
-            self._check_memory(node_id)
+            await self._check_memory(node_id)
             learner = self._get_learner(node_id)
 
             # Try interleaved batch training first
@@ -404,15 +455,22 @@ class FrameworkWorkerActor:
                 async with self._training_semaphore:
                     await learner.fit()
 
+            # Release batch training state (DataLoader, iterator, optimizer)
+            # to free memory before serializing the model.
+            for attr in ("_batch_dataloader", "_batch_iter", "_batch_optimizer"):
+                if hasattr(learner, attr):
+                    setattr(learner, attr, None)
+
             model = learner.get_model()
-            return ray.put(model)
+            gc.collect()
+            return model
         except Exception as ex:
             logger.error(node_id, traceback.format_exc())
             logger.error(node_id, f"An error occurred during remote fit: {ex}")
             raise
 
-    async def train_on_batch(self, node_id: str) -> ray.ObjectRef:
-        """Train on one batch for a node, returning result via ray.put().
+    async def train_on_batch(self, node_id: str) -> P2PFLModel:
+        """Train on one batch for a node.
 
         Guarded by the training semaphore to limit concurrency.
 
@@ -420,15 +478,16 @@ class FrameworkWorkerActor:
             node_id: The target node.
 
         Returns:
-            ObjectRef to the model after batch training.
+            The model after batch training.
 
         """
         async with self._training_semaphore:
             try:
                 self._touch(node_id)
-                self._check_memory(node_id)
+                await self._check_memory(node_id)
                 model = await self._get_learner(node_id).train_on_batch()
-                return ray.put(model)
+                gc.collect()
+                return model
             except Exception as ex:
                 logger.error(node_id, traceback.format_exc())
                 logger.error(node_id, f"An error occurred during remote train_on_batch: {ex}")
@@ -449,8 +508,10 @@ class FrameworkWorkerActor:
         async with self._training_semaphore:
             try:
                 self._touch(node_id)
-                self._check_memory(node_id)
-                return await self._get_learner(node_id).evaluate()
+                await self._check_memory(node_id)
+                result = await self._get_learner(node_id).evaluate()
+                gc.collect()
+                return result
             except Exception as ex:
                 logger.error(node_id, traceback.format_exc())
                 logger.error(node_id, f"An error occurred during remote evaluation: {ex}")

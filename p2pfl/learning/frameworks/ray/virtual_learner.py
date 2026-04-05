@@ -30,6 +30,10 @@ from p2pfl.learning.frameworks.ray.worker_pool import WorkerPool
 from p2pfl.management.logger import logger
 from p2pfl.utils.node_component import NodeComponent
 
+# Timeout for blocking ray.get() calls on config/metadata RPCs (seconds).
+# Training methods use await and don't need this.
+_RPC_TIMEOUT = 60
+
 
 class VirtualNodeLearner(Learner):
     """Lightweight proxy that delegates all operations to a shared FrameworkWorkerActor via WorkerPool.
@@ -71,17 +75,24 @@ class VirtualNodeLearner(Learner):
         try:
             self._worker.unregister_node.remote(self._node_key)
             self._pool.unregister_node(self._worker, self._node_key)
-        except Exception:
-            pass  # Best-effort cleanup; Ray may already be shut down
+        except Exception as e:
+            # Best-effort cleanup; Ray may already be shut down.
+            # Log instead of silencing so leaked registrations are visible.
+            try:
+                logger.debug(self._node_key, f"Cleanup during __del__ failed: {e}")
+            except Exception:
+                pass  # Logger itself may be torn down
 
     # --- Sync proxy methods ---
 
     def set_address(self, address: str) -> str:
-        """Set address: rekey the registration and update the worker."""
+        """Set address: atomically rekey the registration and update the worker."""
         old_key = self._node_key
         new_key = address
-        ray.get(self._worker.rekey_node.remote(old_key, new_key))
-        ray.get(self._worker.set_address.remote(new_key, new_key))
+        ray.get(
+            self._worker.rekey_and_set_address.remote(old_key, new_key),
+            timeout=_RPC_TIMEOUT,
+        )
         self._pool.rekey_node(self._worker, old_key, new_key)
         self._node_key = new_key
         self.address = new_key
@@ -90,69 +101,72 @@ class VirtualNodeLearner(Learner):
     def set_model(self, model: P2PFLModel | list[np.ndarray] | bytes) -> None:
         """Set model via object store for zero-copy transfer."""
         ref = ray.put(model)
-        ray.get(self._worker.set_model.remote(self._node_key, ref))
+        try:
+            ray.get(self._worker.set_model.remote(self._node_key, ref), timeout=_RPC_TIMEOUT)
+        finally:
+            del ref
 
     def get_model(self) -> P2PFLModel:
-        """Get model via object store (double get: worker returns ObjectRef)."""
-        model_ref = ray.get(self._worker.get_model.remote(self._node_key))
-        return ray.get(model_ref)
+        """Get model from the worker."""
+        return ray.get(self._worker.get_model.remote(self._node_key), timeout=_RPC_TIMEOUT)
 
     def set_data(self, data: P2PFLDataset) -> None:
         """Set data via object store for zero-copy transfer."""
         ref = ray.put(data)
-        ray.get(self._worker.set_data.remote(self._node_key, ref))
+        try:
+            ray.get(self._worker.set_data.remote(self._node_key, ref), timeout=_RPC_TIMEOUT)
+        finally:
+            del ref
 
     def get_data(self) -> P2PFLDataset:
         """Get data from the worker."""
-        return ray.get(self._worker.get_data.remote(self._node_key))
+        return ray.get(self._worker.get_data.remote(self._node_key), timeout=_RPC_TIMEOUT)
 
     def set_epochs(self, epochs: int) -> None:
         """Set epochs on the worker."""
-        ray.get(self._worker.set_epochs.remote(self._node_key, epochs))
+        ray.get(self._worker.set_epochs.remote(self._node_key, epochs), timeout=_RPC_TIMEOUT)
 
     def get_epochs(self) -> int:
         """Get epochs from the worker."""
-        return ray.get(self._worker.get_epochs.remote(self._node_key))
+        return ray.get(self._worker.get_epochs.remote(self._node_key), timeout=_RPC_TIMEOUT)
 
     def set_steps_per_epoch(self, steps: int) -> None:
         """Set steps per epoch on the worker."""
-        ray.get(self._worker.set_steps_per_epoch.remote(self._node_key, steps))
+        ray.get(self._worker.set_steps_per_epoch.remote(self._node_key, steps), timeout=_RPC_TIMEOUT)
 
     def get_steps_per_epoch(self) -> int | None:
         """Get steps per epoch from the worker."""
-        return ray.get(self._worker.get_steps_per_epoch.remote(self._node_key))
+        return ray.get(self._worker.get_steps_per_epoch.remote(self._node_key), timeout=_RPC_TIMEOUT)
 
     def indicate_aggregator(self, aggregator: Aggregator) -> None:
         """Indicate aggregator on the worker."""
-        ray.get(self._worker.indicate_aggregator.remote(self._node_key, aggregator))
+        ray.get(self._worker.indicate_aggregator.remote(self._node_key, aggregator), timeout=_RPC_TIMEOUT)
 
     def update_callbacks_with_model_info(self) -> None:
         """Update callbacks with model info on the worker."""
-        ray.get(self._worker.update_callbacks_with_model_info.remote(self._node_key))
+        ray.get(self._worker.update_callbacks_with_model_info.remote(self._node_key), timeout=_RPC_TIMEOUT)
 
     def add_callback_info_to_model(self) -> None:
         """Add callback info to model on the worker."""
-        ray.get(self._worker.add_callback_info_to_model.remote(self._node_key))
+        ray.get(self._worker.add_callback_info_to_model.remote(self._node_key), timeout=_RPC_TIMEOUT)
 
     def configure(self, **kwargs: Any) -> None:
         """Apply multiple configuration settings in one remote call."""
-        ray.get(self._worker.configure.remote(self._node_key, **kwargs))
+        ray.get(self._worker.configure.remote(self._node_key, **kwargs), timeout=_RPC_TIMEOUT)
 
     def get_framework(self) -> str:
         """Get framework name from the worker."""
-        return ray.get(self._worker.get_framework.remote(self._node_key))
+        return ray.get(self._worker.get_framework.remote(self._node_key), timeout=_RPC_TIMEOUT)
 
     # --- Async training methods ---
 
     async def fit(self) -> P2PFLModel:
-        """Fit the model. Worker handles semaphore and returns model via object store."""
-        model_ref = await self._worker.fit.remote(self._node_key)
-        return ray.get(model_ref)
+        """Fit the model. Worker handles semaphore and returns model directly."""
+        return await self._worker.fit.remote(self._node_key)
 
     async def train_on_batch(self) -> P2PFLModel:
-        """Train on batch. Worker handles semaphore and returns model via object store."""
-        model_ref = await self._worker.train_on_batch.remote(self._node_key)
-        return ray.get(model_ref)
+        """Train on batch. Worker handles semaphore and returns model directly."""
+        return await self._worker.train_on_batch.remote(self._node_key)
 
     async def evaluate(self) -> dict[str, float]:
         """Evaluate the model on the worker."""
@@ -167,24 +181,28 @@ class VirtualNodeLearner(Learner):
     async def aset_model(self, model: P2PFLModel | list[np.ndarray] | bytes) -> None:
         """Async set_model via object store."""
         ref = ray.put(model)
-        await self._worker.set_model.remote(self._node_key, ref)
+        try:
+            await self._worker.set_model.remote(self._node_key, ref)
+        finally:
+            del ref
 
     async def aget_model(self) -> P2PFLModel:
-        """Async get_model via object store."""
-        model_ref = await self._worker.get_model.remote(self._node_key)
-        return ray.get(model_ref)
+        """Async get_model."""
+        return await self._worker.get_model.remote(self._node_key)
 
     async def aset_data(self, data: P2PFLDataset) -> None:
         """Async set_data via object store."""
         ref = ray.put(data)
-        await self._worker.set_data.remote(self._node_key, ref)
+        try:
+            await self._worker.set_data.remote(self._node_key, ref)
+        finally:
+            del ref
 
     async def aset_address(self, address: str) -> str:
-        """Async set_address: rekey and update on worker."""
+        """Async set_address: atomically rekey and update on worker."""
         old_key = self._node_key
         new_key = address
-        await self._worker.rekey_node.remote(old_key, new_key)
-        await self._worker.set_address.remote(new_key, new_key)
+        await self._worker.rekey_and_set_address.remote(old_key, new_key)
         self._pool.rekey_node(self._worker, old_key, new_key)
         self._node_key = new_key
         self.address = new_key

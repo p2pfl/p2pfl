@@ -11,7 +11,7 @@ remote_loggers:
 network:
   package: "p2pfl.communication.protocols.protobuff.memory"
   protocol: "MemoryCommunicationProtocol"
-  nodes: 5
+  nodes: 10
   topology: "ring"   # Network topology: "line", "ring", "star", "full", "random_2", "random_3", "random_4", null for custom
   # additional_connections:
   #   - [0, 2]              # Connect node 0 to Node 2 (indices)

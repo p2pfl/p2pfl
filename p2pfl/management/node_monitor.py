@@ -34,6 +34,8 @@ from p2pfl.settings import Settings
 class NodeMonitor:
     """Node monitor that periodically collects system resource metrics."""
 
+    MAX_LOG_ENTRIES = 500
+
     def __init__(self) -> None:
         """Initialize the node monitor."""
         self.period = Settings.general.RESOURCE_MONITOR_PERIOD
@@ -68,6 +70,11 @@ class NodeMonitor:
             now = datetime.datetime.now()
             resources = self._report_system_resources()
             self.logs[now] = resources
+            # Evict oldest entries when over the cap
+            if len(self.logs) > self.MAX_LOG_ENTRIES:
+                excess = len(self.logs) - self.MAX_LOG_ENTRIES
+                for key in list(self.logs)[:excess]:
+                    del self.logs[key]
             for cb in self._callbacks:
                 cb(now, resources)
             await asyncio.sleep(self.period)
