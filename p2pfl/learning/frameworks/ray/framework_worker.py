@@ -23,6 +23,7 @@ Replaces the 1-actor-per-node pattern to avoid redundant framework loading.
 """
 
 import asyncio
+import os
 import time
 import traceback
 from dataclasses import dataclass, field
@@ -67,6 +68,22 @@ class FrameworkWorkerActor:
         self._registry: dict[str, NodeSlot] = {}
         self._max_concurrent = max_concurrent
         self._training_semaphore = asyncio.Semaphore(max_concurrent)
+
+        # Limit PyTorch intra-op threads to prevent CPU saturation
+        # when multiple nodes train concurrently on the same machine.
+        torch_threads = Settings.training.TORCH_NUM_THREADS
+        if torch_threads <= 0:
+            total_cpus = os.cpu_count() or 1
+            torch_threads = max(1, total_cpus // max(max_concurrent, 1))
+        try:
+            import torch
+            torch.set_num_threads(torch_threads)
+            logger.info("FrameworkWorkerActor", f"PyTorch intra-op threads set to {torch_threads}")
+        except ImportError:
+            pass
+        # Also set environment variables for other BLAS backends
+        os.environ.setdefault("OMP_NUM_THREADS", str(torch_threads))
+        os.environ.setdefault("MKL_NUM_THREADS", str(torch_threads))
 
     # --- Helpers ---
 

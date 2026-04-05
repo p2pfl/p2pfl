@@ -95,6 +95,7 @@ settings:
   training:
     vote_timeout: 60
     aggregation_timeout: 300
+    # torch_num_threads: 2  # Limit PyTorch intra-op threads per training job (0 = auto)
 
 # Profiling configuration
 profiling:

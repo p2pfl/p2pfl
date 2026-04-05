@@ -77,9 +77,12 @@ class WorkerPool:
         # Determine max_concurrent from settings
         pool_size = Settings.training.RAY_ACTOR_POOL_SIZE
         if pool_size <= 0:
-            # Keep at least 1 CPU free for system overhead, unless only 1 CPU available
+            # Cap concurrent training to half the CPUs (rounded up), keeping
+            # the other half free for system overhead, gossip, heartbeat, and
+            # PyTorch intra-op threads.  Previous default (total - 1) caused
+            # 100% CPU saturation on machines with many cores.
             usable_cpus = max(int(total_cpus) - 1, 1) if total_cpus > 1 else max(int(total_cpus), 1)
-            max_concurrent = max(usable_cpus, 1)
+            max_concurrent = max(1, -(-usable_cpus // 2))  # ceil division
         else:
             max_concurrent = pool_size
 
@@ -197,7 +200,7 @@ class WorkerPool:
         pool_size = Settings.training.RAY_ACTOR_POOL_SIZE
         if pool_size <= 0:
             usable_cpus = max(int(total_cpus) - 1, 1) if total_cpus > 1 else max(int(total_cpus), 1)
-            max_concurrent = max(usable_cpus, 1)
+            max_concurrent = max(1, -(-usable_cpus // 2))
         else:
             max_concurrent = pool_size
 

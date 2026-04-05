@@ -104,6 +104,7 @@ class LightningLearner(Learner):
                     logger=self.logger,  # type: ignore
                     enable_checkpointing=False,
                     enable_model_summary=False,
+                    enable_progress_bar=False,
                     callbacks=self.callbacks.copy(),  # type: ignore
                 )
                 pt_model, pt_data = self.__get_pt_model_data()
@@ -139,8 +140,11 @@ class LightningLearner(Learner):
             if not isinstance(pt_model, L.LightningModule):
                 raise ValueError("The model must be a PyTorch Lightning model")
 
-            # Initialize DataLoader, iterator, and optimizer on first call
-            if not hasattr(self, '_batch_dataloader') or self._batch_dataloader is None:
+            # Initialize DataLoader, iterator, and optimizer on first call.
+            # Check all three fields: set_model() resets them to None and may
+            # run concurrently (via the actor event loop) when train_on_batch
+            # is offloaded to a thread.
+            if self._batch_dataloader is None or self._batch_optimizer is None:
                 self._batch_dataloader = self.get_data().export(PyTorchExportStrategy, train=True)
                 self._batch_iter = iter(self._batch_dataloader)
                 optim_result = pt_model.configure_optimizers()
@@ -205,7 +209,7 @@ class LightningLearner(Learner):
         """
         try:
             if self.epochs > 0:
-                self.__trainer = Trainer()
+                self.__trainer = Trainer(enable_progress_bar=False)
                 pt_model, pt_data = self.__get_pt_model_data(train=False)
                 results = self.__trainer.test(pt_model, pt_data, verbose=True)[0]
                 self.__trainer = None

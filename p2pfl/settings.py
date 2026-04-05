@@ -126,6 +126,8 @@ class Training:
     """Default batch size for training."""
     RAY_ACTOR_POOL_SIZE: int = 0
     """Max concurrent Ray training jobs (0 = auto-detect from available CPUs)."""
+    TORCH_NUM_THREADS: int = 0
+    """Number of threads PyTorch uses for intra-op parallelism (0 = auto: total_cpus / max_concurrent)."""
 
 
 ###################
