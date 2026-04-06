@@ -146,4 +146,3 @@ class RoundInitStage(Stage[BasicDFLContext]):
             existing_contributors=existing,
         )
         return "true" if accepted else "false"
-

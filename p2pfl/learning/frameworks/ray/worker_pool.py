@@ -58,7 +58,8 @@ class _Registration:
 
 
 class WorkerPool:
-    """Singleton that manages FrameworkWorkerActor lifecycle and node-to-worker assignment.
+    """
+    Singleton that manages FrameworkWorkerActor lifecycle and node-to-worker assignment.
 
     Detects cluster topology and spawns one worker per physical node (multi-node)
     or a single worker with all resources (single machine). Workers are assigned
@@ -123,8 +124,7 @@ class WorkerPool:
             self._workers.append(worker)
             logger.info(
                 "WorkerPool",
-                f"Single-node mode: 1 worker, 1 CPU reserved, {total_gpus} GPUs, "
-                f"max_concurrent={max_concurrent}",
+                f"Single-node mode: 1 worker, 1 CPU reserved, {total_gpus} GPUs, " f"max_concurrent={max_concurrent}",
             )
         else:
             # Multi-node: one worker per node with minimal CPU reservation
@@ -157,7 +157,8 @@ class WorkerPool:
         self._initialized = True
 
     def assign_worker(self):
-        """Return the next worker via round-robin assignment.
+        """
+        Return the next worker via round-robin assignment.
 
         Returns:
             A FrameworkWorkerActor handle.

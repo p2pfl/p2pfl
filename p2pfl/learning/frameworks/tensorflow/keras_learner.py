@@ -125,7 +125,7 @@ class KerasLearner(Learner):
     async def train_on_batch(self):
         """Train the model on the next batch manually."""
         set_seed(Settings.general.SEED, self.get_framework())
-        if not hasattr(self, '_train_x') or self._train_x is None:
+        if not hasattr(self, "_train_x") or self._train_x is None:
             x, y, batch_size = self._get_tf_data(train=True)
             self._train_x, self._train_y = x, y
             self._train_batch_size = batch_size
@@ -146,7 +146,7 @@ class KerasLearner(Learner):
             self._train_idx = end
 
             loss = model.train_on_batch(batch_x, batch_y)
-            self.get_model().last_training_loss = float(loss[0]) if isinstance(loss, (list, tuple)) else float(loss)
+            self.get_model().last_training_loss = float(loss[0]) if isinstance(loss, list | tuple) else float(loss)
 
             # Set model contribution
             self.get_model().set_contribution([self.address], self.get_data().get_num_samples(train=True))
@@ -219,8 +219,7 @@ class EagerKerasLearner(KerasLearner):
                 n = len(x)
                 last_loss = 0.0
                 for _ in range(self.epochs):
-                    step = 0
-                    for start in range(0, n, batch_size):
+                    for step, start in enumerate(range(0, n, batch_size)):
                         if self.steps_per_epoch is not None and step >= self.steps_per_epoch:
                             break
                         xb = tf.constant(x[start : start + batch_size])
@@ -229,9 +228,8 @@ class EagerKerasLearner(KerasLearner):
                             preds = model(xb, training=True)
                             loss = loss_fn(yb, preds)
                         grads = tape.gradient(loss, model.trainable_variables)
-                        optimizer.apply_gradients(zip(grads, model.trainable_variables))
+                        optimizer.apply_gradients(zip(grads, model.trainable_variables, strict=False))
                         last_loss = float(loss)
-                        step += 1
                 self.get_model().last_training_loss = last_loss
 
             self.get_model().set_contribution([self.address], self.get_data().get_num_samples(train=True))
@@ -245,7 +243,7 @@ class EagerKerasLearner(KerasLearner):
     async def train_on_batch(self):
         """Train on a single batch using GradientTape."""
         set_seed(Settings.general.SEED, self.get_framework())
-        if not hasattr(self, '_train_x') or self._train_x is None:
+        if not hasattr(self, "_train_x") or self._train_x is None:
             x, y, batch_size = self._get_tf_data(train=True)
             self._train_x, self._train_y = x, y
             self._train_batch_size = batch_size
@@ -272,7 +270,7 @@ class EagerKerasLearner(KerasLearner):
                 preds = model(xb, training=True)
                 loss = loss_fn(yb, preds)
             grads = tape.gradient(loss, model.trainable_variables)
-            model.optimizer.apply_gradients(zip(grads, model.trainable_variables))
+            model.optimizer.apply_gradients(zip(grads, model.trainable_variables, strict=False))
             self.get_model().last_training_loss = float(loss)
 
             self.get_model().set_contribution([self.address], self.get_data().get_num_samples(train=True))
@@ -299,10 +297,7 @@ class EagerKerasLearner(KerasLearner):
                 # original metric names/strings, avoiding Keras internal wrappers.
                 compile_metrics = getattr(model, "_compile_metrics", None)
                 user_metrics = getattr(compile_metrics, "_user_metrics", []) if compile_metrics else []
-                metrics: list[tf.keras.metrics.Metric] = [
-                    tf.keras.metrics.get(m) if isinstance(m, str) else m
-                    for m in user_metrics
-                ]
+                metrics: list[tf.keras.metrics.Metric] = [tf.keras.metrics.get(m) if isinstance(m, str) else m for m in user_metrics]
 
                 total_loss = 0.0
                 total_samples = 0

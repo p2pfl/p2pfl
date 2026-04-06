@@ -33,11 +33,11 @@ from typing import Any
 import ray
 
 from p2pfl.learning.aggregators.aggregator import Aggregator
-from p2pfl.settings import Settings
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
 from p2pfl.management.logger import logger
+from p2pfl.settings import Settings
 
 # Warn when process RSS exceeds this fraction of total system memory
 _MEMORY_WARN_THRESHOLD = 0.8
@@ -57,7 +57,8 @@ class NodeSlot:
 
 @ray.remote
 class FrameworkWorkerActor:
-    """Ray actor that loads the ML framework once and multiplexes across nodes.
+    """
+    Ray actor that loads the ML framework once and multiplexes across nodes.
 
     Each node registers its Learner instance. The actor delegates operations
     to the appropriate learner, guarding compute-heavy ops (fit, train_on_batch,
@@ -82,6 +83,7 @@ class FrameworkWorkerActor:
             torch_threads = max(1, total_cpus // max(max_concurrent, 1))
         try:
             import torch
+
             torch.set_num_threads(torch_threads)
             logger.info("FrameworkWorkerActor", f"PyTorch intra-op threads set to {torch_threads}")
         except ImportError:
@@ -97,7 +99,7 @@ class FrameworkWorkerActor:
         try:
             return self._registry[node_id].learner
         except KeyError:
-            raise KeyError(f"Node '{node_id}' is not registered in this worker actor")
+            raise KeyError(f"Node '{node_id}' is not registered in this worker actor") from None
 
     def _touch(self, node_id: str) -> None:
         """Update last_used timestamp for a node."""
@@ -125,14 +127,12 @@ class FrameworkWorkerActor:
                 if waited >= _BACKPRESSURE_MAX_WAIT:
                     logger.warning(
                         node_id,
-                        f"Memory backpressure timeout after {_BACKPRESSURE_MAX_WAIT:.0f}s "
-                        f"({usage_pct:.0%} used), proceeding anyway",
+                        f"Memory backpressure timeout after {_BACKPRESSURE_MAX_WAIT:.0f}s " f"({usage_pct:.0%} used), proceeding anyway",
                     )
                     return
                 logger.warning(
                     node_id,
-                    f"Memory backpressure: {rss / 1024**2:.0f}MB "
-                    f"({usage_pct:.0%}), pausing training...",
+                    f"Memory backpressure: {rss / 1024**2:.0f}MB " f"({usage_pct:.0%}), pausing training...",
                 )
                 await asyncio.sleep(_BACKPRESSURE_POLL_INTERVAL)
                 waited += _BACKPRESSURE_POLL_INTERVAL
@@ -147,8 +147,7 @@ class FrameworkWorkerActor:
             lru_info = f" LRU node: {lru_node[0]}" if lru_node else ""
             logger.warning(
                 node_id,
-                f"Memory pressure: {rss / 1024**2:.0f}MB "
-                f"({usage_pct:.0%} of {total / 1024**2:.0f}MB).{lru_info}",
+                f"Memory pressure: {rss / 1024**2:.0f}MB " f"({usage_pct:.0%} of {total / 1024**2:.0f}MB).{lru_info}",
             )
             return
 
@@ -171,7 +170,8 @@ class FrameworkWorkerActor:
     # --- Node registration ---
 
     def register_node(self, node_id: str, learner: Learner) -> None:
-        """Register a node with its learner instance.
+        """
+        Register a node with its learner instance.
 
         Args:
             node_id: Unique identifier for the node.
@@ -183,7 +183,8 @@ class FrameworkWorkerActor:
         logger.debug(node_id, "Registered in framework worker actor")
 
     def unregister_node(self, node_id: str) -> None:
-        """Remove a node from the registry.
+        """
+        Remove a node from the registry.
 
         Args:
             node_id: The node to unregister.
@@ -193,7 +194,8 @@ class FrameworkWorkerActor:
         logger.debug(node_id, "Unregistered from framework worker actor")
 
     def rekey_node(self, old_id: str, new_id: str) -> None:
-        """Change a node's key in the registry (e.g. after address change).
+        """
+        Change a node's key in the registry (e.g. after address change).
 
         Args:
             old_id: The current node identifier.
@@ -206,7 +208,8 @@ class FrameworkWorkerActor:
         logger.debug(new_id, f"Rekeyed from '{old_id}' in framework worker actor")
 
     def rekey_and_set_address(self, old_id: str, new_id: str) -> str:
-        """Atomically rekey a node and set its address in one RPC.
+        """
+        Atomically rekey a node and set its address in one RPC.
 
         Combines rekey_node + set_address to avoid inconsistent state if
         one of two separate RPCs were to fail.
@@ -229,7 +232,8 @@ class FrameworkWorkerActor:
     # --- Model / data operations ---
 
     def set_model(self, node_id: str, model: P2PFLModel | Any) -> None:
-        """Set the model on a node's learner.
+        """
+        Set the model on a node's learner.
 
         Args:
             node_id: The target node.
@@ -240,7 +244,8 @@ class FrameworkWorkerActor:
         self._get_learner(node_id).set_model(model)
 
     def get_model(self, node_id: str) -> P2PFLModel:
-        """Get the model from a node's learner.
+        """
+        Get the model from a node's learner.
 
         Ray automatically places the return value in the object store,
         so explicit ray.put() is unnecessary.
@@ -256,7 +261,8 @@ class FrameworkWorkerActor:
         return self._get_learner(node_id).get_model()
 
     def set_data(self, node_id: str, data: P2PFLDataset) -> None:
-        """Set the dataset on a node's learner.
+        """
+        Set the dataset on a node's learner.
 
         Args:
             node_id: The target node.
@@ -267,7 +273,8 @@ class FrameworkWorkerActor:
         self._get_learner(node_id).set_data(data)
 
     def get_data(self, node_id: str) -> P2PFLDataset:
-        """Get the dataset from a node's learner.
+        """
+        Get the dataset from a node's learner.
 
         Args:
             node_id: The target node.
@@ -282,7 +289,8 @@ class FrameworkWorkerActor:
     # --- Configuration ---
 
     def set_address(self, node_id: str, address: str) -> str:
-        """Set the address on a node's learner.
+        """
+        Set the address on a node's learner.
 
         Args:
             node_id: The target node.
@@ -296,7 +304,8 @@ class FrameworkWorkerActor:
         return self._get_learner(node_id).set_address(address)
 
     def set_epochs(self, node_id: str, epochs: int) -> None:
-        """Set the number of training epochs for a node.
+        """
+        Set the number of training epochs for a node.
 
         Args:
             node_id: The target node.
@@ -307,7 +316,8 @@ class FrameworkWorkerActor:
         self._get_learner(node_id).set_epochs(epochs)
 
     def get_epochs(self, node_id: str) -> int:
-        """Get the number of training epochs for a node.
+        """
+        Get the number of training epochs for a node.
 
         Args:
             node_id: The target node.
@@ -320,7 +330,8 @@ class FrameworkWorkerActor:
         return self._get_learner(node_id).get_epochs()
 
     def set_steps_per_epoch(self, node_id: str, steps: int) -> None:
-        """Set the steps per epoch for a node.
+        """
+        Set the steps per epoch for a node.
 
         Args:
             node_id: The target node.
@@ -331,7 +342,8 @@ class FrameworkWorkerActor:
         self._get_learner(node_id).set_steps_per_epoch(steps)
 
     def get_steps_per_epoch(self, node_id: str) -> int | None:
-        """Get the steps per epoch for a node.
+        """
+        Get the steps per epoch for a node.
 
         Args:
             node_id: The target node.
@@ -344,7 +356,8 @@ class FrameworkWorkerActor:
         return self._get_learner(node_id).get_steps_per_epoch()
 
     def indicate_aggregator(self, node_id: str, aggregator: Aggregator) -> None:
-        """Indicate the aggregator to a node's learner.
+        """
+        Indicate the aggregator to a node's learner.
 
         Args:
             node_id: The target node.
@@ -355,7 +368,8 @@ class FrameworkWorkerActor:
         self._get_learner(node_id).indicate_aggregator(aggregator)
 
     def update_callbacks_with_model_info(self, node_id: str) -> None:
-        """Update callbacks with model info for a node.
+        """
+        Update callbacks with model info for a node.
 
         Args:
             node_id: The target node.
@@ -365,7 +379,8 @@ class FrameworkWorkerActor:
         self._get_learner(node_id).update_callbacks_with_model_info()
 
     def add_callback_info_to_model(self, node_id: str) -> None:
-        """Add callback info to the model for a node.
+        """
+        Add callback info to the model for a node.
 
         Args:
             node_id: The target node.
@@ -375,7 +390,8 @@ class FrameworkWorkerActor:
         self._get_learner(node_id).add_callback_info_to_model()
 
     def configure(self, node_id: str, **kwargs: Any) -> None:
-        """Apply multiple configuration settings in one call.
+        """
+        Apply multiple configuration settings in one call.
 
         Supported kwargs: epochs, steps_per_epoch, aggregator,
         update_callbacks, add_callback_info.
@@ -399,7 +415,8 @@ class FrameworkWorkerActor:
             learner.add_callback_info_to_model()
 
     def get_framework(self, node_id: str) -> str:
-        """Get the framework name from a node's learner.
+        """
+        Get the framework name from a node's learner.
 
         Args:
             node_id: The target node.
@@ -414,7 +431,8 @@ class FrameworkWorkerActor:
     # --- Async training operations (guarded by semaphore) ---
 
     async def fit(self, node_id: str) -> P2PFLModel:
-        """Fit the model with batch-level interleaving.
+        """
+        Fit the model with batch-level interleaving.
 
         Uses train_on_batch() in a loop, acquiring/releasing the semaphore
         per batch so concurrent fit() calls can truly interleave. Falls back
@@ -470,7 +488,8 @@ class FrameworkWorkerActor:
             raise
 
     async def train_on_batch(self, node_id: str) -> P2PFLModel:
-        """Train on one batch for a node.
+        """
+        Train on one batch for a node.
 
         Guarded by the training semaphore to limit concurrency.
 
@@ -494,7 +513,8 @@ class FrameworkWorkerActor:
                 raise
 
     async def evaluate(self, node_id: str) -> dict[str, float]:
-        """Evaluate the model for a node.
+        """
+        Evaluate the model for a node.
 
         Guarded by the training semaphore to limit concurrency.
 

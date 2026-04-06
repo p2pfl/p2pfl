@@ -23,7 +23,6 @@ import traceback
 
 import lightning as L
 import numpy as np
-import torch
 from lightning import Trainer
 from torch.utils.data import DataLoader
 
@@ -39,7 +38,6 @@ from p2pfl.settings import Settings
 from p2pfl.utils.check_ray import ray_installed
 from p2pfl.utils.seed import set_seed
 from p2pfl.workflow.engine.experiment import Experiment
-
 
 
 class LightningLearner(Learner):
@@ -128,7 +126,8 @@ class LightningLearner(Learner):
             raise e
 
     async def train_on_batch(self) -> P2PFLModel:
-        """Train the model on the next batch using raw PyTorch.
+        """
+        Train the model on the next batch using raw PyTorch.
 
         Maintains a DataLoader iterator across calls. Each call processes
         one batch and returns the updated model. When the iterator is
@@ -179,9 +178,7 @@ class LightningLearner(Learner):
             self._batch_optimizer.step()
 
             self.get_model().last_training_loss = float(loss.item())
-            self.get_model().set_contribution(
-                [self.address], self.get_data().get_num_samples()
-            )
+            self.get_model().set_contribution([self.address], self.get_data().get_num_samples())
             self.add_callback_info_to_model()
 
             return self.get_model()

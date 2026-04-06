@@ -54,7 +54,10 @@ class SetupStage(Stage[BasicDFLContext]):
             logger.debug(ctx.address, f"Error broadcasting node initialization: {e}")
 
         await wait_with_timeout(
-            self._nodes_ready, Settings.training.SYNCHRONIZATION_TIMEOUT, ctx.address, "Timeout waiting for peers. Proceeding anyway.",
+            self._nodes_ready,
+            Settings.training.SYNCHRONIZATION_TIMEOUT,
+            ctx.address,
+            "Timeout waiting for peers. Proceeding anyway.",
         )
 
         # Initiator starts the model gossip (no gate — no one has the model yet)
@@ -66,7 +69,10 @@ class SetupStage(Stage[BasicDFLContext]):
 
         # All nodes wait for the model to propagate
         await wait_with_timeout(
-            self._model_received, Settings.training.SYNCHRONIZATION_TIMEOUT, ctx.address, "Timeout waiting for initial model.",
+            self._model_received,
+            Settings.training.SYNCHRONIZATION_TIMEOUT,
+            ctx.address,
+            "Timeout waiting for initial model.",
         )
 
         return "round_init"
@@ -119,7 +125,11 @@ class SetupStage(Stage[BasicDFLContext]):
         gate = ModelGate(ctx.cp, ctx.address, pre_send_command="pre_send_initial_model")
         for neighbor in ctx.cp.get_neighbors(only_direct=False):
             await gate.send_if_accepted(
-                neighbor=neighbor, weight_command="initial_model", contributors=[source], round_num=0, payload=payload,
+                neighbor=neighbor,
+                weight_command="initial_model",
+                contributors=[source],
+                round_num=0,
+                payload=payload,
             )
         self._model_received.set()
 

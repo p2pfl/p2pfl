@@ -17,6 +17,7 @@
 #
 """Virtual Node Learner - thin proxy that delegates to a shared FrameworkWorkerActor."""
 
+import contextlib
 from typing import Any
 
 import numpy as np
@@ -36,7 +37,8 @@ _RPC_TIMEOUT = 60
 
 
 class VirtualNodeLearner(Learner):
-    """Lightweight proxy that delegates all operations to a shared FrameworkWorkerActor via WorkerPool.
+    """
+    Lightweight proxy that delegates all operations to a shared FrameworkWorkerActor via WorkerPool.
 
     Does NOT create its own Ray actor. Instead, it registers the learner with a
     worker obtained from the WorkerPool singleton and forwards all calls using
@@ -44,7 +46,8 @@ class VirtualNodeLearner(Learner):
     """
 
     def __init__(self, learner: Learner) -> None:
-        """Initialize the virtual learner proxy.
+        """
+        Initialize the virtual learner proxy.
 
         Args:
             learner: The concrete learner instance to register with the worker.
@@ -78,10 +81,8 @@ class VirtualNodeLearner(Learner):
         except Exception as e:
             # Best-effort cleanup; Ray may already be shut down.
             # Log instead of silencing so leaked registrations are visible.
-            try:
+            with contextlib.suppress(Exception):
                 logger.debug(self._node_key, f"Cleanup during __del__ failed: {e}")
-            except Exception:
-                pass  # Logger itself may be torn down
 
     # --- Sync proxy methods ---
 

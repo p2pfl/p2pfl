@@ -39,7 +39,7 @@ def reset_singleton():
 
 
 def _setup_ray_mocks(mock_ray, mock_actor_cls, num_nodes=1, total_cpus=8.0, total_gpus=0.0):
-    """Helper to configure ray and actor mocks for common scenarios."""
+    """Configure ray and actor mocks for common scenarios."""
     # Build alive nodes
     fake_ids = [_FAKE_NODE_ID_0, _FAKE_NODE_ID_1]
     nodes = []
@@ -71,8 +71,10 @@ class TestWorkerPoolSingleton:
 
     def test_worker_pool_singleton(self):
         """Two instantiations return the same object."""
-        with patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray, \
-             patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls:
+        with (
+            patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray,
+            patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls,
+        ):
             _setup_ray_mocks(mock_ray, mock_actor_cls, num_nodes=1)
             pool_a = WorkerPool()
             pool_b = WorkerPool()
@@ -80,11 +82,11 @@ class TestWorkerPoolSingleton:
 
     def test_worker_pool_single_machine_spawns_one_worker(self):
         """1 alive node should spawn exactly 1 worker."""
-        with patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray, \
-             patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls:
-            mock_actor_handle, mock_options_cls = _setup_ray_mocks(
-                mock_ray, mock_actor_cls, num_nodes=1, total_cpus=8.0, total_gpus=1.0
-            )
+        with (
+            patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray,
+            patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls,
+        ):
+            mock_actor_handle, mock_options_cls = _setup_ray_mocks(mock_ray, mock_actor_cls, num_nodes=1, total_cpus=8.0, total_gpus=1.0)
             pool = WorkerPool()
             assert pool.worker_count == 1
             # Should have called options().remote() once
@@ -93,11 +95,11 @@ class TestWorkerPoolSingleton:
 
     def test_worker_pool_multi_node_spawns_per_node(self):
         """2 alive nodes should spawn 2 workers, one per node."""
-        with patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray, \
-             patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls:
-            mock_actor_handle, mock_options_cls = _setup_ray_mocks(
-                mock_ray, mock_actor_cls, num_nodes=2, total_cpus=16.0, total_gpus=2.0
-            )
+        with (
+            patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray,
+            patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls,
+        ):
+            mock_actor_handle, mock_options_cls = _setup_ray_mocks(mock_ray, mock_actor_cls, num_nodes=2, total_cpus=16.0, total_gpus=2.0)
             pool = WorkerPool()
             assert pool.worker_count == 2
             assert mock_actor_cls.options.call_count == 2
@@ -105,8 +107,10 @@ class TestWorkerPoolSingleton:
 
     def test_assign_worker_round_robins(self):
         """With 2 workers, 3 assignments should cycle a, b, a."""
-        with patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray, \
-             patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls:
+        with (
+            patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray,
+            patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls,
+        ):
             handle_a = MagicMock(name="worker-a")
             handle_b = MagicMock(name="worker-b")
             mock_options_cls = MagicMock()
@@ -132,8 +136,10 @@ class TestWorkerPoolSingleton:
 
     def test_shutdown_clears_singleton(self):
         """Shutdown kills workers and resets the singleton."""
-        with patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray, \
-             patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls:
+        with (
+            patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray,
+            patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls,
+        ):
             mock_actor_handle, _ = _setup_ray_mocks(mock_ray, mock_actor_cls, num_nodes=1)
             pool = WorkerPool()
             assert pool.worker_count == 1
@@ -145,26 +151,26 @@ class TestWorkerPoolSingleton:
 
     def test_auto_detect_max_concurrent(self):
         """RAY_ACTOR_POOL_SIZE=0 auto-detects as total_cpus - 1 (keep 1 free)."""
-        with patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray, \
-             patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls:
-            _, mock_options_cls = _setup_ray_mocks(
-                mock_ray, mock_actor_cls, num_nodes=1, total_cpus=8.0
-            )
+        with (
+            patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray,
+            patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls,
+        ):
+            _, mock_options_cls = _setup_ray_mocks(mock_ray, mock_actor_cls, num_nodes=1, total_cpus=8.0)
             Settings.training.RAY_ACTOR_POOL_SIZE = 0
-            pool = WorkerPool()
-            # auto = 8 - 1 = 7, with +10 headroom = max_concurrency 17
+            WorkerPool()
+            # auto = ceil((8 - 1) / 2) = 4, with +10 headroom = max_concurrency 14
             call_kwargs = mock_actor_cls.options.call_args[1]
-            assert call_kwargs["max_concurrency"] == 17
+            assert call_kwargs["max_concurrency"] == 14
 
     def test_explicit_pool_size(self):
         """RAY_ACTOR_POOL_SIZE > 0 uses explicit value."""
-        with patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray, \
-             patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls:
-            _, mock_options_cls = _setup_ray_mocks(
-                mock_ray, mock_actor_cls, num_nodes=1, total_cpus=8.0
-            )
+        with (
+            patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray,
+            patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls,
+        ):
+            _, mock_options_cls = _setup_ray_mocks(mock_ray, mock_actor_cls, num_nodes=1, total_cpus=8.0)
             Settings.training.RAY_ACTOR_POOL_SIZE = 3
-            pool = WorkerPool()
+            WorkerPool()
             # explicit 3 + 10 headroom = 13
             call_kwargs = mock_actor_cls.options.call_args[1]
             assert call_kwargs["max_concurrency"] == 13
@@ -175,8 +181,10 @@ class TestWorkerPoolRegistrations:
 
     def test_register_tracks_registration(self):
         """Test that register_node tracks the registration."""
-        with patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray, \
-             patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls:
+        with (
+            patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray,
+            patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls,
+        ):
             _setup_ray_mocks(mock_ray, mock_actor_cls, num_nodes=1)
             pool = WorkerPool()
             worker = pool.assign_worker()
@@ -190,8 +198,10 @@ class TestWorkerPoolRegistrations:
 
     def test_rekey_updates_registration(self):
         """Test that rekey_node updates the node_id in registrations."""
-        with patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray, \
-             patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls:
+        with (
+            patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray,
+            patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls,
+        ):
             _setup_ray_mocks(mock_ray, mock_actor_cls, num_nodes=1)
             pool = WorkerPool()
             worker = pool.assign_worker()
@@ -205,8 +215,10 @@ class TestWorkerPoolRegistrations:
 
     def test_unregister_removes_registration(self):
         """Test that unregister_node removes the registration record."""
-        with patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray, \
-             patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls:
+        with (
+            patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray,
+            patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls,
+        ):
             _setup_ray_mocks(mock_ray, mock_actor_cls, num_nodes=1)
             pool = WorkerPool()
             worker = pool.assign_worker()
@@ -219,8 +231,10 @@ class TestWorkerPoolRegistrations:
 
     def test_shutdown_clears_registrations(self):
         """Test that shutdown clears all registration records."""
-        with patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray, \
-             patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls:
+        with (
+            patch("p2pfl.learning.frameworks.ray.worker_pool.ray") as mock_ray,
+            patch("p2pfl.learning.frameworks.ray.worker_pool.FrameworkWorkerActor") as mock_actor_cls,
+        ):
             _setup_ray_mocks(mock_ray, mock_actor_cls, num_nodes=1)
             pool = WorkerPool()
             worker = pool.assign_worker()

@@ -330,8 +330,7 @@ class RayP2PFLogger(P2PFLogger):
             import warnings
 
             warnings.warn(
-                f"Cannot send {type(handler).__name__} to Ray actor (not serializable). "
-                "Handler will be skipped.",
+                f"Cannot send {type(handler).__name__} to Ray actor (not serializable). " "Handler will be skipped.",
                 stacklevel=2,
             )
 

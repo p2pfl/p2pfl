@@ -65,7 +65,7 @@ def mock_worker_pool():
         ),
         patch("p2pfl.learning.frameworks.ray.virtual_learner.ray") as mock_ray,
     ):
-        mock_ray.get.side_effect = lambda x: x
+        mock_ray.get.side_effect = lambda x, **kwargs: x
         mock_ray.put.side_effect = lambda x: x
         yield {"worker": mock_worker, "pool": mock_pool, "ray": mock_ray}
 
@@ -76,16 +76,14 @@ def test_initialization_registers_with_worker(mock_worker_pool):
     vl = VirtualNodeLearner(learner)
 
     mock_worker_pool["pool"].assign_worker.assert_called_once()
-    mock_worker_pool["worker"].register_node.remote.assert_called_once_with(
-        "node-1", learner
-    )
+    mock_worker_pool["worker"].register_node.remote.assert_called_once_with("node-1", learner)
     assert vl.address == "node-1"
 
 
 def test_initialization_uses_id_when_no_address(mock_worker_pool):
     """Test that VirtualNodeLearner uses str(id(learner)) when address is empty."""
     learner = create_mock_learner(address="")
-    vl = VirtualNodeLearner(learner)
+    VirtualNodeLearner(learner)
 
     call_args = mock_worker_pool["worker"].register_node.remote.call_args
     node_key = call_args[0][0]
@@ -93,18 +91,13 @@ def test_initialization_uses_id_when_no_address(mock_worker_pool):
 
 
 def test_set_address_rekeys_on_worker(mock_worker_pool):
-    """Test that set_address calls rekey_node and set_address on worker."""
+    """Test that set_address calls rekey_and_set_address on worker."""
     learner = create_mock_learner(address="old-key")
     vl = VirtualNodeLearner(learner)
 
     vl.set_address("new-key")
 
-    mock_worker_pool["worker"].rekey_node.remote.assert_called_once_with(
-        "old-key", "new-key"
-    )
-    mock_worker_pool["worker"].set_address.remote.assert_called_once_with(
-        "new-key", "new-key"
-    )
+    mock_worker_pool["worker"].rekey_and_set_address.remote.assert_called_once_with("old-key", "new-key")
     assert vl.address == "new-key"
 
 
@@ -129,7 +122,7 @@ def test_get_model_delegates_to_worker(mock_worker_pool):
 
     mock_model_ref = MagicMock()
     mock_worker_pool["worker"].get_model.remote.return_value = mock_model_ref
-    mock_worker_pool["ray"].get.side_effect = lambda x: model if x == mock_model_ref else x
+    mock_worker_pool["ray"].get.side_effect = lambda x, **kwargs: model if x == mock_model_ref else x
 
     result = vl.get_model()
 
@@ -216,9 +209,7 @@ def test_configure_delegates(mock_worker_pool):
 
     vl.configure(epochs=10, steps_per_epoch=100)
 
-    mock_worker_pool["worker"].configure.remote.assert_called_once_with(
-        "node-1", epochs=10, steps_per_epoch=100
-    )
+    mock_worker_pool["worker"].configure.remote.assert_called_once_with("node-1", epochs=10, steps_per_epoch=100)
 
 
 def test_indicate_aggregator_delegates(mock_worker_pool):
@@ -267,19 +258,17 @@ def test_get_framework_delegates(mock_worker_pool):
 
 @pytest.mark.asyncio
 async def test_fit_delegates_to_worker(mock_worker_pool):
-    """Test that fit delegates to worker and resolves the model ref."""
+    """Test that fit delegates to worker and returns the model directly."""
     learner = create_mock_learner(address="node-1")
     vl = VirtualNodeLearner(learner)
     model = MagicMock(spec=P2PFLModel)
 
-    mock_model_ref = MagicMock()
-    mock_worker_pool["worker"].fit.remote = AsyncMock(return_value=mock_model_ref)
-    mock_worker_pool["ray"].get.side_effect = lambda x: model if x == mock_model_ref else x
+    mock_worker_pool["worker"].fit.remote = AsyncMock(return_value=model)
 
     result = await vl.fit()
 
     mock_worker_pool["worker"].fit.remote.assert_called_once_with("node-1")
-    assert result == model
+    assert result is model
 
 
 @pytest.mark.asyncio
@@ -304,14 +293,12 @@ async def test_train_on_batch_delegates(mock_worker_pool):
     vl = VirtualNodeLearner(learner)
     model = MagicMock(spec=P2PFLModel)
 
-    mock_model_ref = MagicMock()
-    mock_worker_pool["worker"].train_on_batch.remote = AsyncMock(return_value=mock_model_ref)
-    mock_worker_pool["ray"].get.side_effect = lambda x: model if x == mock_model_ref else x
+    mock_worker_pool["worker"].train_on_batch.remote = AsyncMock(return_value=model)
 
     result = await vl.train_on_batch()
 
     mock_worker_pool["worker"].train_on_batch.remote.assert_called_once_with("node-1")
-    assert result == model
+    assert result is model
 
 
 @pytest.mark.asyncio
@@ -346,14 +333,12 @@ async def test_aget_model_async(mock_worker_pool):
     vl = VirtualNodeLearner(learner)
     model = MagicMock(spec=P2PFLModel)
 
-    mock_model_ref = MagicMock()
-    mock_worker_pool["worker"].get_model.remote = AsyncMock(return_value=mock_model_ref)
-    mock_worker_pool["ray"].get.side_effect = lambda x: model if x == mock_model_ref else x
+    mock_worker_pool["worker"].get_model.remote = AsyncMock(return_value=model)
 
     result = await vl.aget_model()
 
     mock_worker_pool["worker"].get_model.remote.assert_called_once_with("node-1")
-    assert result == model
+    assert result is model
 
 
 @pytest.mark.asyncio
@@ -377,13 +362,11 @@ async def test_aset_address_async(mock_worker_pool):
     learner = create_mock_learner(address="old-key")
     vl = VirtualNodeLearner(learner)
 
-    mock_worker_pool["worker"].rekey_node.remote = AsyncMock()
-    mock_worker_pool["worker"].set_address.remote = AsyncMock()
+    mock_worker_pool["worker"].rekey_and_set_address.remote = AsyncMock()
 
     result = await vl.aset_address("new-key")
 
-    mock_worker_pool["worker"].rekey_node.remote.assert_called_once_with("old-key", "new-key")
-    mock_worker_pool["worker"].set_address.remote.assert_called_once_with("new-key", "new-key")
+    mock_worker_pool["worker"].rekey_and_set_address.remote.assert_called_once_with("old-key", "new-key")
     assert result == "new-key"
     assert vl.address == "new-key"
 
@@ -398,9 +381,7 @@ async def test_aconfigure_async(mock_worker_pool):
 
     await vl.aconfigure(epochs=5, steps_per_epoch=50)
 
-    mock_worker_pool["worker"].configure.remote.assert_called_once_with(
-        "node-1", epochs=5, steps_per_epoch=50
-    )
+    mock_worker_pool["worker"].configure.remote.assert_called_once_with("node-1", epochs=5, steps_per_epoch=50)
 
 
 def test_has_base_attributes(mock_worker_pool):

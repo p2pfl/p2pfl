@@ -32,7 +32,6 @@ from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 from p2pfl.utils.node_component import NodeComponent
 
-
 _GOSSIP_PENDING_MAX = 500  # Drop oldest gossip messages when queue exceeds this size
 
 

@@ -74,6 +74,7 @@ def _make_mock_learner(address: str = "node_0") -> MagicMock:
 
 
 def test_register_node():
+    """Test that a node can be registered with the worker."""
     worker = _make_worker()
     learner = _make_mock_learner("node_0")
     worker.register_node("node_0", learner)
@@ -81,6 +82,7 @@ def test_register_node():
 
 
 def test_unregister_node():
+    """Test that a node can be unregistered from the worker."""
     worker = _make_worker()
     learner = _make_mock_learner("node_0")
     worker.register_node("node_0", learner)
@@ -89,6 +91,7 @@ def test_unregister_node():
 
 
 def test_rekey_node():
+    """Test that a node can be rekeyed in the registry."""
     worker = _make_worker()
     learner = _make_mock_learner("old_id")
     worker.register_node("old_id", learner)
@@ -102,6 +105,7 @@ def test_rekey_node():
 
 @patch("p2pfl.learning.frameworks.ray.framework_worker.ray")
 def test_set_model(mock_ray):
+    """Test that set_model delegates to the learner."""
     worker = _make_worker()
     learner = _make_mock_learner("node_0")
     worker.register_node("node_0", learner)
@@ -110,20 +114,19 @@ def test_set_model(mock_ray):
     learner.set_model.assert_called_once_with(model)
 
 
-@patch("p2pfl.learning.frameworks.ray.framework_worker.ray")
-def test_get_model(mock_ray):
+def test_get_model():
+    """Test that get_model retrieves the model from the learner."""
     worker = _make_worker()
     learner = _make_mock_learner("node_0")
     worker.register_node("node_0", learner)
-    mock_ray.put.return_value = "fake_ref"
     result = worker.get_model("node_0")
     learner.get_model.assert_called_once()
-    mock_ray.put.assert_called_once_with(learner.get_model.return_value)
-    assert result == "fake_ref"
+    assert result is learner.get_model.return_value
 
 
 @patch("p2pfl.learning.frameworks.ray.framework_worker.ray")
 def test_set_data(mock_ray):
+    """Test that set_data delegates to the learner."""
     worker = _make_worker()
     learner = _make_mock_learner("node_0")
     worker.register_node("node_0", learner)
@@ -133,6 +136,7 @@ def test_set_data(mock_ray):
 
 
 def test_get_data():
+    """Test that get_data retrieves the dataset from the learner."""
     worker = _make_worker()
     learner = _make_mock_learner("node_0")
     worker.register_node("node_0", learner)
@@ -146,6 +150,7 @@ def test_get_data():
 
 
 def test_configure_batches_settings():
+    """Test that epochs and steps_per_epoch are set correctly."""
     worker = _make_worker()
     learner = _make_mock_learner("node_0")
     worker.register_node("node_0", learner)
@@ -159,6 +164,7 @@ def test_configure_batches_settings():
 
 
 def test_unregistered_node_raises():
+    """Test that accessing an unregistered node raises KeyError."""
     worker = _make_worker()
     with pytest.raises(KeyError):
         worker.set_model("unknown_node", MagicMock())
@@ -168,8 +174,7 @@ def test_unregistered_node_raises():
 
 
 @pytest.mark.asyncio
-@patch("p2pfl.learning.frameworks.ray.framework_worker.ray")
-async def test_fit_delegates_to_learner(mock_ray):
+async def test_fit_delegates_to_learner():
     """Test that fit() falls back to learner.fit() when train_on_batch is not supported."""
     worker = _make_worker()
     learner = _make_mock_learner("node_0")
@@ -181,16 +186,15 @@ async def test_fit_delegates_to_learner(mock_ray):
     data.get_num_samples.return_value = 100
     learner.get_data.return_value = data
     worker.register_node("node_0", learner)
-    mock_ray.put.return_value = "fit_ref"
     result = await worker.fit("node_0")
     learner.fit.assert_awaited_once()
-    mock_ray.put.assert_called_once()
-    assert result == "fit_ref"
+    assert result is learner.get_model.return_value
 
 
 @pytest.mark.asyncio
 @patch("p2pfl.learning.frameworks.ray.framework_worker.ray")
 async def test_evaluate_delegates_to_learner(mock_ray):
+    """Test that evaluate delegates to the learner."""
     worker = _make_worker()
     learner = _make_mock_learner("node_0")
     worker.register_node("node_0", learner)
@@ -200,16 +204,14 @@ async def test_evaluate_delegates_to_learner(mock_ray):
 
 
 @pytest.mark.asyncio
-@patch("p2pfl.learning.frameworks.ray.framework_worker.ray")
-async def test_train_on_batch_delegates_to_learner(mock_ray):
+async def test_train_on_batch_delegates_to_learner():
+    """Test that train_on_batch delegates to the learner."""
     worker = _make_worker()
     learner = _make_mock_learner("node_0")
     worker.register_node("node_0", learner)
-    mock_ray.put.return_value = "batch_ref"
     result = await worker.train_on_batch("node_0")
     learner.train_on_batch.assert_awaited_once()
-    mock_ray.put.assert_called_once()
-    assert result == "batch_ref"
+    assert result is learner.train_on_batch.return_value
 
 
 @pytest.mark.asyncio

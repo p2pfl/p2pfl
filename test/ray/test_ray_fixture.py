@@ -115,18 +115,22 @@ class TestLearnerWrapping:
         """Verify learner IS wrapped in VirtualNodeLearner when Ray is enabled."""
         assert Settings.general.DISABLE_RAY is False
 
-        from unittest.mock import patch, MagicMock as MM
+        from unittest.mock import MagicMock as MM
+        from unittest.mock import patch
 
         mock_worker = MM()
         mock_pool = MM()
         mock_pool.assign_worker.return_value = mock_worker
 
-        with patch(
-            "p2pfl.learning.frameworks.ray.virtual_learner.WorkerPool",
-            return_value=mock_pool,
-        ), patch(
-            "p2pfl.learning.frameworks.ray.virtual_learner.ray",
-        ) as mock_ray:
+        with (
+            patch(
+                "p2pfl.learning.frameworks.ray.virtual_learner.WorkerPool",
+                return_value=mock_pool,
+            ),
+            patch(
+                "p2pfl.learning.frameworks.ray.virtual_learner.ray",
+            ) as mock_ray,
+        ):
             mock_ray.get.side_effect = lambda x: x
             mock_ray.put.side_effect = lambda x: x
             learner = MM(spec=Learner)
