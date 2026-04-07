@@ -79,7 +79,7 @@ class InitModelCommand(Command):
                 # Release lock - wrap in try/except to handle concurrent releases
                 try:
                     self.state.model_initialized_lock.release()
-                    logger.info(self.state.addr, "🤖 Model Weights Initialized")
+                    logger.info(self.state.addr, "Model Weights Initialized")
                 except RuntimeError:
                     # This likely means another concurrent INIT_MODEL message already released the lock.
                     logger.debug(

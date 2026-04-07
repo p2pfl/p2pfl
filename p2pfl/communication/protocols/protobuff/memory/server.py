@@ -58,6 +58,24 @@ class AddressCounter(metaclass=SingletonMeta):
         else:
             self.__address_registry[base_name] += 1
             return f"{base_name}_{self.__address_registry[base_name]}"
+    
+    def remove(self, base_name: str) -> None:
+        """
+        Remove an address from the registry, allowing it to be reused.
+        
+        This is useful when a node fails and is recovered, allowing the recovered
+        node to use the same address as the failed node.
+
+        Args:
+            base_name: The base name of the address to remove.
+        """
+        if base_name in self.__address_registry:
+            # If counter is 0, just remove the entry
+            if self.__address_registry[base_name] == 0:
+                del self.__address_registry[base_name]
+            else:
+                # If counter > 0, decrement it
+                self.__address_registry[base_name] -= 1
 
 
 class MemoryServer(ProtobuffServer):

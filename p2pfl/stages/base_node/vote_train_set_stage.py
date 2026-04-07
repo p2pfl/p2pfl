@@ -62,7 +62,7 @@ class VoteTrainSetStage(Stage):
             )
             logger.info(
                 state.addr,
-                f"🚂 Train set of {len(state.train_set)} nodes: {state.train_set}",
+                f"Train set of {len(state.train_set)} nodes: {state.train_set}",
             )
 
             # Next stage
@@ -80,7 +80,7 @@ class VoteTrainSetStage(Stage):
         candidates = list(communication_protocol.get_neighbors(only_direct=False))
         if state.addr not in candidates:
             candidates.append(state.addr)
-        logger.debug(state.addr, f"👨‍🏫 {len(candidates)} candidates to train set")
+        logger.debug(state.addr, f"{len(candidates)} candidates to train set")
 
         # Order candidates to make a deterministic vote (based on the random seed)
         candidates.sort()
@@ -97,8 +97,8 @@ class VoteTrainSetStage(Stage):
         state.train_set_votes_lock.release()
 
         # Send and wait for votes
-        logger.info(state.addr, "🗳️ Sending train set vote.")
-        logger.debug(state.addr, f"🪞🗳️ Self Vote: {votes}")
+        logger.info(state.addr, "Sending train set vote.")
+        logger.debug(state.addr, f"Self Vote: {votes}")
         communication_protocol.broadcast(
             communication_protocol.build_msg(
                 VoteTrainSetCommand.get_name(),
@@ -109,7 +109,7 @@ class VoteTrainSetStage(Stage):
 
     @staticmethod
     def __aggregate_votes(trainset_size: int, state: NodeState, communication_protocol: CommunicationProtocol) -> list[str]:
-        logger.debug(state.addr, "⏳ Waiting other node votes.")
+        logger.debug(state.addr, "Waiting other node votes.")
 
         # Get time
         count = 0.0
@@ -165,7 +165,7 @@ class VoteTrainSetStage(Stage):
 
                 # Clear votes
                 state.train_set_votes = {}
-                logger.info(state.addr, f"🔢 Computed {len(nc_votes)} votes.")
+                logger.info(state.addr, f"Computed {len(nc_votes)} votes.")
                 return [i[0] for i in results_ordered]
 
             # Wait for votes or refresh every 2 seconds

@@ -43,7 +43,7 @@ class StageWokflow:
         state: NodeState | None = kwargs.get("state")
         if state:
             while True:
-                logger.debug(state.addr, f"🏃 Running stage: {(self.current_stage.name())}")
+                logger.debug(state.addr, f"Running stage: {(self.current_stage.name())}")
                 self.history.append(self.current_stage.name())
                 next_stage = self.current_stage.execute(**kwargs)
                 if next_stage is None or check_early_stop(state, raise_exception=False):

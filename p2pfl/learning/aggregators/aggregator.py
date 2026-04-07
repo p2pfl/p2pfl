@@ -234,7 +234,7 @@ class Aggregator(NodeComponent):
                     models_added = str(len(self.get_aggregated_models()))
                     logger.info(
                         self.addr,
-                        f"🧩 Model added ({models_added}/{str(len(self.__train_set))}) from {str(model.get_contributors())}",
+                        f"Model added ({models_added}/{str(len(self.__train_set))}) from {str(model.get_contributors())}",
                     )
                     # logger.debug(self.addr, f"Models added: {self.get_aggregated_models()}")
 
@@ -248,27 +248,28 @@ class Aggregator(NodeComponent):
                 else:
                     logger.debug(
                         self.addr,
-                        f"🚫 Can't add a model from a node ({model.get_contributors()}) that is already aggregated.",
+                        f"Can't add a model from a node ({model.get_contributors()}) that is already aggregated.",
                     )
             else:
                 logger.debug(
                     self.addr,
-                    f"🚫 Can't add a model from a node ({model.get_contributors()}) that is not in the training set.",
+                    f"Can't add a model from a node ({model.get_contributors()}) that is not in the training set.",
                 )
         else:
-            logger.debug(self.addr, "🚫 Received a model when is not needed. Saving a iteration to affor bandwith.")
+            logger.debug(self.addr, "Received a model when is not needed. Saving a iteration to affor bandwith.")
             self.__unhandled_models.append(model)
 
         # Release and return
         self.__agg_lock.release()
         return []
 
-    def wait_and_get_aggregation(self, timeout: int = Settings.training.AGGREGATION_TIMEOUT) -> P2PFLModel:
+    def wait_and_get_aggregation(self, timeout: int = Settings.training.AGGREGATION_TIMEOUT, state=None) -> P2PFLModel:
         """
         Wait for aggregation to finish.
 
         Args:
             timeout: Timeout in seconds.
+            state: Optional NodeState to sync train_set from if aggregation times out.
 
         Returns:
             Aggregated model.
@@ -277,21 +278,59 @@ class Aggregator(NodeComponent):
             Exception: If waiting for an aggregated model and several models were received.
 
         """
+        # CRITICAL: Before waiting, check if state.train_set differs and missing models are failed nodes
+        # If so, sync immediately to avoid waiting for timeout
+        if state is not None and hasattr(state, 'train_set') and state.train_set:
+            if set(state.train_set) != set(self.__train_set):
+                # Train set has been updated (e.g., nodes failed)
+                missing_models_before = self.get_missing_models()
+                # Check if all missing models are failed nodes (not in state.train_set)
+                failed_nodes = set(missing_models_before) - set(state.train_set)
+                if failed_nodes == set(missing_models_before):
+                    # All missing models are from failed nodes, sync immediately
+                    logger.info(
+                        self.addr,
+                        f"Immediately syncing aggregator train_set (failed nodes detected): {self.__train_set} -> {state.train_set}"
+                    )
+                    self.__train_set = state.train_set.copy()
+                    # Recalculate missing models
+                    missing_models_after = self.get_missing_models()
+                    if not missing_models_after:
+                        # All required models are present, trigger aggregation completion
+                        logger.info(self.addr, "All models present after sync. Triggering aggregation completion.")
+                        self._finish_aggregation_event.set()
+        
         # Wait for aggregation to finish (then release the lock again)
         event_set = self._finish_aggregation_event.wait(timeout=timeout)
         # Check that the aggregation is finished
         missing_models = self.get_missing_models()
         # Check if aggregation has timed out or event has been set correctly
         if not event_set:
-            logger.info(self.addr, f"⏳ Aggregation wait timed out. Missing models: {missing_models}")
+            logger.info(self.addr, f"Aggregation wait timed out. Missing models: {missing_models}")
+            
+            # CRITICAL: If timeout occurred and state is provided, sync train_set
+            # This handles the case where nodes failed during aggregation and state.train_set
+            # was updated but aggregator's train_set wasn't (because aggregation was running)
+            if state is not None and hasattr(state, 'train_set') and state.train_set:
+                if set(state.train_set) != set(self.__train_set):
+                    logger.info(
+                        self.addr,
+                        f"Syncing aggregator train_set from state: {self.__train_set} -> {state.train_set}"
+                    )
+                    # Update train_set directly (don't call set_nodes_to_aggregate as it would reset aggregation)
+                    self.__train_set = state.train_set.copy()
+                    # Recalculate missing models with updated train_set
+                    missing_models = self.get_missing_models()
+                    if missing_models:
+                        logger.info(self.addr, f"After sync, still missing models: {missing_models}")
         else:
             if len(missing_models) > 0:
                 logger.info(
                     self.addr,
-                    f"❌ Aggregation event set, but missing models:  {missing_models}",
+                    f"ERROR: Aggregation event set, but missing models:  {missing_models}",
                 )
             else:
-                logger.info(self.addr, "🧠 Aggregating models.")
+                logger.info(self.addr, "Aggregating models.")
 
         # Notify node
         return self.aggregate(self.__models)

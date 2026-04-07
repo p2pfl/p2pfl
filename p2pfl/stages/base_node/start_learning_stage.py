@@ -63,6 +63,25 @@ class StartLearningStage(Stage):
         ):
             raise Exception("Invalid parameters on StartLearningStage.")
 
+        # Check if this is a recovered node (model is already initialized)
+        # A recovered node will have:
+        # 1. experiment.round set to a value > 0 (not the initial 0)
+        # 2. model_initialized_lock released (model already initialized)
+        # 3. train_set already populated (recovered nodes have train_set set during recovery)
+        # If all conditions are met, skip initialization and go directly to voting
+        is_recovered = (
+            state.experiment is not None 
+            and state.experiment.round is not None 
+            and state.experiment.round > 0  # Round > 0 indicates recovery (normal start has round = 0)
+            and not state.model_initialized_lock.locked()  # Model already initialized
+            and len(state.train_set) > 0  # Train set already populated
+        )
+        if is_recovered:
+            logger.info(state.addr, f"Skipping initialization for recovered node (round {state.experiment.round} already set, model already initialized, train_set={state.train_set}). Going directly to voting.")
+            # Just set epochs if not already set
+            learner.set_epochs(epochs)
+            return StageFactory.get_stage("VoteTrainSetStage")
+        
         # Init
         with state.start_thread_lock:
             state.set_experiment(
@@ -80,11 +99,11 @@ class StartLearningStage(Stage):
         begin = time.time()
 
         # Wait and gossip model inicialization
-        logger.info(state.addr, "⏳ Waiting initialization.")
+        logger.info(state.addr, "Waiting initialization.")
         state.model_initialized_lock.acquire()
         # Communicate Initialization
         communication_protocol.broadcast(communication_protocol.build_msg(ModelInitializedCommand.get_name()))
-        logger.info(state.addr, "🗣️ Gossiping model initialization.")
+        logger.info(state.addr, "Gossiping model initialization.")
         time.sleep(1.0)
         StartLearningStage.__gossip_model(state, communication_protocol, learner)
 

@@ -75,15 +75,15 @@ class FullModelCommand(Command):
 
             # Warning: these stops can cause a denegation of service attack
             except DecodingParamsError:
-                logger.error(self.state.addr, "❌ Error decoding parameters.")
+                logger.error(self.state.addr, "ERROR: Error decoding parameters.")
                 self.stop()
 
             except ModelNotMatchingError:
-                logger.error(self.state.addr, "❌ Models not matching.")
+                logger.error(self.state.addr, "ERROR: Models not matching.")
                 self.stop()
 
             except Exception as e:
-                logger.error(self.state.addr, f"❌ Unknown error adding full model: {e}")
+                logger.error(self.state.addr, f"ERROR: Unknown error adding full model: {e}")
                 self.stop()
         else:
-            logger.debug(self.state.addr, "❌ Tried to add a model while learning is not running")
+            logger.debug(self.state.addr, "ERROR: Tried to add a model while learning is not running")

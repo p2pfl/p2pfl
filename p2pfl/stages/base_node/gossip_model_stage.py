@@ -58,13 +58,16 @@ class GossipModelStage(Stage):
         communication_protocol: CommunicationProtocol,
         learner: Learner,
     ) -> None:
-        logger.info(state.addr, "🗣️ Gossiping aggregated model.")
+        logger.info(state.addr, "Gossiping aggregated model.")
         fixed_round = state.round
         if fixed_round is None:
             raise Exception("Learner not initialized")
 
         def candidate_condition(node: str) -> bool:
-            return state.nei_status[node] < fixed_round
+            # Handle case where node is newly recovered and nei_status doesn't have the key yet
+            # Use default value -1 (meaning node hasn't initialized) if key doesn't exist
+            node_round = state.nei_status.get(node, -1)
+            return node_round < fixed_round
 
         def get_candidates_fn() -> list[str]:
             return [n for n in communication_protocol.get_neighbors(only_direct=True) if candidate_condition(n)]

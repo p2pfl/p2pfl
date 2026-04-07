@@ -206,11 +206,11 @@ class Gossiper(threading.Thread, NodeComponent):
 
             # Determine end of gossip
             if neis == []:
-                logger.info(self.addr, "🤫 Gossip finished.")
+                logger.info(self.addr, "Gossip finished.")
                 return
 
             # Save state of neighbors. If nodes are not responding gossip will stop
-            logger.debug(self.addr, f"👥 Gossip remaining nodes: {neis}")
+            logger.debug(self.addr, f"Gossip remaining nodes: {neis}")
             if len(last_x_status) != Settings.gossip.EXIT_ON_X_EQUAL_ROUNDS:
                 last_x_status.append(status_fn())
             else:
@@ -223,7 +223,7 @@ class Gossiper(threading.Thread, NodeComponent):
                         break
                     logger.info(
                         self.addr,
-                        f"⏹️  Gossiping exited for {Settings.gossip.EXIT_ON_X_EQUAL_ROUNDS} equal rounds.",
+                        f"Gossiping exited for {Settings.gossip.EXIT_ON_X_EQUAL_ROUNDS} equal rounds.",
                     )
                     logger.debug(self.addr, f"Gossip last status: {last_x_status[-1]}")
                     return
@@ -253,7 +253,7 @@ class Gossiper(threading.Thread, NodeComponent):
                     continue
 
                 # Send
-                logger.debug(self.addr, f"🗣️ Gossiping model to {client.nei_addr}.")
+                logger.debug(self.addr, f"Gossiping model to {client.nei_addr}.")
                 client.send(model, temporal_connection=temporal_connection)
 
             # Sleep to allow periodicity

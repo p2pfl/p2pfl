@@ -74,14 +74,14 @@ class Neighbors(NodeComponent):
         """
         # Cannot add itself
         if addr == self.addr:
-            logger.info(self.addr, "❌ Cannot add itself")
+            logger.info(self.addr, "ERROR: Cannot add itself")
             return False
 
         # Lock
         with self.neis_lock:
             # Cannot add duplicates
             if self.exists(addr, only_direct=True):
-                logger.info(self.addr, f"❌ Cannot add duplicates. {addr} already exists.")
+                logger.info(self.addr, f"ERROR: Cannot add duplicates. {addr} already exists.")
                 logger.debug(self.addr, f"Current neighbors: {self.neis.keys()}")
                 return False
 
@@ -92,7 +92,7 @@ class Neighbors(NodeComponent):
                     client.connect(handshake_msg=handshake)
                 self.neis[addr] = (client, time.time())
             except Exception as e:
-                logger.error(self.addr, f"❌ Cannot add {addr}: {e}")
+                logger.error(self.addr, f"ERROR: Cannot add {addr}: {e}")
                 return False
 
             # Release

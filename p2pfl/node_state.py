@@ -68,6 +68,10 @@ class NodeState:
         self.sending_models: dict[str, dict[str, float]] = {}
         self.sending_models_lock = threading.Lock()
 
+        # Remote checkpoint tracking
+        self.last_backup_checkpoint_path: str | None = None
+        """Path to the last backup checkpoint (for delta calculation)."""
+
         # Locks
         self.train_set_votes_lock = threading.Lock()
         self.start_thread_lock = threading.Lock()

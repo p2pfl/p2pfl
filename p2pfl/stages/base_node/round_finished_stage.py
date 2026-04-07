@@ -18,12 +18,14 @@
 
 """Round Finished Stage."""
 
+from p2pfl.checkpoints import save_checkpoint, save_remote_checkpoint, select_distant_nodes
 from p2pfl.communication.commands.message.metrics_command import MetricsCommand
 from p2pfl.communication.protocols.communication_protocol import CommunicationProtocol
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.management.logger import logger
 from p2pfl.node_state import NodeState
+from p2pfl.settings import Settings
 from p2pfl.stages.stage import Stage
 from p2pfl.stages.stage_factory import StageFactory
 
@@ -48,6 +50,64 @@ class RoundFinishedStage(Stage):
         if state is None or communication_protocol is None or aggregator is None or learner is None:
             raise Exception("Invalid parameters on RoundFinishedStage.")
 
+        # Save checkpoint before increasing round (saves the current round's final state)
+        current_round = state.round
+        if current_round is not None:
+            try:
+                checkpoint_path = save_checkpoint(
+                    state=state,
+                    learner=learner,
+                    round=current_round,
+                    include_evaluation=False,
+                    checkpoint_type="round_finished",
+                )
+                # Update last backup checkpoint path
+                state.last_backup_checkpoint_path = checkpoint_path
+            except Exception as e:
+                logger.warning(
+                    state.addr,
+                    f"Failed to save checkpoint at round {current_round} completion: {e}. Continuing with round transition.",
+                )
+
+            # Save remote checkpoint every k rounds
+            if (
+                current_round > 0
+                and current_round % Settings.general.REMOTE_CHECKPOINT_INTERVAL == 0
+            ):
+                try:
+                    # Get all nodes in the network
+                    neighbors_dict = communication_protocol.get_neighbors(only_direct=False)
+                    if isinstance(neighbors_dict, dict):
+                        all_nodes = list(neighbors_dict.keys())
+                    elif isinstance(neighbors_dict, list):
+                        all_nodes = neighbors_dict
+                    else:
+                        all_nodes = []
+                    all_nodes.append(state.addr)
+
+                    # Select distant nodes
+                    distant_nodes = select_distant_nodes(
+                        state.addr,
+                        all_nodes,
+                        communication_protocol,
+                        Settings.general.REMOTE_CHECKPOINT_NODES,
+                    )
+
+                    if distant_nodes:
+                        save_remote_checkpoint(
+                            state=state,
+                            learner=learner,
+                            last_backup_checkpoint_path=state.last_backup_checkpoint_path,
+                            target_nodes=distant_nodes,
+                            communication_protocol=communication_protocol,
+                            round=current_round,
+                        )
+                except Exception as e:
+                    logger.warning(
+                        state.addr,
+                        f"Failed to save remote checkpoint at round {current_round}: {e}. Continuing with round transition.",
+                )
+
         # Set Next Round
         aggregator.clear()
         state.increase_round()
@@ -55,7 +115,7 @@ class RoundFinishedStage(Stage):
         # Next Step or Finish
         logger.info(
             state.addr,
-            f"🎉 Round {state.round} of {state.total_rounds} finished.",
+            f"Round {state.round} of {state.total_rounds} finished.",
         )
         if state.round is None or state.total_rounds is None:
             raise ValueError("Round or total rounds not set.")
@@ -67,17 +127,17 @@ class RoundFinishedStage(Stage):
             RoundFinishedStage.__evaluate(state, learner, communication_protocol)
             # Finish
             state.clear()
-            logger.info(state.addr, "😋 Training finished!!")
+            logger.info(state.addr, "Training finished!!")
             return None
 
     @staticmethod
     def __evaluate(state: NodeState, learner: Learner, communication_protocol: CommunicationProtocol) -> None:
-        logger.info(state.addr, "🔬 Evaluating...")
+        logger.info(state.addr, "Evaluating...")
         results = learner.evaluate()
-        logger.info(state.addr, f"📈 Evaluated. Results: {results}")
+        logger.info(state.addr, f"Evaluated. Results: {results}")
         # Send metrics
         if len(results) > 0:
-            logger.info(state.addr, "📢 Broadcasting metrics.")
+            logger.info(state.addr, "Broadcasting metrics.")
             flattened_metrics = [str(item) for pair in results.items() for item in pair]
             communication_protocol.broadcast(
                 communication_protocol.build_msg(
