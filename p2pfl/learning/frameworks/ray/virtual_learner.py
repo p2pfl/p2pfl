@@ -15,159 +15,200 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-"""Virtual Node Learner."""
+"""Virtual Node Learner - thin proxy that delegates to a shared FrameworkWorkerActor."""
 
-import asyncio
-import traceback
-from typing import Any, TypeVar
+import contextlib
+from typing import Any
 
+import numpy as np
 import ray
 
-from p2pfl.learning.frameworks.learner import Learner, LearnerDecorator
+from p2pfl.learning.aggregators.aggregator import Aggregator
+from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
+from p2pfl.learning.frameworks.learner import Learner
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
-from p2pfl.learning.frameworks.ray.placement_group_manager import PlacementGroupManager
+from p2pfl.learning.frameworks.ray.worker_pool import WorkerPool
 from p2pfl.management.logger import logger
+from p2pfl.utils.node_component import NodeComponent
 
-_T = TypeVar("_T")
-
-
-def _with_learner_delegates(cls: type[_T]) -> type[_T]:
-    """Add async delegate methods for all public LearnerDecorator methods."""
-    for name in vars(LearnerDecorator):
-        if name.startswith("_") or not callable(getattr(LearnerDecorator, name)):
-            continue
-
-        async def method(self: Any, *args: Any, _n: str = name, **kwargs: Any) -> Any:
-            result = getattr(self._learner, _n)(*args, **kwargs)
-            return await result if asyncio.iscoroutine(result) else result
-
-        method.__name__ = name
-        setattr(cls, name, method)
-    return cls
-
-
-@ray.remote
-@_with_learner_delegates
-class VirtualLearnerActor:
-    """Ray actor wrapper for learners. Plain class to avoid ABC serialization issues with Ray."""
-
-    def __init__(self, learner: Learner) -> None:
-        """Initialize the actor with a learner instance."""
-        self._learner = learner
+# Timeout for blocking ray.get() calls on config/metadata RPCs (seconds).
+# Training methods use await and don't need this.
+_RPC_TIMEOUT = 60
 
 
 class VirtualNodeLearner(Learner):
-    """Wrapper that runs a Learner as a Ray actor for distributed execution."""
+    """
+    Lightweight proxy that delegates all operations to a shared FrameworkWorkerActor via WorkerPool.
+
+    Does NOT create its own Ray actor. Instead, it registers the learner with a
+    worker obtained from the WorkerPool singleton and forwards all calls using
+    the node key for dispatch.
+    """
 
     def __init__(self, learner: Learner) -> None:
-        """Initialize the learner."""
-        pg_manager = PlacementGroupManager()
-        pg = pg_manager.get_placement_group()
+        """
+        Initialize the virtual learner proxy.
 
-        self.actor = VirtualLearnerActor.options(  # type: ignore[attr-defined]
-            placement_group=pg,
-            placement_group_capture_child_tasks=True,
-        ).remote(learner)
-        self.address = learner.address
+        Args:
+            learner: The concrete learner instance to register with the worker.
 
-    async def fit(self) -> P2PFLModel:
-        """Fit the model."""
+        """
+        NodeComponent.__init__(self)
+        self.callbacks: list[Any] = []
+        self.epochs: int = 1
+        self.steps_per_epoch: int | None = None
+
+        # Derive node key from address or id
+        self._node_key: str = learner.address or str(id(learner))
+        self.address: str = learner.address
+
+        # Get a worker from the pool and register
+        self._pool = WorkerPool()
+        self._worker = self._pool.assign_worker()
+        ray.get(self._worker.register_node.remote(self._node_key, learner))
+        self._pool.register_node(self._worker, self._node_key, learner)
+
+        logger.debug(
+            self._node_key,
+            "VirtualNodeLearner registered with shared worker",
+        )
+
+    def __del__(self) -> None:
+        """Unregister from worker actor and pool on garbage collection."""
         try:
-            await self.actor.fit.remote()
-            return self.get_model()
-        except Exception as ex:
-            logger.error(self.address, traceback.format_exc())
-            logger.error(self.address, f"An error occurred during remote fit: {ex}")
-            raise ex
+            self._worker.unregister_node.remote(self._node_key)
+            self._pool.unregister_node(self._worker, self._node_key)
+        except Exception as e:
+            # Best-effort cleanup; Ray may already be shut down.
+            # Log instead of silencing so leaked registrations are visible.
+            with contextlib.suppress(Exception):
+                logger.debug(self._node_key, f"Cleanup during __del__ failed: {e}")
 
-    async def train_on_batch(self) -> P2PFLModel:
-        """
-        Train the model on the next batch manually.
+    # --- Sync proxy methods ---
 
-        Returns:
-            The model after training on the batch.
-
-        """
-        try:
-            await self.actor.train_on_batch.remote()
-            return self.get_model()
-        except Exception as ex:
-            logger.error(self.address, traceback.format_exc())
-            logger.error(self.address, f"An error occurred during remote train_on_batch: {ex}")
-            raise ex
-
-    async def interrupt_fit(self) -> None:
-        """Interrupt the fit process."""
-        # TODO: Need to implement this!
-        raise NotImplementedError
-
-    async def evaluate(self) -> dict[str, float]:
-        """
-        Evaluate the model with actual parameters.
-
-        Returns:
-            The evaluation results.
-
-        """
-        try:
-            return await self.actor.evaluate.remote()
-        except Exception as ex:
-            logger.error(self.address, traceback.format_exc())
-            logger.error(self.address, f"An error occurred during remote evaluation: {ex}")
-            raise ex
-
-    # Proxy configuration & lifecycle methods
     def set_address(self, address: str) -> str:
-        """Set the address on both local and remote actor."""
-        ray.get(self.actor.set_address.remote(address))
-        # Cache because is expensive and highly used on logs
-        self.address = address
-        return super().set_address(address)
+        """Set address: atomically rekey the registration and update the worker."""
+        old_key = self._node_key
+        new_key = address
+        ray.get(
+            self._worker.rekey_and_set_address.remote(old_key, new_key),
+            timeout=_RPC_TIMEOUT,
+        )
+        self._pool.rekey_node(self._worker, old_key, new_key)
+        self._node_key = new_key
+        self.address = new_key
+        return address
 
-    def set_model(self, model) -> None:
-        """Set the P2PFL model on the remote actor."""
-        ray.get(self.actor.set_model.remote(model))
+    def set_model(self, model: P2PFLModel | list[np.ndarray] | bytes) -> None:
+        """Set model via object store for zero-copy transfer."""
+        ref = ray.put(model)
+        try:
+            ray.get(self._worker.set_model.remote(self._node_key, ref), timeout=_RPC_TIMEOUT)
+        finally:
+            del ref
 
     def get_model(self) -> P2PFLModel:
-        """Get the P2PFL model from the remote actor."""
-        return ray.get(self.actor.get_model.remote())
+        """Get model from the worker."""
+        return ray.get(self._worker.get_model.remote(self._node_key), timeout=_RPC_TIMEOUT)
 
-    def set_data(self, data) -> None:
-        """Set the data on the remote actor."""
-        ray.get(self.actor.set_data.remote(data))
+    def set_data(self, data: P2PFLDataset) -> None:
+        """Set data via object store for zero-copy transfer."""
+        ref = ray.put(data)
+        try:
+            ray.get(self._worker.set_data.remote(self._node_key, ref), timeout=_RPC_TIMEOUT)
+        finally:
+            del ref
 
-    def get_data(self):
-        """Get the data from the remote actor."""
-        return ray.get(self.actor.get_data.remote())
-
-    def indicate_aggregator(self, aggregator) -> None:
-        """Indicate the aggregator on the remote actor."""
-        ray.get(self.actor.indicate_aggregator.remote(aggregator))
-
-    def get_epochs(self) -> int:
-        """Get the number of epochs from the remote actor."""
-        return ray.get(self.actor.get_epochs.remote())
+    def get_data(self) -> P2PFLDataset:
+        """Get data from the worker."""
+        return ray.get(self._worker.get_data.remote(self._node_key), timeout=_RPC_TIMEOUT)
 
     def set_epochs(self, epochs: int) -> None:
-        """Set the number of epochs on the remote actor."""
-        ray.get(self.actor.set_epochs.remote(epochs))
+        """Set epochs on the worker."""
+        ray.get(self._worker.set_epochs.remote(self._node_key, epochs), timeout=_RPC_TIMEOUT)
 
-    def get_steps_per_epoch(self) -> int | None:
-        """Get the steps per epoch from the remote actor."""
-        return ray.get(self.actor.get_steps_per_epoch.remote())
+    def get_epochs(self) -> int:
+        """Get epochs from the worker."""
+        return ray.get(self._worker.get_epochs.remote(self._node_key), timeout=_RPC_TIMEOUT)
 
     def set_steps_per_epoch(self, steps: int) -> None:
-        """Set the steps per epoch on the remote actor."""
-        ray.get(self.actor.set_steps_per_epoch.remote(steps))
+        """Set steps per epoch on the worker."""
+        ray.get(self._worker.set_steps_per_epoch.remote(self._node_key, steps), timeout=_RPC_TIMEOUT)
+
+    def get_steps_per_epoch(self) -> int | None:
+        """Get steps per epoch from the worker."""
+        return ray.get(self._worker.get_steps_per_epoch.remote(self._node_key), timeout=_RPC_TIMEOUT)
+
+    def indicate_aggregator(self, aggregator: Aggregator) -> None:
+        """Indicate aggregator on the worker."""
+        ray.get(self._worker.indicate_aggregator.remote(self._node_key, aggregator), timeout=_RPC_TIMEOUT)
 
     def update_callbacks_with_model_info(self) -> None:
-        """Update callbacks with model info on the remote actor."""
-        ray.get(self.actor.update_callbacks_with_model_info.remote())
+        """Update callbacks with model info on the worker."""
+        ray.get(self._worker.update_callbacks_with_model_info.remote(self._node_key), timeout=_RPC_TIMEOUT)
 
     def add_callback_info_to_model(self) -> None:
-        """Add callback info to model on the remote actor."""
-        ray.get(self.actor.add_callback_info_to_model.remote())
+        """Add callback info to model on the worker."""
+        ray.get(self._worker.add_callback_info_to_model.remote(self._node_key), timeout=_RPC_TIMEOUT)
+
+    def configure(self, **kwargs: Any) -> None:
+        """Apply multiple configuration settings in one remote call."""
+        ray.get(self._worker.configure.remote(self._node_key, **kwargs), timeout=_RPC_TIMEOUT)
 
     def get_framework(self) -> str:
-        """Get the framework from the remote actor."""
-        return ray.get(self.actor.get_framework.remote())
+        """Get framework name from the worker."""
+        return ray.get(self._worker.get_framework.remote(self._node_key), timeout=_RPC_TIMEOUT)
+
+    # --- Async training methods ---
+
+    async def fit(self) -> P2PFLModel:
+        """Fit the model. Worker handles semaphore and returns model directly."""
+        return await self._worker.fit.remote(self._node_key)
+
+    async def train_on_batch(self) -> P2PFLModel:
+        """Train on batch. Worker handles semaphore and returns model directly."""
+        return await self._worker.train_on_batch.remote(self._node_key)
+
+    async def evaluate(self) -> dict[str, float]:
+        """Evaluate the model on the worker."""
+        return await self._worker.evaluate.remote(self._node_key)
+
+    async def interrupt_fit(self) -> None:
+        """Interrupt fit - no-op since fit runs inside the shared worker."""
+        logger.info(self._node_key, "interrupt_fit called (no-op: fit runs inside worker)")
+
+    # --- Async interface ---
+
+    async def aset_model(self, model: P2PFLModel | list[np.ndarray] | bytes) -> None:
+        """Async set_model via object store."""
+        ref = ray.put(model)
+        try:
+            await self._worker.set_model.remote(self._node_key, ref)
+        finally:
+            del ref
+
+    async def aget_model(self) -> P2PFLModel:
+        """Async get_model."""
+        return await self._worker.get_model.remote(self._node_key)
+
+    async def aset_data(self, data: P2PFLDataset) -> None:
+        """Async set_data via object store."""
+        ref = ray.put(data)
+        try:
+            await self._worker.set_data.remote(self._node_key, ref)
+        finally:
+            del ref
+
+    async def aset_address(self, address: str) -> str:
+        """Async set_address: atomically rekey and update on worker."""
+        old_key = self._node_key
+        new_key = address
+        await self._worker.rekey_and_set_address.remote(old_key, new_key)
+        self._pool.rekey_node(self._worker, old_key, new_key)
+        self._node_key = new_key
+        self.address = new_key
+        return address
+
+    async def aconfigure(self, **kwargs: Any) -> None:
+        """Async batch configuration in one remote call."""
+        await self._worker.configure.remote(self._node_key, **kwargs)

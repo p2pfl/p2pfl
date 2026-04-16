@@ -98,9 +98,30 @@ try:
 except ImportError:
     pass
 
-try:
-    from p2pfl.learning.frameworks.tensorflow.callbacks.scaffold_callback import SCAFFOLDCallback as SCAFFOLDCallbackTF
 
-    CallbackFactory.register_callback(learner=Framework.TENSORFLOW.value, callback=SCAFFOLDCallbackTF)
-except ImportError:
-    pass
+def _register_tensorflow_callbacks() -> None:
+    """Lazily register TensorFlow callbacks to avoid importing TF at module load time."""
+    try:
+        from p2pfl.learning.frameworks.tensorflow.callbacks.scaffold_callback import SCAFFOLDCallback as SCAFFOLDCallbackTF
+
+        CallbackFactory.register_callback(learner=Framework.TENSORFLOW.value, callback=SCAFFOLDCallbackTF)
+    except ImportError:
+        pass
+
+
+# Defer TensorFlow callback registration to avoid loading TF/JAX/Keras
+# (~2000+ modules) in processes that only use PyTorch.
+_tf_callbacks_registered = False
+_original_create_callbacks = CallbackFactory.create_callbacks.__func__  # type: ignore[attr-defined]
+
+
+@classmethod
+def _lazy_create_callbacks(cls, framework: str, aggregator: Aggregator) -> list[P2PFLCallback]:
+    global _tf_callbacks_registered
+    if not _tf_callbacks_registered and framework == Framework.TENSORFLOW.value:
+        _register_tensorflow_callbacks()
+        _tf_callbacks_registered = True
+    return _original_create_callbacks(cls, framework, aggregator)
+
+
+CallbackFactory.create_callbacks = _lazy_create_callbacks  # type: ignore[assignment]

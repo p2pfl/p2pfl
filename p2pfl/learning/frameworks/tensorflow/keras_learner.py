@@ -16,7 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-"""Keras learner for P2PFL."""
+"""Keras learners for P2PFL."""
 
 import numpy as np
 import tensorflow as tf  # type: ignore
@@ -38,6 +38,8 @@ from p2pfl.utils.seed import set_seed
 class KerasLearner(Learner):
     """
     Learner for TensorFlow/Keras models in P2PFL.
+
+    Uses native Keras APIs (model.fit, model.evaluate) for training and evaluation.
 
     Args:
         model: The KerasModel instance.
@@ -65,6 +67,10 @@ class KerasLearner(Learner):
             model: The model of the learner.
 
         """
+        self._train_x = None
+        self._train_y = None
+        self._train_batch_size = None
+        self._train_idx = 0
         super().set_model(model)
         self.get_model().get_model().compile(
             optimizer=self.get_model().get_model().optimizer,
@@ -77,32 +83,31 @@ class KerasLearner(Learner):
         self.callbacks.append(FederatedLogger(address))
         return super().set_address(address)
 
-    def __get_tf_model(self) -> tf.keras.Model:
-        # Get Model
+    def _get_tf_model(self) -> tf.keras.Model:
         tf_model = self.get_model().get_model()
         if not isinstance(tf_model, tf.keras.Model):
             raise ValueError("The model must be a TensorFlow Keras model")
         return tf_model
 
-    def __get_tf_data(self, train: bool = True) -> tf.data.Dataset:
-        # Get Data
-        data = self.get_data().export(KerasExportStrategy, train=train)
-        if not isinstance(data, tf.data.Dataset):
-            raise ValueError("The data must be a TensorFlow Dataset")
-        return data
+    def _get_tf_data(self, train: bool = True) -> tuple:
+        return self.get_data().export(KerasExportStrategy, train=train)
 
     async def fit(self) -> KerasModel:
         """Fit the model."""
         set_seed(Settings.general.SEED, self.get_framework())
         try:
             if self.epochs > 0:
-                model = self.__get_tf_model()
-                data = self.__get_tf_data(train=True)
+                model = self._get_tf_model()
+                x, y, batch_size = self._get_tf_data(train=True)
+
                 history = model.fit(
-                    data,
+                    x,
+                    y,
                     epochs=self.epochs,
+                    batch_size=batch_size,
                     callbacks=self.callbacks,  # type: ignore
                     steps_per_epoch=self.steps_per_epoch,
+                    verbose=0,
                 )
                 self.get_model().last_training_loss = history.history["loss"][-1]
 
@@ -120,25 +125,28 @@ class KerasLearner(Learner):
     async def train_on_batch(self):
         """Train the model on the next batch manually."""
         set_seed(Settings.general.SEED, self.get_framework())
-        if self._batch_iterator is None:
-            # Get data iterator if not already available
-            data = self.__get_tf_data(train=True)
-            self._batch_iterator = iter(data)
+        if not hasattr(self, "_train_x") or self._train_x is None:
+            x, y, batch_size = self._get_tf_data(train=True)
+            self._train_x, self._train_y = x, y
+            self._train_batch_size = batch_size
+            self._train_idx = 0
 
         try:
-            model = self.__get_tf_model()
-            try:
-                batch = next(self._batch_iterator)
-            except StopIteration:
-                # Reinitialize iterator if exhausted
-                data = self.__get_tf_data(train=True)
-                self._batch_iterator = iter(data)
-                batch = next(self._batch_iterator)
+            model = self._get_tf_model()
+            bs = self._train_batch_size
+            start = self._train_idx
+            end = start + bs
 
-            inputs, targets = batch
+            if start >= len(self._train_x):
+                self._train_idx = 0
+                start, end = 0, bs
 
-            loss, _ = model.train_on_batch(inputs, targets)
-            self.get_model().last_training_loss = loss
+            batch_x = self._train_x[start:end]
+            batch_y = self._train_y[start:end]
+            self._train_idx = end
+
+            loss = model.train_on_batch(batch_x, batch_y)
+            self.get_model().last_training_loss = float(loss[0]) if isinstance(loss, list | tuple) else float(loss)
 
             # Set model contribution
             self.get_model().set_contribution([self.address], self.get_data().get_num_samples(train=True))
@@ -153,18 +161,16 @@ class KerasLearner(Learner):
 
     async def interrupt_fit(self) -> None:
         """Interrupt the training process."""
-        # Keras doesn't have a direct way to interrupt fit.
-        # Need to implement a custom callback or use a flag to stop training.
         logger.error(self.address, "Interrupting training (not fully implemented for Keras).")
 
     async def evaluate(self) -> dict[str, float]:
         """Evaluate the Keras model."""
         try:
             if self.epochs > 0:
-                model = self.__get_tf_model()
-                data = self.__get_tf_data(train=False)
+                model = self._get_tf_model()
+                x, y, batch_size = self._get_tf_data(train=False)
 
-                results = model.evaluate(data, verbose=0)
+                results = model.evaluate(x, y, batch_size=batch_size, verbose=0)
                 if not isinstance(results, list):
                     results = [results]
                 results_dict = dict(zip(model.metrics_names, results, strict=False))
@@ -186,3 +192,139 @@ class KerasLearner(Learner):
 
         """
         return Framework.TENSORFLOW.value
+
+
+class EagerKerasLearner(KerasLearner):
+    """
+    Keras learner using eager-mode GradientTape.
+
+    Avoids Keras internal tf.data thread pool deadlocks that occur
+    on macOS when running inside Ray workers. Uses model.metrics for
+    arbitrary metric support in evaluation.
+    """
+
+    async def fit(self) -> KerasModel:
+        """Fit the model using GradientTape."""
+        set_seed(Settings.general.SEED, self.get_framework())
+        try:
+            if self.epochs > 0:
+                model = self._get_tf_model()
+                x, y, batch_size = self._get_tf_data(train=True)
+
+                loss_fn = model.loss
+                if isinstance(loss_fn, str):
+                    loss_fn = tf.keras.losses.get(loss_fn)
+                optimizer = model.optimizer
+
+                n = len(x)
+                last_loss = 0.0
+                for _ in range(self.epochs):
+                    for step, start in enumerate(range(0, n, batch_size)):
+                        if self.steps_per_epoch is not None and step >= self.steps_per_epoch:
+                            break
+                        xb = tf.constant(x[start : start + batch_size])
+                        yb = tf.constant(y[start : start + batch_size])
+                        with tf.GradientTape() as tape:
+                            preds = model(xb, training=True)
+                            loss = loss_fn(yb, preds)
+                        grads = tape.gradient(loss, model.trainable_variables)
+                        optimizer.apply_gradients(zip(grads, model.trainable_variables, strict=False))
+                        last_loss = float(loss)
+                self.get_model().last_training_loss = last_loss
+
+            self.get_model().set_contribution([self.address], self.get_data().get_num_samples(train=True))
+            self.add_callback_info_to_model()
+
+            return self.get_model()
+        except Exception as e:
+            logger.error(self.address, f"Error in training with Keras: {e}")
+            raise e
+
+    async def train_on_batch(self):
+        """Train on a single batch using GradientTape."""
+        set_seed(Settings.general.SEED, self.get_framework())
+        if not hasattr(self, "_train_x") or self._train_x is None:
+            x, y, batch_size = self._get_tf_data(train=True)
+            self._train_x, self._train_y = x, y
+            self._train_batch_size = batch_size
+            self._train_idx = 0
+
+        try:
+            model = self._get_tf_model()
+            bs = self._train_batch_size
+            start = self._train_idx
+            end = start + bs
+
+            if start >= len(self._train_x):
+                self._train_idx = 0
+                start, end = 0, bs
+
+            xb = tf.constant(self._train_x[start:end])
+            yb = tf.constant(self._train_y[start:end])
+            self._train_idx = end
+
+            loss_fn = model.loss
+            if isinstance(loss_fn, str):
+                loss_fn = tf.keras.losses.get(loss_fn)
+            with tf.GradientTape() as tape:
+                preds = model(xb, training=True)
+                loss = loss_fn(yb, preds)
+            grads = tape.gradient(loss, model.trainable_variables)
+            model.optimizer.apply_gradients(zip(grads, model.trainable_variables, strict=False))
+            self.get_model().last_training_loss = float(loss)
+
+            self.get_model().set_contribution([self.address], self.get_data().get_num_samples(train=True))
+            self.add_callback_info_to_model()
+
+            return self.get_model()
+        except Exception as e:
+            logger.error(self.address, f"Error in training with Keras: {e}")
+            raise e
+
+    async def evaluate(self) -> dict[str, float]:
+        """Evaluate the model using forward pass and model.metrics for arbitrary metric support."""
+        try:
+            if self.epochs > 0:
+                model = self._get_tf_model()
+                x, y, batch_size = self._get_tf_data(train=False)
+
+                loss_fn = model.loss
+                if isinstance(loss_fn, str):
+                    loss_fn = tf.keras.losses.get(loss_fn)
+
+                # Create fresh metric instances from the model's compile config.
+                # Access _user_metrics on the CompileMetrics object to get the
+                # original metric names/strings, avoiding Keras internal wrappers.
+                compile_metrics = getattr(model, "_compile_metrics", None)
+                user_metrics = getattr(compile_metrics, "_user_metrics", []) if compile_metrics else []
+                metrics: list[tf.keras.metrics.Metric] = [tf.keras.metrics.get(m) if isinstance(m, str) else m for m in user_metrics]
+
+                total_loss = 0.0
+                total_samples = 0
+                n = len(x)
+                for start in range(0, n, batch_size):
+                    xb = tf.constant(x[start : start + batch_size])
+                    yb = tf.constant(y[start : start + batch_size])
+                    preds = model(xb, training=False)
+                    yb_flat = tf.reshape(yb, [-1])
+                    loss = loss_fn(yb_flat, preds)
+                    batch_n = len(xb)
+                    total_loss += float(loss) * batch_n
+                    total_samples += batch_n
+                    for metric in metrics:
+                        metric.update_state(yb_flat, preds)
+
+                if total_samples == 0:
+                    return {}
+
+                results_dict: dict[str, float] = {"loss": total_loss / total_samples}
+                results_dict.update({m.name: float(m.result()) for m in metrics})
+
+                for k, v in results_dict.items():
+                    logger.log_metric(self.address, k, v)
+                return results_dict
+            else:
+                return {}
+        except Exception as e:
+            logger.error(self.address, f"Evaluation error with Keras: {e}")
+            raise e

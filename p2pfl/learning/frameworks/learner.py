@@ -242,6 +242,42 @@ class Learner(ABC, NodeComponent):
         """
         pass
 
+    # Async interface — defaults delegate to sync methods.
+    # VirtualNodeLearner overrides with true async implementations.
+
+    @allow_no_addr_check
+    async def aset_model(self, model: P2PFLModel | list[np.ndarray] | bytes) -> None:
+        """Async version of set_model. Default delegates to sync."""
+        self.set_model(model)
+
+    @allow_no_addr_check
+    async def aget_model(self) -> P2PFLModel:
+        """Async version of get_model. Default delegates to sync."""
+        return self.get_model()
+
+    @allow_no_addr_check
+    async def aset_data(self, data: P2PFLDataset) -> None:
+        """Async version of set_data. Default delegates to sync."""
+        self.set_data(data)
+
+    async def aset_address(self, address: str) -> str:
+        """Async version of set_address. Default delegates to sync."""
+        return self.set_address(address)
+
+    @allow_no_addr_check
+    async def aconfigure(self, **kwargs) -> None:
+        """Async batch configuration. Default applies settings individually."""
+        if "epochs" in kwargs:
+            self.set_epochs(kwargs["epochs"])
+        if "steps_per_epoch" in kwargs:
+            self.set_steps_per_epoch(kwargs["steps_per_epoch"])
+        if "aggregator" in kwargs:
+            self.indicate_aggregator(kwargs["aggregator"])
+        if kwargs.get("update_callbacks"):
+            self.update_callbacks_with_model_info()
+        if kwargs.get("add_callback_info"):
+            self.add_callback_info_to_model()
+
 
 class LearnerDecorator(Learner):
     """

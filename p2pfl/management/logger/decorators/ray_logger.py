@@ -30,6 +30,7 @@ from p2pfl.management.logger.decorators.logger_decorator import LoggerDecorator
 from p2pfl.management.logger.logger import P2PFLogger
 from p2pfl.management.message_storage import MessageEntryType
 from p2pfl.management.metric_storage import GlobalLogsType, LocalLogsType
+from p2pfl.settings import Settings
 
 if TYPE_CHECKING:
     from p2pfl.workflow.engine.experiment import Experiment
@@ -94,7 +95,7 @@ class RayP2PFLogger(P2PFLogger):
             **kwargs: Connection parameters specific to each logger type.
 
         """
-        ray.get(self.ray_actor.connect.remote(**kwargs))
+        self.ray_actor.connect.remote(**kwargs)
 
     def cleanup(self) -> None:
         """Cleanup the logger."""
@@ -113,7 +114,7 @@ class RayP2PFLogger(P2PFLogger):
 
         """
         # Set ray log level
-        ray.get(self.ray_actor.set_level.remote(level))
+        self.ray_actor.set_level.remote(level)
 
     def get_level(self) -> int:
         """
@@ -148,7 +149,7 @@ class RayP2PFLogger(P2PFLogger):
             message: The message to log.
 
         """
-        ray.get(self.ray_actor.log.remote(level, node, message))
+        self.ray_actor.log.remote(level, node, message)
 
     def info(self, node: str, message: str) -> None:
         """
@@ -159,7 +160,7 @@ class RayP2PFLogger(P2PFLogger):
             message: The message to log.
 
         """
-        ray.get(self.ray_actor.info.remote(node, message))
+        self.ray_actor.info.remote(node, message)
 
     def debug(self, node: str, message: str) -> None:
         """
@@ -170,7 +171,7 @@ class RayP2PFLogger(P2PFLogger):
             message: The message to log.
 
         """
-        ray.get(self.ray_actor.debug.remote(node, message))
+        self.ray_actor.debug.remote(node, message)
 
     def warning(self, node: str, message: str) -> None:
         """
@@ -181,7 +182,7 @@ class RayP2PFLogger(P2PFLogger):
             message: The message to log.
 
         """
-        ray.get(self.ray_actor.warning.remote(node, message))
+        self.ray_actor.warning.remote(node, message)
 
     def error(self, node: str, message: str) -> None:
         """
@@ -192,7 +193,7 @@ class RayP2PFLogger(P2PFLogger):
             message: The message to log.
 
         """
-        ray.get(self.ray_actor.error.remote(node, message))
+        self.ray_actor.error.remote(node, message)
 
     def critical(self, node: str, message: str) -> None:
         """
@@ -203,7 +204,7 @@ class RayP2PFLogger(P2PFLogger):
             message: The message to log.
 
         """
-        ray.get(self.ray_actor.critical.remote(node, message))
+        self.ray_actor.critical.remote(node, message)
 
     def log_metric(self, addr: str, metric: str, value: float, step: int | None = None, round: int | None = None) -> None:
         """
@@ -217,7 +218,7 @@ class RayP2PFLogger(P2PFLogger):
             round: The round.
 
         """
-        ray.get(self.ray_actor.log_metric.remote(addr=addr, metric=metric, value=value, step=step, round=round))
+        self.ray_actor.log_metric.remote(addr=addr, metric=metric, value=value, step=step, round=round)
 
     def get_local_logs(self) -> LocalLogsType:
         """
@@ -255,7 +256,7 @@ class RayP2PFLogger(P2PFLogger):
             node: The node address.
 
         """
-        ray.get(self.ray_actor.register_node.remote(node))
+        self.ray_actor.register_node.remote(node)
 
     def unregister_node(self, node: str) -> None:
         """
@@ -265,7 +266,7 @@ class RayP2PFLogger(P2PFLogger):
             node: The node address.
 
         """
-        ray.get(self.ray_actor.unregister_node.remote(node))
+        self.ray_actor.unregister_node.remote(node)
 
     def experiment_started(self, node: str, experiment: Experiment | None) -> None:
         """
@@ -276,7 +277,7 @@ class RayP2PFLogger(P2PFLogger):
             experiment: The experiment.
 
         """
-        ray.get(self.ray_actor.experiment_started.remote(node, experiment))
+        self.ray_actor.experiment_started.remote(node, experiment)
 
     def on_experiment_change(self, address: str, field_name: str, value: Any) -> None:
         """
@@ -288,7 +289,7 @@ class RayP2PFLogger(P2PFLogger):
             value: The new value.
 
         """
-        ray.get(self.ray_actor.on_experiment_change.remote(address, field_name, value))
+        self.ray_actor.on_experiment_change.remote(address, field_name, value)
 
     def experiment_ended(self, address: str, experiment: Experiment, status: str) -> None:
         """
@@ -300,7 +301,7 @@ class RayP2PFLogger(P2PFLogger):
             status: The final status.
 
         """
-        ray.get(self.ray_actor.experiment_ended.remote(address, experiment, status))
+        self.ray_actor.experiment_ended.remote(address, experiment, status)
 
     def get_nodes(self) -> dict[str, dict[Any, Any]]:
         """
@@ -320,7 +321,18 @@ class RayP2PFLogger(P2PFLogger):
             handler: The handler to add.
 
         """
-        ray.get(self.ray_actor.add_handler.remote(handler))
+        import pickle
+
+        try:
+            pickle.dumps(handler)
+            self.ray_actor.add_handler.remote(handler)
+        except (pickle.PicklingError, TypeError, AttributeError):
+            import warnings
+
+            warnings.warn(
+                f"Cannot send {type(handler).__name__} to Ray actor (not serializable). " "Handler will be skipped.",
+                stacklevel=2,
+            )
 
     def get_messages(
         self,
@@ -371,18 +383,20 @@ class RayP2PFLogger(P2PFLogger):
             additional_info: Additional information as a dictionary.
 
         """
+        # Skip heartbeats early to avoid unnecessary Ray RPC overhead
+        if cmd == "beat" and Settings.heartbeat.EXCLUDE_BEAT_LOGS:
+            return
+
         # Forward the call to the Ray actor
-        ray.get(
-            self.ray_actor.log_communication.remote(
-                node=node,
-                direction=direction,
-                cmd=cmd,
-                source_dest=source_dest,
-                package_type=package_type,
-                package_size=package_size,
-                round_num=round_num,
-                additional_info=additional_info,
-            )
+        self.ray_actor.log_communication.remote(
+            node=node,
+            direction=direction,
+            cmd=cmd,
+            source_dest=source_dest,
+            package_type=package_type,
+            package_size=package_size,
+            round_num=round_num,
+            additional_info=additional_info,
         )
 
     def get_system_metrics(self) -> dict[datetime.datetime, dict[str, float]]:
@@ -402,4 +416,4 @@ class RayP2PFLogger(P2PFLogger):
         This clears all stored metrics, messages, and system logs while keeping
         the logger configuration and handlers intact.
         """
-        ray.get(self.ray_actor.reset.remote())
+        self.ray_actor.reset.remote()

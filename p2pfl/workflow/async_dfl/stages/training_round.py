@@ -45,16 +45,16 @@ class TrainingRoundStage(Stage[AsyncDFLContext]):
         experiment = ctx.experiment
 
         # Phase 1: Debias model with push-sum weight
-        self._debias_model(ctx)
+        await self._debias_model(ctx)
 
         # Phase 2: Train on a single batch
         logger.info(address, "🏋️‍♀️ Updating local model...")
-        await learner.train_on_batch()
+        trained_model = await learner.train_on_batch()
         peer = ctx.peers.get(address)
         if peer is None:
             logger.warning(address, f"Local peer state not found for {address}")
         else:
-            peer.model = learner.get_model()
+            peer.model = trained_model
 
         # Phase 3: Broadcast training loss
         await self._broadcast_loss(ctx)
@@ -78,13 +78,14 @@ class TrainingRoundStage(Stage[AsyncDFLContext]):
     #    Phase 1: Debiasing
     ###
 
-    def _debias_model(self, ctx: AsyncDFLContext) -> None:
+    async def _debias_model(self, ctx: AsyncDFLContext) -> None:
         """Apply push-sum debiasing to the local model."""
         logger.debug(ctx.address, "Debiasing model.")
-        model = ctx.learner.get_model()
+        model = await ctx.learner.aget_model()
         peer = ctx.peers.get(ctx.address)
         if peer is not None and hasattr(model, "set_push_sum_weight"):
             model.set_push_sum_weight(peer.push_sum_weight)
+            await ctx.learner.aset_model(model)
 
     ###
     #    Phase 3: Loss broadcasting
@@ -92,7 +93,7 @@ class TrainingRoundStage(Stage[AsyncDFLContext]):
 
     async def _broadcast_loss(self, ctx: AsyncDFLContext) -> None:
         """Broadcast the current training loss to all peers."""
-        model = ctx.learner.get_model()
+        model = await ctx.learner.aget_model()
         training_loss = getattr(model, "last_training_loss", 0.0)
         peer = ctx.peers.get(ctx.address)
         if peer is None:
@@ -171,7 +172,7 @@ class TrainingRoundStage(Stage[AsyncDFLContext]):
         address = ctx.address
         learner = ctx.learner
         experiment = ctx.experiment
-        model = learner.get_model()
+        model = await learner.aget_model()
 
         gate = ModelGate(ctx.cp, address, pre_send_command="pre_send_model_training")
 
@@ -242,7 +243,7 @@ class TrainingRoundStage(Stage[AsyncDFLContext]):
         # Aggregate (Eq. 5 & 6 handled by PushSum aggregator)
         if models:
             agg_model = ctx.aggregator.aggregate(models)
-            ctx.learner.set_model(agg_model)
+            await ctx.learner.aset_model(agg_model)
 
             # Update local push-sum weight from aggregator result
             self_peer = ctx.peers.get(address)
@@ -302,7 +303,8 @@ class TrainingRoundStage(Stage[AsyncDFLContext]):
             logger.warning(self.ctx.address, f"Peer state not found for {source}")
             return
         try:
-            model = self.ctx.learner.get_model().build_copy(
+            base_model = await self.ctx.learner.aget_model()
+            model = base_model.build_copy(
                 params=weights,
                 num_samples=num_samples,
                 contributors=list(contributors),

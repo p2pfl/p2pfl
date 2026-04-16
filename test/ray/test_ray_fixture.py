@@ -110,19 +110,30 @@ class TestLearnerWrapping:
         assert wrapped is learner, "Learner should NOT be wrapped when Ray is disabled"
         assert not isinstance(wrapped, VirtualNodeLearner)
 
-    @pytest.mark.skip(reason="VirtualNodeLearner has Ray serialization issues with ABC-based actors")
     @pytest.mark.uses_ray
     def test_learner_wrapped_when_ray_enabled(self):
-        """
-        Verify learner IS wrapped in VirtualNodeLearner when Ray is enabled.
-
-        SKIPPED: The VirtualLearnerActor inherits from LearnerDecorator which extends
-        Learner(ABC). Ray cannot serialize classes with ABC metaclass.
-        """
+        """Verify learner IS wrapped in VirtualNodeLearner when Ray is enabled."""
         assert Settings.general.DISABLE_RAY is False
 
-        # Use a mock instead of abstract LightningLearner
-        learner = MagicMock(spec=Learner)
-        wrapped = try_init_learner_with_ray(learner)
+        from unittest.mock import MagicMock as MM
+        from unittest.mock import patch
 
-        assert isinstance(wrapped, VirtualNodeLearner), f"Expected VirtualNodeLearner, got {type(wrapped).__name__}"
+        mock_worker = MM()
+        mock_pool = MM()
+        mock_pool.assign_worker.return_value = mock_worker
+
+        with (
+            patch(
+                "p2pfl.learning.frameworks.ray.virtual_learner.WorkerPool",
+                return_value=mock_pool,
+            ),
+            patch(
+                "p2pfl.learning.frameworks.ray.virtual_learner.ray",
+            ) as mock_ray,
+        ):
+            mock_ray.get.side_effect = lambda x: x
+            mock_ray.put.side_effect = lambda x: x
+            learner = MM(spec=Learner)
+            learner.address = ""
+            wrapped = try_init_learner_with_ray(learner)
+            assert isinstance(wrapped, VirtualNodeLearner), f"Expected VirtualNodeLearner, got {type(wrapped).__name__}"

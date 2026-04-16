@@ -42,9 +42,16 @@ class LearnerFactory:
 
             return LightningLearner
         elif framework == Framework.TENSORFLOW.value:
-            from p2pfl.learning.frameworks.tensorflow.keras_learner import KerasLearner
+            import sys
 
-            return KerasLearner
+            if sys.platform == "darwin":
+                from p2pfl.learning.frameworks.tensorflow.keras_learner import EagerKerasLearner
+
+                return EagerKerasLearner
+            else:
+                from p2pfl.learning.frameworks.tensorflow.keras_learner import KerasLearner
+
+                return KerasLearner
         elif framework == Framework.FLAX.value:
             from p2pfl.learning.frameworks.flax.flax_learner import FlaxLearner
 

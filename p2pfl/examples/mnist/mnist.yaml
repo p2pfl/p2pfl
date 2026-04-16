@@ -11,7 +11,7 @@ remote_loggers:
 network:
   package: "p2pfl.communication.protocols.protobuff.memory"
   protocol: "MemoryCommunicationProtocol"
-  nodes: 2
+  nodes: 10
   topology: "ring"   # Network topology: "line", "ring", "star", "full", "random_2", "random_3", "random_4", null for custom
   # additional_connections:
   #   - [0, 2]              # Connect node 0 to Node 2 (indices)
@@ -46,7 +46,7 @@ experiment:
 
   # Learning algorithm configuration
   model:
-    package: "p2pfl.examples.mnist.model.mlp_tensorflow" # mlp_pytorch | mlp_tensorflow
+    package: "p2pfl.examples.mnist.model.mlp_pytorch" # mlp_pytorch | mlp_tensorflow
     model_build_fn: "model_build_fn"
     params: {}  
     # Learning algorithm parameters (algorithm-specific)
@@ -68,7 +68,7 @@ experiment:
 # General experiment settings
 settings:
   general:
-    log_level: "DEBUG" # Logging verbosity: "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
+    log_level: "INFO" # Logging verbosity: "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"
     grpc_timeout: 2
     disable_ray: False
 
@@ -95,6 +95,7 @@ settings:
   training:
     vote_timeout: 60
     aggregation_timeout: 300
+    # torch_num_threads: 2  # Limit PyTorch intra-op threads per training job (0 = auto)
 
 # Profiling configuration
 profiling:

@@ -54,18 +54,25 @@ class SetupStage(Stage[BasicDFLContext]):
             logger.debug(ctx.address, f"Error broadcasting node initialization: {e}")
 
         await wait_with_timeout(
-            self._nodes_ready, Settings.training.SYNCHRONIZATION_TIMEOUT, ctx.address, "Timeout waiting for peers. Proceeding anyway.",
+            self._nodes_ready,
+            Settings.training.SYNCHRONIZATION_TIMEOUT,
+            ctx.address,
+            "Timeout waiting for peers. Proceeding anyway.",
         )
 
         # Initiator starts the model gossip (no gate — no one has the model yet)
         if ctx.experiment.is_initiator:
-            encoded_model = ctx.learner.get_model().encode_parameters()
+            model = await ctx.learner.aget_model()
+            encoded_model = model.encode_parameters()
             await ctx.cp.broadcast(ctx.cp.build_weights("initial_model", 0, encoded_model))
             self._model_received.set()
 
         # All nodes wait for the model to propagate
         await wait_with_timeout(
-            self._model_received, Settings.training.SYNCHRONIZATION_TIMEOUT, ctx.address, "Timeout waiting for initial model.",
+            self._model_received,
+            Settings.training.SYNCHRONIZATION_TIMEOUT,
+            ctx.address,
+            "Timeout waiting for initial model.",
         )
 
         return "round_init"
@@ -92,7 +99,7 @@ class SetupStage(Stage[BasicDFLContext]):
         """Handle a node_initialized message by registering the peer."""
         self._register_peer(self.ctx, source)
 
-    @on_message("pre_send_initial_model", during={"setup"})
+    @on_message("pre_send_initial_model", during={"setup", "round_init", "learning", "voting"})
     async def handle_pre_send_initial_model(self, source: str, round: int, *args) -> str:
         """Accept the initial model only if not already received."""
         return "false" if self._model_received.is_set() else "true"
@@ -111,14 +118,18 @@ class SetupStage(Stage[BasicDFLContext]):
             return
         ctx = self.ctx
         logger.info(ctx.address, f"📥 Initial model received from {source}.")
-        ctx.learner.set_model(weights)
+        await ctx.learner.aset_model(weights)
 
         # Re-gossip using gate (peers are synced, so gate queries will get proper responses)
         payload = ctx.cp.build_weights("initial_model", 0, weights)
         gate = ModelGate(ctx.cp, ctx.address, pre_send_command="pre_send_initial_model")
         for neighbor in ctx.cp.get_neighbors(only_direct=False):
             await gate.send_if_accepted(
-                neighbor=neighbor, weight_command="initial_model", contributors=[source], round_num=0, payload=payload,
+                neighbor=neighbor,
+                weight_command="initial_model",
+                contributors=[source],
+                round_num=0,
+                payload=payload,
             )
         self._model_received.set()
 

@@ -46,6 +46,8 @@ class LocalMetricStorage:
 
     """
 
+    MAX_STEPS_PER_METRIC = 5000  # Keep only the last N entries per metric
+
     def __init__(self, disable_locks: bool = False) -> None:
         """Initialize the local metric storage."""
         self.exp_dicts: LocalLogsType = {}
@@ -92,7 +94,10 @@ class LocalMetricStorage:
         if metric not in self.exp_dicts[exp_name][round][node]:
             self.exp_dicts[exp_name][round][node][metric] = [(step, val)]
         else:
-            self.exp_dicts[exp_name][round][node][metric].append((step, val))
+            entries = self.exp_dicts[exp_name][round][node][metric]
+            entries.append((step, val))
+            if len(entries) > self.MAX_STEPS_PER_METRIC:
+                self.exp_dicts[exp_name][round][node][metric] = entries[-self.MAX_STEPS_PER_METRIC :]
 
         # Unlock
         if self.lock:
@@ -171,6 +176,8 @@ class GlobalMetricStorage:
 
     """
 
+    MAX_ENTRIES_PER_METRIC = 5000  # Keep only the last N entries per metric
+
     def __init__(self, disable_locks: bool = False) -> None:
         """Initialize the global metric storage."""
         self.exp_dicts: GlobalLogsType = {}
@@ -204,9 +211,12 @@ class GlobalMetricStorage:
         if metric not in self.exp_dicts[exp_name][node]:
             self.exp_dicts[exp_name][node][metric] = [(round, val)]
         else:
+            entries = self.exp_dicts[exp_name][node][metric]
             # Log if not already logged
-            if round not in [r for r, _ in self.exp_dicts[exp_name][node][metric]]:
-                self.exp_dicts[exp_name][node][metric].append((round, val))
+            if round not in [r for r, _ in entries]:
+                entries.append((round, val))
+                if len(entries) > self.MAX_ENTRIES_PER_METRIC:
+                    self.exp_dicts[exp_name][node][metric] = entries[-self.MAX_ENTRIES_PER_METRIC :]
 
         # Unlock
         if self.lock:

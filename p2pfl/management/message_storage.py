@@ -51,6 +51,8 @@ class MessageStorage:
         ]
     """
 
+    MAX_MESSAGES = 5000
+
     def __init__(self, disable_locks: bool = False) -> None:
         """Initialize the message storage."""
         self.messages: list[MessageEntryType] = []
@@ -114,8 +116,10 @@ class MessageStorage:
             else:
                 message_entry["additional_info"] = None
 
-            # Add to storage
+            # Add to storage, evicting oldest entries when full
             self.messages.append(message_entry)
+            if len(self.messages) > self.MAX_MESSAGES:
+                self.messages = self.messages[-self.MAX_MESSAGES :]
         finally:
             # Unlock
             if self.lock:

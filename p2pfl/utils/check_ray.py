@@ -20,26 +20,9 @@
 
 import importlib
 import os
-import sys
+from typing import Any
 
 from p2pfl.settings import Settings
-
-
-def _worker_setup() -> None:
-    """Import ML frameworks first in Ray workers to avoid deadlocks on macOS."""
-    if sys.platform != "darwin":
-        return
-    import contextlib
-
-    print("[p2pfl] Ray worker setup: pre-importing ML frameworks to avoid macOS deadlocks...")
-    with contextlib.suppress(ImportError):
-        import torch  # noqa: F401
-
-        print(f"[p2pfl] Imported torch {torch.__version__}")
-    with contextlib.suppress(ImportError):
-        import tensorflow  # noqa: F401
-
-        print(f"[p2pfl] Imported tensorflow {tensorflow.__version__}")
 
 
 def ray_installed() -> bool:
@@ -55,15 +38,18 @@ def ray_installed() -> bool:
 
             # If ray not initialized, initialize it
             if not ray.is_initialized():
-                init_kwargs = {
+                import sys
+
+                init_kwargs: dict[str, Any] = {
                     "namespace": "p2pfl",
                     "include_dashboard": False,
                     "logging_level": Settings.general.LOG_LEVEL,
                     "logging_config": ray.LoggingConfig(encoding="TEXT", log_level=Settings.general.LOG_LEVEL),
                 }
-                # macOS: Import TF/Torch first in workers to avoid deadlocks with HuggingFace to_tf_dataset()
+                # On macOS, limit object store to avoid mmap size errors
                 if sys.platform == "darwin":
-                    init_kwargs["runtime_env"] = {"worker_process_setup_hook": _worker_setup}
+                    init_kwargs["object_store_memory"] = 500 * 1024 * 1024  # 500 MB
+
                 ray.init(**init_kwargs)
             return True
         except (AttributeError, TypeError, RuntimeError) as e:
