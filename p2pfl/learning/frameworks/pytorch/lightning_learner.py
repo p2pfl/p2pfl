@@ -18,8 +18,11 @@
 
 """Lightning Learner for P2PFL."""
 
+import asyncio
 import logging
+import threading
 import traceback
+from typing import Any
 
 import lightning as L
 import torch
@@ -40,6 +43,18 @@ from p2pfl.workflow.engine.experiment import Experiment
 
 torch.set_num_threads(1)
 
+_trainer_lock = threading.Lock()
+
+
+def resolve_optimizer(model: L.LightningModule) -> torch.optim.Optimizer:
+    """Resolve configure_optimizers() into a single Optimizer instance."""
+    opt = model.configure_optimizers()
+    if isinstance(opt, torch.optim.Optimizer):
+        return opt
+    if isinstance(opt, list | tuple):
+        return opt[0]
+    raise TypeError(f"Unsupported optimizer type from configure_optimizers: {type(opt)}")
+
 
 class LightningLearner(Learner):
     """
@@ -56,7 +71,10 @@ class LightningLearner(Learner):
         """Initialize the learner."""
         super().__init__(model, data, aggregator)
         self.__trainer: Trainer | None = None
+        self.__eval_trainer: Trainer | None = None
         self.experiment: Experiment | None = None
+        self._batch_iterator: Any = None
+        self._optimizer: torch.optim.Optimizer | None = None
 
         # Start logging
         # To avoid GPU/TPU printings
@@ -92,7 +110,11 @@ class LightningLearner(Learner):
                     callbacks=self.callbacks.copy(),  # type: ignore
                 )
                 pt_model, pt_data = self.__get_pt_model_data()
-                self.__trainer.fit(pt_model, pt_data)
+                def _do_fit() -> None:
+                    with _trainer_lock:
+                        self.__trainer.fit(pt_model, pt_data)  # type: ignore[union-attr]
+
+                await asyncio.to_thread(_do_fit)
                 self.__trainer = None
 
             # Set model contribution
@@ -112,14 +134,47 @@ class LightningLearner(Learner):
             raise e
 
     async def train_on_batch(self) -> P2PFLModel:
-        """
-        Train the model on the next batch manually.
+        """Train the model on the next batch manually."""
+        set_seed(Settings.general.SEED, self.get_framework())
+        pt_model = self.get_model().get_model()
+        if not isinstance(pt_model, L.LightningModule):
+            raise ValueError("The model must be a PyTorch Lightning model")
 
-        Raises:
-            NotImplementedError: PyTorch Lightning does not support batch training yet.
+        if self._batch_iterator is None:
+            pt_data = self.get_data().export(PyTorchExportStrategy, train=True)
+            self._batch_iterator = iter(pt_data)
 
-        """
-        raise NotImplementedError("PyTorch Lightning does not support batch training yet")
+        try:
+            batch = next(self._batch_iterator)
+        except StopIteration:
+            pt_data = self.get_data().export(PyTorchExportStrategy, train=True)
+            self._batch_iterator = iter(pt_data)
+            batch = next(self._batch_iterator)
+
+        def _train_step() -> float:
+            with _trainer_lock:
+                if hasattr(pt_model, "train_on_batch"):
+                    return pt_model.train_on_batch(batch)  # type: ignore[no-any-return, operator]
+                pt_model.train()
+                if self._optimizer is None:
+                    self._optimizer = resolve_optimizer(pt_model)
+                original_log = pt_model.log
+                pt_model.log = lambda *a, **kw: None  # type: ignore[assignment]
+                try:
+                    loss_tensor: torch.Tensor = pt_model.training_step(batch, 0)  # type: ignore[assignment]
+                finally:
+                    pt_model.log = original_log  # type: ignore[assignment]
+                loss_tensor.backward()  # type: ignore[no-untyped-call]
+                self._optimizer.step()
+                self._optimizer.zero_grad()
+                return loss_tensor.item()
+
+        loss = await asyncio.to_thread(_train_step)
+
+        self.get_model().last_training_loss = loss
+        self.get_model().set_contribution([self.address], self.get_data().get_num_samples())
+        self.add_callback_info_to_model()
+        return self.get_model()
 
     async def interrupt_fit(self) -> None:
         """Interrupt the fit."""
@@ -137,10 +192,15 @@ class LightningLearner(Learner):
         """
         try:
             if self.epochs > 0:
-                self.__trainer = Trainer()
+                if self.__eval_trainer is None:
+                    self.__eval_trainer = Trainer()
+                eval_trainer = self.__eval_trainer
                 pt_model, pt_data = self.__get_pt_model_data(train=False)
-                results = self.__trainer.test(pt_model, pt_data, verbose=True)[0]
-                self.__trainer = None
+                def _do_test() -> dict[str, float]:
+                    with _trainer_lock:
+                        return dict(eval_trainer.test(pt_model, pt_data, verbose=True)[0])
+
+                results = await asyncio.to_thread(_do_test)
                 # Log metrics
                 for k, v in results.items():
                     logger.log_metric(self.address, k, v)

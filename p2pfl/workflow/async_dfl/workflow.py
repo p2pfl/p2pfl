@@ -79,12 +79,16 @@ class AsyncDFL(Workflow[AsyncDFLContext]):
             exp.dmax = 5
         if not hasattr(exp, "top_k_neighbors"):
             exp.top_k_neighbors = 3
+        if not hasattr(exp, "eval_every"):
+            exp.eval_every = 0
         if exp.tau < 1:
             raise ValueError("tau must be >= 1.")
         if exp.dmax < 1:
             raise ValueError("dmax must be >= 1.")
         if exp.top_k_neighbors < 1:
             raise ValueError("top_k_neighbors must be >= 1.")
+        if exp.eval_every < 0:
+            raise ValueError("eval_every must be >= 0.")
 
     @staticmethod
     def _wrap_model_if_supported(ctx: AsyncDFLContext) -> None:

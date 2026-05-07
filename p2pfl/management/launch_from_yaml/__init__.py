@@ -277,8 +277,14 @@ async def run_from_yaml(yaml_path: str, debug: bool = False) -> None:
         if r < 1:
             raise ValueError("Skipping training, amount of round is less than 1")
 
+        # Forward workflow-specific params (tau, dmax, top_k_neighbors, etc.)
+        reserved_keys = {"rounds", "epochs", "trainset_size", "workflow", "dataset", "model", "aggregator", "wait_timeout", "name", "seed"}
+        extra_params = {k: v for k, v in experiment_config.items() if k not in reserved_keys}
+
         # Start Learning
-        actual_exp_name = await nodes[0].set_start_learning(rounds=r, epochs=e, trainset_size=trainset_size, workflow=workflow_name)
+        actual_exp_name = await nodes[0].set_start_learning(
+            rounds=r, epochs=e, trainset_size=trainset_size, workflow=workflow_name, **extra_params
+        )
 
         # Wait and check
         wait_timeout = experiment_config.get("wait_timeout", 60)

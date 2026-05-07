@@ -25,7 +25,7 @@ import pytest
 from p2pfl.learning.frameworks.exceptions import DecodingParamsError, ModelNotMatchingError
 from p2pfl.workflow.async_dfl.context import AsyncDFLContext, AsyncPeerState
 from p2pfl.workflow.async_dfl.stages.setup import SetupStage
-from p2pfl.workflow.async_dfl.stages.training_round import TrainingRoundStage, _windowed_avg_loss, compute_priority
+from p2pfl.workflow.async_dfl.stages.training_round import TrainingRoundStage, _windowed_sum_loss, compute_priority
 from p2pfl.workflow.async_dfl.workflow import AsyncDFL
 from p2pfl.workflow.engine.experiment import Experiment
 from p2pfl.workflow.factory import create_workflow
@@ -190,15 +190,28 @@ class TestTrainingRoundStageConditions:
 
     def test_select_neighbors_top_3(self):
         """Test _select_neighbors picks top 3 by priority."""
-        priorities = [("a", 1.0), ("b", 3.0), ("c", 2.0), ("d", 0.5), ("e", 4.0)]
+        priorities = [("a", 1.0, False), ("b", 3.0, False), ("c", 2.0, False), ("d", 0.5, False), ("e", 4.0, False)]
         result = TrainingRoundStage._select_neighbors(priorities)
         assert result == ["e", "b", "c"]
 
     def test_select_neighbors_fewer_than_3(self):
         """Test _select_neighbors with fewer than 3 neighbors."""
-        priorities = [("a", 1.0), ("b", 2.0)]
+        priorities = [("a", 1.0, False), ("b", 2.0, False)]
         result = TrainingRoundStage._select_neighbors(priorities)
         assert result == ["b", "a"]
+
+    def test_select_neighbors_mandatory_included(self):
+        """Mandatory neighbors (d_{i,j} >= d_max) are always included."""
+        priorities = [("a", 0.1, True), ("b", 3.0, False), ("c", 2.0, False), ("d", 0.5, False), ("e", 4.0, False)]
+        result = TrainingRoundStage._select_neighbors(priorities, top_k=3)
+        assert "a" in result
+        assert len(result) == 3
+
+    def test_select_neighbors_mandatory_exceeds_top_k(self):
+        """When mandatory count exceeds top_k, all mandatory are still included."""
+        priorities = [("a", 1.0, True), ("b", 1.0, True), ("c", 1.0, True), ("d", 1.0, True), ("e", 0.5, False)]
+        result = TrainingRoundStage._select_neighbors(priorities, top_k=2)
+        assert set(result) == {"a", "b", "c", "d"}
 
 
 class TestAsyncDFLContext:
@@ -306,31 +319,31 @@ def _attach_stage(stage, ctx):
 
 
 ###
-# _windowed_avg_loss
+# _windowed_sum_loss
 ###
 
 
-class TestWindowedAvgLoss:
-    """Tests for the _windowed_avg_loss helper."""
+class TestWindowedSumLoss:
+    """Tests for the _windowed_sum_loss helper."""
 
     def test_exact_window(self):
-        """Average over a full window of rounds."""
+        """Sum over a full window of rounds (Eq. 39)."""
         losses = {0: 1.0, 1: 2.0, 2: 3.0}
-        assert _windowed_avg_loss(losses, t_hat=2, tau=2) == 2.0
+        assert _windowed_sum_loss(losses, t_hat=2, tau=2) == 6.0
 
     def test_partial_window(self):
-        """Missing rounds are skipped, average is over available values only."""
+        """Missing rounds are skipped, sum is over available values only."""
         losses = {2: 4.0}
-        assert _windowed_avg_loss(losses, t_hat=2, tau=2) == 4.0
+        assert _windowed_sum_loss(losses, t_hat=2, tau=2) == 4.0
 
     def test_empty_losses(self):
         """Returns 0.0 when no matching rounds exist."""
-        assert _windowed_avg_loss({}, t_hat=5, tau=3) == 0.0
+        assert _windowed_sum_loss({}, t_hat=5, tau=3) == 0.0
 
     def test_single_round(self):
         """tau=0 means window is [t_hat, t_hat]."""
         losses = {3: 7.0}
-        assert _windowed_avg_loss(losses, t_hat=3, tau=0) == 7.0
+        assert _windowed_sum_loss(losses, t_hat=3, tau=0) == 7.0
 
 
 ###
@@ -365,45 +378,32 @@ class TestTrainingRoundRun:
         assert ctx.experiment.round == 1
 
     @pytest.mark.asyncio
-    async def test_run_increments_round_and_resets_peers(self):
-        """run() increments round counter and resets peer models."""
+    async def test_run_increments_round_without_clearing_models(self):
+        """run() increments round counter; models are NOT cleared outside τ boundaries."""
         ctx = _make_ctx(total_rounds=5, round=2, tau=100)
-        peer_a = AsyncPeerState(model=MagicMock())
-        peer_b = AsyncPeerState(model=MagicMock())
+        remote_model = MagicMock()
+        peer_a = AsyncPeerState()
+        peer_b = AsyncPeerState(model=remote_model)
         ctx.peers = {"node-1:5000": peer_a, "node-2:5000": peer_b}
 
         stage = _attach_stage(TrainingRoundStage(), ctx)
         await stage.run()
 
         assert ctx.experiment.round == 3
-        assert peer_a.model is None
-        assert peer_b.model is None
+        assert peer_b.model is remote_model
 
     @pytest.mark.asyncio
-    async def test_run_stores_trained_model_on_local_peer_then_resets(self):
-        """After training, the local peer's model is set, then reset_round clears it."""
+    async def test_run_stores_trained_model_on_local_peer(self):
+        """After training, the local peer's model is set and persists (no per-round clear)."""
         ctx = _make_ctx(total_rounds=5, round=0, tau=100)
         ctx.peers[ctx.address] = AsyncPeerState()
         trained_model = MagicMock()
         ctx.learner.get_model.return_value = trained_model
 
         stage = _attach_stage(TrainingRoundStage(), ctx)
-
-        # Capture model assignment during run via a side effect
-        assigned_models = []
-        original_reset = ctx.peers[ctx.address].reset_round
-
-        def capture_reset():
-            assigned_models.append(ctx.peers[ctx.address].model)
-            original_reset()
-
-        ctx.peers[ctx.address].reset_round = capture_reset
         await stage.run()
 
-        # Model was assigned before reset_round cleared it
-        assert assigned_models[0] is trained_model
-        # After run completes, reset_round has cleared it
-        assert ctx.peers[ctx.address].model is None
+        assert ctx.peers[ctx.address].model is trained_model
 
     @pytest.mark.asyncio
     async def test_run_handles_missing_local_peer(self):
@@ -535,7 +535,7 @@ class TestComputePriorities:
     """Tests for priority computation across neighbors."""
 
     def test_computes_priority_for_each_neighbor(self):
-        """Returns a priority tuple for each direct neighbor with peer state."""
+        """Returns a (name, priority, mandatory) tuple for each direct neighbor with peer state."""
         ctx = _make_ctx(neighbors=["n1", "n2"])
         ctx.peers[ctx.address] = AsyncPeerState()
         ctx.peers["n1"] = AsyncPeerState(round_number=1, push_time=0, p2p_updating_idx=0)
@@ -546,9 +546,10 @@ class TestComputePriorities:
         result = stage._compute_priorities(ctx)
 
         assert len(result) == 2
-        names = {n for n, _ in result}
+        names = {n for n, _, _ in result}
         assert names == {"n1", "n2"}
-        assert all(isinstance(p, float) for _, p in result)
+        assert all(isinstance(p, float) for _, p, _ in result)
+        assert all(isinstance(m, bool) for _, _, m in result)
 
     def test_skips_neighbor_without_peer_state(self):
         """Neighbors without an entry in ctx.peers are skipped."""
@@ -564,7 +565,7 @@ class TestComputePriorities:
         assert result[0][0] == "n1"
 
     def test_uses_windowed_loss_correctly(self):
-        """Priority uses windowed average loss over [t_hat-tau, t_hat]."""
+        """Priority uses windowed sum loss over [t_hat-tau, t_hat]."""
         ctx = _make_ctx(neighbors=["n1"], tau=2, dmax=10)
         ctx.experiment.round = 5
         local_peer = AsyncPeerState()
@@ -578,9 +579,39 @@ class TestComputePriorities:
         result = stage._compute_priorities(ctx)
 
         assert len(result) == 1
-        _, priority = result[0]
+        _, priority, _ = result[0]
         assert isinstance(priority, float)
         assert priority > 0
+
+    def test_mandatory_flag_when_stale(self):
+        """Neighbor is mandatory when d_{i,j} >= d_max."""
+        ctx = _make_ctx(neighbors=["n1"], dmax=3)
+        ctx.experiment.round = 10
+        ctx.peers[ctx.address] = AsyncPeerState()
+        # d_{i,j} = |(10 - 0) - (0 - 0)| = 10 >= 3
+        ctx.peers["n1"] = AsyncPeerState(push_time=0, round_number=0, p2p_updating_idx=0)
+
+        stage = _attach_stage(TrainingRoundStage(), ctx)
+        result = stage._compute_priorities(ctx)
+
+        assert len(result) == 1
+        _, _, is_mandatory = result[0]
+        assert is_mandatory is True
+
+    def test_not_mandatory_when_fresh(self):
+        """Neighbor is not mandatory when d_{i,j} < d_max."""
+        ctx = _make_ctx(neighbors=["n1"], dmax=10)
+        ctx.experiment.round = 5
+        ctx.peers[ctx.address] = AsyncPeerState()
+        # d_{i,j} = |(5 - 4) - (4 - 3)| = 0 < 10
+        ctx.peers["n1"] = AsyncPeerState(push_time=4, round_number=4, p2p_updating_idx=3)
+
+        stage = _attach_stage(TrainingRoundStage(), ctx)
+        result = stage._compute_priorities(ctx)
+
+        assert len(result) == 1
+        _, _, is_mandatory = result[0]
+        assert is_mandatory is False
 
 
 ###
@@ -609,6 +640,12 @@ class TestNetworkUpdate:
         # Aggregator should have been called
         ctx.aggregator.aggregate.assert_called_once()
         ctx.learner.set_model.assert_called_once()
+
+        # Remote peer models cleared after aggregation (Alg. 4 line 18)
+        assert ctx.peers["n1"].model is None
+        assert ctx.peers["n2"].model is None
+        # Local peer model is NOT cleared
+        assert ctx.peers[ctx.address].model is not None
 
     @pytest.mark.asyncio
     async def test_network_update_skips_gossip_when_no_neighbors(self):
@@ -766,8 +803,8 @@ class TestAggregate:
         assert ctx.peers[ctx.address].push_sum_weight == 0.6
 
     @pytest.mark.asyncio
-    async def test_aggregate_updates_p2p_updating_idx_for_remote_peers(self):
-        """Remote peers' p2p_updating_idx is set to current round."""
+    async def test_aggregate_does_not_set_p2p_updating_idx_locally(self):
+        """p2p_updating_idx is updated via messages (Alg. 3), not locally during aggregate."""
         ctx = _make_ctx(neighbors=["n1"])
         ctx.experiment.round = 7
         ctx.peers[ctx.address] = AsyncPeerState(model=MagicMock())
@@ -776,7 +813,7 @@ class TestAggregate:
         stage = _attach_stage(TrainingRoundStage(), ctx)
         await stage._aggregate(ctx)
 
-        assert ctx.peers["n1"].p2p_updating_idx == 7
+        assert ctx.peers["n1"].p2p_updating_idx == 0
 
     @pytest.mark.asyncio
     async def test_aggregate_skips_peers_without_models(self):
@@ -828,7 +865,7 @@ class TestTrainingRoundMessageHandlers:
 
     @pytest.mark.asyncio
     async def test_handle_loss_information_records_loss(self):
-        """handle_loss_information stores loss in peer state."""
+        """handle_loss_information stores loss and updates round_number (t_j)."""
         ctx = _make_ctx()
         ctx.peers["sender"] = AsyncPeerState()
         stage = _attach_stage(TrainingRoundStage(), ctx)
@@ -836,6 +873,18 @@ class TestTrainingRoundMessageHandlers:
         await stage.handle_loss_information("sender", 3, "0.42")
 
         assert ctx.peers["sender"].losses[3] == 0.42
+        assert ctx.peers["sender"].round_number == 3
+
+    @pytest.mark.asyncio
+    async def test_handle_loss_information_round_number_monotonic(self):
+        """round_number only increases (handles out-of-order messages)."""
+        ctx = _make_ctx()
+        ctx.peers["sender"] = AsyncPeerState(round_number=5)
+        stage = _attach_stage(TrainingRoundStage(), ctx)
+
+        await stage.handle_loss_information("sender", 3, "0.1")
+
+        assert ctx.peers["sender"].round_number == 5
 
     @pytest.mark.asyncio
     async def test_handle_loss_information_missing_args(self):
@@ -856,15 +905,26 @@ class TestTrainingRoundMessageHandlers:
         await stage.handle_loss_information("unknown", 1, "0.5")  # should not raise
 
     @pytest.mark.asyncio
-    async def test_handle_index_information_updates_round(self):
-        """handle_index_information updates peer's round_number."""
+    async def test_handle_index_information_updates_p2p_updating_idx(self):
+        """handle_index_information updates peer's p2p_updating_idx (Alg. 3: t^l_{j,i})."""
         ctx = _make_ctx()
-        ctx.peers["sender"] = AsyncPeerState(round_number=0)
+        ctx.peers["sender"] = AsyncPeerState(p2p_updating_idx=0)
         stage = _attach_stage(TrainingRoundStage(), ctx)
 
         await stage.handle_index_information("sender", 5)
 
-        assert ctx.peers["sender"].round_number == 5
+        assert ctx.peers["sender"].p2p_updating_idx == 5
+
+    @pytest.mark.asyncio
+    async def test_handle_index_information_monotonic(self):
+        """p2p_updating_idx only increases (handles out-of-order messages)."""
+        ctx = _make_ctx()
+        ctx.peers["sender"] = AsyncPeerState(p2p_updating_idx=7)
+        stage = _attach_stage(TrainingRoundStage(), ctx)
+
+        await stage.handle_index_information("sender", 3)
+
+        assert ctx.peers["sender"].p2p_updating_idx == 7
 
     @pytest.mark.asyncio
     async def test_handle_index_information_unknown_peer(self):
@@ -979,27 +1039,25 @@ class TestTrainingRoundMessageHandlers:
 
     @pytest.mark.asyncio
     async def test_handle_pre_send_model_training_accepts(self):
-        """Returns 'true' when model should be accepted."""
+        """Returns 'true' when sender round >= local round."""
         ctx = _make_ctx()
         ctx.experiment.round = 5
-        # No existing contributors, so partial_model with new contributors should be accepted
-        ctx.peers[ctx.address] = AsyncPeerState(model=None)
         stage = _attach_stage(TrainingRoundStage(), ctx)
 
-        # add_model: round(6) > local_round(5) -> true
-        result = await stage.handle_pre_send_model_training("sender", 6, "add_model")
+        result = await stage.handle_pre_send_model_training("sender", 5, "model_information_updating")
+        assert result == "true"
+
+        result = await stage.handle_pre_send_model_training("sender", 6, "model_information_updating")
         assert result == "true"
 
     @pytest.mark.asyncio
     async def test_handle_pre_send_model_training_rejects(self):
-        """Returns 'false' when model should not be accepted."""
+        """Returns 'false' when sender round < local round (stale)."""
         ctx = _make_ctx()
         ctx.experiment.round = 10
-        ctx.peers[ctx.address] = AsyncPeerState(model=None)
         stage = _attach_stage(TrainingRoundStage(), ctx)
 
-        # add_model: round(5) > local_round(10) -> false
-        result = await stage.handle_pre_send_model_training("sender", 5, "add_model")
+        result = await stage.handle_pre_send_model_training("sender", 5, "model_information_updating")
         assert result == "false"
 
     @pytest.mark.asyncio
@@ -1009,25 +1067,6 @@ class TestTrainingRoundMessageHandlers:
         stage = _attach_stage(TrainingRoundStage(), ctx)
 
         result = await stage.handle_pre_send_model_training("sender", 1)
-        assert result == "false"
-
-    @pytest.mark.asyncio
-    async def test_handle_pre_send_model_training_with_existing_contributors(self):
-        """Checks contributor overlap for partial_model."""
-        ctx = _make_ctx()
-        ctx.experiment.round = 5
-        existing_model = MagicMock()
-        existing_model.get_contributors.return_value = ["a", "b"]
-        ctx.peers["n1"] = AsyncPeerState(model=existing_model)
-        ctx.peers[ctx.address] = AsyncPeerState(model=None)
-        stage = _attach_stage(TrainingRoundStage(), ctx)
-
-        # partial_model with new contributor "c" -> should accept (new contributor)
-        result = await stage.handle_pre_send_model_training("sender", 5, "partial_model", "c")
-        assert result == "true"
-
-        # partial_model with already-known contributor "a" -> should reject
-        result = await stage.handle_pre_send_model_training("sender", 5, "partial_model", "a")
         assert result == "false"
 
 

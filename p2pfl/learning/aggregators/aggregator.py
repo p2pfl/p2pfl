@@ -21,7 +21,7 @@
 from abc import abstractmethod
 from collections.abc import Sequence
 
-from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel, TreeBasedModel, WeightBasedModel
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel, P2PFLModelDecorator, TreeBasedModel, WeightBasedModel
 from p2pfl.utils.node_component import NodeComponent, allow_no_addr_check
 
 
@@ -178,7 +178,7 @@ class WeightAggregator(Aggregator):
     @allow_no_addr_check
     def _accepts_model(self, model: P2PFLModel) -> bool:
         """Check if the model is a weight-based model (neural network)."""
-        return isinstance(model, WeightBasedModel)
+        return isinstance(_unwrap_model(model), WeightBasedModel)
 
 
 class TreeAggregator(Aggregator):
@@ -205,4 +205,11 @@ class TreeAggregator(Aggregator):
     @allow_no_addr_check
     def _accepts_model(self, model: P2PFLModel) -> bool:
         """Check if the model is a tree-based model (XGBoost)."""
-        return isinstance(model, TreeBasedModel)
+        return isinstance(_unwrap_model(model), TreeBasedModel)
+
+
+def _unwrap_model(model: P2PFLModel) -> P2PFLModel:
+    """Unwrap P2PFLModelDecorator layers to get the underlying model."""
+    while isinstance(model, P2PFLModelDecorator):
+        model = model._wrapped_model
+    return model

@@ -26,7 +26,6 @@ from p2pfl.settings import Settings
 from p2pfl.workflow.async_dfl.context import AsyncDFLContext, AsyncPeerState
 from p2pfl.workflow.engine.message import on_message
 from p2pfl.workflow.engine.stage import Stage
-from p2pfl.workflow.shared.evaluate import evaluate_and_broadcast
 
 
 class SetupStage(Stage[AsyncDFLContext]):
@@ -46,30 +45,37 @@ class SetupStage(Stage[AsyncDFLContext]):
         logger.info(ctx.address, "⏳ Starting async training.")
         logger.info(ctx.address, "⏳ Waiting initialization.")
 
-        # Evaluate before training starts
-        await evaluate_and_broadcast(ctx)
-
         await self._create_peer(ctx, source=ctx.address)
 
-        # Re-broadcast node_initialized periodically until all peers respond or timeout.
+        # Always broadcast at least once so peers that already received our
+        # handler-created peer still learn we exist (avoids a race where we
+        # skip the loop because _nodes_ready was set by an incoming handler
+        # before we ever broadcast).
+        try:
+            await ctx.cp.broadcast_gossip(ctx.cp.build_msg("node_initialized"))
+        except Exception as e:
+            logger.debug(ctx.address, f"Error broadcasting node initialization command: {e}")
+
+        # Re-broadcast periodically until all peers respond or timeout.
         rebroadcast_interval = 2.0
         timeout = Settings.training.SYNCHRONIZATION_TIMEOUT
         elapsed = 0.0
         while not self._nodes_ready.is_set() and elapsed < timeout:
-            try:
-                await ctx.cp.broadcast_gossip(ctx.cp.build_msg("node_initialized"))
-            except Exception as e:
-                logger.debug(ctx.address, f"Error broadcasting node initialization command: {e}")
-
             wait_time = min(rebroadcast_interval, timeout - elapsed)
             with contextlib.suppress(TimeoutError):
                 await asyncio.wait_for(self._nodes_ready.wait(), timeout=wait_time)
             elapsed += wait_time
 
+            if not self._nodes_ready.is_set():
+                try:
+                    await ctx.cp.broadcast_gossip(ctx.cp.build_msg("node_initialized"))
+                except Exception as e:
+                    logger.debug(ctx.address, f"Error broadcasting node initialization command: {e}")
+
         if not self._nodes_ready.is_set():
             logger.warning(ctx.address, "Timeout waiting for all nodes to initialize. Proceeding with available peers.")
 
-        # Set mixing weights for all neighbors and self (row sums to 1)
+        # Column-stochastic mixing weights (Alg. 1: p = 1/|N^out|, includes self)
         neighbors = list(ctx.cp.get_neighbors(only_direct=True))
         weight = 1.0 / (len(neighbors) + 1)
         for neighbor in neighbors:

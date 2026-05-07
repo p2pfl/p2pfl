@@ -297,6 +297,7 @@ class Workflow(Generic[TContext]):
         self.status = WorkflowStatus.RUNNING
         if on_ready is not None:
             on_ready.set()
+            await asyncio.sleep(0)
         logger.experiment_started(ctx.address, experiment)
         try:
             await self._run(ctx)

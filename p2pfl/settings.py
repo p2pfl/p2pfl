@@ -67,7 +67,7 @@ class Heartbeat:
 
     PERIOD: float = 2.0
     """Period (seconds) to send heartbeats."""
-    TIMEOUT: float = 5.0
+    TIMEOUT: float = 15.0
     """Timeout (seconds) for a node to be considered dead."""
     EXCLUDE_BEAT_LOGS: bool = True
     """Exclude heartbeat logs."""

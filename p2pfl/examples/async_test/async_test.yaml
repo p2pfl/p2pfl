@@ -1,0 +1,50 @@
+description: "Minimal AsyncDFL smoke test — 3 nodes, PushSum, ring topology"
+
+network:
+  package: "p2pfl.communication.protocols.protobuff.memory"
+  protocol: "MemoryCommunicationProtocol"
+  nodes: 2
+  topology: "ring"
+
+experiment:
+  name: "async_smoke_test"
+  rounds: 4
+  epochs: 1
+  trainset_size: 2
+  seed: 42
+  workflow: async
+  wait_timeout: 5
+  tau: 2
+  dmax: 5
+  top_k_neighbors: 3
+
+  dataset:
+    source: "huggingface"
+    name: "p2pfl/MNIST"
+    batch_size: 128
+    partitioning:
+      package: "p2pfl.learning.dataset.partition_strategies"
+      strategy: "RandomIIDPartitionStrategy"
+      params: {}
+
+  model:
+    package: "p2pfl.examples.mnist.model.mlp_tensorflow"
+    model_build_fn: "model_build_fn"
+    params: {}
+
+  aggregator:
+    package: "p2pfl.learning.aggregators.pushsum"
+    aggregator: "PushSum"
+    params: {}
+
+settings:
+  general:
+    log_level: "INFO"
+  SSL:
+    use_ssl: false
+  heartbeat:
+    period: 2
+    timeout: 60
+  gossip:
+    period: 0.1
+    ttl: 10

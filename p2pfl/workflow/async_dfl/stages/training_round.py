@@ -31,7 +31,7 @@ from p2pfl.workflow.async_dfl.context import AsyncDFLContext
 from p2pfl.workflow.engine.message import on_message
 from p2pfl.workflow.engine.stage import Stage
 from p2pfl.workflow.shared.evaluate import evaluate_and_broadcast
-from p2pfl.workflow.shared.gossiping import ModelGate, should_accept_model
+from p2pfl.workflow.shared.gossiping import ModelGate
 
 
 class TrainingRoundStage(Stage[AsyncDFLContext]):
@@ -65,8 +65,6 @@ class TrainingRoundStage(Stage[AsyncDFLContext]):
 
         # Phase 5: Round finish
         experiment.round += 1
-        for p in ctx.peers.values():
-            p.reset_round()
         logger.info(address, f"Round {experiment.round} finished.")
 
         # Check termination
@@ -132,11 +130,22 @@ class TrainingRoundStage(Stage[AsyncDFLContext]):
         # Aggregate received models
         await self._aggregate(ctx)
 
-    def _compute_priorities(self, ctx: AsyncDFLContext) -> list[tuple[str, float]]:
-        """Compute priority for each neighbor based on loss divergence and staleness."""
+        # Clear received models buffer (Alg. 4 line 18: W_i ← ∅)
+        for neighbor, peer in ctx.peers.items():
+            if neighbor != address:
+                peer.reset_round()
+
+    def _compute_priorities(self, ctx: AsyncDFLContext) -> list[tuple[str, float, bool]]:
+        """
+        Compute priority and mandatory flag for each neighbor.
+
+        Returns (neighbor_addr, priority, is_mandatory) tuples.
+        A neighbor is mandatory when d_{i,j} >= d_max (Eq. 40-41).
+        """
         peers = ctx.peers
         tau = ctx.experiment.tau
-        neighbor_priorities: list[tuple[str, float]] = []
+        dmax = ctx.experiment.dmax
+        neighbor_priorities: list[tuple[str, float, bool]] = []
 
         local_peer = peers.get(ctx.address)
 
@@ -145,8 +154,15 @@ class TrainingRoundStage(Stage[AsyncDFLContext]):
             if neighbor_peer is None:
                 continue
             t_hat = min(ctx.experiment.round, neighbor_peer.round_number)
-            local_loss = _windowed_avg_loss(local_peer.losses, t_hat, tau) if local_peer else 0.0
-            neighbor_loss = _windowed_avg_loss(neighbor_peer.losses, t_hat, tau)
+            local_loss = _windowed_sum_loss(local_peer.losses, t_hat, tau) if local_peer else 0.0
+            neighbor_loss = _windowed_sum_loss(neighbor_peer.losses, t_hat, tau)
+
+            raw_dij = abs(
+                (ctx.experiment.round - neighbor_peer.push_time)
+                - (neighbor_peer.round_number - neighbor_peer.p2p_updating_idx)
+            )
+            is_mandatory = raw_dij >= dmax
+
             priority = compute_priority(
                 ti=ctx.experiment.round,
                 tp_ij=neighbor_peer.push_time,
@@ -154,17 +170,23 @@ class TrainingRoundStage(Stage[AsyncDFLContext]):
                 tl_ji=neighbor_peer.p2p_updating_idx,
                 f_ti=local_loss,
                 f_tj=neighbor_loss,
-                dmax=ctx.experiment.dmax,
+                dmax=dmax,
             )
-            neighbor_priorities.append((neighbor, priority))
+            neighbor_priorities.append((neighbor, priority, is_mandatory))
 
         return neighbor_priorities
 
     @staticmethod
-    def _select_neighbors(neighbor_priorities: list[tuple[str, float]], top_k: int = 3) -> list[str]:
-        """Select the top-k neighbors by priority."""
-        ranked = sorted(neighbor_priorities, key=lambda x: x[1], reverse=True)
-        return [n for n, _ in ranked[:top_k]]
+    def _select_neighbors(neighbor_priorities: list[tuple[str, float, bool]], top_k: int = 3) -> list[str]:
+        """Select neighbors: mandatory (d_{i,j} >= d_max) first, then top-k by priority (Eq. 43-44)."""
+        mandatory = [n for n, _, m in neighbor_priorities if m]
+        discretionary = sorted(
+            [(n, p) for n, p, m in neighbor_priorities if not m],
+            key=lambda x: x[1],
+            reverse=True,
+        )
+        remaining_slots = max(0, top_k - len(mandatory))
+        return mandatory + [n for n, _ in discretionary[:remaining_slots]]
 
     async def _gossip_model(self, ctx: AsyncDFLContext) -> None:
         """Send model and push-sum weight to selected neighbors."""
@@ -230,7 +252,6 @@ class TrainingRoundStage(Stage[AsyncDFLContext]):
             models.append(peer.model)
 
             if neighbor != address:
-                peer.p2p_updating_idx = ctx.experiment.round
                 try:
                     await ctx.cp.send(
                         nei=neighbor,
@@ -249,7 +270,9 @@ class TrainingRoundStage(Stage[AsyncDFLContext]):
             if self_peer is not None:
                 self_peer.push_sum_weight = agg_model.get_info().get("push_sum_weight", self_peer.push_sum_weight)
 
-        await evaluate_and_broadcast(ctx)
+        eval_every = getattr(ctx.experiment, "eval_every", 0)
+        if eval_every > 0 and (ctx.experiment.round // ctx.experiment.tau) % eval_every == 0:
+            await evaluate_and_broadcast(ctx)
         logger.info(address, "Aggregation finished.")
 
     ###
@@ -268,20 +291,21 @@ class TrainingRoundStage(Stage[AsyncDFLContext]):
             return
         try:
             peer.add_loss(round, loss)
+            peer.round_number = max(peer.round_number, round)
             logger.debug(self.ctx.address, f"{source} loss updated to {loss} for round {round}")
         except Exception as e:
             logger.error(self.ctx.address, f"Error saving loss from {source} for round {round}: {e}")
 
     @on_message("index_information_updating")
     async def handle_index_information(self, source: str, round: int, *args) -> None:
-        """Handle an index_information_updating message."""
+        """Handle an index_information_updating message (Alg. 3: t^l_{j,i} update)."""
         peer = self.ctx.peers.get(source)
         if peer is None:
             logger.warning(self.ctx.address, f"Peer state not found for {source}")
             return
         try:
-            peer.round_number = round
-            logger.debug(self.ctx.address, f"{source} round updated to {round}")
+            peer.p2p_updating_idx = max(peer.p2p_updating_idx, round)
+            logger.debug(self.ctx.address, f"{source} p2p_updating_idx updated to {peer.p2p_updating_idx}")
         except Exception as e:
             logger.error(self.ctx.address, f"Error saving iteration index from {source}: {e}")
 
@@ -337,29 +361,14 @@ class TrainingRoundStage(Stage[AsyncDFLContext]):
         """Handle a pre_send_model_training request by checking if the model should be accepted."""
         if not args:
             return "false"
-        weight_command = args[0]
-        logger.debug(self.ctx.address, f"pre_send_model from {source}: weight_command={weight_command}")
-        contributors = list(args[1:]) if len(args) > 1 else []
-
-        existing: set[str] = set()
-        for p in self.ctx.peers.values():
-            if p.model:
-                existing.update(p.model.get_contributors())
-
-        accepted = should_accept_model(
-            weight_command=weight_command,
-            contributors=contributors,
-            round=round,
-            local_round=self.ctx.experiment.round,
-            existing_contributors=existing,
-        )
-        return "true" if accepted else "false"
+        logger.debug(self.ctx.address, f"pre_send_model from {source}: round={round}")
+        # Accept models from peers at the same or newer round (reject stale).
+        return "true" if round >= self.ctx.experiment.round else "false"
 
 
-def _windowed_avg_loss(losses: dict[int, float], t_hat: int, tau: int) -> float:
-    """Average loss over rounds [t̂-τ, t̂] (Eq. 39 from AsyDFL paper)."""
-    values = [losses[r] for r in range(t_hat - tau, t_hat + 1) if r in losses]
-    return sum(values) / len(values) if values else 0.0
+def _windowed_sum_loss(losses: dict[int, float], t_hat: int, tau: int) -> float:
+    """Sum loss over rounds [t̂-τ, t̂] (Eq. 39 from AsyDFL paper)."""
+    return sum(losses[r] for r in range(t_hat - tau, t_hat + 1) if r in losses)
 
 
 def compute_priority(

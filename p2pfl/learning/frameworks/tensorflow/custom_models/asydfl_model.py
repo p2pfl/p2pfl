@@ -9,38 +9,7 @@ from typing import Any
 import numpy as np
 import tensorflow as tf
 
-from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
-
-
-class P2PFLModelDecorator(P2PFLModel):
-    """Dynamic wrapper for P2PFLModel. Used to extend KerasModel with push-sum weight for async DFL."""
-
-    def __init__(self, wrapped_model: P2PFLModel) -> None:
-        """Initialize wrapper with a P2PFLModel instance."""
-        object.__setattr__(self, "_wrapped_model", wrapped_model)
-
-    def __getattr__(self, name: str) -> Any:
-        """Delegate attribute access to wrapped model."""
-        return getattr(self._wrapped_model, name)
-
-    def __setattr__(self, name: str, value: Any) -> None:
-        """Delegate attribute setting to wrapped model."""
-        if name == "_wrapped_model":
-            object.__setattr__(self, name, value)
-        else:
-            setattr(self._wrapped_model, name, value)
-
-    def get_parameters(self) -> Any:
-        """Get model parameters."""
-        return self._wrapped_model.get_parameters()
-
-    def set_parameters(self, params: Any) -> None:
-        """Set model parameters."""
-        self._wrapped_model.set_parameters(params)
-
-    def get_framework(self) -> str:
-        """Get framework name."""
-        return self._wrapped_model.get_framework()
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel, P2PFLModelDecorator
 
 
 @tf.keras.utils.register_keras_serializable(package="p2pfl")
@@ -57,8 +26,13 @@ class DeBiasedAsyDFLKerasModel(tf.keras.Model):
     def __init__(self, model: tf.keras.Model, push_sum_weight: float = 1.0, **kwargs):
         """Initialize the model."""
         self.model = model
-        self._custom_loss = self.model.loss
+        saved_loss = self.model.loss
+        self._custom_loss = saved_loss
         super().__init__(**kwargs)
+        # Keras's super().__init__() sets self.loss = None via the property
+        # setter, wiping both _custom_loss and model.loss. Restore both.
+        self._custom_loss = saved_loss
+        self.model.loss = saved_loss
         self.push_sum_weight = tf.Variable(tf.constant(push_sum_weight, dtype=tf.float32), dtype=tf.float32, trainable=False)
 
     @property
@@ -70,7 +44,8 @@ class DeBiasedAsyDFLKerasModel(tf.keras.Model):
     def loss(self, value):
         """Set the loss function of the model."""
         self._custom_loss = value
-        self.model.loss = value
+        if hasattr(self, "model"):
+            self.model.loss = value
 
     @property
     def optimizer(self):
@@ -237,14 +212,14 @@ class AsyDFLKerasP2PFLModel(P2PFLModelDecorator):
         push_sum_weight: float = 1.0,
     ) -> None:
         """Initialize the model."""
-        if not isinstance(wrapped_model, DeBiasedAsyDFLKerasModel):
-            # If the wrapped model is not already a DeBiasedAsyDFLKerasModel, wrap it
-            debiased_model = DeBiasedAsyDFLKerasModel(
-                wrapped_model.get_model(),
-                push_sum_weight,
-            )
+        inner_model = wrapped_model.get_model()
+        if isinstance(inner_model, DeBiasedAsyDFLKerasModel):
+            inner_model.push_sum_weight.assign(tf.constant(push_sum_weight, dtype=tf.float32))
+        else:
+            debiased_model = DeBiasedAsyDFLKerasModel(inner_model, push_sum_weight)
             wrapped_model.model = debiased_model
         super().__init__(wrapped_model)
+        self.add_info("push_sum_weight", float(push_sum_weight))
 
     def get_push_sum_weight(self) -> float:
         """
@@ -258,7 +233,7 @@ class AsyDFLKerasP2PFLModel(P2PFLModelDecorator):
 
     def set_push_sum_weight(self, weight: float | int) -> None:
         """
-        Set the push sum weight.
+        Set the push sum weight on both the Keras variable and additional_info.
 
         Args:
             weight: The push sum weight.
@@ -266,7 +241,9 @@ class AsyDFLKerasP2PFLModel(P2PFLModelDecorator):
         """
         if not isinstance(weight, float | int):
             raise ValueError("Push sum weight must be a float or int.")
-        self.get_model().push_sum_weight.assign(tf.constant(weight, dtype=tf.float32))
+        w = float(weight)
+        self.get_model().push_sum_weight.assign(tf.constant(w, dtype=tf.float32))
+        self.add_info("push_sum_weight", w)
 
     def build_copy(self, **kwargs) -> AsyDFLKerasP2PFLModel:
         """

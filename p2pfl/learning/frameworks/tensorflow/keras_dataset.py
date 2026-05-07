@@ -18,6 +18,7 @@
 
 """Keras dataset export strategy."""
 
+import numpy as np
 import tensorflow as tf  # type: ignore
 from datasets import Dataset  # type: ignore
 
@@ -37,10 +38,13 @@ class KerasExportStrategy(DataExportStrategy):
         """
         Export the data as a TensorFlow Dataset.
 
+        Converts through numpy arrays to avoid HuggingFace's ``to_tf_dataset()``
+        streaming pipeline, which deadlocks under asyncio when p2pfl's gossip
+        and heartbeat tasks are active.
+
         Args:
             data: The Hugging Face Dataset to export. Transforms should already be applied to the dataset via set_transform.
             batch_size: The batch size for the TensorFlow Dataset.
-            seed: The seed for the TensorFlow Dataset.
             **kwargs: Additional keyword arguments.
 
         Returns:
@@ -50,18 +54,12 @@ class KerasExportStrategy(DataExportStrategy):
         if not batch_size:
             batch_size = Settings.training.DEFAULT_BATCH_SIZE
 
-        # Get the columns
-        columns = list(data[0].keys())[:-1]
-        label_cols = list(data[0].keys())[-1:]
+        keys = list(data[0].keys())
+        feature_cols = keys[:-1]
+        label_col = keys[-1]
 
-        print(
-            f"Getting columns by order: {columns}, label_cols: {label_cols}. "
-            "If need different ones, implement your own KerasExportStrategy or a custom transform."
-        )
+        features = [np.array(data[col], dtype=np.float32) for col in feature_cols]
+        x = features[0] if len(features) == 1 else np.concatenate(features, axis=-1)
+        y = np.array(data[label_col], dtype=np.int64)
 
-        # Export Keras dataset
-        return data.to_tf_dataset(
-            batch_size=batch_size,
-            columns=columns,
-            label_cols=label_cols,
-        )
+        return tf.data.Dataset.from_tensor_slices((x, y)).batch(batch_size)

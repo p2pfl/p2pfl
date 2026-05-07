@@ -4,10 +4,10 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
+from p2pfl.learning.frameworks.p2pfl_model import P2PFLModelDecorator
 from p2pfl.learning.frameworks.tensorflow.custom_models.asydfl_model import (
     AsyDFLKerasP2PFLModel,
     DeBiasedAsyDFLKerasModel,
-    P2PFLModelDecorator,
 )
 from p2pfl.learning.frameworks.tensorflow.custom_models.custom_model_factory import KerasCustomModelFactory
 from p2pfl.learning.frameworks.tensorflow.keras_model import KerasModel

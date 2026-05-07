@@ -18,6 +18,8 @@
 
 """Keras learner for P2PFL."""
 
+import asyncio
+
 import numpy as np
 import tensorflow as tf  # type: ignore
 
@@ -78,14 +80,12 @@ class KerasLearner(Learner):
         return super().set_address(address)
 
     def __get_tf_model(self) -> tf.keras.Model:
-        # Get Model
         tf_model = self.get_model().get_model()
         if not isinstance(tf_model, tf.keras.Model):
             raise ValueError("The model must be a TensorFlow Keras model")
         return tf_model
 
-    def __get_tf_data(self, train: bool = True) -> tf.data.Dataset:
-        # Get Data
+    def __export_tf_data(self, train: bool = True) -> tf.data.Dataset:
         data = self.get_data().export(KerasExportStrategy, train=train)
         if not isinstance(data, tf.data.Dataset):
             raise ValueError("The data must be a TensorFlow Dataset")
@@ -97,21 +97,18 @@ class KerasLearner(Learner):
         try:
             if self.epochs > 0:
                 model = self.__get_tf_model()
-                data = self.__get_tf_data(train=True)
-                history = model.fit(
+                data = self.__export_tf_data(train=True)
+                history = await asyncio.to_thread(
+                    model.fit,
                     data,
                     epochs=self.epochs,
-                    callbacks=self.callbacks,  # type: ignore
+                    callbacks=self.callbacks,  # type: ignore[arg-type]
                     steps_per_epoch=self.steps_per_epoch,
                 )
                 self.get_model().last_training_loss = history.history["loss"][-1]
 
-            # Set model contribution
             self.get_model().set_contribution([self.address], self.get_data().get_num_samples(train=True))
-
-            # Set callback info
             self.add_callback_info_to_model()
-
             return self.get_model()
         except Exception as e:
             logger.error(self.address, f"Error in training with Keras: {e}")
@@ -121,31 +118,22 @@ class KerasLearner(Learner):
         """Train the model on the next batch manually."""
         set_seed(Settings.general.SEED, self.get_framework())
         if self._batch_iterator is None:
-            # Get data iterator if not already available
-            data = self.__get_tf_data(train=True)
-            self._batch_iterator = iter(data)
+            self._batch_iterator = iter(self.__export_tf_data(train=True))
 
         try:
             model = self.__get_tf_model()
             try:
                 batch = next(self._batch_iterator)
             except StopIteration:
-                # Reinitialize iterator if exhausted
-                data = self.__get_tf_data(train=True)
-                self._batch_iterator = iter(data)
+                self._batch_iterator = iter(self.__export_tf_data(train=True))
                 batch = next(self._batch_iterator)
 
             inputs, targets = batch
-
-            loss, _ = model.train_on_batch(inputs, targets)
+            loss, _ = await asyncio.to_thread(model.train_on_batch, inputs, targets)
             self.get_model().last_training_loss = loss
 
-            # Set model contribution
             self.get_model().set_contribution([self.address], self.get_data().get_num_samples(train=True))
-
-            # Set callback info
             self.add_callback_info_to_model()
-
             return self.get_model()
         except Exception as e:
             logger.error(self.address, f"Error in training with Keras: {e}")
@@ -153,8 +141,6 @@ class KerasLearner(Learner):
 
     async def interrupt_fit(self) -> None:
         """Interrupt the training process."""
-        # Keras doesn't have a direct way to interrupt fit.
-        # Need to implement a custom callback or use a flag to stop training.
         logger.error(self.address, "Interrupting training (not fully implemented for Keras).")
 
     async def evaluate(self) -> dict[str, float]:
@@ -162,9 +148,8 @@ class KerasLearner(Learner):
         try:
             if self.epochs > 0:
                 model = self.__get_tf_model()
-                data = self.__get_tf_data(train=False)
-
-                results = model.evaluate(data, verbose=0)
+                data = self.__export_tf_data(train=False)
+                results = await asyncio.to_thread(model.evaluate, data, verbose=0)
                 if not isinstance(results, list):
                     results = [results]
                 results_dict = dict(zip(model.metrics_names, results, strict=False))

@@ -202,6 +202,73 @@ class P2PFLModel(ABC):
         raise NotImplementedError
 
 
+class P2PFLModelDecorator(P2PFLModel):
+    """Dynamic wrapper for P2PFLModel. Delegates all attribute access to the wrapped model."""
+
+    def __init__(self, wrapped_model: "P2PFLModel") -> None:
+        """Initialize wrapper with a P2PFLModel instance."""
+        object.__setattr__(self, "_wrapped_model", wrapped_model)
+
+    def __getattr__(self, name: str) -> Any:
+        """Delegate attribute access to wrapped model."""
+        return getattr(self._wrapped_model, name)
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        """Delegate attribute setting to wrapped model."""
+        if name == "_wrapped_model":
+            object.__setattr__(self, name, value)
+        else:
+            setattr(self._wrapped_model, name, value)
+
+    def get_model(self) -> Any:
+        """Get the model."""
+        return self._wrapped_model.get_model()
+
+    def get_parameters(self) -> Any:
+        """Get model parameters."""
+        return self._wrapped_model.get_parameters()
+
+    def set_parameters(self, params: Any) -> None:
+        """Set model parameters."""
+        self._wrapped_model.set_parameters(params)
+
+    def get_framework(self) -> str:
+        """Get framework name."""
+        return self._wrapped_model.get_framework()
+
+    def encode_parameters(self, params: Any = None) -> bytes:
+        """Encode the parameters of the model."""
+        return self._wrapped_model.encode_parameters(params)
+
+    def decode_parameters(self, data: bytes) -> tuple[Any, dict[str, Any]]:
+        """Decode the parameters of the model."""
+        return self._wrapped_model.decode_parameters(data)
+
+    def add_info(self, callback: str, info: Any) -> None:
+        """Add additional information to the learner state."""
+        self._wrapped_model.add_info(callback, info)
+
+    def get_info(self, callback: str | None = None) -> Any:
+        """Get additional information from the learner state."""
+        return self._wrapped_model.get_info(callback)
+
+    def set_contribution(self, contributors: list[str], num_samples: int) -> None:
+        """Set the contribution of the model."""
+        self._wrapped_model.set_contribution(contributors, num_samples)
+
+    def get_contributors(self) -> list[str]:
+        """Get the contributors of the model."""
+        return self._wrapped_model.get_contributors()
+
+    def get_num_samples(self) -> int:
+        """Get the number of samples used to train this model."""
+        return self._wrapped_model.get_num_samples()
+
+    def build_copy(self, **kwargs: Any) -> "P2PFLModel":
+        """Build a copy of the model."""
+        return self._wrapped_model.build_copy(**kwargs)
+
+
 class WeightBasedModel(P2PFLModel):
     """
     Base class for neural network models (PyTorch, TensorFlow, Flax).
