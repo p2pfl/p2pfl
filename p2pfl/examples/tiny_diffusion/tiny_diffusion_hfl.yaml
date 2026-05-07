@@ -1,0 +1,87 @@
+description: "HFL with Tiny Diffusion on 2D distributions: 1 root, 4 edges, 2 workers each (13 nodes). Each cluster handles one shape (moons, circles, spiral, cross) and edges actually aggregate multiple workers."
+
+# Network setup
+network:
+  package: "p2pfl.communication.protocols.protobuff.memory"
+  protocol: "MemoryCommunicationProtocol"
+  topology: "hierarchical"
+  hierarchy:
+    edge_trains: false
+    clusters:
+      - workers: 2       # Cluster 0 (moons)
+      - workers: 2       # Cluster 1 (circles)
+      - workers: 2       # Cluster 2 (spiral)
+      - workers: 2       # Cluster 3 (cross)
+
+# Experiment settings
+experiment:
+  name: "hfl_tiny_diffusion"
+  rounds: 20
+  epochs: 20
+  seed: 42
+  workflow: hfl
+  wait_timeout: 30
+  save_samples_every: 5   # root saves per-class samples + W2/MMD metrics every K rounds (0 = disabled)
+
+  # Synthetic 2D dataset
+  dataset:
+    source: "custom"
+    package: "p2pfl.examples.tiny_diffusion.dataset"
+    class: "make_2d_dataset"
+    name: "tiny_diffusion_2d"
+    batch_size: 64
+    params:
+      n_samples_per_dist: 5000
+      noise: 0.05
+      seed: 42
+    partitioning:
+      package: "p2pfl.learning.dataset.partition_strategies"
+      strategy: "RandomIIDPartitionStrategy"
+      params: {}             # IID: every worker sees a uniform sample of all 4 distributions
+
+  # Conditional diffusion model (Fourier inputs, residual blocks, class embedding)
+  model:
+    package: "p2pfl.examples.tiny_diffusion.model.diffusion_pytorch"
+    model_build_fn: "model_build_fn"
+    params:
+      point_dim: 2
+      hidden_dim: 128
+      n_layers: 3
+      time_emb_dim: 128
+      input_emb_dim: 128
+      input_scale: 25.0
+      num_classes: 4
+      class_emb_dim: 128
+      timesteps: 1000
+      lr: 0.001
+
+  # Aggregation
+  aggregator:
+    package: "p2pfl.learning.aggregators.fedavg"
+    aggregator: "FedAvg"
+    params: {}
+
+# Results export
+results:
+  output_dir: "results/hfl_tiny_diffusion"
+
+# Settings
+settings:
+  general:
+    log_level: "INFO"
+    disable_ray: True
+  heartbeat:
+    period: 2
+    timeout: 60
+    wait_convergence: 4
+    exclude_beat_logs: true
+  gossip:
+    period: 1
+    ttl: 10
+    messages_per_period: 200
+    amount_last_messages_saved: 1000
+    models_period: 1
+    models_per_round: 4
+    exit_on_x_equal_rounds: 50
+  training:
+    aggregation_timeout: 300

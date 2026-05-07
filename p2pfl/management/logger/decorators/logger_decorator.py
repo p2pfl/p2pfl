@@ -130,6 +130,29 @@ class LoggerDecorator(P2PFLogger):
         """
         self._p2pfl_logger.log_metric(addr=addr, metric=metric, value=value, step=step, round=round)
 
+    def set_run_dir(self, run_dir: str | None) -> None:
+        """Set the run directory for image artifacts."""
+        self._p2pfl_logger.set_run_dir(run_dir)
+
+    def log_image(
+        self,
+        addr: str,
+        name: str,
+        image: Any,
+        step: int | None = None,
+        round: int | None = None,
+        caption: str | None = None,
+        fmt: str = "png",
+    ) -> None:
+        """Log an image artifact (delegated)."""
+        self._p2pfl_logger.log_image(
+            addr=addr, name=name, image=image, step=step, round=round, caption=caption, fmt=fmt
+        )
+
+    def get_image_records(self) -> list[dict[str, Any]]:
+        """Get the image records (delegated)."""
+        return self._p2pfl_logger.get_image_records()
+
     def get_local_logs(self) -> LocalLogsType:
         """
         Get the logs.

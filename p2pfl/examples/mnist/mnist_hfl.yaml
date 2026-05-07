@@ -1,0 +1,70 @@
+description: "Hierarchical Federated Learning with MNIST: 1 root, 2 edge nodes, 2 workers each (7 nodes total)."
+
+# Defines network setup
+network:
+  package: "p2pfl.communication.protocols.protobuff.memory"
+  protocol: "MemoryCommunicationProtocol"
+  topology: "hierarchical"
+  hierarchy:
+    edge_trains: false       # Whether edges train on their own data (false = pure aggregators)
+    clusters:
+      - workers: 2         # Edge 0 with 2 workers
+      - workers: 2         # Edge 1 with 2 workers
+
+# Defines experiment settings
+experiment:
+  name: "hfl_mnist"
+  rounds: 10
+  epochs: 5
+  seed: 666
+  workflow: hfl
+  wait_timeout: 10  # Timeout in minutes
+
+  # Dataset settings
+  dataset:
+    source: "huggingface"
+    name: "p2pfl/MNIST"
+    batch_size: 128
+    partitioning:
+      package: "p2pfl.learning.dataset.partition_strategies"
+      strategy: "RandomIIDPartitionStrategy"
+      reduced_dataset: false
+      reduction_factor: 10
+      params: {}
+
+  # Model configuration
+  model:
+    package: "p2pfl.examples.mnist.model.mlp_pytorch"
+    model_build_fn: "model_build_fn"
+    params: {}
+
+  # Aggregation algorithm configuration
+  aggregator:
+    package: "p2pfl.learning.aggregators.fedavg"
+    aggregator: "FedAvg"
+    params: {}
+
+# Results export
+results:
+  output_dir: "results/hfl_mnist"
+
+# Settings
+settings:
+  general:
+    log_level: "INFO"
+    disable_ray: False
+  heartbeat:
+    period: 2
+    timeout: 10
+    wait_convergence: 4
+    exclude_beat_logs: true
+  gossip:
+    period: 1
+    ttl: 10
+    messages_per_period: 200
+    amount_last_messages_saved: 1000
+    models_period: 1
+    models_per_round: 4
+    exit_on_x_equal_rounds: 50
+  training:
+    aggregation_timeout: 300

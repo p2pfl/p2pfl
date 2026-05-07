@@ -28,6 +28,7 @@ import yaml
 from p2pfl.learning.aggregators.aggregator import Aggregator
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.frameworks.p2pfl_model import P2PFLModel
+from p2pfl.management.csv_exporter import export_experiment_csv
 from p2pfl.management.launch_from_yaml.utils import export_experiment_data, load_by_package_and_name, resize_partitions
 from p2pfl.management.logger import logger
 from p2pfl.management.logger.logger import P2PFLogger
@@ -75,7 +76,13 @@ async def run_from_yaml(yaml_path: str, debug: bool = False) -> None:
         raise ValueError("Missing 'network' configuration in YAML file.")
     n = network_config.get("nodes")
     if not n:
-        raise ValueError("Missing 'n' under 'network' configuration in YAML file.")
+        # For hierarchical topology, derive node count from clusters (+1 for root)
+        hierarchy = network_config.get("hierarchy", {})
+        clusters = hierarchy.get("clusters", [])
+        if clusters:
+            n = 1 + sum(1 + c.get("workers", 1) for c in clusters)
+        else:
+            raise ValueError("Missing 'nodes' under 'network' configuration in YAML file.")
 
     #############
     # Profiling #
@@ -233,13 +240,18 @@ async def run_from_yaml(yaml_path: str, debug: bool = False) -> None:
 
     experiment_failed = False
 
-    # Create nodes
-    nodes: list[Node] = []
     protocol_package = network_config.get("package")
     protocol_class_name = network_config.get("protocol")
     if not protocol_package or not protocol_class_name:
         raise ValueError("Missing 'protocol' configuration in YAML file.")
     protocol = load_by_package_and_name(protocol_package, protocol_class_name)
+
+    topology = network_config.get("topology")
+    if not topology:
+        raise ValueError("Missing 'topology' configuration in YAML file.")
+
+    # Create nodes
+    nodes: list[Node] = []
     for i in range(n):
         node = Node(
             model_fn(),
@@ -250,35 +262,36 @@ async def run_from_yaml(yaml_path: str, debug: bool = False) -> None:
         await node.start()
         nodes.append(node)
 
+    # Pre-create the per-run results directory if results export is enabled.
+    # This lets per-round artifacts (sample plots, etc.) be saved into the same
+    # directory that the final csv_exporter will populate.
+    results_config = config.get("results")
+    run_dir: str | None = None
+    if results_config is not None:
+        from datetime import datetime as _datetime
+
+        results_dir = results_config.get("output_dir", "results")
+        run_dir = os.path.join(results_dir, _datetime.now().strftime("%Y%m%d_%H%M%S"))
+        os.makedirs(run_dir, exist_ok=True)
+        # Wire the logger so log_image() persists into <run_dir>/images/
+        logger.set_run_dir(run_dir)
+
     try:
-        # Connect nodes
-        topology = network_config.get("topology")
-        if not topology:
-            raise ValueError("Missing 'topology' configuration in YAML file.")
-        if n > Settings.gossip.TTL:
-            print(
-                f""""TTL less than the number of nodes ({Settings.gossip.TTL} < {n}).
-                Some messages will not be delivered depending on the topology."""
-            )
-        adjacency_matrix = TopologyFactory.generate_matrix(topology, len(nodes))
-        await TopologyFactory.connect_nodes(adjacency_matrix, nodes)
-        await wait_convergence(nodes, n - 1, only_direct=False, wait=60, debug=True)  # type: ignore
-
-        # Additional connections
-        additional_connections = network_config.get("additional_connections")
-        if additional_connections:
-            for source, connect_to in additional_connections:
-                await nodes[source].connect(nodes[connect_to].address)
-
         # Start Learning
         r = experiment_config.get("rounds")
         e = experiment_config.get("epochs")
-        trainset_size = experiment_config.get("trainset_size")
         if r < 1:
             raise ValueError("Skipping training, amount of round is less than 1")
 
-        # Start Learning
-        actual_exp_name = await nodes[0].set_start_learning(rounds=r, epochs=e, trainset_size=trainset_size, workflow=workflow_name)
+        save_samples_every = experiment_config.get("save_samples_every", 0)
+
+        if topology == "hierarchical":
+            await _run_hierarchical(
+                nodes, network_config, experiment_config, workflow_name, r, e,
+                run_dir=run_dir, save_samples_every=save_samples_every,
+            )
+        else:
+            actual_exp_name = await _run_flat(nodes, network_config, experiment_config, workflow_name, r, e, n)
 
         # Wait and check
         wait_timeout = experiment_config.get("wait_timeout", 60)
@@ -300,6 +313,10 @@ async def run_from_yaml(yaml_path: str, debug: bool = False) -> None:
                 if node.workflow and hasattr(node.workflow, "stage_timings"):
                     all_timings.extend(node.workflow.stage_timings)
             messages = logger.get_messages()
+
+        # Per-node CSV export (used by tiny_diffusion examples). Skipped when the experiment failed.
+        if results_config is not None and not experiment_failed and run_dir is not None:
+            export_experiment_csv(nodes, run_dir=run_dir)
 
         # Stop Nodes
         for node in nodes:
@@ -336,3 +353,143 @@ async def run_from_yaml(yaml_path: str, debug: bool = False) -> None:
             else:
                 export_experiment_data(exp_dir, all_timings, messages, logger.get_global_logs())
                 print(f"Experiment data saved in {exp_dir}")
+
+
+async def _run_flat(
+    nodes: list[Node],
+    network_config: dict[str, Any],
+    experiment_config: dict[str, Any],
+    workflow_name: str,
+    r: int,
+    e: int,
+    n: int,
+) -> str | None:
+    """Run a flat (non-hierarchical) topology. Returns the actual experiment name from the initiator."""
+    topology = network_config.get("topology")
+    if n > Settings.gossip.TTL:
+        print(
+            f"TTL less than the number of nodes ({Settings.gossip.TTL} < {n}). "
+            "Some messages will not be delivered depending on the topology."
+        )
+    adjacency_matrix = TopologyFactory.generate_matrix(topology, len(nodes))
+    await TopologyFactory.connect_nodes(adjacency_matrix, nodes)
+    await wait_convergence(nodes, n - 1, only_direct=False, wait=60, debug=False)
+
+    # Additional connections
+    additional_connections = network_config.get("additional_connections")
+    if additional_connections:
+        for source, connect_to in additional_connections:
+            await nodes[source].connect(nodes[connect_to].address)
+
+    trainset_size = experiment_config.get("trainset_size")
+    return await nodes[0].set_start_learning(rounds=r, epochs=e, trainset_size=trainset_size, workflow=workflow_name)
+
+
+async def _run_hierarchical(
+    nodes: list[Node],
+    network_config: dict[str, Any],
+    experiment_config: dict[str, Any],
+    workflow_name: str,
+    r: int,
+    e: int,
+    run_dir: str | None = None,
+    save_samples_every: int = 0,
+) -> None:
+    """
+    Run a hierarchical topology.
+
+    Nodes are organized as: 1 root + clusters (each with 1 edge + N workers).
+    The first node is the root, followed by edge/worker groups.
+    Edges connect to their workers and to the root.
+
+    Unlike flat topologies, HFL does NOT gossip the start-learning command
+    because each node requires different role-specific parameters.
+    """
+    import asyncio
+
+    from p2pfl.workflow.engine.experiment import Experiment
+
+    hierarchy = network_config.get("hierarchy", {})
+    clusters = hierarchy.get("clusters", [])
+    edge_trains = hierarchy.get("edge_trains", True)
+
+    if not clusters:
+        raise ValueError("Missing 'clusters' in hierarchy configuration.")
+
+    # First node is the root
+    root_node = nodes[0]
+
+    # Split remaining nodes into clusters: [edge0, w0_0, w0_1, ..., edge1, w1_0, w1_1, ...]
+    edge_nodes: list[Node] = []
+    worker_groups: list[list[Node]] = []
+    idx = 1  # skip root
+    for cluster in clusters:
+        num_workers = cluster.get("workers", 1)
+        edge = nodes[idx]
+        workers = nodes[idx + 1 : idx + 1 + num_workers]
+        edge_nodes.append(edge)
+        worker_groups.append(workers)
+        idx += 1 + num_workers
+
+    all_edge_addrs = [e.address for e in edge_nodes]
+
+    # Connect workers to their edge (bidirectional)
+    for edge, workers in zip(edge_nodes, worker_groups, strict=True):
+        for worker in workers:
+            await worker.connect(edge.address)
+            await edge.connect(worker.address)
+
+    # Connect edges to root (bidirectional)
+    for edge in edge_nodes:
+        await edge.connect(root_node.address)
+        await root_node.connect(edge.address)
+
+    # Brief wait for connections to stabilize
+    await asyncio.sleep(1)
+
+    # Start learning on each node directly (no gossip) with role-specific params.
+    exp_name = f"hfl-{time.time()}"
+
+    # Start root (gets run_dir + save_samples_every for per-round artifacts)
+    root_exp = Experiment.create(
+        exp_name=exp_name,
+        total_rounds=r,
+        epochs_per_round=e,
+        workflow=workflow_name,
+        is_initiator=True,
+        role="root",
+        child_edge_addrs=all_edge_addrs,
+        run_dir=run_dir,
+        save_samples_every=save_samples_every,
+    )
+    await root_node._start_learning_workflow(workflow_name, root_exp)
+
+    for edge, workers in zip(edge_nodes, worker_groups, strict=True):
+        worker_addrs = [w.address for w in workers]
+
+        # Start edge
+        edge_exp = Experiment.create(
+            exp_name=exp_name,
+            total_rounds=r,
+            epochs_per_round=e,
+            workflow=workflow_name,
+            is_initiator=True,
+            role="edge",
+            worker_addrs=worker_addrs,
+            root_addr=root_node.address,
+            edge_trains=edge_trains,
+        )
+        await edge._start_learning_workflow(workflow_name, edge_exp)
+
+        # Start workers
+        for worker in workers:
+            worker_exp = Experiment.create(
+                exp_name=exp_name,
+                total_rounds=r,
+                epochs_per_round=e,
+                workflow=workflow_name,
+                is_initiator=False,
+                role="worker",
+                edge_addr=edge.address,
+            )
+            await worker._start_learning_workflow(workflow_name, worker_exp)

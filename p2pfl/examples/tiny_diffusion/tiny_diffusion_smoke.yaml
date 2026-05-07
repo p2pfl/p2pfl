@@ -1,0 +1,77 @@
+description: "HFL smoke test: minimal config (5 nodes, 2 rounds x 2 epochs) — verifies the pipeline runs end-to-end."
+
+# Network: 1 root + 2 edges + 1 worker each = 5 nodes
+network:
+  package: "p2pfl.communication.protocols.protobuff.memory"
+  protocol: "MemoryCommunicationProtocol"
+  topology: "hierarchical"
+  hierarchy:
+    edge_trains: false
+    clusters:
+      - workers: 1
+      - workers: 1
+
+experiment:
+  name: "hfl_tiny_diffusion_smoke"
+  rounds: 4
+  epochs: 1
+  seed: 42
+  workflow: hfl
+  wait_timeout: 5
+  save_samples_every: 1   # root saves per-class samples + W2/MMD metrics every K rounds (0 = disabled)
+
+  dataset:
+    source: "custom"
+    package: "p2pfl.examples.tiny_diffusion.dataset"
+    class: "make_2d_dataset"
+    name: "tiny_diffusion_2d"
+    batch_size: 64
+    params:
+      n_samples_per_dist: 500
+      noise: 0.05
+      seed: 42
+    partitioning:
+      package: "p2pfl.learning.dataset.partition_strategies"
+      strategy: "RandomIIDPartitionStrategy"
+      params: {}
+
+  model:
+    package: "p2pfl.examples.tiny_diffusion.model.diffusion_pytorch"
+    model_build_fn: "model_build_fn"
+    params:
+      point_dim: 2
+      hidden_dim: 64
+      n_layers: 2
+      time_emb_dim: 64
+      input_emb_dim: 64
+      input_scale: 25.0
+      num_classes: 4
+      class_emb_dim: 64
+      timesteps: 50
+      lr: 0.001
+
+  aggregator:
+    package: "p2pfl.learning.aggregators.fedavg"
+    aggregator: "FedAvg"
+    params: {}
+
+results:
+  output_dir: "results/hfl_smoke"
+
+settings:
+  general:
+    log_level: "INFO"
+  heartbeat:
+    period: 2
+    timeout: 60
+    exclude_beat_logs: true
+  gossip:
+    period: 1
+    ttl: 10
+    messages_per_period: 200
+    amount_last_messages_saved: 1000
+    models_period: 1
+    models_per_round: 4
+    exit_on_x_equal_rounds: 50
+  training:
+    aggregation_timeout: 60

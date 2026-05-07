@@ -1,0 +1,81 @@
+description: "Centralized baseline: 1 node, full dataset, 10 rounds x 30 epochs = 300 effective epochs. Diagnostic test to verify model can learn the 4 distributions."
+
+# Network setup: single node, no peers
+network:
+  package: "p2pfl.communication.protocols.protobuff.memory"
+  protocol: "MemoryCommunicationProtocol"
+  nodes: 1
+  topology: "full"
+
+# Experiment settings
+experiment:
+  name: "centralized_tiny_diffusion"
+  rounds: 10
+  epochs: 30
+  trainset_size: 1
+  seed: 42
+  workflow: basic
+  wait_timeout: 30
+
+  # Synthetic 2D dataset (full, no partitioning needed)
+  dataset:
+    source: "custom"
+    package: "p2pfl.examples.tiny_diffusion.dataset"
+    class: "make_2d_dataset"
+    name: "tiny_diffusion_2d"
+    batch_size: 64
+    params:
+      n_samples_per_dist: 5000
+      noise: 0.05
+      seed: 42
+    partitioning:
+      package: "p2pfl.learning.dataset.partition_strategies"
+      strategy: "RandomIIDPartitionStrategy"
+      params: {}
+
+  # Conditional diffusion model (Fourier inputs, residual blocks, class embedding)
+  model:
+    package: "p2pfl.examples.tiny_diffusion.model.diffusion_pytorch"
+    model_build_fn: "model_build_fn"
+    params:
+      point_dim: 2
+      hidden_dim: 128
+      n_layers: 3
+      time_emb_dim: 128
+      input_emb_dim: 128
+      input_scale: 25.0
+      num_classes: 4
+      class_emb_dim: 128
+      timesteps: 1000
+      lr: 0.001
+
+  # Aggregation (no-op with 1 node)
+  aggregator:
+    package: "p2pfl.learning.aggregators.fedavg"
+    aggregator: "FedAvg"
+    params: {}
+
+# Results export
+results:
+  output_dir: "results/centralized_tiny_diffusion"
+
+# Settings
+settings:
+  general:
+    log_level: "INFO"
+    disable_ray: True
+  heartbeat:
+    period: 2
+    timeout: 60
+    wait_convergence: 4
+    exclude_beat_logs: true
+  gossip:
+    period: 1
+    ttl: 10
+    messages_per_period: 200
+    amount_last_messages_saved: 1000
+    models_period: 1
+    models_per_round: 4
+    exit_on_x_equal_rounds: 50
+  training:
+    aggregation_timeout: 300

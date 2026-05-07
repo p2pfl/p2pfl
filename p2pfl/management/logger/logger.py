@@ -130,6 +130,10 @@ class P2PFLogger:
         self.message_storage = MessageStorage(disable_locks=disable_locks)
         self.node_monitor = NodeMonitor()
 
+        # Image artifacts (for log_image)
+        self._run_dir: str | None = None
+        self._image_records: list[dict[str, Any]] = []
+
         # Python logging
         self._logger = logging.getLogger("p2pfl")
         if self._logger.handlers != []:
@@ -359,6 +363,105 @@ class P2PFLogger:
         else:
             # Local Metrics
             self.local_metrics.add_log(exp, round, metric, addr, value, step)
+
+    def set_run_dir(self, run_dir: str | None) -> None:
+        """Set the run directory where image artifacts are persisted by log_image."""
+        self._run_dir = run_dir
+
+    def log_image(
+        self,
+        addr: str,
+        name: str,
+        image: Any,
+        step: int | None = None,
+        round: int | None = None,
+        caption: str | None = None,
+        fmt: str = "png",
+    ) -> None:
+        """
+        Log an image artifact for a node at a given round/step.
+
+        Accepts: matplotlib.figure.Figure, numpy.ndarray (HxW or HxWxC), PIL.Image, or str/Path
+        to an existing image file. Encodes to ``fmt`` and writes to
+        ``<run_dir>/images/<name>/round_NNNN_<addr>.<fmt>`` plus a ``latest.<fmt>``
+        symlink for live preview.
+        """
+        if self._run_dir is None:
+            self._logger.debug(f"log_image skipped (no run_dir set): name={name} addr={addr}")
+            return
+
+        import io
+        import os
+        from pathlib import Path
+
+        out_dir = os.path.join(self._run_dir, "images", name)
+        os.makedirs(out_dir, exist_ok=True)
+        round_tag = "step" if round is None else "round"
+        round_val = step if round is None else round
+        if round_val is None:
+            round_val = 0
+        safe_addr = addr.replace("/", "_")
+        filename = f"{round_tag}_{round_val:04d}_{safe_addr}.{fmt}"
+        out_path = os.path.join(out_dir, filename)
+
+        # Normalise input -> bytes
+        try:
+            if isinstance(image, (str, Path)):
+                with open(image, "rb") as f:
+                    data = f.read()
+            elif hasattr(image, "savefig"):
+                # matplotlib.figure.Figure
+                buf = io.BytesIO()
+                image.savefig(buf, format=fmt, dpi=100)
+                data = buf.getvalue()
+            elif hasattr(image, "save"):
+                # PIL.Image.Image
+                buf = io.BytesIO()
+                image.save(buf, format=fmt.upper())
+                data = buf.getvalue()
+            else:
+                # numpy array
+                from PIL import Image as _PILImage
+
+                arr = image
+                if arr.dtype != "uint8":
+                    import numpy as _np
+
+                    arr = (_np.clip(arr, 0.0, 1.0) * 255).astype("uint8")
+                buf = io.BytesIO()
+                _PILImage.fromarray(arr).save(buf, format=fmt.upper())
+                data = buf.getvalue()
+        except Exception as exc:
+            self._logger.warning(f"log_image: could not encode image: {exc}")
+            return
+
+        with open(out_path, "wb") as f:
+            f.write(data)
+
+        # Maintain a 'latest' symlink per name for live preview
+        latest_link = os.path.join(out_dir, f"latest.{fmt}")
+        try:
+            if os.path.islink(latest_link) or os.path.exists(latest_link):
+                os.remove(latest_link)
+            os.symlink(filename, latest_link)
+        except OSError:
+            pass
+
+        self._image_records.append(
+            {
+                "addr": addr,
+                "name": name,
+                "round": round,
+                "step": step,
+                "path": out_path,
+                "caption": caption,
+                "size": len(data),
+            }
+        )
+
+    def get_image_records(self) -> list[dict[str, Any]]:
+        """Return the list of image records logged via log_image."""
+        return list(self._image_records)
 
     def get_local_logs(self) -> LocalLogsType:
         """

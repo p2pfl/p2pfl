@@ -30,9 +30,11 @@ def _load_builtins() -> None:
     """Load built-in workflows into registry (lazy imports avoid circular deps)."""
     from p2pfl.workflow.async_dfl.workflow import AsyncDFL
     from p2pfl.workflow.basic_dfl.workflow import BasicDFL
+    from p2pfl.workflow.hfl.workflow import HFL
 
     _workflow_registry.setdefault("basic", BasicDFL)
     _workflow_registry.setdefault("async", AsyncDFL)
+    _workflow_registry.setdefault("hfl", HFL)
 
 
 _load_builtins()

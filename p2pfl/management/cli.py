@@ -174,11 +174,12 @@ def __get_available_examples() -> dict[str, ExampleInfo]:
     examples = {}
     # Find all yaml files in examples subdirectories
     for yaml_path in glob(os.path.join(EXAMPLES_DIR, "*/*.yaml")):
-        dirname = os.path.basename(os.path.dirname(yaml_path))
+        # Use YAML filename (without extension) as the key
+        name = os.path.splitext(os.path.basename(yaml_path))[0]
         with open(yaml_path) as f:
             content = yaml.safe_load(f)
             if isinstance(content, dict) and "description" in content:
-                examples[dirname] = ExampleInfo(description=content["description"], path=yaml_path)
+                examples[name] = ExampleInfo(description=content["description"], path=yaml_path)
     return examples
 
 
