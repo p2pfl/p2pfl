@@ -205,24 +205,17 @@ def test_tensorflow_export_strategy():
     dataset = TorchvisionDatasetFactory.get_mnist(cache_dir=".", train=True, download=True)
     dataset.set_batch_size(1)
 
-    export_strategy = KerasExportStrategy()
-    train_data = dataset.export(export_strategy, train_loader=True)
-    test_data = dataset.export(export_strategy, train_loader=False)
+    train_data = dataset.export(KerasExportStrategy, train=True)
+    test_data = dataset.export(KerasExportStrategy, train=False)
 
-    assert isinstance(train_data, tf.data.Dataset)
-    assert isinstance(test_data, tf.data.Dataset)
+    assert isinstance(train_data, tuple) and len(train_data) == 2
+    assert isinstance(test_data, tuple) and len(test_data) == 2
 
-    # Check if data
-    assert len(train_data) > 0
-    assert len(test_data) > 0
-
-    # Check if the data is loaded correctly
-    sample = next(iter(train_data))
-    assert isinstance(sample, tuple)
-
-    # Check if the data is loaded correctly
-    assert isinstance(sample[0], tf.Tensor)
-    assert sample[0].shape == (1, 28, 28)
+    x_train, y_train = train_data
+    assert isinstance(x_train, np.ndarray)
+    assert isinstance(y_train, np.ndarray)
+    assert len(x_train) > 0
+    assert x_train.shape[1:] == (28, 28)
 
 
 ###

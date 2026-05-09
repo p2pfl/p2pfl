@@ -19,11 +19,9 @@
 """Keras dataset export strategy."""
 
 import numpy as np
-import tensorflow as tf  # type: ignore
 from datasets import Dataset  # type: ignore
 
 from p2pfl.learning.dataset.p2pfl_dataset import DataExportStrategy
-from p2pfl.settings import Settings
 
 
 class KerasExportStrategy(DataExportStrategy):
@@ -32,28 +30,10 @@ class KerasExportStrategy(DataExportStrategy):
     @staticmethod
     def export(
         data: Dataset,
-        batch_size: int | None = None,
-        **kwargs,
-    ) -> tf.data.Dataset:
-        """
-        Export the data as a TensorFlow Dataset.
-
-        Converts through numpy arrays to avoid HuggingFace's ``to_tf_dataset()``
-        streaming pipeline, which deadlocks under asyncio when p2pfl's gossip
-        and heartbeat tasks are active.
-
-        Args:
-            data: The Hugging Face Dataset to export. Transforms should already be applied to the dataset via set_transform.
-            batch_size: The batch size for the TensorFlow Dataset.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            A TensorFlow Dataset.
-
-        """
-        if not batch_size:
-            batch_size = Settings.training.DEFAULT_BATCH_SIZE
-
+        _batch_size: int | None = None,
+        **_kwargs,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Export as ``(x, y)`` numpy arrays — avoids pyarrow/TF import-order deadlock in Keras 3."""
         keys = list(data[0].keys())
         feature_cols = keys[:-1]
         label_col = keys[-1]
@@ -62,4 +42,4 @@ class KerasExportStrategy(DataExportStrategy):
         x = features[0] if len(features) == 1 else np.concatenate(features, axis=-1)
         y = np.array(data[label_col], dtype=np.int64)
 
-        return tf.data.Dataset.from_tensor_slices((x, y)).batch(batch_size)
+        return x, y
