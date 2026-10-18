@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import concurrent.futures
 import datetime
+import json
 import logging
+import time
 from datetime import timezone
 from unittest.mock import MagicMock, patch
 
@@ -493,6 +495,67 @@ class TestBufferMechanics:
         svc, client = _make_services()
         svc.flush()
         client.post.assert_not_called()
+
+    def test_batches_are_gzipped(self):
+        """The /batch body is gzipped JSON with Content-Encoding: gzip."""
+        import gzip as _gzip
+
+        svc, client = _make_services()
+        with patch.object(svc, "_ensure_flush_thread"):
+            svc._enqueue({"type": "log", "message": "hi"})
+        client.post.return_value = _mock_response(200)
+        svc.flush()
+        kwargs = client.post.call_args.kwargs
+        assert kwargs["headers"] == {"Content-Encoding": "gzip"}
+        assert json.loads(_gzip.decompress(kwargs["content"])) == [{"type": "log", "message": "hi"}]
+
+    def test_flush_sends_in_batch_size_chunks(self):
+        """A large buffer is sent in WEB_BATCH_SIZE chunks."""
+        svc, client = _make_services()
+        client.post.return_value = _mock_response(200)
+        with patch.object(Settings.general, "WEB_BATCH_SIZE", 2):
+            svc._sync_send([{"type": "log", "i": i} for i in range(5)])
+        assert client.post.call_count == 3
+
+    def test_flush_loop_sends_periodically(self):
+        """The background thread posts the buffer every WEB_BATCH_INTERVAL."""
+        svc, client = _make_services()
+        client.post.return_value = _mock_response(200)
+        with patch.object(Settings.general, "WEB_BATCH_INTERVAL", 0.01):
+            svc._enqueue({"type": "log"})
+            deadline = time.monotonic() + 2
+            while client.post.call_count == 0 and time.monotonic() < deadline:
+                time.sleep(0.01)
+            svc._running = False
+            svc._wake.set()
+            svc._flush_thread.join(timeout=2)
+        assert client.post.call_count >= 1
+        assert svc._buffer == []
+
+    def test_flush_loop_requeues_on_failure(self):
+        """A failed send puts the entries back at the front of the buffer."""
+        svc, client = _make_services()
+        client.post.side_effect = httpx.ConnectError("down")
+        with patch.object(Settings.general, "WEB_BATCH_INTERVAL", 0.01):
+            svc._enqueue({"type": "log", "i": 1})
+            deadline = time.monotonic() + 2
+            while client.post.call_count == 0 and time.monotonic() < deadline:
+                time.sleep(0.01)
+            svc._running = False
+            svc._wake.set()
+            svc._flush_thread.join(timeout=2)
+        assert {"type": "log", "i": 1} in svc._buffer
+
+    def test_stop_wakes_the_flush_thread(self):
+        """stop() ends the interval wait at once instead of after WEB_BATCH_INTERVAL."""
+        svc, client = _make_services()
+        client.post.return_value = _mock_response(200)
+        with patch.object(Settings.general, "WEB_BATCH_INTERVAL", 60):
+            svc._enqueue({"type": "log"})
+            started = time.monotonic()
+            svc.stop()
+        assert time.monotonic() - started < 5
+        client.post.assert_called_once()  # the final flush
 
 
 ###

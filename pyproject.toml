@@ -31,7 +31,6 @@ dependencies = [
     "click==8.1.8",
     "transitions>=0.9.3",
     "httpx>=0.27.0",
-    "websockets>=13.0",
 ]
 
 [project.optional-dependencies]

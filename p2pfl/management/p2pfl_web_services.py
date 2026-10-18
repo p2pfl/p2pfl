@@ -20,9 +20,9 @@
 
 from __future__ import annotations
 
-import asyncio
 import base64
 import datetime
+import gzip
 import json
 import os
 import threading
@@ -30,7 +30,6 @@ import time
 from typing import Any
 
 import httpx
-import websockets
 
 from p2pfl.settings import Settings
 
@@ -40,9 +39,10 @@ class P2pflWebServices:
     Class that manages the communication with the p2pfl web services.
 
     All buffered data (logs, metrics, messages, experiment updates, system
-    metrics) is accumulated in a single buffer and flushed as a single
-    ``POST /batch`` request — either periodically by a background asyncio
-    task or when the buffer reaches ``Settings.general.WEB_BATCH_SIZE``.
+    metrics) is accumulated in a single buffer and sent by a background
+    thread every ``Settings.general.WEB_BATCH_INTERVAL`` seconds as gzipped
+    ``POST /batch`` requests of at most ``Settings.general.WEB_BATCH_SIZE``
+    entries. Failed sends are retried with exponential backoff.
 
     Each entry in the batch carries a ``type`` field so the backend can
     dispatch accordingly.
@@ -75,6 +75,7 @@ class P2pflWebServices:
         self._lock = threading.Lock()
         self._flush_thread: threading.Thread | None = None
         self._running = False
+        self._wake = threading.Event()  # set by stop() to end the wait early
 
         self._last_overflow_warn: float = 0.0
 
@@ -84,74 +85,58 @@ class P2pflWebServices:
     # --- Lifecycle ---
 
     def _ensure_flush_thread(self) -> None:
-        """Lazily start a dedicated background thread for the WebSocket flush loop."""
+        """Lazily start the background thread that sends the buffer."""
         if self._flush_thread is not None and self._flush_thread.is_alive():
             return
         self._running = True
-        t = threading.Thread(target=self._run_flush_loop, daemon=True, name="p2pfl-ws-flush")
+        self._wake.clear()
+        t = threading.Thread(target=self._flush_loop, daemon=True, name="p2pfl-web-flush")
         t.start()
         self._flush_thread = t
 
-    def _run_flush_loop(self) -> None:
-        """Entry point for the flush thread — creates its own event loop."""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            loop.run_until_complete(self._flush_loop())
-        finally:
-            loop.close()
+    def _flush_loop(self) -> None:
+        """
+        Send the buffer every ``WEB_BATCH_INTERVAL`` seconds until stopped.
 
-    async def _flush_loop(self) -> None:
-        """Flush buffered entries over a persistent WebSocket with auto-reconnect."""
-        ws_url = self._base_url.replace("http://", "ws://").replace("https://", "wss://") + "/batch/ws"
-        api_key = self._headers["x-api-key"]
+        A failed request puts the unsent entries back at the front of the
+        buffer and waits with exponential backoff (2 s up to 60 s).
+        """
         backoff = 2.0
         max_backoff = 60.0
         consecutive_failures = 0
-
         while self._running:
-            pending: list[dict] = []
+            self._wake.wait(Settings.general.WEB_BATCH_INTERVAL)
+            if not self._running:
+                return
+            pending = self._drain()
             try:
-                async with websockets.connect(ws_url) as ws:
-                    # Authenticate
-                    await ws.send(json.dumps({"api_key": api_key}))
-                    auth = json.loads(await ws.recv())
-                    if not auth.get("authenticated"):
-                        raise ConnectionError(f"Auth failed: {auth}")
-
-                    if consecutive_failures > 0:
-                        print(f"[P2PFL Web Services] WebSocket reconnected after {consecutive_failures} failed attempt(s).")
-                    backoff = 2.0
-                    consecutive_failures = 0
-
-                    while self._running:
-                        await asyncio.sleep(Settings.general.WEB_BATCH_INTERVAL)
-                        pending = self._drain()
-                        if not pending:
-                            continue
-                        while pending:
-                            chunk = pending[: Settings.general.WEB_BATCH_SIZE]
-                            await ws.send(json.dumps(chunk))
-                            await ws.recv()  # ack
-                            pending = pending[Settings.general.WEB_BATCH_SIZE :]
+                while pending:
+                    self._post_batch(pending[: Settings.general.WEB_BATCH_SIZE])
+                    pending = pending[Settings.general.WEB_BATCH_SIZE :]
             except Exception as e:
                 if pending:
                     with self._lock:
                         self._buffer[:0] = pending
                 consecutive_failures += 1
                 if consecutive_failures == 1:
-                    print(f"[P2PFL Web Services] WebSocket error: {e}, reconnecting in {backoff:.0f}s...")
+                    print(f"[P2PFL Web Services] Send failed: {e}, retrying in {backoff:.0f}s...")
                 elif consecutive_failures % 10 == 0:
                     print(
-                        f"[P2PFL Web Services] WebSocket still unreachable "
+                        f"[P2PFL Web Services] Web services still unreachable "
                         f"({consecutive_failures} consecutive failures), retrying in {backoff:.0f}s..."
                     )
-                await asyncio.sleep(backoff)
+                self._wake.wait(backoff)
                 backoff = min(backoff * 2, max_backoff)
+                continue
+            if consecutive_failures > 0:
+                print(f"[P2PFL Web Services] Reconnected after {consecutive_failures} failed attempt(s).")
+            backoff = 2.0
+            consecutive_failures = 0
 
     def stop(self) -> None:
         """Stop the flush thread, flush remaining data, close client."""
         self._running = False
+        self._wake.set()
         if self._flush_thread is not None:
             self._flush_thread.join(timeout=5)
         self._flush_thread = None
@@ -189,13 +174,26 @@ class P2pflWebServices:
         if entries:
             self._sync_send(entries)
 
+    def _post_batch(self, entries: list[dict]) -> None:
+        """``POST /batch`` with a gzipped JSON body (raises on failure)."""
+        body = gzip.compress(json.dumps(entries).encode(), compresslevel=6)
+        response = self._client.post(
+            self._base_url + "/batch",
+            content=body,
+            headers={"Content-Encoding": "gzip"},
+            timeout=10,
+        )
+        response.raise_for_status()
+
     def _sync_send(self, entries: list[dict]) -> None:
-        """Send a batch synchronously via ``POST /batch``. Best-effort (drops on failure)."""
-        try:
-            response = self._client.post(self._base_url + "/batch", json=entries, timeout=10)
-            response.raise_for_status()
-        except Exception as e:
-            print(f"[P2PFL Web Services] Dropped batch ({len(entries)} entries): {e}")
+        """Send everything now, in ``WEB_BATCH_SIZE`` chunks. Best-effort (drops on failure)."""
+        size = Settings.general.WEB_BATCH_SIZE
+        for start in range(0, len(entries), size):
+            chunk = entries[start : start + size]
+            try:
+                self._post_batch(chunk)
+            except Exception as e:
+                print(f"[P2PFL Web Services] Dropped batch ({len(chunk)} entries): {e}")
 
     # --- HTTP helpers (sync, for immediate operations) ---
 
