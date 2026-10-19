@@ -51,6 +51,8 @@ class General:
     """Maximum buffer size for web services — oldest entries are dropped when exceeded."""
     WEB_BATCH_INTERVAL: float = 10.0
     """Interval (seconds) between automatic flushes of buffered web service data."""
+    WEB_WAKE_TIMEOUT: float = 90.0
+    """Seconds to wait for a sleeping web services server (free hosting) before the first call."""
     WEB_GEOLOCATION: bool = False
     """Enable geolocation lookup via ip-api.com at node registration (opt-in)."""
     LOG_FULL_TIMESTAMP: bool = False

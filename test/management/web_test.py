@@ -41,6 +41,7 @@ def _make_services() -> tuple[P2pflWebServices, MagicMock]:
     svc = P2pflWebServices("http://localhost:8000", "test-key")
     mock_client = MagicMock(spec=httpx.Client)
     svc._client = mock_client
+    svc._awake = True  # the wake-up wait has its own tests
     return svc, mock_client
 
 
@@ -155,6 +156,29 @@ class TestNodeRegistration:
         assert svc.node_id["node-2"] == 8
         _, kwargs = client.post.call_args
         assert kwargs["json"]["metadata"] == meta
+
+    def test_register_waits_for_a_sleeping_server(self):
+        """A server waking up (free hosting) answers late: registration waits instead of failing."""
+        svc, client = _make_services()
+        svc._awake = False
+        client.get.side_effect = [httpx.ConnectError("asleep"), httpx.ReadTimeout("waking"), _mock_response(200)]
+        client.post.return_value = _mock_response(201, {"id": 7})
+        with patch("p2pfl.management.p2pfl_web_services.time.sleep"):
+            svc.register_node("n:1")
+        assert svc.node_id["n:1"] == 7
+        assert client.get.call_count == 3
+        svc.register_node("n:2")  # awake now: no more health checks
+        assert client.get.call_count == 3
+
+    def test_wake_wait_gives_up_after_the_timeout(self):
+        """An unreachable server is not waited for forever; the call then reports the error."""
+        svc, client = _make_services()
+        svc._awake = False
+        client.get.side_effect = httpx.ConnectError("down")
+        client.post.side_effect = httpx.ConnectError("down")
+        sleep = "p2pfl.management.p2pfl_web_services.time.sleep"
+        with patch.object(Settings.general, "WEB_WAKE_TIMEOUT", 0), patch(sleep), pytest.raises(httpx.ConnectError):
+            svc.register_node("n:1")
 
     def test_register_node_409_fetches_existing(self):
         """Test register node 409 fetches existing."""

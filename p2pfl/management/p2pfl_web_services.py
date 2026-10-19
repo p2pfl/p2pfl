@@ -78,6 +78,7 @@ class P2pflWebServices:
         self._wake = threading.Event()  # set by stop() to end the wait early
 
         self._last_overflow_warn: float = 0.0
+        self._awake = False  # set once the server has answered (see _wait_until_awake)
 
         # Sync HTTP client for immediate operations (register, unregister, sync flush)
         self._client = httpx.Client(headers=self._headers, timeout=5.0)
@@ -197,6 +198,33 @@ class P2pflWebServices:
 
     # --- HTTP helpers (sync, for immediate operations) ---
 
+    def _wait_until_awake(self) -> None:
+        """
+        Wait for a sleeping server before the first synchronous call.
+
+        Free hosting plans put the server to sleep when idle and it takes up to
+        a minute to wake up, longer than the 5 s timeout of the calls a node
+        makes at start-up (register, join the experiment). Polls ``GET /health``
+        (any HTTP answer counts) for up to ``Settings.general.WEB_WAKE_TIMEOUT``
+        seconds; afterwards the normal calls report any error.
+        """
+        if self._awake:
+            return
+        deadline = time.monotonic() + Settings.general.WEB_WAKE_TIMEOUT
+        warned = False
+        while True:
+            try:
+                self._client.get(self._base_url + "/health", timeout=10)
+                break
+            except httpx.HTTPError:
+                if time.monotonic() >= deadline:
+                    return
+                if not warned:
+                    print("[P2PFL Web Services] Waiting for the web services to wake up (up to a minute)...")
+                    warned = True
+                time.sleep(2)
+        self._awake = True
+
     def _get(self, path: str, *, timeout: int = 5) -> dict:
         response = self._client.get(self._base_url + path, timeout=timeout)
         response.raise_for_status()
@@ -230,6 +258,7 @@ class P2pflWebServices:
             metadata: Optional system metadata (OS, hardware, GPU, geolocation).
 
         """
+        self._wait_until_awake()
         try:
             data: dict[str, Any] = {"address": node}
             if metadata is not None:
@@ -298,8 +327,9 @@ class P2pflWebServices:
         """
         exp_name: str = data.get("exp_name", "")
         self._node_exp[node_address] = exp_name
+        self._wait_until_awake()
 
-        # Always POST (sync, not batched via WS) — the node needs the experiment
+        # Always POST (sync, not batched) — the node needs the experiment
         # ID before it can proceed. The backend is idempotent on exp_name.
         result = self._post(f"/experiments?node_address={node_address}", data)
         exp_id = result["id"]
